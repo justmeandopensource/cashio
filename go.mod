@@ -3,6 +3,7 @@ module github.com/justmeandopensource/cashio
 go 1.20
 
 require (
+	github.com/antonmedv/expr v1.14.3
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/gdamore/tcell/v2 v2.6.0
 	github.com/gizak/termui/v3 v3.1.0

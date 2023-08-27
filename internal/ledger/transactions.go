@@ -266,7 +266,7 @@ func PromptForNewTransaction(ledgerName string, transactionType string) Transact
 	fmt.Printf("amount: ")
 	amount, _ := reader.ReadString('\n')
 	amount = strings.TrimSuffix(amount, "\n")
-	amountFormatted, _ := strconv.ParseFloat(amount, 64)
+	amountFormatted := common.ProcessExpression(amount)
 
 	// notes
 	fmt.Printf("notes: ")
@@ -539,7 +539,7 @@ func PromptForNewTransfer(ledgerName string) (string, []Transaction) {
 	fmt.Print("amount (excluding transfer charge): ")
 	fromAmount, _ := reader.ReadString('\n')
 	fromAmount = strings.TrimSuffix(fromAmount, "\n")
-	fromAmountFormatted, _ := strconv.ParseFloat(fromAmount, 64)
+	fromAmountFormatted := common.ProcessExpression(fromAmount)
 
 	if fromAmountFormatted == 0 || fromAmountFormatted < 0 {
 		fmt.Println(common.ColorizeRed("[E] invalid transfer amount"))
@@ -556,12 +556,12 @@ func PromptForNewTransfer(ledgerName string) (string, []Transaction) {
 		fmt.Print("specify receiving amount: ")
 		toAmount, _ := reader.ReadString('\n')
 		toAmount = strings.TrimSuffix(toAmount, "\n")
-		toAmountFormatted, _ = strconv.ParseFloat(toAmount, 64)
+		toAmountFormatted = common.ProcessExpression(toAmount)
 
 		fmt.Print("transfer charge if any: ")
 		charge, _ := reader.ReadString('\n')
 		charge = strings.TrimSuffix(charge, "\n")
-		chargeFormatted, _ = strconv.ParseFloat(charge, 64)
+		chargeFormatted = common.ProcessExpression(charge)
 	}
 
 	// prompt for charge category if there is transfer charge
