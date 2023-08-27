@@ -7,9 +7,11 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/antonmedv/expr"
 	"github.com/c-bata/go-prompt"
 	"github.com/spf13/viper"
 	"golang.org/x/term"
@@ -134,6 +136,10 @@ func PadLeft(text string, padCount int) string {
 	return prefix + text
 }
 
+// GetDateFromUser prompts the user for date input.
+//
+// Date can be entered either as YYYY-MM-DD (eg: 2023-08-21) or DD (eg: 21)
+// If DD format is used, the date will default to the day in the current month and year
 func GetDateFromUser() time.Time {
 
 	var parsedDate time.Time
@@ -156,4 +162,31 @@ func GetDateFromUser() time.Time {
 	}
 
 	return parsedDate
+}
+
+// ProcessExpression returns the value of an arithmetic expression
+//
+// Example: input of "3+4" will return 7.00
+func ProcessExpression(input string) float64 {
+
+	var processedOutput float64
+
+	input = strings.TrimSpace(input)
+
+	if strings.ContainsAny(input, "+-*/") {
+		expression, _ := expr.Compile(input, expr.Env(nil))
+		evalResult, _ := expr.Run(expression, nil)
+		switch val := evalResult.(type) {
+		case float64:
+			processedOutput = val
+		case int:
+			processedOutput = float64(val)
+		case int64:
+			processedOutput = float64(val)
+		}
+	} else {
+		processedOutput, _ = strconv.ParseFloat(input, 64)
+	}
+
+	return processedOutput
 }
