@@ -54,7 +54,13 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 					currentNode.SetExpanded(false)
 				}
 			case 'l':
-				if (currentNode != nil && currentNode.GetChildren() == nil) || currentNode.GetText() == "." {
+				if currentNode.GetChildren() != nil {
+					if !currentNode.IsExpanded() {
+						currentNode.SetExpanded(true)
+						return event
+					}
+				}
+				if currentNode != nil {
 					page2TransTable.Clear()
 					updateTable(page2TransTable, workingLedger, currentNode.GetText(), "")
 					if page2TransTable.GetRowCount() < 2 {
@@ -66,10 +72,6 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 					page2AccTree.SetBorderColor(tcell.ColorWhite)
 					page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 					page2TransTable.SetSelectable(true, false)
-				} else {
-					if currentNode != nil {
-						currentNode.SetExpanded(true)
-					}
 				}
 			case 'g':
 				page2AccTree.SetCurrentNode(page2AccTree.GetRoot())

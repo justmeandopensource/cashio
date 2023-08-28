@@ -283,18 +283,54 @@ func getAccountID(accountName string, accounts []*Account) int {
 
 // IsPlaceholderAccount returns true if the given account is a placeholder account,
 // false otherwise
-func IsPlaceholderAccount(accounts []*Account, accountName string) bool {
+func IsPlaceholderAccount(accountName string, accounts []*Account) bool {
 	for _, account := range accounts {
 		if account.Name == accountName {
-			return true
+			if account.Placeholder == 1 {
+				return true
+			}
 		}
-		if len(account.Children) > 0 {
-			if IsPlaceholderAccount(account.Children, accountName) {
+		if account.Children != nil {
+			if IsPlaceholderAccount(accountName, account.Children) {
 				return true
 			}
 		}
 	}
 	return false
+}
+
+// GetChildAccountIDs returns a slice of IDs of all the child accounts for the given account
+func GetChildAccountIDs(accountID int, accounts []*Account) []int {
+	var cids []int
+	for _, account := range accounts {
+		if account.ID == accountID {
+			if account.Children != nil {
+				childIDs := getChildAccountIDsHelper(account.Children)
+				cids = append(cids, childIDs...)
+			}
+			break
+		}
+		if account.Children != nil {
+			childIDs := GetChildAccountIDs(accountID, account.Children)
+			cids = append(cids, childIDs...)
+		}
+	}
+	return cids
+}
+
+// getChildAccountIDsHelper recurses through all child accounts of a given account
+// and returns a slice of all IDs
+func getChildAccountIDsHelper(accounts []*Account) []int {
+	var cids []int
+	for _, account := range accounts {
+		if account.Placeholder == 1 {
+			childIDs := getChildAccountIDsHelper(account.Children)
+			cids = append(cids, childIDs...)
+		} else {
+			cids = append(cids, account.ID)
+		}
+	}
+	return cids
 }
 
 // getAccountBalance returns balance for the given account for the given ledger
