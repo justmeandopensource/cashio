@@ -49,6 +49,13 @@ type Transaction struct {
 // and returns them as a slice of Transaction struct
 func GetTransactionsForCategory(ledgerName string, category string, limit int) ([]Transaction, error) {
 
+	categories, err := FetchCategories(ledgerName, "", false)
+	if err != nil {
+		return nil, err
+	}
+
+	categoryID := getCategoryID(category, categories)
+
 	dbPath := common.GetCashioDBPath()
 
 	db, err := sql.Open("sqlite3", dbPath)
@@ -57,29 +64,41 @@ func GetTransactionsForCategory(ledgerName string, category string, limit int) (
 	}
 	defer db.Close()
 
-	var query string
+	var query, inClause string
+
+	if isPlaceHolderCategory(categoryID, categories) {
+		childIDs := GetChildCategoryIDs(categoryID, categories)
+		for i, id := range childIDs {
+			if i != 0 {
+				inClause += ", "
+			}
+			inClause += fmt.Sprintf("%d", id)
+		}
+	} else {
+		inClause = strconv.Itoa(categoryID)
+	}
 
 	query = fmt.Sprintf(`
-    SELECT u.id, u.date, u.notes, u.credit, u.debit, a.name AS account
+    SELECT u.id, u.date, u.notes, u.credit, u.debit, a.name AS account, u.name AS category
     FROM (
 
-      SELECT t.id, t.date, t.notes, t.credit, t.debit, t.account_id
+      SELECT t.id, t.date, t.notes, t.credit, t.debit, t.account_id, c.name
       FROM %s_transactions t
 		  LEFT JOIN %s_categories c ON t.category_id = c.id
-      WHERE c.name = '%s'
+      WHERE c.id IN (%s)
 
       UNION ALL
 
-      SELECT st.id, st.date, st.notes, st.credit, st.debit, st.account_id
+      SELECT st.id, st.date, st.notes, st.credit, st.debit, st.account_id, c.name
       FROM %s_split_transactions st
 		  LEFT JOIN %s_categories c ON st.category_id = c.id
-      WHERE c.name = '%s'
+      WHERE c.id IN (%s)
 
     ) AS u
 		LEFT JOIN %s_accounts a ON u.account_id = a.id
     ORDER BY date DESC
     LIMIT %d;
-	`, ledgerName, ledgerName, category, ledgerName, ledgerName, category, ledgerName, limit)
+	`, ledgerName, ledgerName, inClause, ledgerName, ledgerName, inClause, ledgerName, limit)
 
 	rows, err := db.Query(query)
 	if err != nil {
@@ -100,12 +119,12 @@ func GetTransactionsForCategory(ledgerName string, category string, limit int) (
 			&transaction.Credit,
 			&transaction.Debit,
 			&transaction.Account,
+			&transaction.Category,
 		)
 		if err != nil {
 			return nil, err
 		}
 
-		transaction.Category = &category
 		transactions = append(transactions, transaction)
 	}
 

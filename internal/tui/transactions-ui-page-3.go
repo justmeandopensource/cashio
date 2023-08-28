@@ -52,7 +52,13 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 				if currentNode.GetText() == "." {
 					return event
 				}
-				if currentNode != nil && currentNode.GetChildren() == nil {
+				if currentNode.GetChildren() != nil {
+					if !currentNode.IsExpanded() {
+						currentNode.SetExpanded(true)
+						return event
+					}
+				}
+				if currentNode != nil {
 					transactionsTable.Clear()
 					updateTable(transactionsTable, workingLedger, "", currentNode.GetText())
 					if transactionsTable.GetRowCount() < 2 {
