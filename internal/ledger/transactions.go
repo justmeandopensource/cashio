@@ -118,7 +118,14 @@ func GetTransactionsForCategory(ledgerName string, category string, limit int) (
 
 // GetTransactionsForAccount fetches transactions for the given account from the database
 // and returns them as a slice of Transaction struct
-func GetTransactionsForAccount(ledgerName string, account string, limit int) ([]Transaction, error) {
+func GetTransactionsForAccount(ledgerName string, accountName string, limit int) ([]Transaction, error) {
+
+	accounts, err := FetchAccounts(ledgerName, "", false)
+	if err != nil {
+		return nil, err
+	}
+
+	accountID := getAccountID(accountName, accounts)
 
 	dbPath := common.GetCashioDBPath()
 
@@ -128,11 +135,23 @@ func GetTransactionsForAccount(ledgerName string, account string, limit int) ([]
 	}
 	defer db.Close()
 
-	var query string
+	var query, inClause string
 	var accountFilter = ""
 
-	if len(account) != 0 && account != "." {
-		accountFilter = fmt.Sprintf("WHERE a.name = '%s'", account)
+	if IsPlaceholderAccount(accountName, accounts) {
+		childIDs := GetChildAccountIDs(accountID, accounts)
+		for i, id := range childIDs {
+			if i != 0 {
+				inClause += ", "
+			}
+			inClause += fmt.Sprintf("%d", id)
+		}
+	} else {
+		inClause = strconv.Itoa(accountID)
+	}
+
+	if len(accountName) != 0 && accountName != "." {
+		accountFilter = fmt.Sprintf("WHERE a.id IN (%s)", inClause)
 	}
 
 	query = fmt.Sprintf(`

@@ -141,7 +141,7 @@ func jumpToAccounts(workingLedger ledger.Ledger, table *tview.Table) {
 	match := re.FindStringSubmatch(accountName)
 	if len(match) >= 2 {
 		accounts, _ := ledger.FetchAccounts(workingLedger.Name, "", true)
-		if ledger.IsPlaceholderAccount(accounts, match[1]) {
+		if ledger.IsPlaceholderAccount(match[1], accounts) {
 			return
 		}
 		if !pages.HasPage(workingLedger.Name + page2) {

@@ -295,6 +295,40 @@ func isPlaceHolderCategory(categoryID int, categories []*Category) bool {
 	return false
 }
 
+// GetChildCategoryIDs returns a slice of IDs of all the child categories for the given category
+func GetChildCategoryIDs(categoryID int, categories []*Category) []int {
+	var cids []int
+	for _, category := range categories {
+		if category.ID == categoryID {
+			if category.Children != nil {
+				childIDs := getChildCategoryIDsHelper(category.Children)
+				cids = append(cids, childIDs...)
+			}
+			break
+		}
+		if category.Children != nil {
+			childIDs := GetChildCategoryIDs(categoryID, category.Children)
+			cids = append(cids, childIDs...)
+		}
+	}
+	return cids
+}
+
+// getChildCategoryIDsHelper recurses through all child categories of a given category
+// and returns a slice of all IDs
+func getChildCategoryIDsHelper(categories []*Category) []int {
+	var cids []int
+	for _, category := range categories {
+		if category.Placeholder == 1 {
+			childIDs := getChildCategoryIDsHelper(category.Children)
+			cids = append(cids, childIDs...)
+		} else {
+			cids = append(cids, category.ID)
+		}
+	}
+	return cids
+}
+
 // FetchCategoryStatsData returns a slice of StatsData struct for the given period
 // for the given category for the given count.
 //
@@ -450,40 +484,6 @@ func FetchCategoryStatsData(ledgerName string, category string, period string, c
 	}
 
 	return statsData, nil
-}
-
-// GetChildCategoryIDs returns a slice of IDs of all the child categories for the given category
-func GetChildCategoryIDs(categoryID int, categories []*Category) []int {
-	var cids []int
-	for _, category := range categories {
-		if category.ID == categoryID {
-			if category.Children != nil {
-				childIDs := getChildCategoryIDsHelper(category.Children)
-				cids = append(cids, childIDs...)
-			}
-			break
-		}
-		if category.Children != nil {
-			childIDs := GetChildCategoryIDs(categoryID, category.Children)
-			cids = append(cids, childIDs...)
-		}
-	}
-	return cids
-}
-
-// getChildCategoryIDsHelper recurses through all child categories of a given category
-// and returns a slice of all IDs
-func getChildCategoryIDsHelper(categories []*Category) []int {
-	var cids []int
-	for _, category := range categories {
-		if category.Placeholder == 1 {
-			childIDs := getChildCategoryIDsHelper(category.Children)
-			cids = append(cids, childIDs...)
-		} else {
-			cids = append(cids, category.ID)
-		}
-	}
-	return cids
 }
 
 // FetchIncomeExpenseStatsData returns a slice of StatsData of either income or expense  for the given period
