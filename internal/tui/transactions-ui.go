@@ -16,9 +16,10 @@ var (
 )
 
 const (
-	page1 = "accBalancePage"
-	page2 = "transByAccountPage"
-	page3 = "transByCategoryPage"
+	page1      = "accBalancePage"
+	page2      = "transByAccountPage"
+	page3      = "transByCategoryPage"
+	searchPage = "search"
 )
 
 // TransactionsUI is the entrypoint for the tview application

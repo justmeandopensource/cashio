@@ -222,6 +222,84 @@ func GetTransactionsForAccount(ledgerName string, accountName string, limit int)
 	return transactions, nil
 }
 
+// GetTransactionsForKeywords fetches transactions matching the keywords
+// and returns them as a slice of Transaction struct
+func GetTransactionsForKeywords(ledgerName string, keywords string) ([]Transaction, error) {
+
+	dbPath := common.GetCashioDBPath()
+
+	db, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	keywords = strings.ReplaceAll(keywords, " ", "%")
+	keywords = "%" + keywords + "%"
+
+	var query string
+
+	query = fmt.Sprintf(`
+    SELECT u.id, u.date, u.notes, u.credit, u.debit, a.name AS account, u.name AS category
+    FROM (
+
+      SELECT t.id, t.date, t.notes, t.credit, t.debit, t.account_id, c.name
+      FROM %s_transactions t
+		  LEFT JOIN %s_categories c ON t.category_id = c.id
+      WHERE notes LIKE '%s'
+
+      UNION ALL
+
+      SELECT st.id, st.date, st.notes, st.credit, st.debit, st.account_id, c.name
+      FROM %s_split_transactions st
+		  LEFT JOIN %s_categories c ON st.category_id = c.id
+      WHERE notes LIKE '%s'
+
+    ) AS u
+		LEFT JOIN %s_accounts a ON u.account_id = a.id
+    ORDER BY date DESC
+    LIMIT 100;
+	`, ledgerName, ledgerName, keywords, ledgerName, ledgerName, keywords, ledgerName)
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var transactions []Transaction
+
+	for rows.Next() {
+
+		var transaction Transaction
+		var categoryName sql.NullString
+
+		err := rows.Scan(
+			&transaction.ID,
+			&transaction.Date,
+			&transaction.Notes,
+			&transaction.Credit,
+			&transaction.Debit,
+			&transaction.Account,
+			&categoryName,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if categoryName.Valid {
+			transaction.Category = &categoryName.String
+		}
+		transactions = append(transactions, transaction)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return transactions, nil
+}
+
 // GetSplitsForTransaction fetches all split transactions for a given transaction id and returns
 // them as a slice of SplitTransaction
 func GetSplitsForTransaction(ledgerName string, transactionID int) ([]SplitTransaction, error) {

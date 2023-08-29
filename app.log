@@ -1,0 +1,162 @@
+2023/08/29 11:23:45 
+    SELECT u.id, u.date, u.notes, u.credit, u.debit, a.name AS account, u.name AS category
+    FROM (
+
+      SELECT t.id, t.date, t.notes, t.credit, t.debit, t.account_id, c.name
+      FROM uk_transactions t
+      WHERE notes LIKE %sheel%
+
+      UNION ALL
+
+      SELECT st.id, st.date, st.notes, st.credit, st.debit, st.account_id, c.name
+      FROM uk_split_transactions st
+      WHERE notes LIKE %sheel%
+
+    ) AS u
+		LEFT JOIN uk_accounts a ON u.account_id = a.id
+    ORDER BY date DESC
+    LIMIT 100;
+	
+2023/08/29 11:24:14 
+    SELECT u.id, u.date, u.notes, u.credit, u.debit, a.name AS account, u.name AS category
+    FROM (
+
+      SELECT t.id, t.date, t.notes, t.credit, t.debit, t.account_id, c.name
+      FROM uk_transactions t
+      WHERE notes LIKE %nisha%tops%
+
+      UNION ALL
+
+      SELECT st.id, st.date, st.notes, st.credit, st.debit, st.account_id, c.name
+      FROM uk_split_transactions st
+      WHERE notes LIKE %nisha%tops%
+
+    ) AS u
+		LEFT JOIN uk_accounts a ON u.account_id = a.id
+    ORDER BY date DESC
+    LIMIT 100;
+	
+2023/08/29 11:25:20 
+    SELECT u.id, u.date, u.notes, u.credit, u.debit, a.name AS account, u.name AS category
+    FROM (
+
+      SELECT t.id, t.date, t.notes, t.credit, t.debit, t.account_id, c.name
+      FROM uk_transactions t
+      WHERE notes LIKE '%nisha%tops%'
+
+      UNION ALL
+
+      SELECT st.id, st.date, st.notes, st.credit, st.debit, st.account_id, c.name
+      FROM uk_split_transactions st
+      WHERE notes LIKE '%nisha%tops%'
+
+    ) AS u
+		LEFT JOIN uk_accounts a ON u.account_id = a.id
+    ORDER BY date DESC
+    LIMIT 100;
+	
+2023/08/29 11:30:51 
+    SELECT u.id, u.date, u.notes, u.credit, u.debit, a.name AS account, u.name AS category
+    FROM (
+
+      SELECT t.id, t.date, t.notes, t.credit, t.debit, t.account_id, c.name
+      FROM uk_transactions t
+		  LEFT JOIN uk_categories c ON t.category_id = c.id
+      WHERE notes LIKE '%nisha%tops%'
+
+      UNION ALL
+
+      SELECT st.id, st.date, st.notes, st.credit, st.debit, st.account_id, c.name
+      FROM uk_split_transactions st
+		  LEFT JOIN uk_categories c ON st.category_id = c.id
+      WHERE notes LIKE '%nisha%tops%'
+
+    ) AS u
+		LEFT JOIN uk_accounts a ON u.account_id = a.id
+    ORDER BY date DESC
+    LIMIT 100;
+	
+2023/08/29 11:31:10 
+    SELECT u.id, u.date, u.notes, u.credit, u.debit, a.name AS account, u.name AS category
+    FROM (
+
+      SELECT t.id, t.date, t.notes, t.credit, t.debit, t.account_id, c.name
+      FROM uk_transactions t
+		  LEFT JOIN uk_categories c ON t.category_id = c.id
+      WHERE notes LIKE '%mot%'
+
+      UNION ALL
+
+      SELECT st.id, st.date, st.notes, st.credit, st.debit, st.account_id, c.name
+      FROM uk_split_transactions st
+		  LEFT JOIN uk_categories c ON st.category_id = c.id
+      WHERE notes LIKE '%mot%'
+
+    ) AS u
+		LEFT JOIN uk_accounts a ON u.account_id = a.id
+    ORDER BY date DESC
+    LIMIT 100;
+	
+2023/08/29 11:31:17 
+    SELECT u.id, u.date, u.notes, u.credit, u.debit, a.name AS account, u.name AS category
+    FROM (
+
+      SELECT t.id, t.date, t.notes, t.credit, t.debit, t.account_id, c.name
+      FROM uk_transactions t
+		  LEFT JOIN uk_categories c ON t.category_id = c.id
+      WHERE notes LIKE '%service%'
+
+      UNION ALL
+
+      SELECT st.id, st.date, st.notes, st.credit, st.debit, st.account_id, c.name
+      FROM uk_split_transactions st
+		  LEFT JOIN uk_categories c ON st.category_id = c.id
+      WHERE notes LIKE '%service%'
+
+    ) AS u
+		LEFT JOIN uk_accounts a ON u.account_id = a.id
+    ORDER BY date DESC
+    LIMIT 100;
+	
+2023/08/29 11:31:24 
+    SELECT u.id, u.date, u.notes, u.credit, u.debit, a.name AS account, u.name AS category
+    FROM (
+
+      SELECT t.id, t.date, t.notes, t.credit, t.debit, t.account_id, c.name
+      FROM uk_transactions t
+		  LEFT JOIN uk_categories c ON t.category_id = c.id
+      WHERE notes LIKE '%apple%'
+
+      UNION ALL
+
+      SELECT st.id, st.date, st.notes, st.credit, st.debit, st.account_id, c.name
+      FROM uk_split_transactions st
+		  LEFT JOIN uk_categories c ON st.category_id = c.id
+      WHERE notes LIKE '%apple%'
+
+    ) AS u
+		LEFT JOIN uk_accounts a ON u.account_id = a.id
+    ORDER BY date DESC
+    LIMIT 100;
+	
+2023/08/29 11:31:35 
+    SELECT u.id, u.date, u.notes, u.credit, u.debit, a.name AS account, u.name AS category
+    FROM (
+
+      SELECT t.id, t.date, t.notes, t.credit, t.debit, t.account_id, c.name
+      FROM uk_transactions t
+		  LEFT JOIN uk_categories c ON t.category_id = c.id
+      WHERE notes LIKE '%split%'
+
+      UNION ALL
+
+      SELECT st.id, st.date, st.notes, st.credit, st.debit, st.account_id, c.name
+      FROM uk_split_transactions st
+		  LEFT JOIN uk_categories c ON st.category_id = c.id
+      WHERE notes LIKE '%split%'
+
+    ) AS u
+		LEFT JOIN uk_accounts a ON u.account_id = a.id
+    ORDER BY date DESC
+    LIMIT 100;
+	
