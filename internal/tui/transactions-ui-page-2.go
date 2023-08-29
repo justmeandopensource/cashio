@@ -100,6 +100,10 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 					widgetFocus = app.GetFocus()
 					showSplitsForTransaction(workingLedger, transactionID)
 				}
+			case 's':
+				widgetFocus = app.GetFocus()
+				page2TransTable.SetBorderColor(tcell.ColorWhite)
+				showSearchPage(page2TransTable)
 			}
 		}
 		return event
