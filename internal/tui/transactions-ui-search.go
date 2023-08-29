@@ -1,11 +1,17 @@
 package tui
 
 import (
+	"strings"
+
 	"github.com/gdamore/tcell/v2"
+	"github.com/justmeandopensource/cashio/internal/ledger"
 	"github.com/rivo/tview"
 )
 
-func showSearchPage(sourceTable *tview.Table) {
+func showSearchPage(sourceTable *tview.Table, workingLedger ledger.Ledger) {
+
+	sourceTable.SetBorderColor(tcell.ColorWhite)
+
 	inputField := tview.NewInputField()
 	inputField.SetFieldWidth(56)
 	inputField.SetBackgroundColor(tcell.Color235)
@@ -18,9 +24,16 @@ func showSearchPage(sourceTable *tview.Table) {
 
 	inputField.SetDoneFunc(func(key tcell.Key) {
 		if key == tcell.KeyEnter {
+			keywords := strings.TrimSpace(inputField.GetText())
+			if len(keywords) > 1 {
+				transactions, _ := ledger.GetTransactionsForKeywords(workingLedger.Name, keywords)
+				if len(transactions) > 0 {
+					populateTransactionsTable(sourceTable, transactions, workingLedger.Currency)
+				}
+			}
+			sourceTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 			pages.RemovePage(searchPage)
 			app.SetFocus(sourceTable)
-			sourceTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 		}
 	})
 

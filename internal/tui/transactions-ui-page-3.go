@@ -96,9 +96,7 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 				categoriesTree.SetBorderColor(tview.Styles.SecondaryTextColor)
 				transactionsTable.SetBorderColor(tcell.ColorWhite)
 			case 's':
-				widgetFocus = app.GetFocus()
-				transactionsTable.SetBorderColor(tcell.ColorWhite)
-				showSearchPage(transactionsTable)
+				showSearchPage(transactionsTable, workingLedger)
 			}
 		}
 		return event

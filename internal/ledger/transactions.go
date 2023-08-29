@@ -245,17 +245,21 @@ func GetTransactionsForKeywords(ledgerName string, keywords string) ([]Transacti
 
       SELECT t.id, t.date, t.notes, t.credit, t.debit, t.account_id, c.name
       FROM %s_transactions t
+		  LEFT JOIN %s_categories c ON t.category_id = c.id
+      WHERE notes LIKE '%s'
 
       UNION ALL
 
       SELECT st.id, st.date, st.notes, st.credit, st.debit, st.account_id, c.name
       FROM %s_split_transactions st
+		  LEFT JOIN %s_categories c ON st.category_id = c.id
+      WHERE notes LIKE '%s'
 
     ) AS u
 		LEFT JOIN %s_accounts a ON u.account_id = a.id
     ORDER BY date DESC
     LIMIT 100;
-	`, ledgerName, ledgerName, ledgerName)
+	`, ledgerName, ledgerName, keywords, ledgerName, ledgerName, keywords, ledgerName)
 
 	rows, err := db.Query(query)
 	if err != nil {
