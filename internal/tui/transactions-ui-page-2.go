@@ -62,7 +62,14 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 				}
 				if currentNode != nil {
 					page2TransTable.Clear()
-					updateTable(page2TransTable, workingLedger, currentNode.GetText(), "")
+					accountName := currentNode.GetText()
+					transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, accountName, 50)
+					populateTransactionsTable(page2TransTable, transactions, workingLedger.Currency)
+					if accountName == "." {
+						page2TransTable.SetTitle("[ All Transactions ]")
+					} else {
+						page2TransTable.SetTitle("[ " + accountName + " ]")
+					}
 					if page2TransTable.GetRowCount() < 2 {
 						return event
 					}
@@ -84,7 +91,9 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 
 	// transaction table
 	page2TransTable = tview.NewTable()
-	updateTable(page2TransTable, workingLedger, ".", "")
+	transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, ".", 50)
+	populateTransactionsTable(page2TransTable, transactions, workingLedger.Currency)
+	page2TransTable.SetTitle("[ All Transactions ]")
 
 	page2TransTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyRune {

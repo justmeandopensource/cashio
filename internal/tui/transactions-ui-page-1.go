@@ -149,7 +149,9 @@ func jumpToAccounts(workingLedger ledger.Ledger, table *tview.Table) {
 		}
 		page2TransTable.Clear()
 		page2TransTable.ScrollToBeginning()
-		updateTable(page2TransTable, workingLedger, match[1], "")
+		transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, match[1], 50)
+		populateTransactionsTable(page2TransTable, transactions, workingLedger.Currency)
+		page2TransTable.SetTitle("[ " + match[1] + " ]")
 		pages.SwitchToPage(workingLedger.Name + page2)
 		app.SetFocus(page2TransTable)
 		page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
