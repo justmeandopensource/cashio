@@ -49,9 +49,6 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 					currentNode.SetExpanded(false)
 				}
 			case 'l':
-				if currentNode.GetText() == "." {
-					return event
-				}
 				if currentNode.GetChildren() != nil {
 					if !currentNode.IsExpanded() {
 						currentNode.SetExpanded(true)
@@ -60,7 +57,14 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 				}
 				if currentNode != nil {
 					transactionsTable.Clear()
-					updateTable(transactionsTable, workingLedger, "", currentNode.GetText())
+					categoryName := currentNode.GetText()
+					transactions, _ := ledger.GetTransactionsForCategory(workingLedger.Name, categoryName, 50)
+					populateTransactionsTable(transactionsTable, transactions, workingLedger.Currency)
+					if categoryName == "." {
+						transactionsTable.SetTitle("[ All Transactions ]")
+					} else {
+						transactionsTable.SetTitle("[ " + categoryName + " ]")
+					}
 					if transactionsTable.GetRowCount() < 2 {
 						return event
 					}
@@ -86,7 +90,9 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 
 	// transaction table
 	transactionsTable = tview.NewTable()
-	updateTable(transactionsTable, workingLedger, "No Category Selected", "")
+	transactions, _ := ledger.GetTransactionsForCategory(workingLedger.Name, ".", 50)
+	populateTransactionsTable(transactionsTable, transactions, workingLedger.Currency)
+	transactionsTable.SetTitle("[ All Transactions ]")
 
 	transactionsTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyRune {
