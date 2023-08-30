@@ -2,7 +2,6 @@ package ledger
 
 import (
 	"bufio"
-	"database/sql"
 	"fmt"
 	"os"
 	"strconv"
@@ -31,14 +30,6 @@ type Account struct {
 // If accountType is set to either asset or liability, only those records are fetched.
 func FetchAccounts(ledger string, accountType string, placeholder bool) ([]*Account, error) {
 
-	dbPath := common.GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
 	var queryFilter string
 
 	switch accountType {
@@ -61,7 +52,7 @@ func FetchAccounts(ledger string, accountType string, placeholder bool) ([]*Acco
     ORDER BY type, parent_id;
     `, ledger, queryFilter)
 
-	rows, err := db.Query(query)
+	rows, err := common.DbConn.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -103,15 +94,7 @@ func FetchAccounts(ledger string, accountType string, placeholder bool) ([]*Acco
 // AddAccount adds the given account to the database
 func AddAccount(ledger string, account Account) error {
 
-	dbPath := common.GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	stmt, err := db.Prepare(fmt.Sprintf(`
+	stmt, err := common.DbConn.Prepare(fmt.Sprintf(`
     INSERT INTO %s_accounts (name, type, placeholder, opening_balance, parent_id)
     VALUES (?, ?, ?, ?, ?)
     `, ledger))
@@ -336,14 +319,6 @@ func getChildAccountIDsHelper(accounts []*Account) []int {
 // getAccountBalance returns balance for the given account for the given ledger
 func getAccountBalance(ledgerName string, accountID int) (float64, error) {
 
-	dbPath := common.GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return 0.00, err
-	}
-	defer db.Close()
-
 	var balance float64
 
 	query := fmt.Sprintf(`
@@ -352,7 +327,7 @@ func getAccountBalance(ledgerName string, accountID int) (float64, error) {
 		WHERE id = ?
   `, ledgerName)
 
-	err = db.QueryRow(query, accountID).Scan(&balance)
+	err := common.DbConn.QueryRow(query, accountID).Scan(&balance)
 	if err != nil {
 		return 0, err
 	}

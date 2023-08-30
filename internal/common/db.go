@@ -6,16 +6,20 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// InitializeCashio creates ledgers table in the cashio sqlite database
-func InitializeCashio() error {
+var DbConn *sql.DB
 
+func InitializeDBConnection() error {
 	dbPath := GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
+	var err error
+	DbConn, err = sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	return nil
+}
+
+// InitializeCashio creates ledgers table in the cashio sqlite database
+func InitializeCashio() error {
 
 	// table : ledgers
 	createTableQuery := `
@@ -24,7 +28,7 @@ func InitializeCashio() error {
       currency TEXT NOT NULL
 		)
 	`
-	_, err = db.Exec(createTableQuery)
+	_, err := DbConn.Exec(createTableQuery)
 	if err != nil {
 		return err
 	}
@@ -43,15 +47,7 @@ func InitializeCashio() error {
 //   - uk_split_transactions
 func CreateLedgerTables(name string, currency string) error {
 
-	dbPath := GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	insertStmt, err := db.Prepare("INSERT INTO ledgers(name, currency) VALUES(?, ?)")
+	insertStmt, err := DbConn.Prepare("INSERT INTO ledgers(name, currency) VALUES(?, ?)")
 	if err != nil {
 		return err
 	}
@@ -73,7 +69,7 @@ func CreateLedgerTables(name string, currency string) error {
 			CONSTRAINT unique_name_parent_id UNIQUE (name, parent_id)
 		)
 	`, name)
-	_, err = db.Exec(createTableQuery)
+	_, err = DbConn.Exec(createTableQuery)
 	if err != nil {
 		return err
 	}
@@ -91,7 +87,7 @@ func CreateLedgerTables(name string, currency string) error {
 			CONSTRAINT unique_name_parent_id UNIQUE (name, parent_id)
 		)
 	`, name)
-	_, err = db.Exec(createTableQuery)
+	_, err = DbConn.Exec(createTableQuery)
 	if err != nil {
 		return err
 	}
@@ -111,7 +107,7 @@ func CreateLedgerTables(name string, currency string) error {
       FOREIGN KEY (category_id) REFERENCES categories(id)
 		)
 	`, name)
-	_, err = db.Exec(createTableQuery)
+	_, err = DbConn.Exec(createTableQuery)
 	if err != nil {
 		return err
 	}
@@ -132,7 +128,7 @@ func CreateLedgerTables(name string, currency string) error {
       FOREIGN KEY (category_id) REFERENCES categories(id)
 		)
 	`, name)
-	_, err = db.Exec(createTableQuery)
+	_, err = DbConn.Exec(createTableQuery)
 	if err != nil {
 		return err
 	}

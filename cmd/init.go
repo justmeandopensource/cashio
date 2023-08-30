@@ -19,7 +19,7 @@ var initCmd = &cobra.Command{
 func initCmdStart(_ *cobra.Command, _ []string) {
 
 	if len(viper.GetString("db_filename")) == 0 {
-		fmt.Fprintln(os.Stderr, common.ColorizeRed("[E] invalid data_directory in configuration"))
+		fmt.Fprintln(os.Stderr, common.ColorizeRed("[E] invalid db_filename in configuration"))
 		os.Exit(1)
 	}
 
