@@ -156,6 +156,9 @@ func GetDateFromUser() time.Time {
 	if strings.Contains(input, "-") {
 		parsedDate, _ = time.Parse("2006-01-02", input)
 	} else {
+		if len(input) == 1 {
+			input = "0" + input
+		}
 		currentDate := time.Now()
 		fullDateInput := fmt.Sprintf("%d-%02d-%s", currentDate.Year(), currentDate.Month(), input)
 		parsedDate, _ = time.Parse("2006-01-02", fullDateInput)
