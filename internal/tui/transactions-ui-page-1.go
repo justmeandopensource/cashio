@@ -43,6 +43,9 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
 			case 'l':
+				if len(liabilityAccounts) == 0 {
+					return event
+				}
 				app.SetFocus(liabilitiesTable)
 				assetsTable.SetBorderColor(tcell.ColorWhite)
 				liabilitiesTable.SetBorderColor(tview.Styles.SecondaryTextColor)
@@ -75,6 +78,9 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
 			case 'h':
+				if len(assetAccounts) == 0 {
+					return event
+				}
 				app.SetFocus(assetsTable)
 				liabilitiesTable.SetBorderColor(tcell.ColorWhite)
 				assetsTable.SetBorderColor(tview.Styles.SecondaryTextColor)
