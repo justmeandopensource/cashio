@@ -2,7 +2,6 @@ package ledger
 
 import (
 	"bufio"
-	"database/sql"
 	"fmt"
 	"os"
 	"strings"
@@ -24,17 +23,9 @@ type StatsData struct {
 
 func FetchLedgers() ([]*Ledger, error) {
 
-	dbPath := common.GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
 	query := "SELECT name, currency FROM ledgers"
 
-	rows, err := db.Query(query)
+	rows, err := common.DbConn.Query(query)
 	if err != nil {
 		return nil, err
 	}

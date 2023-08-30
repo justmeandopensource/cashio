@@ -56,14 +56,6 @@ func GetTransactionsForCategory(ledgerName string, category string, limit int) (
 
 	categoryID := getCategoryID(category, categories)
 
-	dbPath := common.GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
 	var query, inClause string
 	var categoryFilter = ""
 
@@ -105,7 +97,7 @@ func GetTransactionsForCategory(ledgerName string, category string, limit int) (
     LIMIT %d;
 	`, ledgerName, ledgerName, categoryFilter, ledgerName, ledgerName, categoryFilter, ledgerName, limit)
 
-	rows, err := db.Query(query)
+	rows, err := common.DbConn.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -151,14 +143,6 @@ func GetTransactionsForAccount(ledgerName string, accountName string, limit int)
 
 	accountID := getAccountID(accountName, accounts)
 
-	dbPath := common.GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
 	var query, inClause string
 	var accountFilter = ""
 
@@ -188,7 +172,7 @@ func GetTransactionsForAccount(ledgerName string, accountName string, limit int)
     LIMIT %d;
 	`, ledgerName, ledgerName, ledgerName, accountFilter, limit)
 
-	rows, err := db.Query(query)
+	rows, err := common.DbConn.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -231,14 +215,6 @@ func GetTransactionsForAccount(ledgerName string, accountName string, limit int)
 // and returns them as a slice of Transaction struct
 func GetTransactionsForKeywords(ledgerName string, keywords string) ([]Transaction, error) {
 
-	dbPath := common.GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
 	keywords = strings.ReplaceAll(keywords, " ", "%")
 	keywords = "%" + keywords + "%"
 
@@ -266,7 +242,7 @@ func GetTransactionsForKeywords(ledgerName string, keywords string) ([]Transacti
     LIMIT 100;
 	`, ledgerName, ledgerName, keywords, ledgerName, ledgerName, keywords, ledgerName)
 
-	rows, err := db.Query(query)
+	rows, err := common.DbConn.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -309,14 +285,6 @@ func GetTransactionsForKeywords(ledgerName string, keywords string) ([]Transacti
 // them as a slice of SplitTransaction
 func GetSplitsForTransaction(ledgerName string, transactionID int) ([]SplitTransaction, error) {
 
-	dbPath := common.GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
 	var query string
 
 	query = fmt.Sprintf(`
@@ -327,7 +295,7 @@ func GetSplitsForTransaction(ledgerName string, transactionID int) ([]SplitTrans
     WHERE t.parent_transaction_id = %d;
 	`, ledgerName, ledgerName, ledgerName, transactionID)
 
-	rows, err := db.Query(query)
+	rows, err := common.DbConn.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -480,15 +448,7 @@ func PromptForNewTransaction(ledgerName string, transactionType string) Transact
 // AddTransaction adds a transaction to the database
 func AddTransaction(ledgerName string, transaction Transaction) error {
 
-	dbPath := common.GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	tx, err := db.Begin()
+	tx, err := common.DbConn.Begin()
 	if err != nil {
 		return err
 	}
@@ -752,15 +712,7 @@ func PromptForNewTransfer(ledgerName string) (string, []Transaction) {
 // TransferFunds adds transfer transactions contained in a slice of Transaction struct to database
 func TransferFunds(fromLedger string, toLedger string, transactions []Transaction) error {
 
-	dbPath := common.GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	tx, err := db.Begin()
+	tx, err := common.DbConn.Begin()
 	if err != nil {
 		return err
 	}

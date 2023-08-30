@@ -2,7 +2,6 @@ package ledger
 
 import (
 	"bufio"
-	"database/sql"
 	"fmt"
 	"os"
 	"strconv"
@@ -29,14 +28,6 @@ type Category struct {
 // If categoryType is set to either income or expense, only those records are fetched.
 func FetchCategories(ledger string, categoryType string, placeholder bool) ([]*Category, error) {
 
-	dbPath := common.GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
 	var queryFilter string
 
 	switch categoryType {
@@ -59,7 +50,7 @@ func FetchCategories(ledger string, categoryType string, placeholder bool) ([]*C
     ORDER BY parent_id
     `, ledger, queryFilter)
 
-	rows, err := db.Query(query)
+	rows, err := common.DbConn.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -99,15 +90,7 @@ func FetchCategories(ledger string, categoryType string, placeholder bool) ([]*C
 // AddCategory adds the given category to the database
 func AddCategory(ledger string, category Category) error {
 
-	dbPath := common.GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	stmt, err := db.Prepare(fmt.Sprintf(
+	stmt, err := common.DbConn.Prepare(fmt.Sprintf(
 		`INSERT INTO %s_categories (name, type, placeholder, parent_id)
     VALUES (?, ?, ?, ?)
     `, ledger))
@@ -351,14 +334,6 @@ func FetchCategoryStatsData(ledgerName string, category string, period string, c
 		debitOrCredit = "debit"
 	}
 
-	dbPath := common.GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
 	var query, inClause string
 
 	if isPlaceHolderCategory(categoryID, categories) {
@@ -463,7 +438,7 @@ func FetchCategoryStatsData(ledgerName string, category string, period string, c
 		)
 	}
 
-	rows, err := db.Query(query)
+	rows, err := common.DbConn.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -497,14 +472,6 @@ func FetchIncomeExpenseStatsData(ledgerName string, incomeOrExpense string, peri
 	case "expense":
 		debitOrCredit = "debit"
 	}
-
-	dbPath := common.GetCashioDBPath()
-
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
 
 	var query string
 
@@ -564,7 +531,7 @@ func FetchIncomeExpenseStatsData(ledgerName string, incomeOrExpense string, peri
 		)
 	}
 
-	rows, err := db.Query(query)
+	rows, err := common.DbConn.Query(query)
 	if err != nil {
 		return nil, err
 	}
