@@ -159,12 +159,16 @@ func jumpToAccounts(workingLedger ledger.Ledger, table *tview.Table) {
 		populateTransactionsTable(page2TransTable, transactions, workingLedger.Currency)
 		page2TransTable.SetTitle("[ " + match[1] + " ]")
 		pages.SwitchToPage(workingLedger.Name + page2)
-		app.SetFocus(page2TransTable)
-		page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 		accountNode := findNodeByText(page2AccTree.GetRoot(), match[1])
 		expandParentNodes(accountNode)
 		page2AccTree.SetCurrentNode(accountNode)
-		page2AccTree.SetBorderColor(tcell.ColorWhite)
+		if len(transactions) == 0 {
+			app.SetFocus(page2AccTree)
+		} else {
+			page2AccTree.SetBorderColor(tcell.ColorWhite)
+			page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+			app.SetFocus(page2TransTable)
+		}
 	}
 }
 

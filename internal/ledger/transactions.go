@@ -56,6 +56,8 @@ func GetTransaction(ledgerName string, transactionID int) (Transaction, error) {
 
 	row := common.DbConn.QueryRow(query)
 
+	var categoryID sql.NullInt16
+
 	err := row.Scan(
 		&transaction.ID,
 		&transaction.Date,
@@ -63,10 +65,14 @@ func GetTransaction(ledgerName string, transactionID int) (Transaction, error) {
 		&transaction.Credit,
 		&transaction.Debit,
 		&transaction.AccountID,
-		&transaction.CategoryID,
+		&categoryID,
 	)
 	if err != nil {
 		return transaction, err
+	}
+
+	if categoryID.Valid {
+		transaction.CategoryID = int(categoryID.Int16)
 	}
 
 	return transaction, nil
@@ -567,6 +573,14 @@ func DeleteTransaction(ledgerName string, transactionID int) error {
 
 	query := fmt.Sprintf(
 		`DELETE FROM %s_transactions WHERE id = %d
+    `, ledgerName, transactionID)
+
+	if _, err = tx.Exec(query); err != nil {
+		return err
+	}
+
+	query = fmt.Sprintf(
+		`DELETE FROM %s_split_transactions WHERE parent_transaction_id = %d
     `, ledgerName, transactionID)
 
 	if _, err = tx.Exec(query); err != nil {

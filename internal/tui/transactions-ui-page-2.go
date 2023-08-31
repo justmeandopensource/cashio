@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -19,6 +20,7 @@ var (
 )
 
 var page2AccTreeMap = map[*tview.TreeNode]*tview.TreeNode{}
+var confirmed = false
 
 // setupTransByAccPage sets up tview page that displays transactions list by accounts
 func setupTransByAccPage(workingLedger ledger.Ledger) {
@@ -110,29 +112,15 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 				row, _ := page2TransTable.GetSelection()
 				if strings.Contains(page2TransTable.GetCell(row, 5).Text, "<split>") {
 					transactionID, _ := strconv.Atoi(strings.TrimSpace(page2TransTable.GetCell(row, 0).Text))
-					widgetFocus = app.GetFocus()
+					page2TransTable.SetBorderColor(tcell.ColorWhite)
 					showSplitsForTransaction(workingLedger, transactionID)
 				}
 			case 'd':
 				row, _ := page2TransTable.GetSelection()
-				notes := page2TransTable.GetCell(row, 5).Text
-				if strings.Contains(notes, "<split>") || strings.Contains(notes, "<trans>") {
-					//TODO display an info popup stating that this type of transaction can not be deleted
-					app.Stop()
-				}
 				id := page2TransTable.GetCell(row, 0).Text
 				transID, _ := strconv.Atoi(strings.TrimSpace(id))
-				if ledger.DeleteTransaction(workingLedger.Name, transID) != nil {
-					//TODO display an error popup
-					app.Stop()
-				} else {
-					page2TransTable.Clear()
-					accountName := page2AccTree.GetCurrentNode().GetText()
-					transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, accountName, 50)
-					populateTransactionsTable(page2TransTable, transactions, workingLedger.Currency)
-					page2TransTable.ScrollToBeginning()
-					page2TransTable.Select(1, 0)
-				}
+				page2TransTable.SetBorderColor(tcell.ColorWhite)
+				showDeleteConfirmationModal(workingLedger, transID)
 			case 's':
 				page2TransTable.SetBorderColor(tcell.ColorWhite)
 				showSearchPage(page2TransTable, workingLedger)
@@ -174,6 +162,7 @@ func showSplitsForTransaction(workingLedger ledger.Ledger, transactionID int) {
 	table.SetSelectable(true, false)
 	table.SetBorder(true)
 	table.SetBackgroundColor(tcell.Color235)
+	table.SetBorderColor(tview.Styles.SecondaryTextColor)
 	table.SetSelectedStyle(tcell.StyleDefault.Background(tcell.Color238).Bold(true))
 
 	colNames := []string{
@@ -221,8 +210,8 @@ func showSplitsForTransaction(workingLedger ledger.Ledger, transactionID int) {
 			switch event.Rune() {
 			case 'h':
 				pages.RemovePage("splits")
-				pages.SwitchToPage(workingLedger.Name + page2)
-				app.SetFocus(widgetFocus)
+				page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+				app.SetFocus(page2TransTable)
 			}
 		}
 		return event
@@ -238,4 +227,38 @@ func showSplitsForTransaction(workingLedger ledger.Ledger, transactionID int) {
 	flex.AddItem(grid, 0, 5, true)
 
 	pages.AddPage("splits", flex, true, true)
+}
+
+// showDeleteConfirmationModal shows a confiramtion modal before deleting a transaction
+func showDeleteConfirmationModal(workingLedger ledger.Ledger, transactionID int) {
+
+	modal := tview.NewModal()
+	modal.SetText("Delete the transaction?")
+	modal.AddButtons([]string{"Yes", "No"})
+	modal.SetBackgroundColor(tcell.Color235)
+
+	modal.SetDoneFunc(func(_ int, buttonLabel string) {
+		if buttonLabel == "Yes" {
+			if err := ledger.DeleteTransaction(workingLedger.Name, transactionID); err != nil {
+				app.Stop()
+				fmt.Fprintf(os.Stderr, common.ColorizeRed(fmt.Sprintf("[E] %v", err)))
+			} else {
+				accountName := page2AccTree.GetCurrentNode().GetText()
+				transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, accountName, 50)
+				page2TransTable.Clear()
+				populateTransactionsTable(page2TransTable, transactions, workingLedger.Currency)
+				page2TransTable.ScrollToBeginning()
+				page2TransTable.Select(1, 0)
+			}
+		}
+		pages.RemovePage("modal")
+		page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+		app.SetFocus(page2TransTable)
+	})
+
+	flex := tview.NewFlex()
+	flex.AddItem(nil, 0, 1, true)
+	flex.AddItem(modal, 0, 5, true)
+
+	pages.AddPage("modal", flex, true, true)
 }
