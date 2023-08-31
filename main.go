@@ -7,7 +7,7 @@ import (
 
 func main() {
 
-	setCashioVersion()
+	// setCashioVersion()
 
 	common.InitializeDBConnection()
 	defer common.DbConn.Close()
