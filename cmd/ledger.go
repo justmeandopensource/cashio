@@ -53,12 +53,6 @@ var transferFundsCmd = &cobra.Command{
 	Run:   transferFundsCmdStart,
 }
 
-var categoryStatsUICmd = &cobra.Command{
-	Use:   "category-stats-ui",
-	Short: "category statistics shown in charts",
-	Run:   categoryStatsUICmdStart,
-}
-
 var transactionsUICmd = &cobra.Command{
 	Use:   "transactions-ui",
 	Short: "open ledger transactions ui",
@@ -148,12 +142,6 @@ func transferFundsCmdStart(_ *cobra.Command, _ []string) {
 	}
 }
 
-// categoryStatsUICmdStart is the entrypoint for "category-stats-ui" sub-command to cashio
-func categoryStatsUICmdStart(_ *cobra.Command, _ []string) {
-	checkEnv()
-	tui.CategoryStatsUI(ledgerName)
-}
-
 // transactionsUICmdStart is the entrypoint for "transactions-ui" sub-command to cashio
 func transactionsUICmdStart(_ *cobra.Command, _ []string) {
 	checkEnv()
@@ -183,6 +171,5 @@ func init() {
 	ledgerCmd.AddCommand(addExpenseCmd)
 	ledgerCmd.AddCommand(addIncomeCmd)
 	ledgerCmd.AddCommand(transferFundsCmd)
-	ledgerCmd.AddCommand(categoryStatsUICmd)
 	ledgerCmd.AddCommand(transactionsUICmd)
 }

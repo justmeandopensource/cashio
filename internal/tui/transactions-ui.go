@@ -47,18 +47,22 @@ func TransactionsUI(ledgerName string) {
 			case 'q':
 				app.Stop()
 			case '1':
-				pages.RemovePage(workingLedger.Name + page1)
+				pages.RemovePage(ledgerName + page1)
 				setupAccBalancePage(workingLedger)
 			case '2':
-				if !pages.HasPage(workingLedger.Name + page2) {
+				if !pages.HasPage(ledgerName + page2) {
 					setupTransByAccPage(workingLedger)
 				}
-				pages.SwitchToPage(workingLedger.Name + page2)
+				pages.SwitchToPage(ledgerName + page2)
 			case '3':
-				if !pages.HasPage(workingLedger.Name + page3) {
+				if !pages.HasPage(ledgerName + page3) {
 					setupTransByCatPage(workingLedger)
 				}
-				pages.SwitchToPage(workingLedger.Name + page3)
+				pages.SwitchToPage(ledgerName + page3)
+			case 'r':
+				app.Suspend(func() {
+					CategoryStatsUI(ledgerName)
+				})
 			}
 		}
 		return event
