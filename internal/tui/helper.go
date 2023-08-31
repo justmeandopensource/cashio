@@ -12,6 +12,7 @@ import (
 	"golang.org/x/text/message"
 )
 
+// populateTransactionsTable loads the transactions table with entries from transactionsList
 func populateTransactionsTable(transactionsTable *tview.Table, transactionsList []ledger.Transaction, currency string) {
 
 	transactionsTable.Clear()
@@ -66,5 +67,35 @@ func populateTransactionsTable(transactionsTable *tview.Table, transactionsList 
 		transactionsTable.SetCell(i+1, 4, tview.NewTableCell(common.PadLeft(debit, 1)).SetAlign(tview.AlignRight).SetTextColor(tcell.ColorRed).SetBackgroundColor(tcell.Color236))
 		transactionsTable.SetCell(i+1, 5, tview.NewTableCell(common.PadLeft(item.Notes, 1)).SetMaxWidth(30).SetExpansion(2).SetTextColor(defaultTextColor))
 		transactionsTable.SetCell(i+1, 6, tview.NewTableCell(common.PadLeft(item.Account, 1)).SetTextColor(defaultTextColor).SetBackgroundColor(tcell.Color236))
+	}
+}
+
+// findNodeByText returns the tree node that has the targetText
+func findNodeByText(root *tview.TreeNode, targetText string) *tview.TreeNode {
+
+	if root == nil {
+		return nil
+	}
+
+	if root.GetText() == targetText {
+		return root
+	}
+
+	for _, child := range root.GetChildren() {
+		if node := findNodeByText(child, targetText); node != nil {
+			return node
+		}
+	}
+
+	return nil
+}
+
+// expandParentNodes expands all the parent nodes recursively for the given tree node
+func expandParentNodes(node *tview.TreeNode) {
+	if node.GetText() == "." {
+		return
+	}
+	if parent, found := page2AccTreeMap[node]; found {
+		parent.SetExpanded(true)
 	}
 }

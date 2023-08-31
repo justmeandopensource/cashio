@@ -45,6 +45,33 @@ type Transaction struct {
 	Splits         []SplitTransaction
 }
 
+// GetTransaction returns a transaction matching given transaction id in a Transaction struct
+func GetTransaction(ledgerName string, transactionID int) (Transaction, error) {
+	var transaction Transaction
+	query := fmt.Sprintf(`
+		SELECT id, date, notes, credit, debit, account_id, category_id
+		FROM %s_transactions
+    WHERE id = %d;
+	`, ledgerName, transactionID)
+
+	row := common.DbConn.QueryRow(query)
+
+	err := row.Scan(
+		&transaction.ID,
+		&transaction.Date,
+		&transaction.Notes,
+		&transaction.Credit,
+		&transaction.Debit,
+		&transaction.AccountID,
+		&transaction.CategoryID,
+	)
+	if err != nil {
+		return transaction, err
+	}
+
+	return transaction, nil
+}
+
 // GetTransactionsForCategory fetches transactions for the given category from the database
 // and returns them as a slice of Transaction struct
 func GetTransactionsForCategory(ledgerName string, category string, limit int) ([]Transaction, error) {
@@ -509,7 +536,7 @@ func AddTransaction(ledgerName string, transaction Transaction) error {
 		amount = transaction.Debit
 		updateType = "debit"
 	}
-	if err := updateAccountBalance(tx, ledgerName, transaction.AccountID, amount, updateType); err != nil {
+	if updateAccountBalance(tx, ledgerName, transaction.AccountID, amount, updateType) != nil {
 		return err
 	}
 
@@ -520,6 +547,50 @@ func AddTransaction(ledgerName string, transaction Transaction) error {
 
 	accountBalance, _ := getAccountBalance(ledgerName, transaction.AccountID)
 	fmt.Println(fmt.Sprintf("account balance: %0.2f", accountBalance))
+
+	return nil
+}
+
+// DeleteTransaction deletes a transaction from the database and updates the account balance
+func DeleteTransaction(ledgerName string, transactionID int) error {
+
+	transaction, err := GetTransaction(ledgerName, transactionID)
+	if err != nil {
+		return err
+	}
+
+	tx, err := common.DbConn.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	query := fmt.Sprintf(
+		`DELETE FROM %s_transactions WHERE id = %d
+    `, ledgerName, transactionID)
+
+	if _, err = tx.Exec(query); err != nil {
+		return err
+	}
+
+	// update account balance
+	var amount float64
+	var updateType string
+	if transaction.Credit != 0.00 {
+		amount = transaction.Credit
+		updateType = "debit"
+	} else {
+		amount = transaction.Debit
+		updateType = "credit"
+	}
+	if updateAccountBalance(tx, ledgerName, transaction.AccountID, amount, updateType) != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -795,6 +866,10 @@ func TransferFunds(fromLedger string, toLedger string, transactions []Transactio
 	return nil
 }
 
+// updateAccountBalance updates the balance of the given account in the database.
+// updateType can be either credit or debit. If updateType is credit, then the amount is added
+// to the existing balance. If updateType is debit, then the amount is reduced from the
+// existing balance
 func updateAccountBalance(tx *sql.Tx, ledgerName string, accountID int, amount float64, updateType string) error {
 
 	if amount == 0.00 {

@@ -161,7 +161,9 @@ func jumpToAccounts(workingLedger ledger.Ledger, table *tview.Table) {
 		pages.SwitchToPage(workingLedger.Name + page2)
 		app.SetFocus(page2TransTable)
 		page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
-		page2AccTree.SetCurrentNode(page2AccTree.GetRoot())
+		accountNode := findNodeByText(page2AccTree.GetRoot(), match[1])
+		expandParentNodes(accountNode)
+		page2AccTree.SetCurrentNode(accountNode)
 		page2AccTree.SetBorderColor(tcell.ColorWhite)
 	}
 }

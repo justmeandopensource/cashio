@@ -18,6 +18,8 @@ var (
 	page2TransTable *tview.Table
 )
 
+var page2AccTreeMap = map[*tview.TreeNode]*tview.TreeNode{}
+
 // setupTransByAccPage sets up tview page that displays transactions list by accounts
 func setupTransByAccPage(workingLedger ledger.Ledger) {
 
@@ -41,6 +43,8 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 
 	page2AccTree.GetRoot().AddChild(assetsNode)
 	page2AccTree.GetRoot().AddChild(liabilitiesNode)
+	page2AccTreeMap[assetsNode] = page2AccTree.GetRoot()
+	page2AccTreeMap[liabilitiesNode] = page2AccTree.GetRoot()
 
 	page2AccTree.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		currentNode := page2AccTree.GetCurrentNode()
@@ -109,6 +113,26 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 					widgetFocus = app.GetFocus()
 					showSplitsForTransaction(workingLedger, transactionID)
 				}
+			case 'd':
+				row, _ := page2TransTable.GetSelection()
+				notes := page2TransTable.GetCell(row, 5).Text
+				if strings.Contains(notes, "<split>") || strings.Contains(notes, "<trans>") {
+					//TODO display an info popup stating that this type of transaction can not be deleted
+					app.Stop()
+				}
+				id := page2TransTable.GetCell(row, 0).Text
+				transID, _ := strconv.Atoi(strings.TrimSpace(id))
+				if ledger.DeleteTransaction(workingLedger.Name, transID) != nil {
+					//TODO display an error popup
+					app.Stop()
+				} else {
+					page2TransTable.Clear()
+					accountName := page2AccTree.GetCurrentNode().GetText()
+					transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, accountName, 50)
+					populateTransactionsTable(page2TransTable, transactions, workingLedger.Currency)
+					page2TransTable.ScrollToBeginning()
+					page2TransTable.Select(1, 0)
+				}
 			case 's':
 				page2TransTable.SetBorderColor(tcell.ColorWhite)
 				showSearchPage(page2TransTable, workingLedger)
@@ -131,6 +155,7 @@ func addAccountsToTreeView(accounts []*ledger.Account, node *tview.TreeNode, par
 		if account.ParentID == parentID {
 			childNode := tview.NewTreeNode(account.Name).SetExpanded(false).SetIndent(1)
 			node.AddChild(childNode)
+			page2AccTreeMap[childNode] = node
 
 			// Recursively add sub-accounts.
 			if len(account.Children) > 0 {
