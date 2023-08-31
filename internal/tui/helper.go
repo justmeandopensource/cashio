@@ -97,5 +97,6 @@ func expandParentNodes(node *tview.TreeNode) {
 	}
 	if parent, found := page2AccTreeMap[node]; found {
 		parent.SetExpanded(true)
+		expandParentNodes(parent)
 	}
 }
