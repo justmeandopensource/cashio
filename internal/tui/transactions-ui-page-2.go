@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -115,16 +116,12 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 				}
 			case 'd':
 				row, _ := page2TransTable.GetSelection()
-				notes := page2TransTable.GetCell(row, 5).Text
-				if strings.Contains(notes, "<split>") || strings.Contains(notes, "<trans>") {
-					//TODO display an info popup stating that this type of transaction can not be deleted
-					app.Stop()
-				}
 				id := page2TransTable.GetCell(row, 0).Text
 				transID, _ := strconv.Atoi(strings.TrimSpace(id))
-				if ledger.DeleteTransaction(workingLedger.Name, transID) != nil {
-					//TODO display an error popup
+				//TODO ask for confirmation
+				if err := ledger.DeleteTransaction(workingLedger.Name, transID); err != nil {
 					app.Stop()
+					fmt.Fprintf(os.Stderr, common.ColorizeRed(fmt.Sprintf("[E] %v", err)))
 				} else {
 					page2TransTable.Clear()
 					accountName := page2AccTree.GetCurrentNode().GetText()
