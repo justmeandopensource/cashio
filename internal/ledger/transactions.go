@@ -126,7 +126,7 @@ func GetTransactionsForCategory(ledgerName string, category string, limit int) (
 
     ) AS u
 		LEFT JOIN %s_accounts a ON u.account_id = a.id
-    ORDER BY date DESC
+    ORDER BY u.date DESC, u.id DESC
     LIMIT %d;
 	`, ledgerName, ledgerName, categoryFilter, ledgerName, ledgerName, categoryFilter, ledgerName, limit)
 
@@ -201,7 +201,7 @@ func GetTransactionsForAccount(ledgerName string, accountName string, limit int)
 		LEFT JOIN %s_accounts a ON t.account_id = a.id
 		LEFT JOIN %s_categories c ON t.category_id = c.id
     %s
-    ORDER BY t.date desc, t.id desc
+    ORDER BY t.date DESC, t.id DESC
     LIMIT %d;
 	`, ledgerName, ledgerName, ledgerName, accountFilter, limit)
 
