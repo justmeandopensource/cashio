@@ -162,6 +162,7 @@ func showSplitsForTransaction(workingLedger ledger.Ledger, transactionID int) {
 	table.SetSelectable(true, false)
 	table.SetBorder(true)
 	table.SetBackgroundColor(tcell.Color235)
+	table.SetBorderColor(tview.Styles.SecondaryTextColor)
 	table.SetSelectedStyle(tcell.StyleDefault.Background(tcell.Color238).Bold(true))
 
 	colNames := []string{
