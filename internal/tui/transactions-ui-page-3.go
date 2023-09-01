@@ -18,7 +18,7 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 
 	// accounts treeview
 	categoriesTree = tview.NewTreeView().
-		SetRoot(tview.NewTreeNode(".").SetSelectable(true)).
+		SetRoot(tview.NewTreeNode(".").SetSelectable(true).SetColor(tcell.Color246)).
 		SetCurrentNode(tview.NewTreeNode("").SetSelectable(false))
 
 	categoriesTree.SetTitle(fmt.Sprintf("[ Categories (%s) ]", workingLedger.Name))
@@ -28,10 +28,12 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 
 	incomeCategories, _ := ledger.FetchCategories(workingLedger.Name, "income", false)
 	incomeNode := tview.NewTreeNode("income").SetIndent(1)
+	incomeNode.SetColor(tcell.Color246)
 	addCategoriesToTreeView(incomeCategories, incomeNode, 0)
 
 	expenseCategories, _ := ledger.FetchCategories(workingLedger.Name, "expense", false)
 	expenseNode := tview.NewTreeNode("expense").SetIndent(1)
+	expenseNode.SetColor(tcell.Color246)
 	addCategoriesToTreeView(expenseCategories, expenseNode, 0)
 
 	categoriesTree.GetRoot().AddChild(incomeNode)
@@ -71,7 +73,7 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 					app.SetFocus(transactionsTable)
 					transactionsTable.ScrollToBeginning()
 					transactionsTable.Select(1, 0)
-					categoriesTree.SetBorderColor(tcell.ColorWhite)
+					categoriesTree.SetBorderColor(tcell.Color246)
 					transactionsTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 					transactionsTable.SetSelectable(true, false)
 				} else {
@@ -90,6 +92,7 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 
 	// transaction table
 	transactionsTable = tview.NewTable()
+	transactionsTable.SetBorderColor(tcell.Color246)
 	transactions, _ := ledger.GetTransactionsForCategory(workingLedger.Name, ".", 50)
 	populateTransactionsTable(transactionsTable, transactions, workingLedger.Currency)
 	transactionsTable.SetTitle("[ All Transactions ]")
@@ -100,8 +103,9 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 			case 'h':
 				app.SetFocus(categoriesTree)
 				categoriesTree.SetBorderColor(tview.Styles.SecondaryTextColor)
-				transactionsTable.SetBorderColor(tcell.ColorWhite)
+				transactionsTable.SetBorderColor(tcell.Color246)
 			case 's':
+				transactionsTable.SetBorderColor(tcell.Color246)
 				showSearchPage(transactionsTable, workingLedger)
 			}
 		}
@@ -120,7 +124,7 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 func addCategoriesToTreeView(categories []*ledger.Category, node *tview.TreeNode, parentID int) {
 	for _, category := range categories {
 		if category.ParentID == parentID {
-			childNode := tview.NewTreeNode(category.Name).SetExpanded(false).SetIndent(1)
+			childNode := tview.NewTreeNode(category.Name).SetExpanded(false).SetIndent(1).SetColor(tcell.Color246)
 			node.AddChild(childNode)
 
 			// Recursively add sub-accounts.

@@ -14,8 +14,6 @@ func showSearchPage(sourceTable *tview.Table, workingLedger ledger.Ledger) {
 
 	inputFieldFocused = true
 
-	sourceTable.SetBorderColor(tcell.ColorWhite)
-
 	inputField := tview.NewInputField()
 	inputField.SetFieldWidth(56)
 	inputField.SetBackgroundColor(tcell.Color235)

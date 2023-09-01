@@ -47,7 +47,7 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 					return event
 				}
 				app.SetFocus(liabilitiesTable)
-				assetsTable.SetBorderColor(tcell.ColorWhite)
+				assetsTable.SetBorderColor(tcell.Color246)
 				liabilitiesTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 			}
 		} else {
@@ -62,6 +62,7 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 	liabilitiesTable.SetFixed(1, 1)
 	liabilitiesTable.SetSelectable(true, false)
 	liabilitiesTable.SetBorder(true)
+	liabilitiesTable.SetBorderColor(tcell.Color246)
 	liabilitiesTable.SetBackgroundColor(tcell.Color235)
 	liabilitiesTable.SetSelectedStyle(tcell.StyleDefault.Background(tcell.Color238).Bold(true))
 
@@ -82,7 +83,7 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 					return event
 				}
 				app.SetFocus(assetsTable)
-				liabilitiesTable.SetBorderColor(tcell.ColorWhite)
+				liabilitiesTable.SetBorderColor(tcell.Color246)
 				assetsTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 			}
 		} else {
