@@ -166,7 +166,7 @@ func jumpToAccounts(workingLedger ledger.Ledger, table *tview.Table) {
 		if len(transactions) == 0 {
 			app.SetFocus(page2AccTree)
 		} else {
-			page2AccTree.SetBorderColor(tcell.ColorWhite)
+			page2AccTree.SetBorderColor(tcell.Color246)
 			page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 			app.SetFocus(page2TransTable)
 		}
