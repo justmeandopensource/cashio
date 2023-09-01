@@ -10,9 +10,8 @@ import (
 )
 
 var (
-	app         = tview.NewApplication()
-	pages       = tview.NewPages()
-	widgetFocus tview.Primitive
+	app   = tview.NewApplication()
+	pages = tview.NewPages()
 )
 
 const (
@@ -21,6 +20,8 @@ const (
 	page3      = "transByCategoryPage"
 	searchPage = "search"
 )
+
+var inputFieldFocused = false
 
 // TransactionsUI is the entrypoint for the tview application
 func TransactionsUI(ledgerName string) {
@@ -42,6 +43,9 @@ func TransactionsUI(ledgerName string) {
 	setupAccBalancePage(workingLedger)
 
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if inputFieldFocused {
+			return event
+		}
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
 			case 'q':

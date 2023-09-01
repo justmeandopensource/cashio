@@ -8,7 +8,11 @@ import (
 	"github.com/rivo/tview"
 )
 
+// showSearchPage collects search keywords from a displayed input field
+// and updates the transactions table based on the matching records from the database
 func showSearchPage(sourceTable *tview.Table, workingLedger ledger.Ledger) {
+
+	inputFieldFocused = true
 
 	sourceTable.SetBorderColor(tcell.ColorWhite)
 
@@ -33,6 +37,7 @@ func showSearchPage(sourceTable *tview.Table, workingLedger ledger.Ledger) {
 			}
 			sourceTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 			pages.RemovePage(searchPage)
+			inputFieldFocused = false
 			app.SetFocus(sourceTable)
 		}
 	})
