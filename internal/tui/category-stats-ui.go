@@ -22,7 +22,9 @@ func CategoryStatsUI(ledgerName string) {
 
 	tree := createCategoriesTree(ledgerName)
 	bcMonthly := termui.NewBarChart()
+	bcMonthly.BorderStyle.Fg = ui.Color(246)
 	bcYearly := termui.NewBarChart()
+	bcYearly.BorderStyle.Fg = ui.Color(246)
 
 	grid := ui.NewGrid()
 
@@ -31,8 +33,8 @@ func CategoryStatsUI(ledgerName string) {
 
 	grid.Set(
 		ui.NewRow(1.0,
-			ui.NewCol(1.0/4, tree),
-			ui.NewCol(3.0/4,
+			ui.NewCol(0.67/4, tree),
+			ui.NewCol(3.33/4,
 				ui.NewRow(1.0/2, bcMonthly),
 				ui.NewRow(1.0/2, bcYearly),
 			)),
@@ -59,13 +61,13 @@ func CategoryStatsUI(ledgerName string) {
 			category := node.Value.String()
 			if len(node.Nodes) > 0 {
 				if node.Expanded {
-					createBarChart(ledgerName, bcMonthly, category, "monthly", 14)
+					createBarChart(ledgerName, bcMonthly, category, "monthly", 12)
 					createBarChart(ledgerName, bcYearly, category, "yearly", 6)
 				} else {
 					tree.Expand()
 				}
 			} else {
-				createBarChart(ledgerName, bcMonthly, category, "monthly", 14)
+				createBarChart(ledgerName, bcMonthly, category, "monthly", 12)
 				createBarChart(ledgerName, bcYearly, category, "yearly", 6)
 			}
 		case "G", "<End>":
@@ -93,10 +95,12 @@ func (nv nodeValue) String() string {
 func createCategoriesTree(ledgerName string) *widgets.Tree {
 
 	tree := widgets.NewTree()
-	tree.Title = "[ Categories ]"
+	tree.Title = fmt.Sprintf("[ Categories (%v) ]", ledgerName)
 
-	tree.TextStyle = ui.NewStyle(ui.ColorWhite)
-	tree.SelectedRowStyle = ui.NewStyle(ui.ColorBlack, ui.ColorWhite)
+	tree.TextStyle = ui.NewStyle(ui.Color(246))
+	tree.SelectedRowStyle = ui.NewStyle(ui.Color(16), ui.Color(246))
+
+	tree.BorderStyle.Fg = ui.ColorYellow
 
 	incomeNode := &widgets.TreeNode{
 		Value:    nodeValue("income"),
@@ -176,6 +180,6 @@ func createBarChart(ledgerName string, bc *termui.BarChart, category string, per
 	bc.BarWidth = 8
 	bc.PaddingTop = 2
 	bc.BarColors = []ui.Color{ui.Color(barColor)}
-	bc.LabelStyles = []ui.Style{ui.NewStyle(ui.ColorWhite)}
+	bc.LabelStyles = []ui.Style{ui.NewStyle(ui.Color(246))}
 	bc.NumStyles = []ui.Style{ui.NewStyle(ui.ColorBlack)}
 }
