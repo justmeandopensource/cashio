@@ -33,7 +33,7 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 	page2AccTree.SetTitle(fmt.Sprintf("[ Accounts (%s) ]", workingLedger.Name))
 	page2AccTree.SetBorder(true)
 	page2AccTree.SetBackgroundColor(tcell.Color235)
-	page2AccTree.SetBorderColor(tview.Styles.SecondaryTextColor)
+	page2AccTree.SetBorderColor(tcell.Color246)
 
 	assetAccounts, _ := ledger.FetchAccounts(workingLedger.Name, "asset", false)
 	assetsNode := tview.NewTreeNode("assets").SetIndent(1)
@@ -49,6 +49,14 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 	page2AccTree.GetRoot().AddChild(liabilitiesNode)
 	page2AccTreeMap[assetsNode] = page2AccTree.GetRoot()
 	page2AccTreeMap[liabilitiesNode] = page2AccTree.GetRoot()
+
+	page2AccTree.SetBlurFunc(func() {
+		page2AccTree.SetBorderColor(tcell.Color246)
+	})
+
+	page2AccTree.SetFocusFunc(func() {
+		page2AccTree.SetBorderColor(tview.Styles.SecondaryTextColor)
+	})
 
 	page2AccTree.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		currentNode := page2AccTree.GetCurrentNode()
@@ -84,8 +92,6 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 					app.SetFocus(page2TransTable)
 					page2TransTable.ScrollToBeginning()
 					page2TransTable.Select(1, 0)
-					page2AccTree.SetBorderColor(tcell.Color246)
-					page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 					page2TransTable.SetSelectable(true, false)
 				}
 			case 'g':
@@ -99,33 +105,36 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 
 	// transaction table
 	page2TransTable = tview.NewTable()
-	page2TransTable.SetBorderColor(tcell.Color246)
+	page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 	transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, ".", 50)
 	populateTransactionsTable(page2TransTable, transactions, workingLedger.Currency)
 	page2TransTable.SetTitle("[ All Transactions ]")
+
+	page2TransTable.SetBlurFunc(func() {
+		page2TransTable.SetBorderColor(tcell.Color246)
+	})
+
+	page2TransTable.SetFocusFunc(func() {
+		page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+	})
 
 	page2TransTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
 			case 'h':
 				app.SetFocus(page2AccTree)
-				page2AccTree.SetBorderColor(tview.Styles.SecondaryTextColor)
-				page2TransTable.SetBorderColor(tcell.Color246)
 			case 'l':
 				row, _ := page2TransTable.GetSelection()
 				if strings.Contains(page2TransTable.GetCell(row, 5).Text, "<split>") {
 					transactionID, _ := strconv.Atoi(strings.TrimSpace(page2TransTable.GetCell(row, 0).Text))
-					page2TransTable.SetBorderColor(tcell.Color246)
 					showSplitsForTransaction(workingLedger, transactionID)
 				}
 			case 'd':
 				row, _ := page2TransTable.GetSelection()
 				id := page2TransTable.GetCell(row, 0).Text
 				transID, _ := strconv.Atoi(strings.TrimSpace(id))
-				page2TransTable.SetBorderColor(tcell.Color246)
 				showDeleteConfirmationModal(workingLedger, transID)
 			case 's':
-				page2TransTable.SetBorderColor(tcell.Color246)
 				showSearchPage(page2TransTable, workingLedger)
 			}
 		}
@@ -213,7 +222,6 @@ func showSplitsForTransaction(workingLedger ledger.Ledger, transactionID int) {
 			switch event.Rune() {
 			case 'h':
 				pages.RemovePage("splits")
-				page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 				app.SetFocus(page2TransTable)
 			}
 		}
@@ -255,7 +263,6 @@ func showDeleteConfirmationModal(workingLedger ledger.Ledger, transactionID int)
 			}
 		}
 		pages.RemovePage("modal")
-		page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 		app.SetFocus(page2TransTable)
 	})
 

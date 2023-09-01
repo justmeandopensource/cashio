@@ -39,6 +39,14 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 		generateAccountRows(assetsTable, account, workingLedger.Currency, &rowIndex, 0)
 	}
 
+	assetsTable.SetBlurFunc(func() {
+		assetsTable.SetBorderColor(tcell.Color246)
+	})
+
+	assetsTable.SetFocusFunc(func() {
+		assetsTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+	})
+
 	assetsTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
@@ -47,8 +55,6 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 					return event
 				}
 				app.SetFocus(liabilitiesTable)
-				assetsTable.SetBorderColor(tcell.Color246)
-				liabilitiesTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 			}
 		} else {
 			if event.Key() == tcell.KeyEnter {
@@ -75,6 +81,14 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 		generateAccountRows(liabilitiesTable, account, workingLedger.Currency, &rowIndex, 0)
 	}
 
+	liabilitiesTable.SetBlurFunc(func() {
+		liabilitiesTable.SetBorderColor(tcell.Color246)
+	})
+
+	liabilitiesTable.SetFocusFunc(func() {
+		liabilitiesTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+	})
+
 	liabilitiesTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
@@ -83,8 +97,6 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 					return event
 				}
 				app.SetFocus(assetsTable)
-				liabilitiesTable.SetBorderColor(tcell.Color246)
-				assetsTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 			}
 		} else {
 			if event.Key() == tcell.KeyEnter {
@@ -166,8 +178,6 @@ func jumpToAccounts(workingLedger ledger.Ledger, table *tview.Table) {
 		if len(transactions) == 0 {
 			app.SetFocus(page2AccTree)
 		} else {
-			page2AccTree.SetBorderColor(tcell.Color246)
-			page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 			app.SetFocus(page2TransTable)
 		}
 	}
