@@ -8,23 +8,23 @@ import (
 	"github.com/rivo/tview"
 )
 
+var (
+	page3CatTree    *tview.TreeView
+	page3TransTable *tview.Table
+)
+
 // setupTransByCatPage sets up the tview page that displays transactions by category
 func setupTransByCatPage(workingLedger ledger.Ledger) {
 
-	var (
-		categoriesTree    *tview.TreeView
-		transactionsTable *tview.Table
-	)
-
 	// accounts treeview
-	categoriesTree = tview.NewTreeView().
+	page3CatTree = tview.NewTreeView().
 		SetRoot(tview.NewTreeNode(".").SetSelectable(true).SetColor(tcell.Color246)).
 		SetCurrentNode(tview.NewTreeNode("").SetSelectable(false))
 
-	categoriesTree.SetTitle(fmt.Sprintf("[ Categories (%s) ]", workingLedger.Name))
-	categoriesTree.SetBorder(true)
-	categoriesTree.SetBackgroundColor(tcell.Color235)
-	categoriesTree.SetBorderColor(tview.Styles.SecondaryTextColor)
+	page3CatTree.SetTitle(fmt.Sprintf("[ Categories (%s) ]", workingLedger.Name))
+	page3CatTree.SetBorder(true)
+	page3CatTree.SetBackgroundColor(tcell.Color235)
+	page3CatTree.SetBorderColor(tcell.Color246)
 
 	incomeCategories, _ := ledger.FetchCategories(workingLedger.Name, "income", false)
 	incomeNode := tview.NewTreeNode("income").SetIndent(1)
@@ -36,11 +36,19 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 	expenseNode.SetColor(tcell.Color246)
 	addCategoriesToTreeView(expenseCategories, expenseNode, 0)
 
-	categoriesTree.GetRoot().AddChild(incomeNode)
-	categoriesTree.GetRoot().AddChild(expenseNode)
+	page3CatTree.GetRoot().AddChild(incomeNode)
+	page3CatTree.GetRoot().AddChild(expenseNode)
 
-	categoriesTree.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		currentNode := categoriesTree.GetCurrentNode()
+	page3CatTree.SetBlurFunc(func() {
+		page3CatTree.SetBorderColor(tcell.Color246)
+	})
+
+	page3CatTree.SetFocusFunc(func() {
+		page3CatTree.SetBorderColor(tview.Styles.SecondaryTextColor)
+	})
+
+	page3CatTree.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		currentNode := page3CatTree.GetCurrentNode()
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
 			case 'h':
@@ -58,55 +66,58 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 					}
 				}
 				if currentNode != nil {
-					transactionsTable.Clear()
+					page3TransTable.Clear()
 					categoryName := currentNode.GetText()
 					transactions, _ := ledger.GetTransactionsForCategory(workingLedger.Name, categoryName, 50)
-					populateTransactionsTable(transactionsTable, transactions, workingLedger.Currency)
+					populateTransactionsTable(page3TransTable, transactions, workingLedger.Currency)
 					if categoryName == "." {
-						transactionsTable.SetTitle("[ All Transactions ]")
+						page3TransTable.SetTitle("[ All Transactions ]")
 					} else {
-						transactionsTable.SetTitle("[ " + categoryName + " ]")
+						page3TransTable.SetTitle("[ " + categoryName + " ]")
 					}
-					if transactionsTable.GetRowCount() < 2 {
+					if page3TransTable.GetRowCount() < 2 {
 						return event
 					}
-					app.SetFocus(transactionsTable)
-					transactionsTable.ScrollToBeginning()
-					transactionsTable.Select(1, 0)
-					categoriesTree.SetBorderColor(tcell.Color246)
-					transactionsTable.SetBorderColor(tview.Styles.SecondaryTextColor)
-					transactionsTable.SetSelectable(true, false)
+					app.SetFocus(page3TransTable)
+					page3TransTable.ScrollToBeginning()
+					page3TransTable.Select(1, 0)
+					page3TransTable.SetSelectable(true, false)
 				} else {
 					if currentNode != nil {
 						currentNode.SetExpanded(true)
 					}
 				}
 			case 'g':
-				categoriesTree.SetCurrentNode(categoriesTree.GetRoot())
+				page3CatTree.SetCurrentNode(page3CatTree.GetRoot())
 			case 'G':
-				categoriesTree.SetCurrentNode(expenseNode.GetChildren()[len(expenseNode.GetChildren())-1])
+				page3CatTree.SetCurrentNode(expenseNode.GetChildren()[len(expenseNode.GetChildren())-1])
 			}
 		}
 		return event
 	})
 
 	// transaction table
-	transactionsTable = tview.NewTable()
-	transactionsTable.SetBorderColor(tcell.Color246)
+	page3TransTable = tview.NewTable()
+	page3TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 	transactions, _ := ledger.GetTransactionsForCategory(workingLedger.Name, ".", 50)
-	populateTransactionsTable(transactionsTable, transactions, workingLedger.Currency)
-	transactionsTable.SetTitle("[ All Transactions ]")
+	populateTransactionsTable(page3TransTable, transactions, workingLedger.Currency)
+	page3TransTable.SetTitle("[ All Transactions ]")
 
-	transactionsTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	page3TransTable.SetBlurFunc(func() {
+		page3TransTable.SetBorderColor(tcell.Color246)
+	})
+
+	page3TransTable.SetFocusFunc(func() {
+		page3TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+	})
+
+	page3TransTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
 			case 'h':
-				app.SetFocus(categoriesTree)
-				categoriesTree.SetBorderColor(tview.Styles.SecondaryTextColor)
-				transactionsTable.SetBorderColor(tcell.Color246)
+				app.SetFocus(page3CatTree)
 			case 's':
-				transactionsTable.SetBorderColor(tcell.Color246)
-				showSearchPage(transactionsTable, workingLedger)
+				showSearchPage(page3TransTable, workingLedger)
 			}
 		}
 		return event
@@ -114,8 +125,8 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 
 	// put things together
 	transByCatFlex := tview.NewFlex()
-	transByCatFlex.AddItem(categoriesTree, 0, 1, true)
-	transByCatFlex.AddItem(transactionsTable, 0, 5, true)
+	transByCatFlex.AddItem(page3CatTree, 0, 1, true)
+	transByCatFlex.AddItem(page3TransTable, 0, 5, true)
 
 	pages.AddPage(workingLedger.Name+page3, transByCatFlex, true, true)
 }
