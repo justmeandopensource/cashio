@@ -87,7 +87,7 @@ func GetTransactionsForCategory(ledgerName string, category string, limit int) (
 		return nil, err
 	}
 
-	categoryID := getCategoryID(category, categories)
+	categoryID := GetCategoryID(category, categories)
 
 	var query, inClause string
 	var categoryFilter = ""
@@ -174,7 +174,7 @@ func GetTransactionsForAccount(ledgerName string, accountName string, limit int)
 		return nil, err
 	}
 
-	accountID := getAccountID(accountName, accounts)
+	accountID := GetAccountID(accountName, accounts)
 
 	var query, inClause string
 	var accountFilter = ""
@@ -551,9 +551,6 @@ func AddTransaction(ledgerName string, transaction Transaction) error {
 		return err
 	}
 
-	accountBalance, _ := getAccountBalance(ledgerName, transaction.AccountID)
-	fmt.Println(fmt.Sprintf("account balance: %0.2f", accountBalance))
-
 	return nil
 }
 
@@ -694,8 +691,8 @@ func PromptForNewTransfer(ledgerName string) (string, []Transaction) {
 		os.Exit(1)
 	}
 
-	fromAccountID := getAccountID(fromAccount, fromAccounts)
-	toAccountID := getAccountID(toAccount, toAccounts)
+	fromAccountID := GetAccountID(fromAccount, fromAccounts)
+	toAccountID := GetAccountID(toAccount, toAccounts)
 
 	// check if we are doing inter currency transfer
 	fromLedgerCurrency := GetCurrencyForLedger(ledgerName)

@@ -240,14 +240,14 @@ func promptForSelectingAccount(ledger string, promptMsg string, accountType stri
 			prompt.OptionMaxSuggestion(30),
 		)
 		common.RestoreTermState()
-		accountID = getAccountID(account, accounts)
+		accountID = GetAccountID(account, accounts)
 	}
 
 	return accountID, nil
 }
 
-// getAccountID returns the account id of the given account name
-func getAccountID(accountName string, accounts []*Account) int {
+// GetAccountID returns the account id of the given account name
+func GetAccountID(accountName string, accounts []*Account) int {
 	accountName = strings.TrimSpace(accountName)
 	for _, account := range accounts {
 		option := account.Name
@@ -255,7 +255,7 @@ func getAccountID(accountName string, accounts []*Account) int {
 			return account.ID
 		}
 		if account.Children != nil {
-			subAccountID := getAccountID(accountName, account.Children)
+			subAccountID := GetAccountID(accountName, account.Children)
 			if subAccountID != 0 {
 				return subAccountID
 			}
