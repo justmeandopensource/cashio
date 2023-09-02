@@ -34,7 +34,11 @@ func populateTransactionsTable(transactionsTable *tview.Table, transactionsList 
 	}
 
 	for i, item := range colNames {
-		transactionsTable.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+		if item == "Credit" || item == "Debit" {
+			transactionsTable.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+		} else {
+			transactionsTable.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+		}
 	}
 
 	p := message.NewPrinter(language.MustParse(common.Locales[currency]))
