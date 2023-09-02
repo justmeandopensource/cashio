@@ -53,10 +53,10 @@ var transferFundsCmd = &cobra.Command{
 	Run:   transferFundsCmdStart,
 }
 
-var transactionsUICmd = &cobra.Command{
-	Use:   "transactions-ui",
-	Short: "open ledger transactions ui",
-	Run:   transactionsUICmdStart,
+var uiCmd = &cobra.Command{
+	Use:   "ui",
+	Short: "open ledger ui",
+	Run:   uiCmdStart,
 }
 
 // addAccountCmdStart is the entrypoint for "add-account" sub-command to cashio
@@ -142,8 +142,8 @@ func transferFundsCmdStart(_ *cobra.Command, _ []string) {
 	}
 }
 
-// transactionsUICmdStart is the entrypoint for "transactions-ui" sub-command to cashio
-func transactionsUICmdStart(_ *cobra.Command, _ []string) {
+// uiCmdStart is the entrypoint for "transactions-ui" sub-command to cashio
+func uiCmdStart(_ *cobra.Command, _ []string) {
 	checkEnv()
 	tui.TransactionsUI(ledgerName)
 }
@@ -171,5 +171,5 @@ func init() {
 	ledgerCmd.AddCommand(addExpenseCmd)
 	ledgerCmd.AddCommand(addIncomeCmd)
 	ledgerCmd.AddCommand(transferFundsCmd)
-	ledgerCmd.AddCommand(transactionsUICmd)
+	ledgerCmd.AddCommand(uiCmd)
 }
