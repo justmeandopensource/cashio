@@ -12,6 +12,7 @@ import (
 	"github.com/rivo/tview"
 )
 
+// showAddTransactionForm collects transaction details using forms and adds it to the database
 func showAddTransactionForm(ledgerName string) {
 
 	inputFieldFocused = true
@@ -27,7 +28,7 @@ func showAddTransactionForm(ledgerName string) {
 		splitTransactions   = []ledger.SplitTransaction{}
 		accounts, _         = ledger.FetchAccounts(ledgerName, "", false)
 		accountsFormatted   = ledger.FormatAccounts(accounts, "")
-		categories, _       = ledger.FetchCategories(ledgerName, "", false)
+		categories, _       = ledger.FetchCategories(ledgerName, "expense", false)
 		categoriesFormatted = ledger.FormatCategories(categories, "")
 	)
 
@@ -79,47 +80,67 @@ func showAddTransactionForm(ledgerName string) {
 			amountText := childForm.GetFormItemByLabel("Amount").(*tview.InputField).GetText()
 			amountText = strings.TrimSpace(amountText)
 			if amountText == "" {
-				childForm.SetFocus(1)
-			} else {
-				amount := common.ProcessExpression(amountText)
-				baseAmount -= amount
-				if baseAmount < 0 {
-					baseAmount += amount
-					fieldAmount.SetText("")
-					return
-				}
-				credit, debit := 0.00, 0.00
-				switch transType {
-				case "Income":
-					credit = amount
-				case "Expense":
-					debit = amount
-				}
-				splitTransaction := ledger.SplitTransaction{
-					Date:       transDate,
-					Notes:      fieldNotes.GetText(),
-					Credit:     credit,
-					Debit:      debit,
-					AccountID:  transAccountID,
-					CategoryID: ledger.GetCategoryID(fieldCategory.GetText(), categories),
-				}
-				splitTransactions = append(splitTransactions, splitTransaction)
-				pages.RemovePage(fmt.Sprintf("split%d", splitCounter))
-				displaySplitForm()
+				childForm.GetFormItemByLabel("  ").(*tview.TextView).SetText("Amount field is mandatory")
+				go time.AfterFunc(3*time.Second, func() {
+					childForm.GetFormItemByLabel("  ").(*tview.TextView).SetText("")
+				})
+				return
 			}
+			if fieldCategory.GetText() == "" {
+				childForm.GetFormItemByLabel("  ").(*tview.TextView).SetText("Category field is mandatory")
+				go time.AfterFunc(3*time.Second, func() {
+					childForm.GetFormItemByLabel("  ").(*tview.TextView).SetText("")
+				})
+				return
+			}
+			amount := common.ProcessExpression(amountText)
+			baseAmount -= amount
+			if baseAmount < 0 {
+				baseAmount += amount
+				fieldAmount.SetText("")
+				childForm.GetFormItemByLabel("  ").(*tview.TextView).SetText("Split amount over the limit")
+				go time.AfterFunc(3*time.Second, func() {
+					childForm.GetFormItemByLabel("  ").(*tview.TextView).SetText("")
+				})
+				return
+			}
+			credit, debit := 0.0, 0.0
+			switch transType {
+			case "income":
+				credit = amount
+			case "expense":
+				debit = amount
+			}
+			splitTransaction := ledger.SplitTransaction{
+				Date:       transDate,
+				Notes:      fieldNotes.GetText(),
+				Credit:     credit,
+				Debit:      debit,
+				AccountID:  transAccountID,
+				CategoryID: ledger.GetCategoryID(fieldCategory.GetText(), categories),
+			}
+			splitTransactions = append(splitTransactions, splitTransaction)
+			pages.RemovePage(fmt.Sprintf("split%d", splitCounter))
+			displaySplitForm()
 		})
 		childForm.AddButton("Cancel", func() {
+			splitTransactions = splitTransactions[:0]
+			baseAmount = transAmount
 			pages.RemovePage(fmt.Sprintf("split%d", splitCounter))
+			splitCounter = 0
 		})
 		childForm.SetButtonsAlign(tview.AlignCenter)
 		childForm.SetButtonBackgroundColor(tcell.Color238)
 		childForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
 
+		// child form footer
+		childForm.AddTextView("  ", "", 50, 1, true, false)
+
 		childForm.SetBackgroundColor(tcell.ColorDefault)
 		childForm.SetFieldBackgroundColor(tcell.Color238)
 
 		childGrid := tview.NewGrid().
-			SetRows(0, 19, 0).
+			SetRows(0, 21, 0).
 			SetColumns(0, 55, 0).
 			AddItem(childForm, 1, 1, 1, 1, 0, 0, true)
 
@@ -130,8 +151,10 @@ func showAddTransactionForm(ledgerName string) {
 	mainForm := tview.NewForm()
 
 	// Transaction Type field
-	mainForm.AddDropDown("Type", []string{"Income", "Expense"}, 1, func(option string, _ int) {
+	mainForm.AddDropDown("Type", []string{"income", "expense"}, 1, func(option string, _ int) {
 		transType = option
+		categories, _ = ledger.FetchCategories(ledgerName, transType, false)
+		categoriesFormatted = ledger.FormatCategories(categories, "")
 	})
 	fieldTransType := mainForm.GetFormItemByLabel("Type").(*tview.DropDown)
 	fieldTransType.SetListStyles(
@@ -141,9 +164,12 @@ func showAddTransactionForm(ledgerName string) {
 	fieldTransType.SetFieldBackgroundColor(tcell.ColorDefault)
 
 	// Date field
-	mainForm.AddInputField("Date", time.Now().Format("2006-01-02"), 12, nil, func(text string) {
-		transDate, _ = time.Parse("2006-01-02", text)
+	mainForm.AddInputField("Date", time.Now().Format("2006-01-02"), 11, nil, func(text string) {
+		if strings.TrimSpace(text) != "" {
+			transDate, _ = time.Parse("2006-01-02", text)
+		}
 	})
+	fieldDate := mainForm.GetFormItemByLabel("Date").(*tview.InputField)
 
 	// Account field
 	mainForm.AddInputField("Account", "", 20, nil, func(text string) {
@@ -173,7 +199,7 @@ func showAddTransactionForm(ledgerName string) {
 	})
 
 	// Amount field
-	mainForm.AddInputField("Amount", "", 12, nil, func(text string) {
+	mainForm.AddInputField("Amount", "", 11, nil, func(text string) {
 		amount := common.ProcessExpression(text)
 		baseAmount, transAmount = amount, amount
 	})
@@ -222,18 +248,43 @@ func showAddTransactionForm(ledgerName string) {
 
 	// Form buttons
 	mainForm.AddButton("Submit", func() {
-		categoryName := fieldCategory.GetText()
-		categoryID := ledger.GetCategoryID(categoryName, categories)
-		notes := fieldNotes.GetText()
-		credit, debit := 0.00, 0.00
+		missingFields := false
+		date := strings.TrimSpace(fieldDate.GetText())
+		accountName := strings.TrimSpace(fieldAccount.GetText())
+		categoryID := 0
+		notes := strings.TrimSpace(fieldNotes.GetText())
+		credit, debit := 0.0, 0.0
+		switch transType {
+		case "income":
+			credit = transAmount
+		case "expense":
+			debit = transAmount
+		}
+
+		if date == "" || accountName == "" || transAccountID == 0 || notes == "" || transAmount == 0.0 {
+			missingFields = true
+		}
+
 		if len(splitTransactions) > 0 {
 			notes = "<split> " + notes
+		} else {
+			categoryName := fieldCategory.GetText()
+			categoryID = ledger.GetCategoryID(categoryName, categories)
+			if categoryID == 0 {
+				missingFields = true
+			}
 		}
-		switch transType {
-		case "Income":
-			credit = transAmount
-		case "Expense":
-			debit = transAmount
+
+		if isSplit == 1 && len(splitTransactions) == 0 {
+			missingFields = true
+		}
+
+		if missingFields {
+			mainForm.GetFormItemByLabel("  ").(*tview.TextView).SetText("Invalid transaction")
+			go time.AfterFunc(3*time.Second, func() {
+				mainForm.GetFormItemByLabel("  ").(*tview.TextView).SetText("")
+			})
+			return
 		}
 
 		transaction := ledger.Transaction{
@@ -265,6 +316,8 @@ func showAddTransactionForm(ledgerName string) {
 	mainForm.SetButtonBackgroundColor(tcell.Color238)
 	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
 
+	mainForm.AddTextView("  ", "", 50, 1, true, false)
+
 	mainForm.SetTitle("[ Add a new transaction ]")
 	mainForm.SetBorder(true)
 	mainForm.SetBorderColor(tview.Styles.SecondaryTextColor)
@@ -281,7 +334,7 @@ func showAddTransactionForm(ledgerName string) {
 	})
 
 	grid := tview.NewGrid().
-		SetRows(0, 19, 0).
+		SetRows(0, 21, 0).
 		SetColumns(0, 55, 0).
 		AddItem(mainForm, 1, 1, 1, 1, 0, 0, true)
 
