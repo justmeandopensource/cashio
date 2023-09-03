@@ -308,7 +308,7 @@ func showAddTransactionForm(ledgerName string) {
 	})
 	mainForm.AddButton("Cancel", func() {
 		pages.RemovePage("addTransactionForm")
-		app.SetFocus(page2TransTable)
+		app.SetFocus(widgetFocus)
 		inputFieldFocused = false
 	})
 	mainForm.SetButtonsAlign(tview.AlignCenter)
@@ -326,7 +326,7 @@ func showAddTransactionForm(ledgerName string) {
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
 			pages.RemovePage("addTransactionForm")
-			app.SetFocus(page2TransTable)
+			app.SetFocus(widgetFocus)
 			inputFieldFocused = false
 		}
 		return event

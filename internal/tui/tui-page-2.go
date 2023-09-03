@@ -121,6 +121,7 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
 			case 'a':
+				widgetFocus = app.GetFocus()
 				showAddTransactionForm(workingLedger.Name)
 			case 'h':
 				app.SetFocus(page2AccTree)
