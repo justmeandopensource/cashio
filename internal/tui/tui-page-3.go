@@ -114,6 +114,13 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 	page3TransTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
+			case 'a':
+				config := AddTransactionConfig{
+					WorkingLedger:    workingLedger,
+					SourceTable:      page3TransTable,
+					CategoryNodeName: page3CatTree.GetCurrentNode().GetText(),
+				}
+				showAddTransactionForm(config)
 			case 'h':
 				app.SetFocus(page3CatTree)
 			case 's':

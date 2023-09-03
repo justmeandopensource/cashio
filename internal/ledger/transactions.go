@@ -92,7 +92,7 @@ func GetTransactionsForCategory(ledgerName string, category string, limit int) (
 	var query, inClause string
 	var categoryFilter = ""
 
-	if isPlaceHolderCategory(categoryID, categories) {
+	if IsPlaceHolderCategory(categoryID, categories) {
 		childIDs := GetChildCategoryIDs(categoryID, categories)
 		for i, id := range childIDs {
 			if i != 0 {

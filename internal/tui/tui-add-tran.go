@@ -12,8 +12,15 @@ import (
 	"github.com/rivo/tview"
 )
 
+type AddTransactionConfig struct {
+	WorkingLedger    ledger.Ledger
+	SourceTable      *tview.Table
+	AccountNodeName  string
+	CategoryNodeName string
+}
+
 // showAddTransactionForm collects transaction details using forms and adds it to the database
-func showAddTransactionForm(ledgerName string) {
+func showAddTransactionForm(config AddTransactionConfig) {
 
 	inputFieldFocused = true
 
@@ -26,9 +33,9 @@ func showAddTransactionForm(ledgerName string) {
 		isSplit             = 0
 		splitCounter        = 0
 		splitTransactions   = []ledger.SplitTransaction{}
-		accounts, _         = ledger.FetchAccounts(ledgerName, "", false)
+		accounts, _         = ledger.FetchAccounts(config.WorkingLedger.Name, "", false)
 		accountsFormatted   = ledger.FormatAccounts(accounts, "")
-		categories, _       = ledger.FetchCategories(ledgerName, "expense", false)
+		categories, _       = ledger.FetchCategories(config.WorkingLedger.Name, "expense", false)
 		categoriesFormatted = ledger.FormatCategories(categories, "")
 	)
 
@@ -152,7 +159,7 @@ func showAddTransactionForm(ledgerName string) {
 	// Transaction Type field
 	mainForm.AddDropDown("Type", []string{"income", "expense"}, 1, func(option string, _ int) {
 		transType = option
-		categories, _ = ledger.FetchCategories(ledgerName, transType, false)
+		categories, _ = ledger.FetchCategories(config.WorkingLedger.Name, transType, false)
 		categoriesFormatted = ledger.FormatCategories(categories, "")
 	})
 	fieldTransType := mainForm.GetFormItemByLabel("Type").(*tview.DropDown)
@@ -297,18 +304,28 @@ func showAddTransactionForm(ledgerName string) {
 			Splits:     splitTransactions,
 		}
 
-		if err := ledger.AddTransaction(ledgerName, transaction); err != nil {
+		if err := ledger.AddTransaction(config.WorkingLedger.Name, transaction); err != nil {
 			app.Stop()
 			fmt.Fprintln(os.Stderr, common.ColorizeRed(fmt.Sprint("[E] ", err.Error())))
 			os.Exit(1)
 		}
+
+		var transactions []ledger.Transaction
+		switch {
+		case len(config.AccountNodeName) > 0:
+			transactions, _ = ledger.GetTransactionsForAccount(config.WorkingLedger.Name, config.AccountNodeName, 50)
+		case len(config.CategoryNodeName) > 0:
+			transactions, _ = ledger.GetTransactionsForCategory(config.WorkingLedger.Name, config.CategoryNodeName, 50)
+		}
+		populateTransactionsTable(config.SourceTable, transactions, config.WorkingLedger.Currency)
+
 		pages.RemovePage("addTransactionForm")
-		app.SetFocus(page2TransTable)
+		app.SetFocus(config.SourceTable)
 		inputFieldFocused = false
 	})
 	mainForm.AddButton("Cancel", func() {
 		pages.RemovePage("addTransactionForm")
-		app.SetFocus(page2TransTable)
+		app.SetFocus(config.SourceTable)
 		inputFieldFocused = false
 	})
 	mainForm.SetButtonsAlign(tview.AlignCenter)
@@ -326,7 +343,7 @@ func showAddTransactionForm(ledgerName string) {
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
 			pages.RemovePage("addTransactionForm")
-			app.SetFocus(page2TransTable)
+			app.SetFocus(config.SourceTable)
 			inputFieldFocused = false
 		}
 		return event

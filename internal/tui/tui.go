@@ -21,6 +21,8 @@ const (
 	searchPage = "search"
 )
 
+var widgetFocus tview.Primitive
+
 var inputFieldFocused = false
 
 // TransactionsUI is the entrypoint for the tview application
