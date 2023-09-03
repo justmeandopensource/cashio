@@ -260,9 +260,9 @@ func getCategoryType(categoryName string, categories []*Category) string {
 	return ""
 }
 
-// isPlaceHolderCategory returns true if the given category is a placeholder category,
+// IsPlaceHolderCategory returns true if the given category is a placeholder category,
 // false otherwise
-func isPlaceHolderCategory(categoryID int, categories []*Category) bool {
+func IsPlaceHolderCategory(categoryID int, categories []*Category) bool {
 	for _, category := range categories {
 		if category.ID == categoryID {
 			if category.Placeholder == 1 {
@@ -270,7 +270,7 @@ func isPlaceHolderCategory(categoryID int, categories []*Category) bool {
 			}
 		}
 		if category.Children != nil {
-			if isPlaceHolderCategory(categoryID, category.Children) {
+			if IsPlaceHolderCategory(categoryID, category.Children) {
 				return true
 			}
 		}
@@ -336,7 +336,7 @@ func FetchCategoryStatsData(ledgerName string, category string, period string, c
 
 	var query, inClause string
 
-	if isPlaceHolderCategory(categoryID, categories) {
+	if IsPlaceHolderCategory(categoryID, categories) {
 		childIDs := GetChildCategoryIDs(categoryID, categories)
 		for i, id := range childIDs {
 			if i != 0 {

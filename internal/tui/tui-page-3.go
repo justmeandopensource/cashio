@@ -115,8 +115,12 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
 			case 'a':
-				widgetFocus = app.GetFocus()
-				showAddTransactionForm(workingLedger.Name)
+				config := AddTransactionConfig{
+					WorkingLedger:    workingLedger,
+					SourceTable:      page3TransTable,
+					CategoryNodeName: page3CatTree.GetCurrentNode().GetText(),
+				}
+				showAddTransactionForm(config)
 			case 'h':
 				app.SetFocus(page3CatTree)
 			case 's':
