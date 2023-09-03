@@ -35,28 +35,16 @@ var addCategoryCmd = &cobra.Command{
 	Run:   addCategoryCmdStart,
 }
 
-var addExpenseCmd = &cobra.Command{
-	Use:   "add-expense",
-	Short: "add an expense transaction",
-	Run:   addExpenseCmdStart,
-}
-
-var addIncomeCmd = &cobra.Command{
-	Use:   "add-income",
-	Short: "add an income transaction",
-	Run:   addIncomeCmdStart,
-}
-
 var transferFundsCmd = &cobra.Command{
 	Use:   "transfer-funds",
 	Short: "make a fund transfer between accounts",
 	Run:   transferFundsCmdStart,
 }
 
-var transactionsUICmd = &cobra.Command{
-	Use:   "transactions-ui",
-	Short: "open ledger transactions ui",
-	Run:   transactionsUICmdStart,
+var uiCmd = &cobra.Command{
+	Use:   "ui",
+	Short: "open ledger ui",
+	Run:   uiCmdStart,
 }
 
 // addAccountCmdStart is the entrypoint for "add-account" sub-command to cashio
@@ -109,28 +97,6 @@ func addCategoryCmdStart(_ *cobra.Command, _ []string) {
 	}
 }
 
-// addExpenseCmdStart is the entrypoint for "add-expense" sub-command to cashio
-func addExpenseCmdStart(_ *cobra.Command, _ []string) {
-	checkEnv()
-	transaction := ledger.PromptForNewTransaction(ledgerName, "expense")
-	if err := ledger.AddTransaction(ledgerName, transaction); err != nil {
-		fmt.Fprintln(os.Stderr, common.ColorizeRed(fmt.Sprint("[E] ", err.Error())))
-	} else {
-		fmt.Fprintln(os.Stdout, common.ColorizeYellow("\ntransaction added!"))
-	}
-}
-
-// addIncomeCmdStart is the entrypoint for "add-income" sub-command to cashio
-func addIncomeCmdStart(_ *cobra.Command, _ []string) {
-	checkEnv()
-	transaction := ledger.PromptForNewTransaction(ledgerName, "income")
-	if err := ledger.AddTransaction(ledgerName, transaction); err != nil {
-		fmt.Fprintln(os.Stderr, common.ColorizeRed(fmt.Sprint("[E] ", err.Error())))
-	} else {
-		fmt.Fprintln(os.Stdout, common.ColorizeYellow("\ntransaction added!"))
-	}
-}
-
 // transferFundsCmdStart is the entrypoint for "transfer-funds" sub-command to cashio
 func transferFundsCmdStart(_ *cobra.Command, _ []string) {
 	checkEnv()
@@ -142,8 +108,8 @@ func transferFundsCmdStart(_ *cobra.Command, _ []string) {
 	}
 }
 
-// transactionsUICmdStart is the entrypoint for "transactions-ui" sub-command to cashio
-func transactionsUICmdStart(_ *cobra.Command, _ []string) {
+// uiCmdStart is the entrypoint for "transactions-ui" sub-command to cashio
+func uiCmdStart(_ *cobra.Command, _ []string) {
 	checkEnv()
 	tui.TransactionsUI(ledgerName)
 }
@@ -168,8 +134,6 @@ func init() {
 	ledgerCmd.MarkFlagRequired("name")
 	ledgerCmd.AddCommand(addAccountCmd)
 	ledgerCmd.AddCommand(addCategoryCmd)
-	ledgerCmd.AddCommand(addExpenseCmd)
-	ledgerCmd.AddCommand(addIncomeCmd)
 	ledgerCmd.AddCommand(transferFundsCmd)
-	ledgerCmd.AddCommand(transactionsUICmd)
+	ledgerCmd.AddCommand(uiCmd)
 }

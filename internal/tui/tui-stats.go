@@ -16,7 +16,7 @@ import (
 func CategoryStatsUI(ledgerName string) {
 
 	if err := ui.Init(); err != nil {
-		fmt.Fprintf(os.Stderr, common.ColorizeRed(fmt.Sprintf("[E] failed to initialize termui: %v", err)))
+		fmt.Fprint(os.Stderr, common.ColorizeRed(fmt.Sprintf("[E] failed to initialize termui: %v", err)))
 	}
 	defer ui.Close()
 

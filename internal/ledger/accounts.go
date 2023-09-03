@@ -240,14 +240,14 @@ func promptForSelectingAccount(ledger string, promptMsg string, accountType stri
 			prompt.OptionMaxSuggestion(30),
 		)
 		common.RestoreTermState()
-		accountID = getAccountID(account, accounts)
+		accountID = GetAccountID(account, accounts)
 	}
 
 	return accountID, nil
 }
 
-// getAccountID returns the account id of the given account name
-func getAccountID(accountName string, accounts []*Account) int {
+// GetAccountID returns the account id of the given account name
+func GetAccountID(accountName string, accounts []*Account) int {
 	accountName = strings.TrimSpace(accountName)
 	for _, account := range accounts {
 		option := account.Name
@@ -255,7 +255,7 @@ func getAccountID(accountName string, accounts []*Account) int {
 			return account.ID
 		}
 		if account.Children != nil {
-			subAccountID := getAccountID(accountName, account.Children)
+			subAccountID := GetAccountID(accountName, account.Children)
 			if subAccountID != 0 {
 				return subAccountID
 			}
@@ -314,23 +314,4 @@ func getChildAccountIDsHelper(accounts []*Account) []int {
 		}
 	}
 	return cids
-}
-
-// getAccountBalance returns balance for the given account for the given ledger
-func getAccountBalance(ledgerName string, accountID int) (float64, error) {
-
-	var balance float64
-
-	query := fmt.Sprintf(`
-		SELECT opening_balance + balance
-		FROM %s_accounts
-		WHERE id = ?
-  `, ledgerName)
-
-	err := common.DbConn.QueryRow(query, accountID).Scan(&balance)
-	if err != nil {
-		return 0, err
-	}
-
-	return balance, nil
 }

@@ -219,14 +219,14 @@ func promptForSelectingCategory(ledger string, promptMsg string, categoryType st
 			prompt.OptionMaxSuggestion(30),
 		)
 		common.RestoreTermState()
-		categoryID = getCategoryID(parentCategory, categories)
+		categoryID = GetCategoryID(parentCategory, categories)
 	}
 
 	return categoryID, nil
 }
 
-// getCategoryID returns the category id of the given category name
-func getCategoryID(categoryName string, categories []*Category) int {
+// GetCategoryID returns the category id of the given category name
+func GetCategoryID(categoryName string, categories []*Category) int {
 	categoryName = strings.TrimSpace(categoryName)
 	for _, category := range categories {
 		option := category.Name
@@ -234,7 +234,7 @@ func getCategoryID(categoryName string, categories []*Category) int {
 			return category.ID
 		}
 		if category.Children != nil {
-			subCategoryID := getCategoryID(categoryName, category.Children)
+			subCategoryID := GetCategoryID(categoryName, category.Children)
 			if subCategoryID != 0 {
 				return subCategoryID
 			}
@@ -323,7 +323,7 @@ func FetchCategoryStatsData(ledgerName string, category string, period string, c
 		return nil, err
 	}
 
-	categoryID := getCategoryID(category, categories)
+	categoryID := GetCategoryID(category, categories)
 	categoryType := getCategoryType(category, categories)
 
 	var debitOrCredit string

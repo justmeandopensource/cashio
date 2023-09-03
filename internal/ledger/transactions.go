@@ -87,7 +87,7 @@ func GetTransactionsForCategory(ledgerName string, category string, limit int) (
 		return nil, err
 	}
 
-	categoryID := getCategoryID(category, categories)
+	categoryID := GetCategoryID(category, categories)
 
 	var query, inClause string
 	var categoryFilter = ""
@@ -174,7 +174,7 @@ func GetTransactionsForAccount(ledgerName string, accountName string, limit int)
 		return nil, err
 	}
 
-	accountID := getAccountID(accountName, accounts)
+	accountID := GetAccountID(accountName, accounts)
 
 	var query, inClause string
 	var accountFilter = ""
@@ -251,9 +251,7 @@ func GetTransactionsForKeywords(ledgerName string, keywords string) ([]Transacti
 	keywords = strings.ReplaceAll(keywords, " ", "%")
 	keywords = "%" + keywords + "%"
 
-	var query string
-
-	query = fmt.Sprintf(`
+	query := fmt.Sprintf(`
     SELECT u.id, u.date, u.notes, u.credit, u.debit, a.name AS account, u.name AS category
     FROM (
 
@@ -318,9 +316,7 @@ func GetTransactionsForKeywords(ledgerName string, keywords string) ([]Transacti
 // them as a slice of SplitTransaction
 func GetSplitsForTransaction(ledgerName string, transactionID int) ([]SplitTransaction, error) {
 
-	var query string
-
-	query = fmt.Sprintf(`
+	query := fmt.Sprintf(`
 		SELECT t.date, t.notes, t.credit, t.debit, a.name AS account, c.name AS category
 		FROM %s_split_transactions t
 		LEFT JOIN %s_accounts a ON t.account_id = a.id
@@ -364,118 +360,6 @@ func GetSplitsForTransaction(ledgerName string, transactionID int) ([]SplitTrans
 	}
 
 	return splitTransactions, nil
-}
-
-// PromptForNewTransaction gathers details of new transaction from user into A Transaction struct,
-// which can then be added to the database.
-//
-// transactionType is either income or expense
-func PromptForNewTransaction(ledgerName string, transactionType string) Transaction {
-
-	reader := bufio.NewReader(os.Stdin)
-
-	splitTransactions := []SplitTransaction{}
-
-	// date
-	date := common.GetDateFromUser()
-
-	// account
-	accountID, _ := promptForSelectingAccount(ledgerName, "pick an account", "", false)
-
-	// credit or debit
-	credit, debit := 0.00, 0.00
-
-	fmt.Printf("amount: ")
-	amount, _ := reader.ReadString('\n')
-	amount = strings.TrimSuffix(amount, "\n")
-	amountFormatted := common.ProcessExpression(amount)
-
-	// notes
-	fmt.Printf("notes: ")
-	notes, _ := reader.ReadString('\n')
-	notes = strings.TrimSuffix(notes, "\n")
-
-	switch transactionType {
-	case "income":
-		credit = amountFormatted
-	case "expense":
-		debit = amountFormatted
-	default:
-		fmt.Println(common.ColorizeRed("[E] unknown transaction type"))
-		os.Exit(1)
-	}
-
-	var categoryID int
-	var isSplit int
-
-	fmt.Print("do you want to split this transaction? (y/N): ")
-	response, _ := reader.ReadString('\n')
-	response = strings.TrimSpace(strings.ToLower(response))
-
-	if response == "y" {
-		// split
-		isSplit = 1
-		splits := 0
-		notes = "<split> " + notes
-		for amountFormatted > 0 {
-			splits++
-			fmt.Printf("[split %d] amount [%0.2f]: ", splits, amountFormatted)
-			amount, _ := reader.ReadString('\n')
-			amount = strings.TrimSuffix(amount, "\n")
-
-			var splitAmountFormatted float64
-			if len(amount) == 0 {
-				splitAmountFormatted = amountFormatted
-			} else {
-				splitAmountFormatted, _ = strconv.ParseFloat(amount, 64)
-			}
-
-			fmt.Printf("[split %d] notes: ", splits)
-			notes, _ := reader.ReadString('\n')
-			notes = strings.TrimSuffix(notes, "\n")
-
-			splitCredit, splitDebit := 0.00, 0.00
-
-			switch transactionType {
-			case "income":
-				splitCredit = splitAmountFormatted
-			case "expense":
-				splitDebit = splitAmountFormatted
-			}
-
-			amountFormatted -= splitAmountFormatted
-
-			categoryID, _ := promptForSelectingCategory(ledgerName, "pick a category", transactionType, false)
-
-			splitTransaction := SplitTransaction{
-				Date:       date,
-				Notes:      notes,
-				Credit:     splitCredit,
-				Debit:      splitDebit,
-				AccountID:  accountID,
-				CategoryID: categoryID,
-			}
-
-			splitTransactions = append(splitTransactions, splitTransaction)
-		}
-	} else {
-		// non-split
-		isSplit = 0
-		categoryID, _ = promptForSelectingCategory(ledgerName, "pick a category", transactionType, false)
-	}
-
-	transaction := Transaction{
-		Date:       date,
-		Notes:      notes,
-		Credit:     credit,
-		Debit:      debit,
-		AccountID:  accountID,
-		CategoryID: categoryID,
-		IsSplit:    isSplit,
-		Splits:     splitTransactions,
-	}
-
-	return transaction
 }
 
 // AddTransaction adds a transaction to the database
@@ -550,9 +434,6 @@ func AddTransaction(ledgerName string, transaction Transaction) error {
 	if err != nil {
 		return err
 	}
-
-	accountBalance, _ := getAccountBalance(ledgerName, transaction.AccountID)
-	fmt.Println(fmt.Sprintf("account balance: %0.2f", accountBalance))
 
 	return nil
 }
@@ -694,8 +575,8 @@ func PromptForNewTransfer(ledgerName string) (string, []Transaction) {
 		os.Exit(1)
 	}
 
-	fromAccountID := getAccountID(fromAccount, fromAccounts)
-	toAccountID := getAccountID(toAccount, toAccounts)
+	fromAccountID := GetAccountID(fromAccount, fromAccounts)
+	toAccountID := GetAccountID(toAccount, toAccounts)
 
 	// check if we are doing inter currency transfer
 	fromLedgerCurrency := GetCurrencyForLedger(ledgerName)
@@ -897,7 +778,7 @@ func updateAccountBalance(tx *sql.Tx, ledgerName string, accountID int, amount f
 	case "debit":
 		operator = "-"
 	default:
-		return errors.New("Unknown update type. Should be either credit or debit.")
+		return errors.New("updateType is neither credit nor debit")
 	}
 
 	updateQuery := fmt.Sprintf(`

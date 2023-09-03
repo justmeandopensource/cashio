@@ -126,7 +126,7 @@ func AddLedger() {
 	}
 
 	// bootstrap accounts
-	fmt.Printf(common.ColorizeYellow("\nlets create some accounts now\n"))
+	fmt.Print(common.ColorizeYellow("\nlets create some accounts now\n"))
 	for {
 		account := PromptForNewAccount(ledgerName)
 		if err := AddAccount(ledgerName, account); err != nil {
@@ -144,7 +144,7 @@ func AddLedger() {
 	}
 
 	// bootstrap categories
-	fmt.Printf(common.ColorizeYellow("\nand some categories now..\n"))
+	fmt.Print(common.ColorizeYellow("\nand some categories now..\n"))
 	for {
 		category := PromptForNewCategory(ledgerName)
 		if err := AddCategory(ledgerName, category); err != nil {

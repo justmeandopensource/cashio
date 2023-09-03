@@ -20,7 +20,6 @@ var (
 )
 
 var page2AccTreeMap = map[*tview.TreeNode]*tview.TreeNode{}
-var confirmed = false
 
 // setupTransByAccPage sets up tview page that displays transactions list by accounts
 func setupTransByAccPage(workingLedger ledger.Ledger) {
@@ -121,6 +120,8 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 	page2TransTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
+			case 'a':
+				showAddTransactionForm(workingLedger.Name)
 			case 'h':
 				app.SetFocus(page2AccTree)
 			case 'l':
@@ -185,7 +186,11 @@ func showSplitsForTransaction(workingLedger ledger.Ledger, transactionID int) {
 	}
 
 	for i, item := range colNames {
-		table.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+		if item == "Credit" || item == "Debit" {
+			table.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+		} else {
+			table.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+		}
 	}
 
 	splitTransactions, _ := ledger.GetSplitsForTransaction(workingLedger.Name, transactionID)
@@ -246,13 +251,14 @@ func showDeleteConfirmationModal(workingLedger ledger.Ledger, transactionID int)
 	modal := tview.NewModal()
 	modal.SetText("Delete the transaction?")
 	modal.AddButtons([]string{"Yes", "No"})
+	modal.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
 	modal.SetBackgroundColor(tcell.Color235)
 
 	modal.SetDoneFunc(func(_ int, buttonLabel string) {
 		if buttonLabel == "Yes" {
 			if err := ledger.DeleteTransaction(workingLedger.Name, transactionID); err != nil {
 				app.Stop()
-				fmt.Fprintf(os.Stderr, common.ColorizeRed(fmt.Sprintf("[E] %v", err)))
+				fmt.Fprint(os.Stderr, common.ColorizeRed(fmt.Sprintf("[E] %v", err)))
 			} else {
 				accountName := page2AccTree.GetCurrentNode().GetText()
 				transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, accountName, 50)
