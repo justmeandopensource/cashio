@@ -315,22 +315,3 @@ func getChildAccountIDsHelper(accounts []*Account) []int {
 	}
 	return cids
 }
-
-// getAccountBalance returns balance for the given account for the given ledger
-func getAccountBalance(ledgerName string, accountID int) (float64, error) {
-
-	var balance float64
-
-	query := fmt.Sprintf(`
-		SELECT opening_balance + balance
-		FROM %s_accounts
-		WHERE id = ?
-  `, ledgerName)
-
-	err := common.DbConn.QueryRow(query, accountID).Scan(&balance)
-	if err != nil {
-		return 0, err
-	}
-
-	return balance, nil
-}

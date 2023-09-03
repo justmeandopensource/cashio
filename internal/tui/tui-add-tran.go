@@ -39,8 +39,7 @@ func showAddTransactionForm(ledgerName string) {
 			return
 		}
 		splitCounter += 1
-		var childForm *tview.Form
-		childForm = tview.NewForm()
+		childForm := tview.NewForm()
 		childForm.SetTitle(fmt.Sprintf("[ Split %d ]", splitCounter))
 		childForm.SetBorder(true)
 		childForm.SetBorderColor(tview.Styles.SecondaryTextColor)

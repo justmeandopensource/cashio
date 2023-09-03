@@ -35,18 +35,6 @@ var addCategoryCmd = &cobra.Command{
 	Run:   addCategoryCmdStart,
 }
 
-var addExpenseCmd = &cobra.Command{
-	Use:   "add-expense",
-	Short: "add an expense transaction",
-	Run:   addExpenseCmdStart,
-}
-
-var addIncomeCmd = &cobra.Command{
-	Use:   "add-income",
-	Short: "add an income transaction",
-	Run:   addIncomeCmdStart,
-}
-
 var transferFundsCmd = &cobra.Command{
 	Use:   "transfer-funds",
 	Short: "make a fund transfer between accounts",
@@ -109,28 +97,6 @@ func addCategoryCmdStart(_ *cobra.Command, _ []string) {
 	}
 }
 
-// addExpenseCmdStart is the entrypoint for "add-expense" sub-command to cashio
-func addExpenseCmdStart(_ *cobra.Command, _ []string) {
-	checkEnv()
-	transaction := ledger.PromptForNewTransaction(ledgerName, "expense")
-	if err := ledger.AddTransaction(ledgerName, transaction); err != nil {
-		fmt.Fprintln(os.Stderr, common.ColorizeRed(fmt.Sprint("[E] ", err.Error())))
-	} else {
-		fmt.Fprintln(os.Stdout, common.ColorizeYellow("\ntransaction added!"))
-	}
-}
-
-// addIncomeCmdStart is the entrypoint for "add-income" sub-command to cashio
-func addIncomeCmdStart(_ *cobra.Command, _ []string) {
-	checkEnv()
-	transaction := ledger.PromptForNewTransaction(ledgerName, "income")
-	if err := ledger.AddTransaction(ledgerName, transaction); err != nil {
-		fmt.Fprintln(os.Stderr, common.ColorizeRed(fmt.Sprint("[E] ", err.Error())))
-	} else {
-		fmt.Fprintln(os.Stdout, common.ColorizeYellow("\ntransaction added!"))
-	}
-}
-
 // transferFundsCmdStart is the entrypoint for "transfer-funds" sub-command to cashio
 func transferFundsCmdStart(_ *cobra.Command, _ []string) {
 	checkEnv()
@@ -168,8 +134,6 @@ func init() {
 	ledgerCmd.MarkFlagRequired("name")
 	ledgerCmd.AddCommand(addAccountCmd)
 	ledgerCmd.AddCommand(addCategoryCmd)
-	ledgerCmd.AddCommand(addExpenseCmd)
-	ledgerCmd.AddCommand(addIncomeCmd)
 	ledgerCmd.AddCommand(transferFundsCmd)
 	ledgerCmd.AddCommand(uiCmd)
 }

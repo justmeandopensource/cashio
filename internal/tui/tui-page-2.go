@@ -20,7 +20,6 @@ var (
 )
 
 var page2AccTreeMap = map[*tview.TreeNode]*tview.TreeNode{}
-var confirmed = false
 
 // setupTransByAccPage sets up tview page that displays transactions list by accounts
 func setupTransByAccPage(workingLedger ledger.Ledger) {
@@ -259,7 +258,7 @@ func showDeleteConfirmationModal(workingLedger ledger.Ledger, transactionID int)
 		if buttonLabel == "Yes" {
 			if err := ledger.DeleteTransaction(workingLedger.Name, transactionID); err != nil {
 				app.Stop()
-				fmt.Fprintf(os.Stderr, common.ColorizeRed(fmt.Sprintf("[E] %v", err)))
+				fmt.Fprint(os.Stderr, common.ColorizeRed(fmt.Sprintf("[E] %v", err)))
 			} else {
 				accountName := page2AccTree.GetCurrentNode().GetText()
 				transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, accountName, 50)
