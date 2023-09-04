@@ -121,6 +121,13 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 					CategoryNodeName: page3CatTree.GetCurrentNode().GetText(),
 				}
 				showAddTransactionForm(config)
+			case 't':
+				config := TransferFundsConfig{
+					WorkingLedger:   workingLedger,
+					SourceTable:     page2TransTable,
+					AccountNodeName: page2AccTree.GetCurrentNode().GetText(),
+				}
+				showTransferFundsForm(config)
 			case 'h':
 				app.SetFocus(page3CatTree)
 			case 's':

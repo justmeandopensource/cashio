@@ -127,6 +127,13 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 					AccountNodeName: page2AccTree.GetCurrentNode().GetText(),
 				}
 				showAddTransactionForm(config)
+			case 't':
+				config := TransferFundsConfig{
+					WorkingLedger:   workingLedger,
+					SourceTable:     page2TransTable,
+					AccountNodeName: page2AccTree.GetCurrentNode().GetText(),
+				}
+				showTransferFundsForm(config)
 			case 'h':
 				app.SetFocus(page2AccTree)
 			case 'l':
