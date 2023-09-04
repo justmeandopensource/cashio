@@ -83,9 +83,6 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		}
 	}
 	sortedLedgersList := append(ledgersList[:indexToRemove], ledgersList[indexToRemove+1:]...)
-	if len(sortedLedgersList) == 0 {
-		// display error in status text
-	}
 
 	mainForm.AddDropDown("To Ledger", sortedLedgersList, 0, func(option string, _ int) {
 		toLedger = option

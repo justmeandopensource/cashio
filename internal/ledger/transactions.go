@@ -1,7 +1,6 @@
 package ledger
 
 import (
-	"bufio"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -10,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/c-bata/go-prompt"
 	"github.com/justmeandopensource/cashio/internal/common"
 )
 
@@ -488,191 +486,6 @@ func DeleteTransaction(ledgerName string, transactionID int) error {
 	}
 
 	return nil
-}
-
-// PromptForNewTransfer gathers details of a new transfer from user into a slice of Transaction struct,
-// which can then be added to the database
-func PromptForNewTransfer(ledgerName string) (string, []Transaction) {
-
-	reader := bufio.NewReader(os.Stdin)
-	toLedger := ledgerName
-
-	transactions := []Transaction{}
-
-	// date
-	date := common.GetDateFromUser()
-
-	var fromAccounts, toAccounts []*Account
-
-	fromAccounts, err := FetchAccounts(ledgerName, "all", false)
-	if err != nil {
-		fmt.Println("Error fetching accounts:", err)
-		os.Exit(1)
-	}
-
-	toAccounts = fromAccounts
-
-	fromAccountsList := FormatAccounts(fromAccounts, "")
-	toAccountsList := fromAccountsList
-
-	if len(fromAccountsList) < 1 {
-		fmt.Println(common.ColorizeRed("[E] no accounts configured"))
-		os.Exit(1)
-	}
-
-	common.SaveTermState()
-	fromAccount := prompt.Input("from account [tab for options]: ", common.Completer(fromAccountsList), prompt.OptionShowCompletionAtStart(), prompt.OptionMaxSuggestion(25))
-	fromAccount = strings.TrimSpace(fromAccount)
-	common.RestoreTermState()
-
-	fmt.Print("are you transferring to an account in a different ledger? (y/N): ")
-	response, _ := reader.ReadString('\n')
-	response = strings.TrimSpace(strings.ToLower(response))
-
-	if response == "y" {
-		ledgersList, _ := GetLedgersList()
-
-		indexToRemove := -1
-		for i, ledger := range ledgersList {
-			if ledger == ledgerName {
-				indexToRemove = i
-				break
-			}
-		}
-
-		sortedLedgersList := append(ledgersList[:indexToRemove], ledgersList[indexToRemove+1:]...)
-
-		if len(sortedLedgersList) == 0 {
-			fmt.Fprintln(os.Stderr, common.ColorizeRed("[E] no additional ledger found"))
-		}
-
-		common.SaveTermState()
-		toLedger = prompt.Input("select ledger [tab for options]: ", common.Completer(sortedLedgersList), prompt.OptionShowCompletionAtStart())
-		toLedger = strings.TrimSpace(toLedger)
-		common.RestoreTermState()
-
-		if !IsValidLedger(toLedger) {
-			fmt.Fprintln(os.Stderr, common.ColorizeRed("[E] not a valid ledger"))
-			os.Exit(1)
-		}
-
-		toAccounts, err = FetchAccounts(toLedger, "all", false)
-		if err != nil {
-			fmt.Println("Error fetching accounts:", err)
-			os.Exit(1)
-		}
-
-		toAccountsList = FormatAccounts(toAccounts, "")
-	}
-
-	common.SaveTermState()
-	toAccount := prompt.Input("to account [tab for options]: ", common.Completer(toAccountsList), prompt.OptionShowCompletionAtStart(), prompt.OptionMaxSuggestion(25))
-	toAccount = strings.TrimSpace(toAccount)
-	common.RestoreTermState()
-
-	if ledgerName == toLedger && fromAccount == toAccount {
-		fmt.Println(common.ColorizeRed("[E] they are the same accounts"))
-		os.Exit(1)
-	}
-
-	fromAccountID := GetAccountID(fromAccount, fromAccounts)
-	toAccountID := GetAccountID(toAccount, toAccounts)
-
-	// check if we are doing inter currency transfer
-	fromLedgerCurrency := GetCurrencyForLedger(ledgerName)
-	toLedgerCurrency := GetCurrencyForLedger(toLedger)
-
-	// amount
-	fmt.Print("amount (excluding transfer charge): ")
-	fromAmount, _ := reader.ReadString('\n')
-	fromAmount = strings.TrimSuffix(fromAmount, "\n")
-	fromAmountFormatted := common.ProcessExpression(fromAmount)
-
-	if fromAmountFormatted == 0 || fromAmountFormatted < 0 {
-		fmt.Println(common.ColorizeRed("[E] invalid transfer amount"))
-		os.Exit(1)
-	}
-
-	toAmountFormatted := fromAmountFormatted
-	chargeFormatted := 0.00
-	isSplit := 0
-	splitTransactions := []SplitTransaction{}
-
-	if fromLedgerCurrency != toLedgerCurrency {
-		fmt.Println(common.ColorizeYellow("[i] inter currency transfer detected"))
-		fmt.Print("specify receiving amount: ")
-		toAmount, _ := reader.ReadString('\n')
-		toAmount = strings.TrimSuffix(toAmount, "\n")
-		toAmountFormatted = common.ProcessExpression(toAmount)
-
-		fmt.Print("transfer charge if any: ")
-		charge, _ := reader.ReadString('\n')
-		charge = strings.TrimSuffix(charge, "\n")
-		chargeFormatted = common.ProcessExpression(charge)
-	}
-
-	// prompt for charge category if there is transfer charge
-	if chargeFormatted > 0 {
-		isSplit = 1
-		categoryID, _ := promptForSelectingCategory(ledgerName, "pick a category to log the transfer charge against", "expense", false)
-		splitTransaction := SplitTransaction{
-			Date:       date,
-			Notes:      "fund transfer charge",
-			Credit:     0.00,
-			Debit:      chargeFormatted,
-			AccountID:  fromAccountID,
-			CategoryID: categoryID,
-		}
-		splitTransactions = append(splitTransactions, splitTransaction)
-	}
-
-	// notes
-	fmt.Printf("notes: ")
-	notes, _ := reader.ReadString('\n')
-	notes = strings.TrimSuffix(notes, "\n")
-
-	if len(notes) > 0 {
-		notes = fmt.Sprintf("[%s]", notes)
-	}
-
-	fromAccountText := fromAccount
-	toAccountText := toAccount
-	notesPrefix := "<trans>"
-
-	if toLedger != ledgerName {
-		fromAccountText = fmt.Sprintf("%s (%s)", fromAccountText, ledgerName)
-		toAccountText = fmt.Sprintf("%s (%s)", toAccountText, toLedger)
-	}
-
-	toNotes := fmt.Sprintf("%s %s -> %s %s", notesPrefix, fromAccountText, toAccountText, notes)
-
-	if isSplit == 1 {
-		notesPrefix += "<split>"
-	}
-	fromNotes := fmt.Sprintf("%s %s -> %s %s", notesPrefix, fromAccountText, toAccountText, notes)
-
-	fromTransaction := Transaction{
-		Date:      date,
-		Notes:     fromNotes,
-		Credit:    0.00,
-		Debit:     fromAmountFormatted + chargeFormatted,
-		AccountID: fromAccountID,
-		IsSplit:   isSplit,
-		Splits:    splitTransactions,
-	}
-
-	toTransaction := Transaction{
-		Date:      date,
-		Notes:     toNotes,
-		Credit:    toAmountFormatted,
-		Debit:     0.00,
-		AccountID: toAccountID,
-		IsSplit:   0,
-	}
-
-	transactions = append(transactions, fromTransaction, toTransaction)
-
-	return toLedger, transactions
 }
 
 // TransferFunds adds transfer transactions contained in a slice of Transaction struct to database
