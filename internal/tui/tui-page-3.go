@@ -127,7 +127,7 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 					SourceTable:     page3TransTable,
 					AccountNodeName: page3CatTree.GetCurrentNode().GetText(),
 				}
-				showTransferChoiceModal(config)
+				showTransferFundsLocalForm(config)
 			case 'h':
 				app.SetFocus(page3CatTree)
 			case 's':

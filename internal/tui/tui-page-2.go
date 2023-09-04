@@ -133,7 +133,7 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 					SourceTable:     page2TransTable,
 					AccountNodeName: page2AccTree.GetCurrentNode().GetText(),
 				}
-				showTransferChoiceModal(config)
+				showTransferFundsLocalForm(config)
 			case 'h':
 				app.SetFocus(page2AccTree)
 			case 'l':

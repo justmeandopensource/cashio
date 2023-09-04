@@ -13,6 +13,13 @@ import (
 	"github.com/rivo/tview"
 )
 
+type TransferFundsConfig struct {
+	WorkingLedger    ledger.Ledger
+	SourceTable      *tview.Table
+	AccountNodeName  string
+	CategoryNodeName string
+}
+
 func showTransferFundsLocalForm(config TransferFundsConfig) {
 
 	inputFieldFocused = true
@@ -31,6 +38,14 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 
 	// form
 	mainForm := tview.NewForm()
+
+	// Cross ledger? field
+	mainForm.AddCheckbox("Cross Ledger?", false, func(checked bool) {
+		if checked {
+			pages.HidePage("transferFundsLocalForm")
+			showTransferFundsCrossForm(config)
+		}
+	})
 
 	// date
 	mainForm.AddInputField("Date", time.Now().Format("2006-01-02"), 11, nil, nil)
@@ -110,6 +125,7 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 			notesText = fmt.Sprintf("[ %s ]", notesText)
 		}
 		notes := fmt.Sprintf("<trans> %s -> %s %s", fromAccountName, toAccountName, notesText)
+
 		dateText := mainForm.GetFormItemByLabel("Date").(*tview.InputField).GetText()
 		transDate, err := time.Parse("2006-01-02", dateText)
 		if err != nil {
@@ -190,7 +206,7 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 	})
 
 	grid := tview.NewGrid().
-		SetRows(0, 18, 0).
+		SetRows(0, 19, 0).
 		SetColumns(0, 55, 0).
 		AddItem(mainForm, 1, 1, 1, 1, 0, 0, true)
 
