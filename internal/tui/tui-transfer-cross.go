@@ -3,7 +3,6 @@ package tui
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -13,6 +12,8 @@ import (
 	"github.com/rivo/tview"
 )
 
+// showTransferFundsCrossForm collects details using a form about a transfer transaction across ledger
+// and adds it to the database
 func showTransferFundsCrossForm(config TransferFundsConfig) {
 
 	inputFieldFocused = true
@@ -122,12 +123,12 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 
 	// from amount
 	mainForm.AddInputField(fmt.Sprintf("Amount (%v)", config.WorkingLedger.Currency), "", 11, nil, func(text string) {
-		fromAmount, _ = strconv.ParseFloat(text, 64)
+		fromAmount = common.ProcessExpression(text)
 	})
 
 	// fees
 	mainForm.AddInputField(fmt.Sprintf("Fees (%v)", config.WorkingLedger.Currency), "", 11, nil, func(text string) {
-		fees, _ = strconv.ParseFloat(text, 64)
+		fees = common.ProcessExpression(text)
 		if fees > 0 {
 			isSplit = 1
 		}
@@ -162,7 +163,7 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 
 	// to amount
 	mainForm.AddInputField(fmt.Sprintf("Amount (%v)", ledger.GetCurrencyForLedger(toLedger)), "", 11, nil, func(text string) {
-		toAmount, _ = strconv.ParseFloat(text, 64)
+		toAmount = common.ProcessExpression(text)
 	})
 
 	// notes

@@ -3,7 +3,6 @@ package tui
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/rivo/tview"
 )
 
+// A TransferFundsConfig holds helper data for transfer funds process
 type TransferFundsConfig struct {
 	WorkingLedger    ledger.Ledger
 	SourceTable      *tview.Table
@@ -20,6 +20,8 @@ type TransferFundsConfig struct {
 	CategoryNodeName string
 }
 
+// showTransferFundsLocalForm collects details using a form about a transfer transaction within the same ledger
+// and adds it to the database
 func showTransferFundsLocalForm(config TransferFundsConfig) {
 
 	inputFieldFocused = true
@@ -80,7 +82,7 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 
 	// amount
 	mainForm.AddInputField(fmt.Sprintf("Amount (%v)", config.WorkingLedger.Currency), "", 11, nil, func(text string) {
-		amount, _ = strconv.ParseFloat(text, 64)
+		amount = common.ProcessExpression(text)
 	})
 
 	// to account
@@ -213,6 +215,7 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 	pages.AddPage("transferFundsLocalForm", grid, true, true)
 }
 
+// showError sets the given text in the status field and clears it after 3 seconds
 func showError(errorField *tview.TextView, errorMsg string) {
 	errorField.SetText(errorMsg)
 	go time.AfterFunc(3*time.Second, func() {
