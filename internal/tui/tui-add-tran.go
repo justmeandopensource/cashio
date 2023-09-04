@@ -12,6 +12,7 @@ import (
 	"github.com/rivo/tview"
 )
 
+// An AddTransactionConfig holds helper data for the add transaction process
 type AddTransactionConfig struct {
 	WorkingLedger    ledger.Ledger
 	SourceTable      *tview.Table

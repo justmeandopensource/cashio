@@ -35,12 +35,6 @@ var addCategoryCmd = &cobra.Command{
 	Run:   addCategoryCmdStart,
 }
 
-var transferFundsCmd = &cobra.Command{
-	Use:   "transfer-funds",
-	Short: "make a fund transfer between accounts",
-	Run:   transferFundsCmdStart,
-}
-
 var uiCmd = &cobra.Command{
 	Use:   "ui",
 	Short: "open ledger ui",
@@ -97,17 +91,6 @@ func addCategoryCmdStart(_ *cobra.Command, _ []string) {
 	}
 }
 
-// transferFundsCmdStart is the entrypoint for "transfer-funds" sub-command to cashio
-func transferFundsCmdStart(_ *cobra.Command, _ []string) {
-	checkEnv()
-	toLedger, transactions := ledger.PromptForNewTransfer(ledgerName)
-	if err := ledger.TransferFunds(ledgerName, toLedger, transactions); err != nil {
-		fmt.Fprintln(os.Stderr, common.ColorizeRed(fmt.Sprint("[E] ", err.Error())))
-	} else {
-		fmt.Fprintln(os.Stdout, common.ColorizeYellow("\nfunds transferred!"))
-	}
-}
-
 // uiCmdStart is the entrypoint for "transactions-ui" sub-command to cashio
 func uiCmdStart(_ *cobra.Command, _ []string) {
 	checkEnv()
@@ -134,6 +117,5 @@ func init() {
 	ledgerCmd.MarkFlagRequired("name")
 	ledgerCmd.AddCommand(addAccountCmd)
 	ledgerCmd.AddCommand(addCategoryCmd)
-	ledgerCmd.AddCommand(transferFundsCmd)
 	ledgerCmd.AddCommand(uiCmd)
 }
