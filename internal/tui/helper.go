@@ -96,13 +96,13 @@ func findNodeByText(root *tview.TreeNode, targetText string) *tview.TreeNode {
 }
 
 // expandParentNodes expands all the parent nodes recursively for the given tree node
-func expandParentNodes(node *tview.TreeNode) {
+func expandParentNodes(treeMap map[*tview.TreeNode]*tview.TreeNode, node *tview.TreeNode) {
 	if node.GetText() == "." {
 		return
 	}
-	if parent, found := page2AccTreeMap[node]; found {
+	if parent, found := treeMap[node]; found {
 		parent.SetExpanded(true)
-		expandParentNodes(parent)
+		expandParentNodes(treeMap, parent)
 	}
 }
 

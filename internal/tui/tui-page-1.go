@@ -173,7 +173,7 @@ func jumpToAccounts(workingLedger ledger.Ledger, table *tview.Table) {
 		page2TransTable.SetTitle("[ " + match[1] + " ]")
 		pages.SwitchToPage(workingLedger.Name + page2)
 		accountNode := findNodeByText(page2AccTree.GetRoot(), match[1])
-		expandParentNodes(accountNode)
+		expandParentNodes(page2AccTreeMap, accountNode)
 		page2AccTree.SetCurrentNode(accountNode)
 		if len(transactions) == 0 {
 			app.SetFocus(page2AccTree)

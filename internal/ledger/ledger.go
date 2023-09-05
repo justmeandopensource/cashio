@@ -124,42 +124,6 @@ func AddLedger() {
 	} else {
 		fmt.Fprintln(os.Stdout, common.ColorizeBlue("[I] ledger added"))
 	}
-
-	// bootstrap accounts
-	fmt.Print(common.ColorizeYellow("\nlets create some accounts now\n"))
-	for {
-		account := PromptForNewAccount(ledgerName)
-		if err := AddAccount(ledgerName, account); err != nil {
-			fmt.Fprintln(os.Stderr, common.ColorizeRed(fmt.Sprint("[E] ", err.Error())))
-			continue
-		}
-
-		fmt.Print("add another account? (y/n): ")
-		response, _ := reader.ReadString('\n')
-		response = strings.TrimSpace(strings.ToLower(response))
-
-		if response != "y" {
-			break
-		}
-	}
-
-	// bootstrap categories
-	fmt.Print(common.ColorizeYellow("\nand some categories now..\n"))
-	for {
-		category := PromptForNewCategory(ledgerName)
-		if err := AddCategory(ledgerName, category); err != nil {
-			fmt.Fprintln(os.Stderr, common.ColorizeRed(fmt.Sprint("[E] ", err.Error())))
-			continue
-		}
-
-		fmt.Print("add another category? (y/n): ")
-		response, _ := reader.ReadString('\n')
-		response = strings.TrimSpace(strings.ToLower(response))
-
-		if response != "y" {
-			break
-		}
-	}
 }
 
 func IsValidLedger(ledgerName string) bool {

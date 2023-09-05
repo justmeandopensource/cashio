@@ -8,6 +8,7 @@ import (
 	"github.com/rivo/tview"
 )
 
+// showAddCategoryForm collects new category details using form and adds it to the database
 func showAddCategoryForm(workingLedger ledger.Ledger, categoryID int, categoryType string) {
 
 	inputFieldFocused = true
@@ -53,6 +54,10 @@ func showAddCategoryForm(workingLedger ledger.Ledger, categoryID int, categoryTy
 			} else {
 				pages.RemovePage(workingLedger.Name + page2)
 				setupTransByCatPage(workingLedger)
+				newCategoryNode := findNodeByText(page3CatTree.GetRoot(), categoryName)
+				expandParentNodes(page3CatTreeMap, newCategoryNode)
+				page3CatTree.SetCurrentNode(newCategoryNode)
+				page3TransTable.SetBorderColor(tcell.Color246)
 			}
 		}
 		pages.RemovePage("addCategoryForm")

@@ -13,6 +13,8 @@ var (
 	page3TransTable *tview.Table
 )
 
+var page3CatTreeMap = map[*tview.TreeNode]*tview.TreeNode{}
+
 // setupTransByCatPage sets up the tview page that displays transactions by category
 func setupTransByCatPage(workingLedger ledger.Ledger) {
 
@@ -38,6 +40,8 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 
 	page3CatTree.GetRoot().AddChild(incomeNode)
 	page3CatTree.GetRoot().AddChild(expenseNode)
+	page3CatTreeMap[incomeNode] = page3CatTree.GetRoot()
+	page3CatTreeMap[expenseNode] = page3CatTree.GetRoot()
 
 	page3CatTree.SetBlurFunc(func() {
 		page3CatTree.SetBorderColor(tcell.Color246)
@@ -171,6 +175,7 @@ func addCategoriesToTreeView(categories []*ledger.Category, node *tview.TreeNode
 		if category.ParentID == parentID {
 			childNode := tview.NewTreeNode(category.Name).SetExpanded(false).SetIndent(1).SetColor(tcell.Color246)
 			node.AddChild(childNode)
+			page3CatTreeMap[childNode] = node
 
 			// Recursively add sub-accounts.
 			if len(category.Children) > 0 {

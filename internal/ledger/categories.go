@@ -1,13 +1,10 @@
 package ledger
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 
-	"github.com/c-bata/go-prompt"
 	"github.com/justmeandopensource/cashio/internal/common"
 )
 
@@ -125,104 +122,6 @@ func FormatCategories(categories []*Category, prefix string) []string {
 	}
 
 	return options
-}
-
-// PromptForNewCategory gathers new category details from the user and returns an Category struct
-// which can then be added to the database
-func PromptForNewCategory(ledger string) Category {
-
-	reader := bufio.NewReader(os.Stdin)
-
-	var (
-		name             string
-		categoryType     string
-		placeholder      int
-		parentCategoryID int
-	)
-
-	// category name
-	for {
-		fmt.Printf("category name: ")
-		name, _ = reader.ReadString('\n')
-		name = strings.TrimSuffix(name, "\n")
-
-		if len(name) > 0 {
-			break
-		}
-
-		fmt.Fprintln(os.Stdout, common.ColorizeRed("[E] category name is required"))
-	}
-
-	// category type
-	categoryTypeChoice := []string{"income", "expense"}
-
-	for {
-		common.SaveTermState()
-		categoryType = prompt.Input("category type [tab for options]: ", common.Completer(categoryTypeChoice), prompt.OptionShowCompletionAtStart())
-		common.RestoreTermState()
-
-		if len(categoryType) > 0 {
-			break
-		}
-
-		fmt.Fprintln(os.Stdout, common.ColorizeRed("[E] category type is required"))
-	}
-
-	// placeholder category?
-	fmt.Print("is this going to be a placeholder category? (y/N): ")
-	response, _ := reader.ReadString('\n')
-	response = strings.TrimSpace(strings.ToLower(response))
-
-	if response == "y" {
-		placeholder = 1
-	} else {
-		placeholder = 0
-	}
-
-	// parent category id
-	parentCategoryID, _ = promptForSelectingCategory(ledger, "parent category", categoryType, true)
-
-	category := Category{
-		Name:        name,
-		Type:        categoryType,
-		Placeholder: placeholder,
-		ParentID:    parentCategoryID,
-	}
-
-	return category
-}
-
-// promptForSelectingCategory displays a prompt asking the user to pick a category from the list
-func promptForSelectingCategory(ledger string, promptMsg string, categoryType string, placeholder bool) (int, error) {
-
-	var categoryID int
-
-	if len(promptMsg) == 0 {
-		promptMsg = "pick a category [tab for options]: "
-	} else {
-		promptMsg = fmt.Sprintf("%s [tab for options]: ", promptMsg)
-	}
-
-	categories, err := FetchCategories(ledger, categoryType, placeholder)
-	if err != nil {
-		return 0, err
-	}
-
-	categoriesFormatted := FormatCategories(categories, "")
-
-	if len(categoriesFormatted) > 0 {
-		common.SaveTermState()
-		parentCategory := prompt.Input(
-			promptMsg,
-			common.Completer(categoriesFormatted),
-			prompt.OptionShowCompletionAtStart(),
-			prompt.OptionMaxSuggestion(30),
-		)
-		common.RestoreTermState()
-		categoryID = GetCategoryID(parentCategory, categories)
-	}
-
-	return categoryID, nil
 }
 
 // GetCategoryID returns the category id of the given category name

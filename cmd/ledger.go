@@ -29,12 +29,6 @@ var addAccountCmd = &cobra.Command{
 	Run:   addAccountCmdStart,
 }
 
-var addCategoryCmd = &cobra.Command{
-	Use:   "add-category",
-	Short: "add a new transaction category",
-	Run:   addCategoryCmdStart,
-}
-
 var uiCmd = &cobra.Command{
 	Use:   "ui",
 	Short: "open ledger ui",
@@ -57,31 +51,6 @@ func addAccountCmdStart(_ *cobra.Command, _ []string) {
 		}
 
 		fmt.Print("add another account? (y/n): ")
-		response, _ := reader.ReadString('\n')
-		response = strings.TrimSpace(strings.ToLower(response))
-
-		if response != "y" {
-			break
-		}
-	}
-}
-
-// addCategoryCmdStart is the entrypoint for "add-category" sub-command to cashio
-func addCategoryCmdStart(_ *cobra.Command, _ []string) {
-
-	checkEnv()
-
-	reader := bufio.NewReader(os.Stdin)
-
-	for {
-		category := ledger.PromptForNewCategory(ledgerName)
-		if err := ledger.AddCategory(ledgerName, category); err != nil {
-			fmt.Fprintln(os.Stderr, common.ColorizeRed(fmt.Sprint("[E] ", err.Error())))
-		} else {
-			fmt.Fprintln(os.Stdout, "category added")
-		}
-
-		fmt.Print("add another category? (y/n): ")
 		response, _ := reader.ReadString('\n')
 		response = strings.TrimSpace(strings.ToLower(response))
 
@@ -116,6 +85,5 @@ func init() {
 	ledgerCmd.PersistentFlags().StringVarP(&ledgerName, "name", "n", "", "ledger name")
 	ledgerCmd.MarkFlagRequired("name")
 	ledgerCmd.AddCommand(addAccountCmd)
-	ledgerCmd.AddCommand(addCategoryCmd)
 	ledgerCmd.AddCommand(uiCmd)
 }
