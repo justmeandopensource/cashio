@@ -214,11 +214,3 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 
 	pages.AddPage("transferFundsLocalForm", grid, true, true)
 }
-
-// showError sets the given text in the status field and clears it after 3 seconds
-func showError(errorField *tview.TextView, errorMsg string) {
-	errorField.SetText(errorMsg)
-	go time.AfterFunc(3*time.Second, func() {
-		errorField.SetText("")
-	})
-}

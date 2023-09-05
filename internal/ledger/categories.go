@@ -243,15 +243,15 @@ func GetCategoryID(categoryName string, categories []*Category) int {
 	return 0
 }
 
-// getCategoryType returns the category type of the given category name
-func getCategoryType(categoryName string, categories []*Category) string {
+// GetCategoryType returns the category type of the given category name
+func GetCategoryType(categoryName string, categories []*Category) string {
 	categoryName = strings.TrimSpace(categoryName)
 	for _, category := range categories {
 		if category.Name == categoryName {
 			return category.Type
 		}
 		if category.Children != nil {
-			subCategoryType := getCategoryType(categoryName, category.Children)
+			subCategoryType := GetCategoryType(categoryName, category.Children)
 			if subCategoryType != "" {
 				return subCategoryType
 			}
@@ -324,7 +324,7 @@ func FetchCategoryStatsData(ledgerName string, category string, period string, c
 	}
 
 	categoryID := GetCategoryID(category, categories)
-	categoryType := getCategoryType(category, categories)
+	categoryType := GetCategoryType(category, categories)
 
 	var debitOrCredit string
 	switch categoryType {

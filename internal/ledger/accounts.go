@@ -264,6 +264,23 @@ func GetAccountID(accountName string, accounts []*Account) int {
 	return 0
 }
 
+// GetAccountType returns the account type of the given account name
+func GetAccountType(accountName string, accounts []*Account) string {
+	accountName = strings.TrimSpace(accountName)
+	for _, account := range accounts {
+		if account.Name == accountName {
+			return account.Type
+		}
+		if account.Children != nil {
+			subAccountType := GetAccountType(accountName, account.Children)
+			if subAccountType != "" {
+				return subAccountType
+			}
+		}
+	}
+	return ""
+}
+
 // IsPlaceholderAccount returns true if the given account is a placeholder account,
 // false otherwise
 func IsPlaceholderAccount(accountName string, accounts []*Account) bool {

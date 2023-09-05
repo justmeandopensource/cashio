@@ -56,7 +56,21 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 				if categoryName == "." {
 					return event
 				}
-				showAddCategoryForm(categoryName)
+				categories := append(incomeCategories, expenseCategories...)
+				categoryID := ledger.GetCategoryID(categoryName, categories)
+				var categoryType string
+				switch {
+				case categoryName == "income" || categoryName == "expense":
+					categoryType = categoryName
+				default:
+					categoryType = ledger.GetCategoryType(categoryName, categories)
+				}
+				if ledger.IsPlaceHolderCategory(categoryID, categories) || categoryName == "income" || categoryName == "expense" {
+					showAddCategoryForm(workingLedger, categoryID, categoryType)
+				} else {
+					showModal(app.GetFocus(), "Categories can only be added under a placeholder category")
+				}
+				return event
 			case 'h':
 				if currentNode.GetText() == "." {
 					return event

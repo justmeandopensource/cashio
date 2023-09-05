@@ -280,7 +280,7 @@ func showDeleteConfirmationModal(workingLedger ledger.Ledger, transactionID int)
 				page2TransTable.Select(1, 0)
 			}
 		}
-		pages.RemovePage("modal")
+		pages.RemovePage("deleteConfirmationModal")
 		app.SetFocus(page2TransTable)
 	})
 
@@ -288,5 +288,5 @@ func showDeleteConfirmationModal(workingLedger ledger.Ledger, transactionID int)
 	flex.AddItem(nil, 0, 1, true)
 	flex.AddItem(modal, 0, 5, true)
 
-	pages.AddPage("modal", flex, true, true)
+	pages.AddPage("deleteConfirmationModal", flex, true, true)
 }
