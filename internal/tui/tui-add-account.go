@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/justmeandopensource/cashio/internal/common"
 	"github.com/justmeandopensource/cashio/internal/ledger"
 	"github.com/rivo/tview"
 )
@@ -13,7 +14,10 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 
 	inputFieldFocused = true
 
-	var placeholder = 0
+	var (
+		placeholder    = 0
+		openingBalance = 0.0
+	)
 
 	// form
 	mainForm := tview.NewForm()
@@ -26,7 +30,14 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 	mainForm.AddCheckbox("Placeholder?", false, func(checked bool) {
 		if checked {
 			placeholder = 1
+			mainForm.GetFormItemByLabel("Opening Balance").(*tview.InputField).SetDisabled(true)
+		} else {
+			mainForm.GetFormItemByLabel("Opening Balance").(*tview.InputField).SetDisabled(false)
 		}
+	})
+
+	mainForm.AddInputField("Opening Balance", "", 11, nil, func(text string) {
+		openingBalance = common.ProcessExpression(text)
 	})
 
 	// status text
@@ -44,6 +55,9 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 				Type:        accountType,
 				Placeholder: placeholder,
 				ParentID:    accountID,
+			}
+			if placeholder == 0 {
+				account.OpeningBalance = openingBalance
 			}
 			if err := ledger.AddAccount(workingLedger.Name, account); err != nil {
 				pages.RemovePage("addAccountForm")
@@ -88,7 +102,7 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 	})
 
 	grid := tview.NewGrid().
-		SetRows(0, 11, 0).
+		SetRows(0, 13, 0).
 		SetColumns(0, 45, 0).
 		AddItem(mainForm, 1, 1, 1, 1, 0, 0, true)
 
