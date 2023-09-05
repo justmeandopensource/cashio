@@ -61,6 +61,28 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 		currentNode := page2AccTree.GetCurrentNode()
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
+			case 'a':
+				accountName := currentNode.GetText()
+				if accountName == "." {
+					return event
+				}
+				accounts := append(assetAccounts, liabilityAccounts...)
+				accountID := ledger.GetAccountID(accountName, accounts)
+				var accountType string
+				switch {
+				case accountName == "assets":
+					accountType = "asset"
+				case accountName == "liabilities":
+					accountType = "liability"
+				default:
+					accountType = ledger.GetAccountType(accountName, accounts)
+				}
+				if ledger.IsPlaceHolderAccount(accountName, accounts) || accountName == "assets" || accountName == "liabilities" {
+					showAddAccountForm(workingLedger, accountID, accountType)
+				} else {
+					showModal(app.GetFocus(), "Accounts can only be added under a placeholder account")
+				}
+				return event
 			case 'h':
 				if currentNode.GetText() == "." {
 					return event

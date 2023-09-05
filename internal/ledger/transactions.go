@@ -177,7 +177,7 @@ func GetTransactionsForAccount(ledgerName string, accountName string, limit int)
 	var query, inClause string
 	var accountFilter = ""
 
-	if IsPlaceholderAccount(accountName, accounts) {
+	if IsPlaceHolderAccount(accountName, accounts) {
 		childIDs := GetChildAccountIDs(accountID, accounts)
 		for i, id := range childIDs {
 			if i != 0 {

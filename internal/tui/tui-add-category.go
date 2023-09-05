@@ -52,7 +52,7 @@ func showAddCategoryForm(workingLedger ledger.Ledger, categoryID int, categoryTy
 				showModal(page3CatTree, err.Error())
 				return
 			} else {
-				pages.RemovePage(workingLedger.Name + page2)
+				pages.RemovePage(workingLedger.Name + page3)
 				setupTransByCatPage(workingLedger)
 				newCategoryNode := findNodeByText(page3CatTree.GetRoot(), categoryName)
 				expandParentNodes(page3CatTreeMap, newCategoryNode)

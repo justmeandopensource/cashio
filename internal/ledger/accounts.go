@@ -281,9 +281,9 @@ func GetAccountType(accountName string, accounts []*Account) string {
 	return ""
 }
 
-// IsPlaceholderAccount returns true if the given account is a placeholder account,
+// IsPlaceHolderAccount returns true if the given account is a placeholder account,
 // false otherwise
-func IsPlaceholderAccount(accountName string, accounts []*Account) bool {
+func IsPlaceHolderAccount(accountName string, accounts []*Account) bool {
 	for _, account := range accounts {
 		if account.Name == accountName {
 			if account.Placeholder == 1 {
@@ -291,7 +291,7 @@ func IsPlaceholderAccount(accountName string, accounts []*Account) bool {
 			}
 		}
 		if account.Children != nil {
-			if IsPlaceholderAccount(accountName, account.Children) {
+			if IsPlaceHolderAccount(accountName, account.Children) {
 				return true
 			}
 		}
