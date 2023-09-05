@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/justmeandopensource/cashio/internal/common"
@@ -95,12 +96,43 @@ func findNodeByText(root *tview.TreeNode, targetText string) *tview.TreeNode {
 }
 
 // expandParentNodes expands all the parent nodes recursively for the given tree node
-func expandParentNodes(node *tview.TreeNode) {
+func expandParentNodes(treeMap map[*tview.TreeNode]*tview.TreeNode, node *tview.TreeNode) {
 	if node.GetText() == "." {
 		return
 	}
-	if parent, found := page2AccTreeMap[node]; found {
+	if parent, found := treeMap[node]; found {
 		parent.SetExpanded(true)
-		expandParentNodes(parent)
+		expandParentNodes(treeMap, parent)
 	}
+}
+
+// showModal shows a modal with a given message
+func showModal(widgetFocus tview.Primitive, message string) {
+
+	modal := tview.NewModal()
+	modal.SetText(message)
+	modal.AddButtons([]string{"Close"})
+	modal.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+	modal.SetBackgroundColor(tcell.Color235)
+
+	modal.SetDoneFunc(func(_ int, buttonLabel string) {
+		if buttonLabel == "Close" {
+			pages.RemovePage("modal")
+			app.SetFocus(widgetFocus)
+		}
+	})
+
+	flex := tview.NewFlex()
+	flex.AddItem(nil, 0, 1, true)
+	flex.AddItem(modal, 0, 5, true)
+
+	pages.AddPage("modal", flex, true, true)
+}
+
+// showError sets the given text in the status field and clears it after 3 seconds
+func showError(errorField *tview.TextView, errorMsg string) {
+	errorField.SetText(errorMsg)
+	go time.AfterFunc(3*time.Second, func() {
+		errorField.SetText("")
+	})
 }

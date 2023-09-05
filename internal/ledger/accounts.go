@@ -1,13 +1,9 @@
 package ledger
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 
-	"github.com/c-bata/go-prompt"
 	"github.com/justmeandopensource/cashio/internal/common"
 )
 
@@ -137,115 +133,6 @@ func FormatAccounts(accounts []*Account, prefix string) []string {
 	return options
 }
 
-// PromptForNewAccount gathers new account details from the user and returns an Account struct
-// which can then be added to the database
-func PromptForNewAccount(ledger string) Account {
-
-	reader := bufio.NewReader(os.Stdin)
-
-	var (
-		name           string
-		accountType    string
-		placeholder    int
-		openingBalance float64
-		parentID       int
-	)
-
-	// account name
-	for {
-		fmt.Printf("account name: ")
-		name, _ = reader.ReadString('\n')
-		name = strings.TrimSuffix(name, "\n")
-
-		if len(name) > 0 {
-			break
-		}
-
-		fmt.Fprintln(os.Stdout, common.ColorizeRed("[E] account name is required"))
-	}
-
-	// account type
-	accountTypeChoice := []string{"asset", "liability"}
-	for {
-		common.SaveTermState()
-		accountType = prompt.Input("account type [tab for options]: ", common.Completer(accountTypeChoice), prompt.OptionShowCompletionAtStart())
-		common.RestoreTermState()
-
-		if len(accountType) > 0 {
-			break
-		}
-
-		fmt.Fprintln(os.Stdout, common.ColorizeRed("[E] account type is required"))
-	}
-
-	// placeholder account?
-	fmt.Print("is this going to be a placeholder account? (y/N): ")
-	response, _ := reader.ReadString('\n')
-	response = strings.TrimSpace(strings.ToLower(response))
-
-	if response == "y" {
-		placeholder = 1
-	} else {
-		placeholder = 0
-
-		// opening balance
-		fmt.Printf("opening balance: ")
-		amount, _ := reader.ReadString('\n')
-		amount = strings.TrimSuffix(amount, "\n")
-		if len(amount) == 0 {
-			openingBalance = 0.00
-		} else {
-			openingBalance, _ = strconv.ParseFloat(amount, 64)
-		}
-	}
-
-	// parent account id
-	parentID, _ = promptForSelectingAccount(ledger, "parent account", accountType, true)
-
-	account := Account{
-		Name:           name,
-		Type:           accountType,
-		Placeholder:    placeholder,
-		OpeningBalance: openingBalance,
-		ParentID:       parentID,
-	}
-
-	return account
-}
-
-// promptForSelectingAccount displays a prompt asking the user to pick an account from the list
-func promptForSelectingAccount(ledger string, promptMsg string, accountType string, placeholder bool) (int, error) {
-
-	var accountID int
-
-	if len(promptMsg) == 0 {
-		promptMsg = "pick an account [tab for options]: "
-	} else {
-		promptMsg = fmt.Sprintf("%s [tab for options]: ", promptMsg)
-	}
-
-	accounts, err := FetchAccounts(ledger, accountType, placeholder)
-	if err != nil {
-		return 0, err
-	}
-
-	accountsFormatted := FormatAccounts(accounts, "")
-
-	if len(accountsFormatted) > 0 {
-		common.SaveTermState()
-		account := prompt.Input(
-			promptMsg,
-			common.Completer(accountsFormatted),
-			prompt.OptionShowCompletionAtStart(),
-			prompt.OptionMaxSuggestion(30),
-		)
-		common.RestoreTermState()
-		accountID = GetAccountID(account, accounts)
-	}
-
-	return accountID, nil
-}
-
 // GetAccountID returns the account id of the given account name
 func GetAccountID(accountName string, accounts []*Account) int {
 	accountName = strings.TrimSpace(accountName)
@@ -264,9 +151,26 @@ func GetAccountID(accountName string, accounts []*Account) int {
 	return 0
 }
 
-// IsPlaceholderAccount returns true if the given account is a placeholder account,
+// GetAccountType returns the account type of the given account name
+func GetAccountType(accountName string, accounts []*Account) string {
+	accountName = strings.TrimSpace(accountName)
+	for _, account := range accounts {
+		if account.Name == accountName {
+			return account.Type
+		}
+		if account.Children != nil {
+			subAccountType := GetAccountType(accountName, account.Children)
+			if subAccountType != "" {
+				return subAccountType
+			}
+		}
+	}
+	return ""
+}
+
+// IsPlaceHolderAccount returns true if the given account is a placeholder account,
 // false otherwise
-func IsPlaceholderAccount(accountName string, accounts []*Account) bool {
+func IsPlaceHolderAccount(accountName string, accounts []*Account) bool {
 	for _, account := range accounts {
 		if account.Name == accountName {
 			if account.Placeholder == 1 {
@@ -274,7 +178,7 @@ func IsPlaceholderAccount(accountName string, accounts []*Account) bool {
 			}
 		}
 		if account.Children != nil {
-			if IsPlaceholderAccount(accountName, account.Children) {
+			if IsPlaceHolderAccount(accountName, account.Children) {
 				return true
 			}
 		}

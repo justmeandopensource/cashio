@@ -66,7 +66,7 @@ func CreateLedgerTables(name string, currency string) error {
 			type TEXT CHECK(type IN ('income', 'expense')) NOT NULL,
       placeholder INTEGER CHECK (placeholder IN (0, 1)),
 			parent_id INTEGER,
-			CONSTRAINT unique_name_parent_id UNIQUE (name, parent_id)
+			CONSTRAINT unique_name UNIQUE (name)
 		)
 	`, name)
 	_, err = DbConn.Exec(createTableQuery)
@@ -84,7 +84,7 @@ func CreateLedgerTables(name string, currency string) error {
       balance DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
       placeholder INTEGER CHECK (placeholder IN (0, 1)),
 			parent_id INTEGER,
-			CONSTRAINT unique_name_parent_id UNIQUE (name, parent_id)
+			CONSTRAINT unique_name UNIQUE (name)
 		)
 	`, name)
 	_, err = DbConn.Exec(createTableQuery)
