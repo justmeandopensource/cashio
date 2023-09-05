@@ -51,6 +51,12 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 		currentNode := page3CatTree.GetCurrentNode()
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
+			case 'a':
+				categoryName := currentNode.GetText()
+				if categoryName == "." {
+					return event
+				}
+				showAddCategoryForm(categoryName)
 			case 'h':
 				if currentNode.GetText() == "." {
 					return event
