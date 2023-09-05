@@ -58,13 +58,11 @@ func TransactionsUI(ledgerName string) {
 					setupTransByAccPage(workingLedger)
 				}
 				pages.SwitchToPage(ledgerName + page2)
-				app.SetFocus(page2TransTable)
 			case '3':
 				if !pages.HasPage(ledgerName + page3) {
 					setupTransByCatPage(workingLedger)
 				}
 				pages.SwitchToPage(ledgerName + page3)
-				app.SetFocus(page3TransTable)
 			case 'r':
 				app.Suspend(func() {
 					CategoryStatsUI(ledgerName)
