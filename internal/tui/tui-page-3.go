@@ -2,6 +2,8 @@ package tui
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/justmeandopensource/cashio/internal/ledger"
@@ -154,6 +156,12 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 				showTransferFundsLocalForm(config)
 			case 'h':
 				app.SetFocus(page3CatTree)
+			case 'l':
+				row, _ := page3TransTable.GetSelection()
+				if strings.Contains(page3TransTable.GetCell(row, 5).Text, "<split>") {
+					transactionID, _ := strconv.Atoi(strings.TrimSpace(page3TransTable.GetCell(row, 0).Text))
+					showSplitsForTransaction(page3TransTable, workingLedger, transactionID)
+				}
 			case 's':
 				showSearchPage(page3TransTable, workingLedger)
 			}
