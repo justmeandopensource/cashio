@@ -10,8 +10,6 @@ import (
 	"github.com/justmeandopensource/cashio/internal/common"
 	"github.com/justmeandopensource/cashio/internal/ledger"
 	"github.com/rivo/tview"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 )
 
 var (
@@ -162,7 +160,7 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 				row, _ := page2TransTable.GetSelection()
 				if strings.Contains(page2TransTable.GetCell(row, 5).Text, "<split>") {
 					transactionID, _ := strconv.Atoi(strings.TrimSpace(page2TransTable.GetCell(row, 0).Text))
-					showSplitsForTransaction(workingLedger, transactionID)
+					showSplitsForTransaction(page2TransTable, workingLedger, transactionID)
 				}
 			case 'd':
 				row, _ := page2TransTable.GetSelection()
@@ -198,85 +196,6 @@ func addAccountsToTreeView(accounts []*ledger.Account, node *tview.TreeNode, par
 			}
 		}
 	}
-}
-
-// showSplitsForTransaction shows a popup table with split transactions for the selected transaction
-func showSplitsForTransaction(workingLedger ledger.Ledger, transactionID int) {
-
-	table := tview.NewTable()
-
-	table.SetTitle(fmt.Sprintf("[ splits for transaction id %d ]", transactionID))
-	table.SetSelectable(true, false)
-	table.SetBorder(true)
-	table.SetBackgroundColor(tcell.Color235)
-	table.SetBorderColor(tview.Styles.SecondaryTextColor)
-	table.SetSelectedStyle(tcell.StyleDefault.Background(tcell.Color238).Bold(true))
-
-	colNames := []string{
-		"Category",
-		"Credit",
-		"Debit",
-		"Notes",
-	}
-
-	for i, item := range colNames {
-		if item == "Credit" || item == "Debit" {
-			table.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
-		} else {
-			table.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
-		}
-	}
-
-	splitTransactions, _ := ledger.GetSplitsForTransaction(workingLedger.Name, transactionID)
-
-	p := message.NewPrinter(language.MustParse(common.Locales[workingLedger.Currency]))
-	for i, item := range splitTransactions {
-
-		defaultTextColor := tcell.Color246
-
-		var credit, debit, category string
-
-		if item.Credit != 0.00 {
-			credit = fmt.Sprintf("%s%s", common.CurrencySymbols[workingLedger.Currency], p.Sprintf("%0.2f", item.Credit))
-		}
-
-		if item.Debit != 0.00 {
-			debit = fmt.Sprintf("%s%s", common.CurrencySymbols[workingLedger.Currency], p.Sprintf("%0.2f", item.Debit))
-		}
-
-		if item.Category != nil {
-			category = *item.Category
-		} else {
-			category = ""
-		}
-
-		table.SetCell(i+1, 0, tview.NewTableCell(common.PadLeft(category, 1)).SetTextColor(defaultTextColor))
-		table.SetCell(i+1, 1, tview.NewTableCell(common.PadLeft(credit, 1)).SetAlign(tview.AlignRight).SetTextColor(tcell.ColorGreen))
-		table.SetCell(i+1, 2, tview.NewTableCell(common.PadLeft(debit, 1)).SetAlign(tview.AlignRight).SetTextColor(tcell.ColorRed))
-		table.SetCell(i+1, 3, tview.NewTableCell(common.PadLeft(item.Notes, 1)).SetExpansion(2).SetTextColor(defaultTextColor))
-	}
-
-	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Key() == tcell.KeyRune {
-			switch event.Rune() {
-			case 'h':
-				pages.RemovePage("splits")
-				app.SetFocus(page2TransTable)
-			}
-		}
-		return event
-	})
-
-	grid := tview.NewGrid().
-		SetRows(0, 15, 0).
-		SetColumns(0, 75, 0).
-		AddItem(table, 1, 1, 1, 1, 0, 0, true)
-
-	flex := tview.NewFlex()
-	flex.AddItem(nil, 0, 1, true)
-	flex.AddItem(grid, 0, 5, true)
-
-	pages.AddPage("splits", flex, true, true)
 }
 
 // showDeleteConfirmationModal shows a confiramtion modal before deleting a transaction
