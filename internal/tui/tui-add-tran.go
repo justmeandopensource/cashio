@@ -10,6 +10,7 @@ import (
 	"github.com/justmeandopensource/cashio/internal/common"
 	"github.com/justmeandopensource/cashio/internal/ledger"
 	"github.com/rivo/tview"
+	"github.com/shopspring/decimal"
 )
 
 // An AddTransactionConfig holds helper data for the add transaction process
@@ -26,8 +27,8 @@ func showAddTransactionForm(config AddTransactionConfig) {
 	inputFieldFocused = true
 
 	var (
-		baseAmount          = 0.0
-		transAmount         = 0.0
+		baseAmount          = decimal.NewFromInt(0)
+		transAmount         = decimal.NewFromInt(0)
 		transDate           = time.Now()
 		transType           = "Expense"
 		transAccountID      = 0
@@ -43,7 +44,7 @@ func showAddTransactionForm(config AddTransactionConfig) {
 	var displaySplitForm func()
 
 	displaySplitForm = func() {
-		if baseAmount <= 0 {
+		if baseAmount.LessThanOrEqual(decimal.NewFromFloat(0)) {
 			return
 		}
 		splitCounter += 1
@@ -100,10 +101,10 @@ func showAddTransactionForm(config AddTransactionConfig) {
 				})
 				return
 			}
-			amount := common.ProcessExpression(amountText)
-			baseAmount -= amount
-			if baseAmount < 0 {
-				baseAmount += amount
+			amount := decimal.NewFromFloat(common.ProcessExpression(amountText))
+			baseAmount = baseAmount.Sub(amount)
+			if baseAmount.IsNegative() {
+				baseAmount = baseAmount.Add(amount)
 				fieldAmount.SetText("")
 				childForm.GetFormItemByLabel("  ").(*tview.TextView).SetText("Split amount over the limit")
 				go time.AfterFunc(3*time.Second, func() {
@@ -114,9 +115,9 @@ func showAddTransactionForm(config AddTransactionConfig) {
 			credit, debit := 0.0, 0.0
 			switch transType {
 			case "income":
-				credit = amount
+				credit, _ = amount.Float64()
 			case "expense":
-				debit = amount
+				debit, _ = amount.Float64()
 			}
 			splitTransaction := ledger.SplitTransaction{
 				Date:       transDate,
@@ -220,7 +221,8 @@ func showAddTransactionForm(config AddTransactionConfig) {
 	// Amount field
 	mainForm.AddInputField("Amount", "", 11, nil, func(text string) {
 		amount := common.ProcessExpression(text)
-		baseAmount, transAmount = amount, amount
+		baseAmount = decimal.NewFromFloat(amount)
+		transAmount = decimal.NewFromFloat(amount)
 	})
 
 	// Notes field
@@ -275,12 +277,12 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		credit, debit := 0.0, 0.0
 		switch transType {
 		case "income":
-			credit = transAmount
+			credit, _ = transAmount.Float64()
 		case "expense":
-			debit = transAmount
+			debit, _ = transAmount.Float64()
 		}
 
-		if date == "" || accountName == "" || transAccountID == 0 || notes == "" || transAmount == 0.0 {
+		if date == "" || accountName == "" || transAccountID == 0 || notes == "" || transAmount.IsZero() {
 			missingFields = true
 		}
 

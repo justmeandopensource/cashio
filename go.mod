@@ -10,6 +10,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.15
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/rivo/tview v0.0.0-20230826224341-9754ab44dc1c
+	github.com/shopspring/decimal v1.3.1
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
 	golang.org/x/term v0.11.0
