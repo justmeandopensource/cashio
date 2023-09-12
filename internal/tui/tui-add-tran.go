@@ -51,7 +51,7 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		childForm.SetTitle(fmt.Sprintf("[ Split %d ]", splitCounter))
 		childForm.SetBorder(true)
 		childForm.SetBorderColor(tview.Styles.SecondaryTextColor)
-		childForm.AddTextView("Balance", fmt.Sprintf("%v", baseAmount), 5, 1, true, false)
+		childForm.AddTextView("Balance", fmt.Sprintf("%v", baseAmount), 15, 1, true, true)
 		childForm.AddInputField("Amount", "", 12, nil, nil)
 		fieldAmount := childForm.GetFormItemByLabel("Amount").(*tview.InputField)
 		childForm.AddInputField("Notes", "", 50, nil, nil)
@@ -145,6 +145,18 @@ func showAddTransactionForm(config AddTransactionConfig) {
 
 		childForm.SetBackgroundColor(tcell.ColorDefault)
 		childForm.SetFieldBackgroundColor(tcell.Color238)
+
+		childForm.SetFocus(1)
+
+		childForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+			if event.Key() == tcell.KeyEsc {
+				splitTransactions = splitTransactions[:0]
+				baseAmount = transAmount
+				pages.RemovePage(fmt.Sprintf("split%d", splitCounter))
+				splitCounter = 0
+			}
+			return event
+		})
 
 		childGrid := tview.NewGrid().
 			SetRows(0, 21, 0).
