@@ -28,8 +28,8 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 		SetCurrentNode(tview.NewTreeNode("").SetSelectable(false))
 
 	page2AccTree.SetTitle(fmt.Sprintf("[ Accounts (%s) ]", workingLedger.Name))
-	page2AccTree.SetBorder(true)
 	page2AccTree.SetBackgroundColor(tcell.Color235)
+	page2AccTree.SetBorder(true)
 	page2AccTree.SetBorderColor(tcell.Color246)
 
 	assetAccounts, _ := ledger.FetchAccounts(workingLedger.Name, "asset", false)
@@ -124,7 +124,7 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 
 	// transaction table
 	page2TransTable = tview.NewTable()
-	page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+	page2TransTable.SetBorderColor(tcell.Color246)
 	transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, ".", 50)
 	populateTransactionsTable(page2TransTable, transactions, workingLedger.Currency)
 	page2TransTable.SetTitle("[ All Transactions ]")

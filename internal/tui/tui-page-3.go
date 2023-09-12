@@ -26,8 +26,8 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 		SetCurrentNode(tview.NewTreeNode("").SetSelectable(false))
 
 	page3CatTree.SetTitle(fmt.Sprintf("[ Categories (%s) ]", workingLedger.Name))
-	page3CatTree.SetBorder(true)
 	page3CatTree.SetBackgroundColor(tcell.Color235)
+	page3CatTree.SetBorder(true)
 	page3CatTree.SetBorderColor(tcell.Color246)
 
 	incomeCategories, _ := ledger.FetchCategories(workingLedger.Name, "income", false)
@@ -124,7 +124,7 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 
 	// transaction table
 	page3TransTable = tview.NewTable()
-	page3TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+	page3TransTable.SetBorderColor(tcell.Color246)
 	transactions, _ := ledger.GetTransactionsForCategory(workingLedger.Name, ".", 50)
 	populateTransactionsTable(page3TransTable, transactions, workingLedger.Currency)
 	page3TransTable.SetTitle("[ All Transactions ]")
