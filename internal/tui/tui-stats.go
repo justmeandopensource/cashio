@@ -61,14 +61,14 @@ func CategoryStatsUI(ledgerName string) {
 			category := node.Value.String()
 			if len(node.Nodes) > 0 {
 				if node.Expanded {
-					createBarChart(ledgerName, bcMonthly, category, "monthly", 12)
-					createBarChart(ledgerName, bcYearly, category, "yearly", 6)
+					createBarChart(ledgerName, bcMonthly, category, "monthly", 15)
+					createBarChart(ledgerName, bcYearly, category, "yearly", 10)
 				} else {
 					tree.Expand()
 				}
 			} else {
-				createBarChart(ledgerName, bcMonthly, category, "monthly", 12)
-				createBarChart(ledgerName, bcYearly, category, "yearly", 6)
+				createBarChart(ledgerName, bcMonthly, category, "monthly", 15)
+				createBarChart(ledgerName, bcYearly, category, "yearly", 10)
 			}
 		case "G", "<End>":
 			tree.ScrollBottom()
