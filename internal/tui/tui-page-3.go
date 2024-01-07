@@ -125,7 +125,7 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 	// transaction table
 	page3TransTable = tview.NewTable()
 	page3TransTable.SetBorderColor(tcell.Color246)
-	transactions, _ := ledger.GetTransactionsForCategory(workingLedger.Name, ".", 50)
+	transactions, _ := ledger.GetTransactionsForCategory(workingLedger.Name, ".", 100)
 	populateTransactionsTable(page3TransTable, transactions, workingLedger.Currency)
 	page3TransTable.SetTitle("[ All Transactions ]")
 

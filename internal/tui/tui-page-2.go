@@ -98,7 +98,7 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 				if currentNode != nil {
 					page2TransTable.Clear()
 					accountName := currentNode.GetText()
-					transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, accountName, 50)
+					transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, accountName, 100)
 					populateTransactionsTable(page2TransTable, transactions, workingLedger.Currency)
 					if accountName == "." {
 						page2TransTable.SetTitle("[ All Transactions ]")
