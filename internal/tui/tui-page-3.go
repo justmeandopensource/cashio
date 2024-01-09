@@ -174,7 +174,20 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 	transByCatFlex.AddItem(page3CatTree, 0, 1, true)
 	transByCatFlex.AddItem(page3TransTable, 0, 5, true)
 
-	pages.AddPage(workingLedger.Name+page3, transByCatFlex, true, true)
+	statusBar := tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).
+		SetText(fmt.Sprintf(
+			"[gray]%s\t%s\t%s\t%s\t[blue]%s\t%s",
+			"(1)home", "(2)accounts", "(4)stocks", "(r)eports",
+			"(a)dd transaction", "(t)ransfer funds"))
+
+	grid := tview.NewGrid().
+		SetRows(0, 1).
+		SetColumns(0, 1).
+		SetBorders(true).
+		AddItem(transByCatFlex, 0, 0, 1, 2, 0, 0, true).
+		AddItem(statusBar, 1, 0, 1, 2, 0, 0, false)
+
+	pages.AddPage(workingLedger.Name+page3, grid, true, true)
 }
 
 // addCategoriesToTreeView recursively adds categories to the tree view

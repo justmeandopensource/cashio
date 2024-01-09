@@ -75,6 +75,81 @@ func populateTransactionsTable(transactionsTable *tview.Table, transactionsList 
 	}
 }
 
+// populateStocksTable loads the transactions table with entries from transactionsList
+func populateStocksTable(stocksTable *tview.Table, stocksList []*ledger.Stock, currency string) {
+
+	stocksTable.Clear()
+	stocksTable.SetFixed(1, 1)
+	stocksTable.SetSelectable(true, false)
+	stocksTable.SetBorder(true)
+	stocksTable.SetBackgroundColor(tcell.Color235)
+	stocksTable.SetSelectedStyle(tcell.StyleDefault.Background(tcell.Color238).Bold(true))
+
+	colNames := []string{
+		"ID",
+		"Stock",
+		"Type",
+		"Status",
+		"Units",
+		"NAV",
+		"Invested",
+		"Value",
+		"Change",
+	}
+
+	for i, item := range colNames {
+		switch item {
+		case "ID", "Units", "NAV", "Invested", "Value":
+			stocksTable.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+		default:
+			stocksTable.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+		}
+	}
+
+	p := message.NewPrinter(language.MustParse(common.Locales[currency]))
+
+	for i, item := range stocksList {
+
+		defaultTextColor := tcell.Color246
+		statusTextColor := defaultTextColor
+
+		id := strconv.Itoa(item.ID)
+
+		var units, nav, invested, value, perc_change string
+
+		units = fmt.Sprintf("%0.3f", item.Units)
+		nav = fmt.Sprintf("%0.4f", item.Nav)
+		invested = fmt.Sprintf("%s%s", common.CurrencySymbols[currency], p.Sprintf("%0.2f", item.Invested))
+		curr_value := item.Units * item.Nav
+		value = fmt.Sprintf("%s%s", common.CurrencySymbols[currency], p.Sprintf("%0.2f", curr_value))
+
+		change := ((curr_value - item.Invested) / 100) * 100
+		perc_change = fmt.Sprintf("%0.0f%%", change)
+
+		var lossOrGainColor tcell.Color
+		if change > 0 {
+			lossOrGainColor = tcell.ColorGreen
+		} else if change < 0 {
+			lossOrGainColor = tcell.ColorRed
+		} else {
+			lossOrGainColor = defaultTextColor
+		}
+		if item.Status == "active" {
+			statusTextColor = tcell.ColorOrange
+		}
+
+		stocksTable.SetCell(i+1, 0, tview.NewTableCell(common.PadLeft(id, 1)).SetAlign(tview.AlignRight).SetTextColor(defaultTextColor).SetBackgroundColor(tcell.Color236))
+		stocksTable.SetCell(i+1, 1, tview.NewTableCell(common.PadLeft(item.Name, 1)).SetTextColor(defaultTextColor))
+		stocksTable.SetCell(i+1, 2, tview.NewTableCell(common.PadLeft(item.Type, 1)).SetTextColor(defaultTextColor).SetBackgroundColor(tcell.Color236))
+		stocksTable.SetCell(i+1, 3, tview.NewTableCell(common.PadLeft(item.Status, 1)).SetTextColor(statusTextColor))
+		stocksTable.SetCell(i+1, 4, tview.NewTableCell(common.PadLeft(units, 1)).SetAlign(tview.AlignRight).SetTextColor(defaultTextColor).SetBackgroundColor(tcell.Color236))
+		stocksTable.SetCell(i+1, 5, tview.NewTableCell(common.PadLeft(nav, 1)).SetAlign(tview.AlignRight).SetTextColor(defaultTextColor))
+		stocksTable.SetCell(i+1, 6, tview.NewTableCell(common.PadLeft(invested, 1)).SetAlign(tview.AlignRight).SetTextColor(tcell.ColorBlue).SetBackgroundColor(tcell.Color236))
+		stocksTable.SetCell(i+1, 7, tview.NewTableCell(common.PadLeft(value, 1)).SetAlign(tview.AlignRight).SetTextColor(lossOrGainColor))
+		stocksTable.SetCell(i+1, 8, tview.NewTableCell(common.PadLeft(perc_change, 1)).SetAlign(tview.AlignRight).SetTextColor(lossOrGainColor).SetBackgroundColor(tcell.Color236))
+	}
+}
+
 // findNodeByText returns the tree node that has the targetText
 func findNodeByText(root *tview.TreeNode, targetText string) *tview.TreeNode {
 

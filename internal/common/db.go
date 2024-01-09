@@ -3,6 +3,7 @@ package common
 import (
 	"database/sql"
 	"fmt"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -126,6 +127,24 @@ func CreateLedgerTables(name string, currency string) error {
       FOREIGN KEY (parent_transaction_id) REFERENCES transactions(id),
       FOREIGN KEY (account_id) REFERENCES accounts(id),
       FOREIGN KEY (category_id) REFERENCES categories(id)
+		)
+	`, name)
+	_, err = DbConn.Exec(createTableQuery)
+	if err != nil {
+		return err
+	}
+
+	// table : stocks
+	createTableQuery = fmt.Sprintf(`
+		CREATE TABLE IF NOT EXISTS %s_stocks (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL,
+			type TEXT CHECK(type IN ('mutual fund', 'gold', 'others')) NOT NULL,
+			status TEXT CHECK(status IN ('active', 'holding', 'closed')) NOT NULL DEFAULT 'holding',
+			units DECIMAL(10, 3) NOT NULL DEFAULT 0.000,
+			nav DECIMAL(10, 4) NOT NULL DEFAULT 0.0000,
+			invested DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+			CONSTRAINT unique_name UNIQUE (name)
 		)
 	`, name)
 	_, err = DbConn.Exec(createTableQuery)

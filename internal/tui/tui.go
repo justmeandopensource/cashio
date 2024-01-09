@@ -18,6 +18,7 @@ const (
 	page1      = "accBalancePage"
 	page2      = "transByAccountPage"
 	page3      = "transByCategoryPage"
+	page4      = "stocksPage"
 	searchPage = "search"
 )
 
@@ -63,6 +64,11 @@ func TransactionsUI(ledgerName string) {
 					setupTransByCatPage(workingLedger)
 				}
 				pages.SwitchToPage(ledgerName + page3)
+			case '4':
+				if !pages.HasPage(ledgerName + page4) {
+					setupStocksPage(workingLedger)
+				}
+				pages.SwitchToPage(ledgerName + page4)
 			case 'r':
 				app.Suspend(func() {
 					CategoryStatsUI(ledgerName)
