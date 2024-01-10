@@ -182,7 +182,7 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 	statusBar := tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).
 		SetText(fmt.Sprintf(
 			"[gray]%s\t%s\t%s\t%s\t[blue]%s\t%s",
-			"(1)home", "(3)categories", "(4)stocks", "(r)eports",
+			"(1)home", "(3)categories", "(4)stocks", "(R)eports",
 			"(a)dd transaction", "(t)ransfer funds"))
 
 	grid := tview.NewGrid().

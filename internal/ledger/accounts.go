@@ -133,12 +133,11 @@ func FormatAccounts(accounts []*Account, prefix string) []string {
 	return options
 }
 
-// GetAccountID returns the account id of the given account name
+// GetAccountID returns the account id of the given account
 func GetAccountID(accountName string, accounts []*Account) int {
 	accountName = strings.TrimSpace(accountName)
 	for _, account := range accounts {
-		option := account.Name
-		if option == accountName {
+		if account.Name == accountName {
 			return account.ID
 		}
 		if account.Children != nil {
@@ -151,7 +150,7 @@ func GetAccountID(accountName string, accounts []*Account) int {
 	return 0
 }
 
-// GetAccountType returns the account type of the given account name
+// GetAccountType returns the account type of the given account
 func GetAccountType(accountName string, accounts []*Account) string {
 	accountName = strings.TrimSpace(accountName)
 	for _, account := range accounts {

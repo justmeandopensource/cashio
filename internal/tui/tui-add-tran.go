@@ -301,7 +301,7 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		}
 
 		if missingFields {
-			mainForm.GetFormItemByLabel("  ").(*tview.TextView).SetText("Invalid transaction")
+			mainForm.GetFormItemByLabel("  ").(*tview.TextView).SetText("[red]Invalid transaction")
 			go time.AfterFunc(3*time.Second, func() {
 				mainForm.GetFormItemByLabel("  ").(*tview.TextView).SetText("")
 			})

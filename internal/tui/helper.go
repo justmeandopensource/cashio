@@ -120,16 +120,16 @@ func populateStocksTable(stocksTable *tview.Table, stocksList []*ledger.Stock, c
 		units = fmt.Sprintf("%0.3f", item.Units)
 		nav = fmt.Sprintf("%0.4f", item.Nav)
 		invested = fmt.Sprintf("%s%s", common.CurrencySymbols[currency], p.Sprintf("%0.2f", item.Invested))
-		curr_value := item.Units * item.Nav
+		curr_value := common.PrecisionRoundAFloat(item.Units*item.Nav, 2)
 		value = fmt.Sprintf("%s%s", common.CurrencySymbols[currency], p.Sprintf("%0.2f", curr_value))
 
 		change := ((curr_value - item.Invested) / 100) * 100
-		perc_change = fmt.Sprintf("%0.0f%%", change)
+		perc_change = fmt.Sprintf("%0.2f%%", change)
 
 		var lossOrGainColor tcell.Color
-		if change > 0 {
+		if curr_value > item.Invested {
 			lossOrGainColor = tcell.ColorGreen
-		} else if change < 0 {
+		} else if curr_value < item.Invested {
 			lossOrGainColor = tcell.ColorRed
 		} else {
 			lossOrGainColor = defaultTextColor
@@ -285,7 +285,7 @@ func showModal(widgetFocus tview.Primitive, message string) {
 
 // showError sets the given text in the status field and clears it after 3 seconds
 func showError(errorField *tview.TextView, errorMsg string) {
-	errorField.SetText(errorMsg)
+	errorField.SetText(fmt.Sprintf("[red]%s", errorMsg))
 	go time.AfterFunc(3*time.Second, func() {
 		errorField.SetText("")
 	})

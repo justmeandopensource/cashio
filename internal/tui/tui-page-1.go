@@ -115,7 +115,7 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 	statusBar := tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).
 		SetText(fmt.Sprintf(
 			"[gray]%s\t%s\t%s\t%s",
-			"(2)accounts", "(3)categories", "(4)stocks", "(r)eports"))
+			"(2)accounts", "(3)categories", "(4)stocks", "(R)eports"))
 
 	grid := tview.NewGrid().
 		SetRows(0, 1).

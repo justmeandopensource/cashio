@@ -69,7 +69,7 @@ func TransactionsUI(ledgerName string) {
 					setupStocksPage(workingLedger)
 				}
 				pages.SwitchToPage(ledgerName + page4)
-			case 'r':
+			case 'R':
 				app.Suspend(func() {
 					CategoryStatsUI(ledgerName)
 				})

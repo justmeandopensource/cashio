@@ -32,6 +32,7 @@ func showAddCategoryForm(workingLedger ledger.Ledger, categoryID int, categoryTy
 	// status text
 	mainForm.AddTextView("  ", "", 30, 1, true, false)
 	errorField := mainForm.GetFormItemByLabel("  ").(*tview.TextView)
+	errorField.SetDynamicColors(true)
 
 	mainForm.AddButton("Submit", func() {
 		categoryName := strings.TrimSpace(categoryField.GetText())

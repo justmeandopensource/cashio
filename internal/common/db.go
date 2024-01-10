@@ -104,10 +104,10 @@ func CreateLedgerTables(name string, currency string) error {
       account_id INTEGER NOT NULL,
       category_id INTEGER,
       is_split BOOLEAN NOT NULL DEFAULT 0,
-      FOREIGN KEY (account_id) REFERENCES accounts(id),
-      FOREIGN KEY (category_id) REFERENCES categories(id)
+      FOREIGN KEY (account_id) REFERENCES %s_accounts(id),
+      FOREIGN KEY (category_id) REFERENCES %s_categories(id)
 		)
-	`, name)
+	`, name, name, name)
 	_, err = DbConn.Exec(createTableQuery)
 	if err != nil {
 		return err
@@ -125,10 +125,10 @@ func CreateLedgerTables(name string, currency string) error {
       category_id INTEGER NOT NULL,
       parent_transaction_id INTEGER NOT NULL,
       FOREIGN KEY (parent_transaction_id) REFERENCES transactions(id),
-      FOREIGN KEY (account_id) REFERENCES accounts(id),
-      FOREIGN KEY (category_id) REFERENCES categories(id)
+      FOREIGN KEY (account_id) REFERENCES %s_accounts(id),
+      FOREIGN KEY (category_id) REFERENCES %s_categories(id)
 		)
-	`, name)
+	`, name, name, name)
 	_, err = DbConn.Exec(createTableQuery)
 	if err != nil {
 		return err
@@ -147,6 +147,26 @@ func CreateLedgerTables(name string, currency string) error {
 			CONSTRAINT unique_name UNIQUE (name)
 		)
 	`, name)
+	_, err = DbConn.Exec(createTableQuery)
+	if err != nil {
+		return err
+	}
+
+	// table : stocks_transactions
+	createTableQuery = fmt.Sprintf(`
+		CREATE TABLE IF NOT EXISTS %s_stocks_transactions (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			date DATE NOT NULL,
+			notes TEXT NOT NULL,
+			units DECIMAL(10, 3) NOT NULL DEFAULT 0.000,
+			nav DECIMAL(10, 4) NOT NULL DEFAULT 0.0000,
+			amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+			stock_id INTEGER NOT NULL,
+			account_id INTEGER NOT NULL,
+			FOREIGN KEY (stock_id) REFERENCES %s_stocks(id),
+			FOREIGN KEY (account_id) REFERENCES %s_accounts(id)
+		)
+	`, name, name, name)
 	_, err = DbConn.Exec(createTableQuery)
 	if err != nil {
 		return err

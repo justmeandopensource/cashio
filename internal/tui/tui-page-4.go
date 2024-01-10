@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/justmeandopensource/cashio/internal/ledger"
@@ -19,13 +20,27 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 	stocks, _ := ledger.FetchStocks(workingLedger.Name, "all")
 	populateStocksTable(stocksTable, stocks, workingLedger.Currency)
 
+	stocksTable.SetBlurFunc(func() {
+		stocksTable.SetBorderColor(tcell.Color246)
+	})
+
+	stocksTable.SetFocusFunc(func() {
+		stocksTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+	})
+
 	stocksTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
 			case 'n':
 				showAddStockForm(workingLedger)
-			case 'a':
-				showModal(stocksTable, "Feature not implemented")
+			case 'p':
+				row, _ := stocksTable.GetSelection()
+				stockName := stocksTable.GetCell(row, 1).Text
+				showAddStockTransactionForm(workingLedger, strings.TrimSpace(stockName), "purchase")
+			case 'r':
+				row, _ := stocksTable.GetSelection()
+				stockName := stocksTable.GetCell(row, 1).Text
+				showAddStockTransactionForm(workingLedger, strings.TrimSpace(stockName), "redeem")
 			case 't':
 				showModal(stocksTable, "Feature not implemented")
 			}
@@ -38,9 +53,9 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 
 	statusBar := tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).
 		SetText(fmt.Sprintf(
-			"[gray]%s\t%s\t%s\t%s\t[blue]%s\t%s\t%s",
-			"(1)home", "(2)accounts", "(3)categories", "(r)eports",
-			"(n)ew fund", "(a)dd transaction", "(t)ransfer funds"))
+			"[gray]%s\t%s\t%s\t%s\t[blue]%s\t%s\t%s\t%s",
+			"(1)home", "(2)accounts", "(3)categories", "(R)eports",
+			"(n)ew stock", "(p)urchase units", "(r)edeem units", "(s)switch units"))
 
 	grid := tview.NewGrid().
 		SetRows(0, 1).

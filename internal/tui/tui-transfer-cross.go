@@ -169,6 +169,7 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 	// status text
 	mainForm.AddTextView("  ", "", 30, 1, true, false)
 	errorField = mainForm.GetFormItemByLabel("  ").(*tview.TextView)
+	errorField.SetDynamicColors(true)
 
 	mainForm.AddButton("Submit", func() {
 

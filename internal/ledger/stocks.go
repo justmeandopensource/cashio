@@ -1,7 +1,11 @@
 package ledger
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/justmeandopensource/cashio/internal/common"
 )
@@ -15,6 +19,17 @@ type Stock struct {
 	Units    float64
 	Nav      float64
 	Invested float64
+}
+
+type StockTransaction struct {
+	TransactionType string
+	StockID         int
+	StockName       string
+	Date            time.Time
+	Units           float64
+	Nav             float64
+	Amount          float64
+	BankAccountID   int
 }
 
 // AddAccount adds the given account to the database
@@ -93,4 +108,131 @@ func FetchStocks(ledger string, stockStatus string) ([]*Stock, error) {
 	}
 
 	return stocks, nil
+}
+
+// GetStockID returns the stock id of the given stock
+func GetStockID(stockName string, stocks []*Stock) int {
+	stockName = strings.TrimSpace(stockName)
+	for _, stock := range stocks {
+		if stock.Name == stockName {
+			return stock.ID
+		}
+	}
+	return 0
+}
+
+// GetStockType returns the stock type of the given stock
+func GetStockType(stockName string, stocks []*Stock) string {
+	stockName = strings.TrimSpace(stockName)
+	for _, stock := range stocks {
+		if stock.Name == stockName {
+			return stock.Type
+		}
+	}
+	return ""
+}
+
+// ActionStockUnits adds stock purchase/redeem related transactions to the database
+func ActionStockUnits(ledgerName string, stockTransaction StockTransaction) error {
+
+	tx, err := common.DbConn.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// Add the main transaction
+	_, err = tx.Exec(
+		fmt.Sprintf(
+			`
+      INSERT INTO %s_stocks_transactions (date, notes, units, nav, amount, stock_id, account_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      `, ledgerName,
+		),
+		stockTransaction.Date.Format("2006-01-02"),
+		stockTransaction.TransactionType,
+		stockTransaction.Units,
+		stockTransaction.Nav,
+		stockTransaction.Amount,
+		stockTransaction.StockID,
+		stockTransaction.BankAccountID,
+	)
+	if err != nil {
+		return err
+	}
+
+	// update stock balance
+	if err := updateStockBalance(tx, ledgerName, stockTransaction); err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	if stockTransaction.TransactionType != "switch" {
+		transaction := Transaction{
+			Date:       stockTransaction.Date,
+			Notes:      fmt.Sprintf("<trans> stock %s - %s", stockTransaction.TransactionType, stockTransaction.StockName),
+			AccountID:  stockTransaction.BankAccountID,
+			CategoryID: 0,
+			IsSplit:    0,
+		}
+
+		switch stockTransaction.TransactionType {
+		case "purchase":
+			transaction.Credit = 0.00
+			transaction.Debit = stockTransaction.Amount
+		case "redeem":
+			transaction.Credit = stockTransaction.Amount
+			transaction.Debit = 0.00
+		}
+
+		if err := AddTransaction(ledgerName, transaction); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// updateStockBalance updates the balance of the given stock in the database.
+// updateType can be either purchase or redeem
+func updateStockBalance(tx *sql.Tx, ledgerName string, stockTransaction StockTransaction) error {
+
+	if stockTransaction.Amount == 0.00 || stockTransaction.Units == 0.00 {
+		return errors.New("invalid data")
+	}
+
+	var operator string
+	switch stockTransaction.TransactionType {
+	case "purchase":
+		operator = "+"
+	case "redeem":
+		operator = "-"
+	default:
+		return errors.New("updateType is neither purchase nor redeem")
+	}
+
+	updateQuery := fmt.Sprintf(`
+    UPDATE %s_stocks
+    SET units = units %s ?,
+				nav = ?,
+		    invested = invested %s ?
+    WHERE id = ?
+  `, ledgerName, operator, operator)
+
+	stmt, err := tx.Prepare(updateQuery)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(stockTransaction.Units, stockTransaction.Nav, stockTransaction.Amount, stockTransaction.StockID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
