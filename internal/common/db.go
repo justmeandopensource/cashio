@@ -140,6 +140,7 @@ func CreateLedgerTables(name string, currency string) error {
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			name TEXT NOT NULL,
 			type TEXT CHECK(type IN ('mutual fund', 'gold', 'others')) NOT NULL,
+			code TEXT NOT NULL DEFAULT '0',
 			status TEXT CHECK(status IN ('active', 'holding', 'closed')) NOT NULL DEFAULT 'holding',
 			units DECIMAL(10, 3) NOT NULL DEFAULT 0.000,
 			nav DECIMAL(10, 4) NOT NULL DEFAULT 0.0000,

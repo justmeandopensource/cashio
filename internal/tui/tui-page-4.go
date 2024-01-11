@@ -35,13 +35,28 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 				showAddStockForm(workingLedger)
 			case 'p':
 				row, _ := stocksTable.GetSelection()
-				stockName := stocksTable.GetCell(row, 1).Text
-				showAddStockTransactionForm(workingLedger, strings.TrimSpace(stockName), "purchase")
+				stockName := strings.TrimSpace(stocksTable.GetCell(row, 1).Text)
+				stockID := ledger.GetStockID(stockName, stocks)
+				showAddStockTransactionForm(workingLedger, stockName, stockID, "purchase")
 			case 'r':
 				row, _ := stocksTable.GetSelection()
-				stockName := stocksTable.GetCell(row, 1).Text
-				showAddStockTransactionForm(workingLedger, strings.TrimSpace(stockName), "redeem")
+				stockName := strings.TrimSpace(stocksTable.GetCell(row, 1).Text)
+				stockID := ledger.GetStockID(stockName, stocks)
+				showAddStockTransactionForm(workingLedger, stockName, stockID, "redeem")
+			case 's':
+				showSwitchStockTransactionForm(workingLedger)
 			case 't':
+				row, _ := stocksTable.GetSelection()
+				stockName := strings.TrimSpace(stocksTable.GetCell(row, 1).Text)
+				stockID := ledger.GetStockID(stockName, stocks)
+				currStatus := strings.TrimSpace(stocksTable.GetCell(row, 3).Text)
+				if err := ledger.ToggleStockStatus(workingLedger.Name, stockID, currStatus); err != nil {
+					showModal(stocksTable, err.Error())
+				} else {
+					stocks, _ := ledger.FetchStocks(workingLedger.Name, "all")
+					populateStocksTable(stocksTable, stocks, workingLedger.Currency)
+				}
+			case 'u':
 				showModal(stocksTable, "Feature not implemented")
 			}
 		}
@@ -53,9 +68,9 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 
 	statusBar := tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).
 		SetText(fmt.Sprintf(
-			"[gray]%s\t%s\t%s\t%s\t[blue]%s\t%s\t%s\t%s",
+			"[gray]%s\t%s\t%s\t%s\t[blue]%s\t%s\t%s\t%s\t%s\t%s",
 			"(1)home", "(2)accounts", "(3)categories", "(R)eports",
-			"(n)ew stock", "(p)urchase units", "(r)edeem units", "(s)switch units"))
+			"(n)ew stock", "(p)urchase units", "(r)edeem units", "(s)switch units", "(t)oggle status", "(u)pdate nav"))
 
 	grid := tview.NewGrid().
 		SetRows(0, 1).

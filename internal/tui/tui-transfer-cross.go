@@ -36,6 +36,8 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		toAccountsFormatted   []string
 		categories, _         = ledger.FetchCategories(config.WorkingLedger.Name, "expense", false)
 		categoriesFormatted   = ledger.FormatCategories(categories, "")
+		mainFormTitle         = "[ Funds Transfer - Cross Ledger ]"
+		pageName              = "transferFundsCrossForm"
 		errorField            *tview.TextView
 	)
 
@@ -253,12 +255,12 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		}
 		populateTransactionsTable(config.SourceTable, tableTransactions, config.WorkingLedger.Currency)
 
-		pages.RemovePage("transferFundsCrossForm")
+		pages.RemovePage(pageName)
 		app.SetFocus(config.SourceTable)
 		inputFieldFocused = false
 	})
 	mainForm.AddButton("Cancel", func() {
-		pages.RemovePage("transferFundsCrossForm")
+		pages.RemovePage(pageName)
 		app.SetFocus(config.SourceTable)
 		inputFieldFocused = false
 	})
@@ -266,14 +268,14 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 	mainForm.SetButtonBackgroundColor(tcell.Color238)
 	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
 
-	mainForm.SetTitle("[ Funds Transfer - Cross Ledger ]")
+	mainForm.SetTitle(mainFormTitle)
 	mainForm.SetBorder(true)
 	mainForm.SetBorderColor(tview.Styles.SecondaryTextColor)
 	mainForm.SetBackgroundColor(tcell.ColorDefault)
 	mainForm.SetFieldBackgroundColor(tcell.Color238)
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
-			pages.RemovePage("transferFundsCrossForm")
+			pages.RemovePage(pageName)
 			app.SetFocus(config.SourceTable)
 			inputFieldFocused = false
 		}
@@ -285,5 +287,5 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		SetColumns(0, 55, 0).
 		AddItem(mainForm, 1, 1, 1, 1, 0, 0, true)
 
-	pages.AddPage("transferFundsCrossForm", grid, true, true)
+	pages.AddPage(pageName, grid, true, true)
 }

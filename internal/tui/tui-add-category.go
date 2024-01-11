@@ -13,7 +13,11 @@ func showAddCategoryForm(workingLedger ledger.Ledger, categoryID int, categoryTy
 
 	inputFieldFocused = true
 
-	var placeholder = 0
+	var (
+		placeholder   = 0
+		mainFormTitle = "[ Add Category ]"
+		pageName      = "addCategoryForm"
+	)
 
 	// form
 	mainForm := tview.NewForm()
@@ -47,7 +51,7 @@ func showAddCategoryForm(workingLedger ledger.Ledger, categoryID int, categoryTy
 				ParentID:    categoryID,
 			}
 			if err := ledger.AddCategory(workingLedger.Name, category); err != nil {
-				pages.RemovePage("addCategoryForm")
+				pages.RemovePage(pageName)
 				app.SetFocus(page3CatTree)
 				inputFieldFocused = false
 				showModal(page3CatTree, err.Error())
@@ -61,12 +65,12 @@ func showAddCategoryForm(workingLedger ledger.Ledger, categoryID int, categoryTy
 				page3TransTable.SetBorderColor(tcell.Color246)
 			}
 		}
-		pages.RemovePage("addCategoryForm")
+		pages.RemovePage(pageName)
 		app.SetFocus(page3CatTree)
 		inputFieldFocused = false
 	})
 	mainForm.AddButton("Cancel", func() {
-		pages.RemovePage("addCategoryForm")
+		pages.RemovePage(pageName)
 		app.SetFocus(page3CatTree)
 		inputFieldFocused = false
 	})
@@ -74,14 +78,14 @@ func showAddCategoryForm(workingLedger ledger.Ledger, categoryID int, categoryTy
 	mainForm.SetButtonBackgroundColor(tcell.Color238)
 	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
 
-	mainForm.SetTitle("[ Add Category ]")
+	mainForm.SetTitle(mainFormTitle)
 	mainForm.SetBorder(true)
 	mainForm.SetBorderColor(tview.Styles.SecondaryTextColor)
 	mainForm.SetBackgroundColor(tcell.ColorDefault)
 	mainForm.SetFieldBackgroundColor(tcell.Color238)
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
-			pages.RemovePage("addCategoryForm")
+			pages.RemovePage(pageName)
 			app.SetFocus(page3CatTree)
 			inputFieldFocused = false
 		}
@@ -93,6 +97,5 @@ func showAddCategoryForm(workingLedger ledger.Ledger, categoryID int, categoryTy
 		SetColumns(0, 45, 0).
 		AddItem(mainForm, 1, 1, 1, 1, 0, 0, true)
 
-	pages.AddPage("addCategoryForm", grid, true, true)
-
+	pages.AddPage(pageName, grid, true, true)
 }

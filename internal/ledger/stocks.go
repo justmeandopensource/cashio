@@ -15,6 +15,7 @@ type Stock struct {
 	ID       int
 	Name     string
 	Type     string
+	Code     string
 	Status   string
 	Units    float64
 	Nav      float64
@@ -36,8 +37,8 @@ type StockTransaction struct {
 func AddStock(ledger string, stock Stock) error {
 
 	stmt, err := common.DbConn.Prepare(fmt.Sprintf(`
-    INSERT INTO %s_stocks (name, type)
-    VALUES (?, ?)
+    INSERT INTO %s_stocks (name, type, code)
+    VALUES (?, ?, ?)
     `, ledger))
 	if err != nil {
 		return err
@@ -46,6 +47,7 @@ func AddStock(ledger string, stock Stock) error {
 	_, err = stmt.Exec(
 		stock.Name,
 		stock.Type,
+		stock.Code,
 	)
 	if err != nil {
 		return err
@@ -74,7 +76,7 @@ func FetchStocks(ledger string, stockStatus string) ([]*Stock, error) {
 	}
 
 	query := fmt.Sprintf(`
-    SELECT id, name, type, status, units, nav, invested
+    SELECT id, name, type, code, status, units, nav, invested
     FROM %s_stocks
     %s
     ORDER BY type,status,name;
@@ -88,9 +90,9 @@ func FetchStocks(ledger string, stockStatus string) ([]*Stock, error) {
 
 	for rows.Next() {
 		var id int
-		var name, stockType, status string
+		var name, stockType, code, status string
 		var units, nav, invested float64
-		if err := rows.Scan(&id, &name, &stockType, &status, &units, &nav, &invested); err != nil {
+		if err := rows.Scan(&id, &name, &stockType, &code, &status, &units, &nav, &invested); err != nil {
 			return nil, err
 		}
 
@@ -98,6 +100,7 @@ func FetchStocks(ledger string, stockStatus string) ([]*Stock, error) {
 			ID:       id,
 			Name:     name,
 			Type:     stockType,
+			Code:     code,
 			Status:   status,
 			Units:    units,
 			Nav:      nav,
@@ -108,6 +111,15 @@ func FetchStocks(ledger string, stockStatus string) ([]*Stock, error) {
 	}
 
 	return stocks, nil
+}
+
+// GetStockNamesList returns a slice of string with stock names
+func GetStockNamesList(stocks []*Stock) []string {
+	var names []string
+	for _, stock := range stocks {
+		names = append(names, stock.Name)
+	}
+	return names
 }
 
 // GetStockID returns the stock id of the given stock
@@ -130,6 +142,38 @@ func GetStockType(stockName string, stocks []*Stock) string {
 		}
 	}
 	return ""
+}
+
+func ToggleStockStatus(ledgerName string, stockID int, currStatus string) error {
+
+	var newStatus string
+
+	switch currStatus {
+	case "active":
+		newStatus = "holding"
+	case "holding":
+		newStatus = "active"
+	default:
+		return errors.New("invalid stock status argument supplied to ToggleStockStatus func")
+	}
+
+	updateQuery := fmt.Sprintf(`
+    UPDATE %s_stocks
+    SET status = ?
+    WHERE id = ?
+  `, ledgerName)
+
+	stmt, err := common.DbConn.Prepare(updateQuery)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(newStatus, stockID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // ActionStockUnits adds stock purchase/redeem related transactions to the database
@@ -171,7 +215,7 @@ func ActionStockUnits(ledgerName string, stockTransaction StockTransaction) erro
 		return err
 	}
 
-	if stockTransaction.TransactionType != "switch" {
+	if stockTransaction.TransactionType == "purchase" || stockTransaction.TransactionType == "redeem" {
 		transaction := Transaction{
 			Date:       stockTransaction.Date,
 			Notes:      fmt.Sprintf("<trans> stock %s - %s", stockTransaction.TransactionType, stockTransaction.StockName),
@@ -207,12 +251,12 @@ func updateStockBalance(tx *sql.Tx, ledgerName string, stockTransaction StockTra
 
 	var operator string
 	switch stockTransaction.TransactionType {
-	case "purchase":
+	case "purchase", "switchPurchase":
 		operator = "+"
-	case "redeem":
+	case "redeem", "switchRedeem":
 		operator = "-"
 	default:
-		return errors.New("updateType is neither purchase nor redeem")
+		return errors.New("invalid updateType")
 	}
 
 	updateQuery := fmt.Sprintf(`

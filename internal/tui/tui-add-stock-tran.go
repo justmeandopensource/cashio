@@ -1,8 +1,6 @@
 package tui
 
 import (
-	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -12,7 +10,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-func showAddStockTransactionForm(workingLedger ledger.Ledger, stockName string, transactionType string) {
+func showAddStockTransactionForm(workingLedger ledger.Ledger, stockName string, stockID int, transactionType string) {
 
 	inputFieldFocused = true
 
@@ -28,9 +26,8 @@ func showAddStockTransactionForm(workingLedger ledger.Ledger, stockName string, 
 
 		accounts, _       = ledger.FetchAccounts(workingLedger.Name, "", false)
 		accountsFormatted = ledger.FormatAccounts(accounts, "")
-		stocks, _         = ledger.FetchStocks(workingLedger.Name, "all")
+		pageName          = "AddStockTransactionForm"
 		errorField        *tview.TextView
-		pageName          = "stockTransactionForm"
 	)
 
 	switch transactionType {
@@ -116,7 +113,7 @@ func showAddStockTransactionForm(workingLedger ledger.Ledger, stockName string, 
 
 		stockTransaction := ledger.StockTransaction{
 			TransactionType: transactionType,
-			StockID:         ledger.GetStockID(stockName, stocks),
+			StockID:         stockID,
 			StockName:       stockName,
 			Date:            transDate,
 			Units:           units,
@@ -126,9 +123,8 @@ func showAddStockTransactionForm(workingLedger ledger.Ledger, stockName string, 
 		}
 
 		if err := ledger.ActionStockUnits(workingLedger.Name, stockTransaction); err != nil {
-			app.Stop()
-			fmt.Fprintln(os.Stderr, common.ColorizeRed(fmt.Sprint("[E] ", err.Error())))
-			os.Exit(1)
+			showModal(stocksTable, err.Error())
+			return
 		}
 
 		stocks, _ := ledger.FetchStocks(workingLedger.Name, "all")

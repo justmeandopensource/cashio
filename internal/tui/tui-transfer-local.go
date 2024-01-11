@@ -35,6 +35,8 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 
 		accounts, _       = ledger.FetchAccounts(config.WorkingLedger.Name, "", false)
 		accountsFormatted = ledger.FormatAccounts(accounts, "")
+		mainFormTitle     = "[ Funds Transfer ]"
+		pageName          = "transferFundsLocalForm"
 		errorField        *tview.TextView
 	)
 
@@ -181,12 +183,12 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 		}
 		populateTransactionsTable(config.SourceTable, tableTransactions, config.WorkingLedger.Currency)
 
-		pages.RemovePage("transferFundsLocalForm")
+		pages.RemovePage(pageName)
 		app.SetFocus(config.SourceTable)
 		inputFieldFocused = false
 	})
 	mainForm.AddButton("Cancel", func() {
-		pages.RemovePage("transferFundsLocalForm")
+		pages.RemovePage(pageName)
 		app.SetFocus(config.SourceTable)
 		inputFieldFocused = false
 	})
@@ -194,14 +196,14 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 	mainForm.SetButtonBackgroundColor(tcell.Color238)
 	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
 
-	mainForm.SetTitle("[ Funds Transfer ]")
+	mainForm.SetTitle(mainFormTitle)
 	mainForm.SetBorder(true)
 	mainForm.SetBorderColor(tview.Styles.SecondaryTextColor)
 	mainForm.SetBackgroundColor(tcell.ColorDefault)
 	mainForm.SetFieldBackgroundColor(tcell.Color238)
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
-			pages.RemovePage("transferFundsLocalForm")
+			pages.RemovePage(pageName)
 			app.SetFocus(config.SourceTable)
 			inputFieldFocused = false
 		}
@@ -213,5 +215,5 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 		SetColumns(0, 55, 0).
 		AddItem(mainForm, 1, 1, 1, 1, 0, 0, true)
 
-	pages.AddPage("transferFundsLocalForm", grid, true, true)
+	pages.AddPage(pageName, grid, true, true)
 }
