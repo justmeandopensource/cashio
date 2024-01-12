@@ -332,7 +332,7 @@ func showTransactionsForStock(widgetFocus tview.Primitive, workingLedger ledger.
 		}
 
 		table.SetCell(i+1, 0, tview.NewTableCell(common.PadLeft(item.Date.Format("2006-01-02"), 1)).SetTextColor(defaultTextColor).SetBackgroundColor(tcell.Color236))
-		table.SetCell(i+1, 1, tview.NewTableCell(common.PadLeft(item.TransactionType, 1)).SetTextColor(defaultTextColor))
+		table.SetCell(i+1, 1, tview.NewTableCell(common.PadLeft(item.TransactionType, 1)).SetTextColor(defaultTextColor).SetExpansion(1))
 		table.SetCell(i+1, 2, tview.NewTableCell(common.PadLeft(units, 1)).SetAlign(tview.AlignRight).SetTextColor(statusTextColor).SetBackgroundColor(tcell.Color236))
 		table.SetCell(i+1, 3, tview.NewTableCell(common.PadLeft(nav, 1)).SetAlign(tview.AlignRight).SetTextColor(statusTextColor))
 		table.SetCell(i+1, 4, tview.NewTableCell(common.PadLeft(amount, 1)).SetAlign(tview.AlignRight).SetAlign(tview.AlignRight).SetTextColor(statusTextColor).SetBackgroundColor(tcell.Color236))
@@ -340,7 +340,14 @@ func showTransactionsForStock(widgetFocus tview.Primitive, workingLedger ledger.
 	}
 
 	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Key() == tcell.KeyEsc {
+		if event.Key() == tcell.KeyRune {
+			switch event.Rune() {
+			case 'q':
+				pages.RemovePage("stockTransactions")
+				inputFieldFocused = false
+				app.SetFocus(widgetFocus)
+			}
+		} else if event.Key() == tcell.KeyEsc {
 			pages.RemovePage("stockTransactions")
 			inputFieldFocused = false
 			app.SetFocus(widgetFocus)
