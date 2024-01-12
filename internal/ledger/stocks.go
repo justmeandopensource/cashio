@@ -1,9 +1,13 @@
 package ledger
 
 import (
+	"bufio"
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/http"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,9 +20,11 @@ type Stock struct {
 	Name     string
 	Type     string
 	Code     string
+	Plan     string
 	Status   string
 	Units    float64
 	Nav      float64
+	NavDate  string
 	Invested float64
 }
 
@@ -31,14 +37,15 @@ type StockTransaction struct {
 	Nav             float64
 	Amount          float64
 	BankAccountID   int
+	BankName        *string
 }
 
 // AddAccount adds the given account to the database
 func AddStock(ledger string, stock Stock) error {
 
 	stmt, err := common.DbConn.Prepare(fmt.Sprintf(`
-    INSERT INTO %s_stocks (name, type, code)
-    VALUES (?, ?, ?)
+    INSERT INTO %s_stocks (name, type, code, plan)
+    VALUES (?, ?, ?, ?)
     `, ledger))
 	if err != nil {
 		return err
@@ -48,6 +55,7 @@ func AddStock(ledger string, stock Stock) error {
 		stock.Name,
 		stock.Type,
 		stock.Code,
+		stock.Plan,
 	)
 	if err != nil {
 		return err
@@ -76,7 +84,7 @@ func FetchStocks(ledger string, stockStatus string) ([]*Stock, error) {
 	}
 
 	query := fmt.Sprintf(`
-    SELECT id, name, type, code, status, units, nav, invested
+    SELECT id, name, type, code, plan, status, units, nav, navDate, invested
     FROM %s_stocks
     %s
     ORDER BY type,status,name;
@@ -90,9 +98,9 @@ func FetchStocks(ledger string, stockStatus string) ([]*Stock, error) {
 
 	for rows.Next() {
 		var id int
-		var name, stockType, code, status string
+		var name, stockType, code, plan, status, navDate string
 		var units, nav, invested float64
-		if err := rows.Scan(&id, &name, &stockType, &code, &status, &units, &nav, &invested); err != nil {
+		if err := rows.Scan(&id, &name, &stockType, &code, &plan, &status, &units, &nav, &navDate, &invested); err != nil {
 			return nil, err
 		}
 
@@ -101,9 +109,11 @@ func FetchStocks(ledger string, stockStatus string) ([]*Stock, error) {
 			Name:     name,
 			Type:     stockType,
 			Code:     code,
+			Plan:     plan,
 			Status:   status,
 			Units:    units,
 			Nav:      nav,
+			NavDate:  navDate,
 			Invested: invested,
 		}
 
@@ -120,6 +130,15 @@ func GetStockNamesList(stocks []*Stock) []string {
 		names = append(names, stock.Name)
 	}
 	return names
+}
+
+// GetStockCodesList returns a slice of string with stock codes
+func GetStockCodesList(stocks []*Stock) []string {
+	var codes []string
+	for _, stock := range stocks {
+		codes = append(codes, stock.Code)
+	}
+	return codes
 }
 
 // GetStockID returns the stock id of the given stock
@@ -215,7 +234,7 @@ func ActionStockUnits(ledgerName string, stockTransaction StockTransaction) erro
 		return err
 	}
 
-	if stockTransaction.TransactionType == "purchase" || stockTransaction.TransactionType == "redeem" {
+	if (stockTransaction.TransactionType == "purchase" || stockTransaction.TransactionType == "redeem") && stockTransaction.BankAccountID > 0 {
 		transaction := Transaction{
 			Date:       stockTransaction.Date,
 			Notes:      fmt.Sprintf("<trans> stock %s - %s", stockTransaction.TransactionType, stockTransaction.StockName),
@@ -250,12 +269,12 @@ func updateStockBalance(tx *sql.Tx, ledgerName string, stockTransaction StockTra
 	}
 
 	var operator string
-	switch stockTransaction.TransactionType {
-	case "purchase", "switchPurchase":
+
+	if strings.Contains(stockTransaction.TransactionType, "purchase") || strings.Contains(stockTransaction.TransactionType, "switch from") {
 		operator = "+"
-	case "redeem", "switchRedeem":
+	} else if strings.Contains(stockTransaction.TransactionType, "redeem") || strings.Contains(stockTransaction.TransactionType, "switch to") {
 		operator = "-"
-	default:
+	} else {
 		return errors.New("invalid updateType")
 	}
 
@@ -276,6 +295,109 @@ func updateStockBalance(tx *sql.Tx, ledgerName string, stockTransaction StockTra
 	_, err = stmt.Exec(stockTransaction.Units, stockTransaction.Nav, stockTransaction.Amount, stockTransaction.StockID)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// GetTransactionsForStock fetches transactions for the given stock from the database
+// and returns them as a slice of StockTransaction struct
+func GetTransactionsForStock(ledgerName string, stockID int) ([]StockTransaction, error) {
+
+	query := fmt.Sprintf(`
+		SELECT t.date, t.notes, t.units, t.nav, t.amount, a.name AS bank
+		FROM %s_stocks_transactions t
+		LEFT JOIN %s_accounts a ON t.account_id = a.id
+		WHERE t.stock_id = %d
+    ORDER BY t.date DESC;
+	`, ledgerName, ledgerName, stockID)
+
+	rows, err := common.DbConn.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var stockTransactions []StockTransaction
+
+	for rows.Next() {
+
+		var stockTransaction StockTransaction
+		var bankName sql.NullString
+
+		err := rows.Scan(
+			&stockTransaction.Date,
+			&stockTransaction.TransactionType,
+			&stockTransaction.Units,
+			&stockTransaction.Nav,
+			&stockTransaction.Amount,
+			&bankName,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if bankName.Valid {
+			stockTransaction.BankName = &bankName.String
+		}
+		stockTransactions = append(stockTransactions, stockTransaction)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return stockTransactions, nil
+}
+
+func UpdateNAVs(ledgerName string, stockCodesList []string) error {
+
+	var (
+		navURL           = "https://www.amfiindia.com/spages/NAVAll.txt"
+		stocksNavDetails = []Stock{}
+		navRegex         = regexp.MustCompile(`^[^;]+;[^;]+;[^;]+;[^;]+;[^;]+;[^;]+`)
+	)
+
+	resp, err := http.Get(navURL)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	scanner := bufio.NewScanner(resp.Body)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if navRegex.MatchString(line) {
+			fields := strings.Split(line, ";")
+			code := fields[0]
+			navStr := fields[4]
+			navDate := fields[5]
+			if common.SliceContains(stockCodesList, code) {
+				nav, err := strconv.ParseFloat(navStr, 64)
+				if err != nil {
+					return err
+				}
+				nav = common.PrecisionRoundAFloat(nav, 4)
+				stockNavInfo := Stock{
+					Code:    code,
+					Nav:     nav,
+					NavDate: navDate,
+				}
+				stocksNavDetails = append(stocksNavDetails, stockNavInfo)
+			}
+		}
+	}
+
+	for _, item := range stocksNavDetails {
+		query := fmt.Sprintf(`
+		UPDATE %s_stocks
+		SET nav = %0.4f, navDate = '%s'
+		WHERE code = '%v'
+		`, ledgerName, item.Nav, item.NavDate, item.Code)
+		_, err := common.DbConn.Exec(query)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

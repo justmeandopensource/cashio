@@ -57,7 +57,19 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 					populateStocksTable(stocksTable, stocks, workingLedger.Currency)
 				}
 			case 'u':
-				showModal(stocksTable, "Feature not implemented")
+				if err := ledger.UpdateNAVs(workingLedger.Name, ledger.GetStockCodesList(stocks)); err != nil {
+					showModal(stocksTable, err.Error())
+				} else {
+					stocks, _ := ledger.FetchStocks(workingLedger.Name, "all")
+					populateStocksTable(stocksTable, stocks, workingLedger.Currency)
+				}
+			}
+		} else {
+			if event.Key() == tcell.KeyEnter {
+				row, _ := stocksTable.GetSelection()
+				stockName := strings.TrimSpace(stocksTable.GetCell(row, 1).Text)
+				stockID := ledger.GetStockID(stockName, stocks)
+				showTransactionsForStock(stocksTable, workingLedger, stockName, stockID)
 			}
 		}
 		return event

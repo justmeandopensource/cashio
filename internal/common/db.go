@@ -144,6 +144,7 @@ func CreateLedgerTables(name string, currency string) error {
 			status TEXT CHECK(status IN ('active', 'holding', 'closed')) NOT NULL DEFAULT 'holding',
 			units DECIMAL(10, 3) NOT NULL DEFAULT 0.000,
 			nav DECIMAL(10, 4) NOT NULL DEFAULT 0.0000,
+			navDate TEXT DEFAULT '',
 			invested DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
 			CONSTRAINT unique_name UNIQUE (name)
 		)
@@ -163,7 +164,7 @@ func CreateLedgerTables(name string, currency string) error {
 			nav DECIMAL(10, 4) NOT NULL DEFAULT 0.0000,
 			amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
 			stock_id INTEGER NOT NULL,
-			account_id INTEGER NOT NULL,
+			account_id INTEGER,
 			FOREIGN KEY (stock_id) REFERENCES %s_stocks(id),
 			FOREIGN KEY (account_id) REFERENCES %s_accounts(id)
 		)

@@ -143,7 +143,7 @@ func showSwitchStockTransactionForm(workingLedger ledger.Ledger) {
 		toNavRounded := common.PrecisionRoundAFloat(toNav, 4)
 
 		fromStockTransaction := ledger.StockTransaction{
-			TransactionType: "switchRedeem",
+			TransactionType: "switch to " + toStockName,
 			StockID:         fromStockID,
 			StockName:       fromStockName,
 			Date:            transDate,
@@ -153,7 +153,7 @@ func showSwitchStockTransactionForm(workingLedger ledger.Ledger) {
 		}
 
 		toStockTransaction := ledger.StockTransaction{
-			TransactionType: "switchPurchase",
+			TransactionType: "switch from " + fromStockName,
 			StockID:         toStockID,
 			StockName:       toStockName,
 			Date:            transDate,

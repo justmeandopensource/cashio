@@ -17,6 +17,7 @@ func showAddStockForm(workingLedger ledger.Ledger) {
 		stockType string
 		stockName string
 		stockCode string
+		stockPlan string
 
 		mainFormTitle = "[ Add Stock ]"
 		pageName      = "addStockForm"
@@ -46,6 +47,10 @@ func showAddStockForm(workingLedger ledger.Ledger) {
 	mainForm.AddInputField("Stock Name", "", 100, nil, nil)
 	fieldStockName := mainForm.GetFormItemByLabel("Stock Name").(*tview.InputField)
 
+	// stock plan
+	mainForm.AddInputField("Stock Plan", "", 20, nil, nil)
+	fieldStockPlan := mainForm.GetFormItemByLabel("Stock Plan").(*tview.InputField)
+
 	// stock code
 	mainForm.AddInputField("Stock Code", "", 20, nil, nil)
 	fieldStockCode := mainForm.GetFormItemByLabel("Stock Code").(*tview.InputField)
@@ -58,6 +63,7 @@ func showAddStockForm(workingLedger ledger.Ledger) {
 	mainForm.AddButton("Submit", func() {
 		stockName = strings.TrimSpace(fieldStockName.GetText())
 		stockCode = strings.TrimSpace(fieldStockCode.GetText())
+		stockPlan = strings.TrimSpace(fieldStockPlan.GetText())
 		if stockName == "" || (stockType == "mutual fund" && stockCode == "") {
 			showError(errorField, "insufficient data")
 			return
@@ -66,6 +72,7 @@ func showAddStockForm(workingLedger ledger.Ledger) {
 				Name: stockName,
 				Type: stockType,
 				Code: stockCode,
+				Plan: stockPlan,
 			}
 			if err := ledger.AddStock(workingLedger.Name, stock); err != nil {
 				pages.RemovePage(pageName)
@@ -107,7 +114,7 @@ func showAddStockForm(workingLedger ledger.Ledger) {
 	mainForm.SetFocus(1)
 
 	grid := tview.NewGrid().
-		SetRows(0, 13, 0).
+		SetRows(0, 15, 0).
 		SetColumns(0, 75, 0).
 		AddItem(mainForm, 1, 1, 1, 1, 0, 0, true)
 
