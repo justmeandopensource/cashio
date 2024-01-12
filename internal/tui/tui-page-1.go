@@ -112,7 +112,19 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 	accBalanceFlex.AddItem(assetsTable, 0, 5, true)
 	accBalanceFlex.AddItem(liabilitiesTable, 0, 5, true)
 
-	pages.AddPage(workingLedger.Name+page1, accBalanceFlex, true, true)
+	statusBar := tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).
+		SetText(fmt.Sprintf(
+			"[gray]%s\t%s\t%s\t%s",
+			"(2)accounts", "(3)categories", "(4)stocks", "(R)eports"))
+
+	grid := tview.NewGrid().
+		SetRows(0, 1).
+		SetColumns(0, 1).
+		SetBorders(true).
+		AddItem(accBalanceFlex, 0, 0, 1, 2, 0, 0, true).
+		AddItem(statusBar, 1, 0, 1, 2, 0, 0, false)
+
+	pages.AddPage(workingLedger.Name+page1, grid, true, true)
 }
 
 // generateAccountRows generates a row for the given account with balance and adds it to the tview table

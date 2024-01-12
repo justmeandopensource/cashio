@@ -17,6 +17,8 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 	var (
 		placeholder    = 0
 		openingBalance = 0.0
+		mainFormTitle  = "[ Add Account ]"
+		pageName       = "addAccountForm"
 	)
 
 	// form
@@ -43,6 +45,7 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 	// status text
 	mainForm.AddTextView("  ", "", 30, 1, true, false)
 	errorField := mainForm.GetFormItemByLabel("  ").(*tview.TextView)
+	errorField.SetDynamicColors(true)
 
 	mainForm.AddButton("Submit", func() {
 		accountName := strings.TrimSpace(accountField.GetText())
@@ -60,7 +63,7 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 				account.OpeningBalance = openingBalance
 			}
 			if err := ledger.AddAccount(workingLedger.Name, account); err != nil {
-				pages.RemovePage("addAccountForm")
+				pages.RemovePage(pageName)
 				app.SetFocus(page2AccTree)
 				inputFieldFocused = false
 				showModal(page2AccTree, err.Error())
@@ -74,12 +77,12 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 				page2TransTable.SetBorderColor(tcell.Color246)
 			}
 		}
-		pages.RemovePage("addAccountForm")
+		pages.RemovePage(pageName)
 		app.SetFocus(page2AccTree)
 		inputFieldFocused = false
 	})
 	mainForm.AddButton("Cancel", func() {
-		pages.RemovePage("addAccountForm")
+		pages.RemovePage(pageName)
 		app.SetFocus(page2AccTree)
 		inputFieldFocused = false
 	})
@@ -87,14 +90,14 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 	mainForm.SetButtonBackgroundColor(tcell.Color238)
 	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
 
-	mainForm.SetTitle("[ Add Account ]")
+	mainForm.SetTitle(mainFormTitle)
 	mainForm.SetBorder(true)
 	mainForm.SetBorderColor(tview.Styles.SecondaryTextColor)
 	mainForm.SetBackgroundColor(tcell.ColorDefault)
 	mainForm.SetFieldBackgroundColor(tcell.Color238)
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
-			pages.RemovePage("addAccountForm")
+			pages.RemovePage(pageName)
 			app.SetFocus(page2AccTree)
 			inputFieldFocused = false
 		}
@@ -106,6 +109,5 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 		SetColumns(0, 45, 0).
 		AddItem(mainForm, 1, 1, 1, 1, 0, 0, true)
 
-	pages.AddPage("addAccountForm", grid, true, true)
-
+	pages.AddPage(pageName, grid, true, true)
 }

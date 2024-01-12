@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"math"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -192,4 +193,19 @@ func ProcessExpression(input string) float64 {
 	}
 
 	return processedOutput
+}
+
+// PrecisionRoundAFloat returns the given float rounded to the precision number of places
+func PrecisionRoundAFloat(value float64, precision int) float64 {
+	return math.Round(value*math.Pow(10, float64(precision))) / math.Pow(10, float64(precision))
+}
+
+// SliceContains returns true if the slice contains given string otherwise false
+func SliceContains(slice []string, item string) bool {
+	for _, v := range slice {
+		if v == item {
+			return true
+		}
+	}
+	return false
 }
