@@ -49,7 +49,7 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 				row, _ := stocksTable.GetSelection()
 				stockName := strings.TrimSpace(stocksTable.GetCell(row, 1).Text)
 				stockID := ledger.GetStockID(stockName, stocks)
-				currStatus := strings.TrimSpace(stocksTable.GetCell(row, 3).Text)
+				currStatus := strings.TrimSpace(stocksTable.GetCell(row, 5).Text)
 				if err := ledger.ToggleStockStatus(workingLedger.Name, stockID, currStatus); err != nil {
 					showModal(stocksTable, err.Error())
 				} else {
