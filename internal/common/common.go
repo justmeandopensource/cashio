@@ -4,10 +4,13 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"math"
 	"os"
+	"path"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -96,6 +99,66 @@ func getSanitisedPath(path string) string {
 	}
 
 	return sanitizedPath
+}
+
+// BackupDBFile creates a backup of current db file in the same dataDir location
+func BackupDBFile() error {
+
+	var (
+		sourceFilePath      = GetCashioDBPath()
+		dataDir             = getSanitisedPath(viper.GetString("data_directory"))
+		dbFile              = path.Base(sourceFilePath)
+		dbFileExt           = path.Ext(sourceFilePath)
+		timestamp           = time.Now().Format("20060102_150405")
+		destinationFilePath = filepath.Join(dataDir, fmt.Sprintf("%s_%s.%s", dbFile, timestamp, dbFileExt))
+	)
+
+	sourceFile, err := os.Open(sourceFilePath)
+	if err != nil {
+		return err
+	}
+	defer sourceFile.Close()
+
+	destinationFile, err := os.Create(destinationFilePath)
+	if err != nil {
+		return err
+	}
+	defer destinationFile.Close()
+
+	_, err = io.Copy(destinationFile, sourceFile)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CleanupDBBackupFiles deletes DB backup files older than 5 days
+func CleanupDBBackupFiles() error {
+
+	var (
+		currentTime             = time.Now()
+		dataDir                 = getSanitisedPath(viper.GetString("data_directory"))
+		minimumModificationTime = currentTime.Add(-5 * 24 * time.Hour) // files older than 5 days
+		fileNamePattern         = regexp.MustCompile(`_backup_`)
+	)
+
+	err := filepath.Walk(dataDir, func(filePath string, fileInfo os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if fileInfo.Mode().IsRegular() && fileNamePattern.MatchString(fileInfo.Name()) && fileInfo.ModTime().Before(minimumModificationTime) {
+			err := os.Remove(filePath)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	return err
 }
 
 // SaveTermState saves the current terminal state which can then be restored if needed
