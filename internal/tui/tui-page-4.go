@@ -59,10 +59,16 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 			case 'u':
 				if err := ledger.UpdateNAVs(workingLedger.Name, ledger.GetStockCodesList(stocks)); err != nil {
 					showModal(stocksTable, err.Error())
-				} else {
-					stocks, _ := ledger.FetchStocks(workingLedger.Name, "all")
-					populateStocksTable(stocksTable, stocks, workingLedger.Currency)
+					return event
 				}
+				if ledger.GoldStocksFound(stocks) {
+					if err := ledger.UpdateGoldPrice(workingLedger.Name); err != nil {
+						showModal(stocksTable, err.Error())
+						return event
+					}
+				}
+				stocks, _ := ledger.FetchStocks(workingLedger.Name, "all")
+				populateStocksTable(stocksTable, stocks, workingLedger.Currency)
 			}
 		} else {
 			if event.Key() == tcell.KeyEnter {

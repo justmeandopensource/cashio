@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gocolly/colly/v2"
 	"github.com/justmeandopensource/cashio/internal/common"
 )
 
@@ -392,12 +393,63 @@ func UpdateNAVs(ledgerName string, stockCodesList []string) error {
 		query := fmt.Sprintf(`
 		UPDATE %s_stocks
 		SET nav = %0.4f, navDate = '%s'
-		WHERE code = '%v'
+		WHERE code = '%v' AND type = 'mutual fund'
 		`, ledgerName, item.Nav, item.NavDate, item.Code)
 		_, err := common.DbConn.Exec(query)
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func GoldStocksFound(stocks []*Stock) bool {
+	for _, stock := range stocks {
+		if stock.Type == "gold" {
+			return true
+		}
+	}
+	return false
+}
+
+func UpdateGoldPrice(ledgerName string) error {
+
+	var (
+		goldPriceRawDate = ""
+		goldPriceDate    = ""
+		goldPrice        = 0.00
+		c                = colly.NewCollector()
+		goldPriceURL     = "https://ibja.co"
+	)
+
+	c.OnHTML("span#lblDate", func(e *colly.HTMLElement) {
+		goldPriceRawDate = e.Text
+	})
+
+	c.OnHTML("span#lblFineGold999", func(e *colly.HTMLElement) {
+		fields := strings.Fields(e.Text)
+		if len(fields) > 1 {
+			goldPrice, _ = strconv.ParseFloat(fields[1], 64)
+		}
+	})
+
+	c.Visit(goldPriceURL)
+
+	parsedDate, err := time.Parse("02/01/2006", goldPriceRawDate)
+	if err != nil {
+		return err
+	}
+	goldPriceDate = parsedDate.Format("02-Jan-2006")
+
+	query := fmt.Sprintf(`
+	UPDATE %s_stocks
+	SET nav = %0.4f, navDate = '%s'
+	WHERE type = 'gold'
+	`, ledgerName, goldPrice, goldPriceDate)
+	_, err = common.DbConn.Exec(query)
+	if err != nil {
+		return err
 	}
 
 	return nil
