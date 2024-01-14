@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/justmeandopensource/cashio/internal/common"
 	"github.com/justmeandopensource/cashio/internal/ledger"
 	"github.com/rivo/tview"
 )
@@ -51,6 +52,10 @@ func TransactionsUI(ledgerName string) {
 			switch event.Rune() {
 			case 'q':
 				app.Stop()
+				if err := common.CleanupDBBackupFiles(); err != nil {
+					fmt.Fprintln(os.Stderr, common.ColorizeRed("[E] "+err.Error()))
+					os.Exit(1)
+				}
 			case '1':
 				pages.RemovePage(ledgerName + page1)
 				setupAccBalancePage(workingLedger)

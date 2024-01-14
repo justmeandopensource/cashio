@@ -20,6 +20,12 @@ var ledgerCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		checkEnv(name)
+
+		if err := common.BackupDBFile(); err != nil {
+			fmt.Fprintln(os.Stderr, common.ColorizeRed("[E] "+err.Error()))
+			os.Exit(1)
+		}
+
 		tui.TransactionsUI(name)
 	},
 }
