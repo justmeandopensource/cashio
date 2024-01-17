@@ -132,7 +132,7 @@ func showAddStockTransactionForm(workingLedger ledger.Ledger, stockName string, 
 		}
 
 		stocks, _ := ledger.FetchStocks(workingLedger.Name, "all")
-		populateStocksTable(stocksTable, stocks, workingLedger.Currency)
+		populateStocksTable(stocks, workingLedger.Currency)
 
 		pages.RemovePage(pageName)
 		app.SetFocus(stocksTable)

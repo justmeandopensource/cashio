@@ -77,7 +77,16 @@ func populateTransactionsTable(transactionsTable *tview.Table, transactionsList 
 }
 
 // populateStocksTable loads the transactions table with entries from transactionsList
-func populateStocksTable(stocksTable *tview.Table, stocksList []*ledger.Stock, currency string) {
+func populateStocksTable(stocksList []*ledger.Stock, currency string) {
+
+	investmentStatus := ledger.InvestmentStatus{
+		MFInvested:     0.00,
+		MFValue:        0.00,
+		GoldInvested:   0.00,
+		GoldValue:      0.00,
+		OthersInvested: 0.00,
+		OthersValue:    0.00,
+	}
 
 	stocksTable.Clear()
 	stocksTable.SetFixed(1, 1)
@@ -154,6 +163,52 @@ func populateStocksTable(stocksTable *tview.Table, stocksList []*ledger.Stock, c
 		stocksTable.SetCell(i+1, 9, tview.NewTableCell(common.PadLeft(invested, 1)).SetAlign(tview.AlignRight).SetTextColor(tcell.ColorCadetBlue))
 		stocksTable.SetCell(i+1, 10, tview.NewTableCell(common.PadLeft(value, 1)).SetAlign(tview.AlignRight).SetTextColor(lossOrGainColor).SetBackgroundColor(tcell.Color236))
 		stocksTable.SetCell(i+1, 11, tview.NewTableCell(common.PadLeft(perc_change, 1)).SetAlign(tview.AlignRight).SetTextColor(lossOrGainColor))
+
+		switch {
+		case item.Type == "mutual fund":
+			investmentStatus.MFInvested += item.Invested
+			investmentStatus.MFValue += curr_value
+		case item.Type == "gold":
+			investmentStatus.GoldInvested += item.Invested
+			investmentStatus.GoldValue += curr_value
+		case item.Type == "others":
+			investmentStatus.OthersInvested += item.Invested
+			investmentStatus.OthersValue += curr_value
+		}
+
+		stocksStatusBarText := ""
+		changeColor := "green"
+
+		if investmentStatus.GoldInvested != 0.00 {
+			invested := fmt.Sprintf("%s%s", common.CurrencySymbols[currency], p.Sprintf("%0.2f", investmentStatus.GoldInvested))
+			value := fmt.Sprintf("%s%s", common.CurrencySymbols[currency], p.Sprintf("%0.2f", investmentStatus.GoldValue))
+			goldChange := ((investmentStatus.GoldValue - investmentStatus.GoldInvested) / investmentStatus.GoldInvested) * 100
+			if investmentStatus.GoldValue < investmentStatus.GoldInvested {
+				changeColor = "red"
+			}
+			stocksStatusBarText += fmt.Sprintf("[orange]Gold [ [blue]%s [orange]| [%s]%s [orange]| [%s]%0.2f%% [orange]]\t", invested, changeColor, value, changeColor, goldChange)
+		}
+		if investmentStatus.MFInvested != 0.00 {
+			invested := fmt.Sprintf("%s%s", common.CurrencySymbols[currency], p.Sprintf("%0.2f", investmentStatus.MFInvested))
+			value := fmt.Sprintf("%s%s", common.CurrencySymbols[currency], p.Sprintf("%0.2f", investmentStatus.MFValue))
+			mfChange := ((investmentStatus.MFValue - investmentStatus.MFInvested) / investmentStatus.MFInvested) * 100
+			if investmentStatus.MFValue < investmentStatus.MFInvested {
+				changeColor = "red"
+			}
+			stocksStatusBarText += fmt.Sprintf("[orange]Mutual Fund [ [blue]%s [orange]| [%s]%s [orange]| [%s]%0.2f%% [orange]]\t", invested, changeColor, value, changeColor, mfChange)
+		}
+		if investmentStatus.OthersInvested != 0.00 {
+			invested := fmt.Sprintf("%s%s", common.CurrencySymbols[currency], p.Sprintf("%0.2f", investmentStatus.OthersInvested))
+			value := fmt.Sprintf("%s%s", common.CurrencySymbols[currency], p.Sprintf("%0.2f", investmentStatus.OthersValue))
+			othersChange := ((investmentStatus.OthersValue - investmentStatus.OthersInvested) / investmentStatus.OthersInvested) * 100
+			if investmentStatus.OthersValue < investmentStatus.OthersInvested {
+				changeColor = "red"
+			}
+			stocksStatusBarText += fmt.Sprintf("[orange]Others [ [blue]%s [orange]| [%s]%s [orange]| [%s]%0.2f%% [orange]]", invested, changeColor, value, changeColor, othersChange)
+		}
+
+		stocksStatusBar.SetText(stocksStatusBarText)
+
 	}
 }
 

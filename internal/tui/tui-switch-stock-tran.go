@@ -173,7 +173,7 @@ func showSwitchStockTransactionForm(workingLedger ledger.Ledger) {
 		}
 
 		stocks, _ := ledger.FetchStocks(workingLedger.Name, "all")
-		populateStocksTable(stocksTable, stocks, workingLedger.Currency)
+		populateStocksTable(stocks, workingLedger.Currency)
 
 		pages.RemovePage(pageName)
 		app.SetFocus(stocksTable)
