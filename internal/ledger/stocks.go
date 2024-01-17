@@ -41,6 +41,15 @@ type StockTransaction struct {
 	BankName        *string
 }
 
+type InvestmentStatus struct {
+	MFInvested     float64
+	MFValue        float64
+	GoldInvested   float64
+	GoldValue      float64
+	OthersInvested float64
+	OthersValue    float64
+}
+
 // AddAccount adds the given account to the database
 func AddStock(ledger string, stock Stock) error {
 

@@ -9,16 +9,20 @@ import (
 	"github.com/rivo/tview"
 )
 
-var stocksTable *tview.Table
+var (
+	stocksTable     *tview.Table
+	stocksStatusBar *tview.TextView
+)
 
 // setupStocksPage sets up the tview page that displays investment accounts
 func setupStocksPage(workingLedger ledger.Ledger) {
 
+	stocksStatusBar = tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter)
 	stocksTable = tview.NewTable()
 	stocksTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 	stocksTable.SetTitle(fmt.Sprintf("[ Stocks Dashboard (%s) ]", workingLedger.Name))
 	stocks, _ := ledger.FetchStocks(workingLedger.Name, "all")
-	populateStocksTable(stocksTable, stocks, workingLedger.Currency)
+	populateStocksTable(stocks, workingLedger.Currency)
 
 	stocksTable.SetBlurFunc(func() {
 		stocksTable.SetBorderColor(tcell.Color246)
@@ -54,7 +58,7 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 					showModal(stocksTable, err.Error())
 				} else {
 					stocks, _ := ledger.FetchStocks(workingLedger.Name, "all")
-					populateStocksTable(stocksTable, stocks, workingLedger.Currency)
+					populateStocksTable(stocks, workingLedger.Currency)
 				}
 			case 'u':
 				if err := ledger.UpdateNAVs(workingLedger.Name, ledger.GetStockCodesList(stocks)); err != nil {
@@ -68,7 +72,7 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 					}
 				}
 				stocks, _ := ledger.FetchStocks(workingLedger.Name, "all")
-				populateStocksTable(stocksTable, stocks, workingLedger.Currency)
+				populateStocksTable(stocks, workingLedger.Currency)
 			}
 		} else {
 			if event.Key() == tcell.KeyEnter {
@@ -91,11 +95,12 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 			"(n)ew stock", "(p)urchase units", "(r)edeem units", "(s)switch units", "(t)oggle status", "(u)pdate nav"))
 
 	grid := tview.NewGrid().
-		SetRows(0, 1).
+		SetRows(0, 1, 1).
 		SetColumns(0, 1).
 		SetBorders(true).
 		AddItem(stocksFlex, 0, 0, 1, 2, 0, 0, true).
-		AddItem(statusBar, 1, 0, 1, 2, 0, 0, false)
+		AddItem(stocksStatusBar, 1, 0, 1, 2, 0, 0, false).
+		AddItem(statusBar, 2, 0, 1, 2, 0, 0, false)
 
 	pages.AddPage(workingLedger.Name+page4, grid, true, true)
 }
