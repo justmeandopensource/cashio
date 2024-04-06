@@ -8,6 +8,7 @@ import (
 	"github.com/justmeandopensource/cashio/internal/ledger"
 	"github.com/justmeandopensource/cashio/internal/tui"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var ledgerCmd = &cobra.Command{
@@ -21,10 +22,13 @@ var ledgerCmd = &cobra.Command{
 		}
 		checkEnv(name)
 
-		if err := common.BackupDBFile(); err != nil {
-			fmt.Fprintln(os.Stderr, common.ColorizeRed("[E] "+err.Error()))
-			os.Exit(1)
-		}
+	  backupNeeded := viper.GetBool("db_backup_needed")
+    if backupNeeded {
+      if err := common.BackupDBFile(); err != nil {
+        fmt.Fprintln(os.Stderr, common.ColorizeRed("[E] "+err.Error()))
+        os.Exit(1)
+      }
+    }
 
 		tui.TransactionsUI(name)
 	},
