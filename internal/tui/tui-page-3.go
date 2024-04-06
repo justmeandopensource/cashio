@@ -176,9 +176,11 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 
 	statusBar := tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).
 		SetText(fmt.Sprintf(
-			"[gray]%s\t%s\t%s\t%s\t[blue]%s\t%s",
+			"[yellow]%s\t%s\t%s\t%s\t[blue]%s\t%s",
 			"(1)home", "(2)accounts", "(4)stocks", "(R)eports",
 			"(a)dd transaction", "(t)ransfer funds"))
+
+  statusBar.SetBackgroundColor(tcell.ColorDefault)
 
 	grid := tview.NewGrid().
 		SetRows(0, 1).
@@ -186,6 +188,8 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 		SetBorders(true).
 		AddItem(transByCatFlex, 0, 0, 1, 2, 0, 0, true).
 		AddItem(statusBar, 1, 0, 1, 2, 0, 0, false)
+
+  grid.SetBackgroundColor(tcell.ColorDefault)
 
 	pages.AddPage(workingLedger.Name+page3, grid, true, true)
 }
