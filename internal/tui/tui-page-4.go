@@ -18,6 +18,7 @@ var (
 func setupStocksPage(workingLedger ledger.Ledger) {
 
 	stocksStatusBar = tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter)
+  stocksStatusBar.SetBackgroundColor(tcell.ColorDefault)
 	stocksTable = tview.NewTable()
 	stocksTable.SetBorderColor(tview.Styles.SecondaryTextColor)
 	stocksTable.SetTitle(fmt.Sprintf("[ Stocks Dashboard (%s) ]", workingLedger.Name))
@@ -90,9 +91,11 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 
 	statusBar := tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).
 		SetText(fmt.Sprintf(
-			"[gray]%s\t%s\t%s\t%s\t[blue]%s\t%s\t%s\t%s\t%s\t%s",
+			"[yellow]%s\t%s\t%s\t%s\t[blue]%s\t%s\t%s\t%s\t%s\t%s",
 			"(1)home", "(2)accounts", "(3)categories", "(R)eports",
 			"(n)ew stock", "(p)urchase units", "(r)edeem units", "(s)switch units", "(t)oggle status", "(u)pdate nav"))
+
+  statusBar.SetBackgroundColor(tcell.ColorDefault)
 
 	grid := tview.NewGrid().
 		SetRows(0, 1, 1).
@@ -101,6 +104,8 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 		AddItem(stocksFlex, 0, 0, 1, 2, 0, 0, true).
 		AddItem(stocksStatusBar, 1, 0, 1, 2, 0, 0, false).
 		AddItem(statusBar, 2, 0, 1, 2, 0, 0, false)
+
+  grid.SetBackgroundColor(tcell.ColorDefault)
 
 	pages.AddPage(workingLedger.Name+page4, grid, true, true)
 }
