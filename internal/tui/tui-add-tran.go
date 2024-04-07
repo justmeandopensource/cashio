@@ -328,9 +328,17 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		var transactions []ledger.Transaction
 		switch {
 		case len(config.AccountNodeName) > 0:
-			transactions, _ = ledger.GetTransactionsForAccount(config.WorkingLedger.Name, config.AccountNodeName, 50)
+			transactions, _ = ledger.GetTransactionsForAccount(config.WorkingLedger.Name, config.AccountNodeName, 100)
+      switch config.AccountNodeName {
+        case ".", "Assets", "Liabilities":
+          break
+        default:
+          accounts, _ := ledger.FetchAccounts(config.WorkingLedger.Name, "", false)
+          balance := ledger.GetAccountBalance(accounts, config.AccountNodeName)
+          config.SourceTable.SetTitle(common.FormatAccountsTableTitle(config.AccountNodeName, config.WorkingLedger.Currency, balance))
+      }
 		case len(config.CategoryNodeName) > 0:
-			transactions, _ = ledger.GetTransactionsForCategory(config.WorkingLedger.Name, config.CategoryNodeName, 50)
+			transactions, _ = ledger.GetTransactionsForCategory(config.WorkingLedger.Name, config.CategoryNodeName, 100)
 		}
 		populateTransactionsTable(config.SourceTable, transactions, config.WorkingLedger.Currency)
 
