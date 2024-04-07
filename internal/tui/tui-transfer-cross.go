@@ -249,9 +249,9 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		var tableTransactions []ledger.Transaction
 		switch {
 		case len(config.AccountNodeName) > 0:
-			tableTransactions, _ = ledger.GetTransactionsForAccount(config.WorkingLedger.Name, config.AccountNodeName, 50)
+			tableTransactions, _ = ledger.GetTransactionsForAccount(config.WorkingLedger.Name, config.AccountNodeName, 100)
 		case len(config.CategoryNodeName) > 0:
-			tableTransactions, _ = ledger.GetTransactionsForCategory(config.WorkingLedger.Name, config.CategoryNodeName, 50)
+			tableTransactions, _ = ledger.GetTransactionsForCategory(config.WorkingLedger.Name, config.CategoryNodeName, 100)
 		}
 		populateTransactionsTable(config.SourceTable, tableTransactions, config.WorkingLedger.Currency)
 

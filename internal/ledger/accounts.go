@@ -218,3 +218,27 @@ func getChildAccountIDsHelper(accounts []*Account) []int {
 	}
 	return cids
 }
+
+// getAccountBalance calculates the total balance for a given account
+// accumulates balances from all child accounts if its a placeholder account
+func GetAccountBalance(accounts []*Account, accountName string) float64 {
+
+  var totalBalance float64
+
+  for _, account := range accounts {
+
+    if account.Name == accountName {
+      if account.Placeholder == 0 {
+        return account.Balance
+      }
+      for _, child := range account.Children {
+        totalBalance += GetAccountBalance(account.Children, child.Name)
+      }
+      return totalBalance
+    }
+
+    totalBalance += GetAccountBalance(account.Children, accountName)
+  }
+
+  return totalBalance
+}

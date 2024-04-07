@@ -102,8 +102,14 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 					populateTransactionsTable(page2TransTable, transactions, workingLedger.Currency)
 					if accountName == "." {
 						page2TransTable.SetTitle("[ All Transactions ]")
+          } else if accountName == "assets" {
+						page2TransTable.SetTitle("[ assets ]")
+          } else if accountName == "liabilities" {
+						page2TransTable.SetTitle("[ liabilities]")
 					} else {
-						page2TransTable.SetTitle("[ " + accountName + " ]")
+	          accounts, _ := ledger.FetchAccounts(workingLedger.Name, "", false)
+	          balance := ledger.GetAccountBalance(accounts, accountName)
+						page2TransTable.SetTitle(common.FormatAccountsTableTitle(accountName, workingLedger.Currency, balance))
 					}
 					if page2TransTable.GetRowCount() < 2 {
 						return event
@@ -125,7 +131,7 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 	// transaction table
 	page2TransTable = tview.NewTable()
 	page2TransTable.SetBorderColor(tcell.Color246)
-	transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, ".", 50)
+	transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, ".", 100)
 	populateTransactionsTable(page2TransTable, transactions, workingLedger.Currency)
 	page2TransTable.SetTitle("[ All Transactions ]")
 
@@ -231,7 +237,7 @@ func showDeleteConfirmationModal(workingLedger ledger.Ledger, transactionID int)
 				fmt.Fprint(os.Stderr, common.ColorizeRed(fmt.Sprintf("[E] %v", err)))
 			} else {
 				accountName := page2AccTree.GetCurrentNode().GetText()
-				transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, accountName, 50)
+				transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, accountName, 100)
 				page2TransTable.Clear()
 				populateTransactionsTable(page2TransTable, transactions, workingLedger.Currency)
 				page2TransTable.ScrollToBeginning()

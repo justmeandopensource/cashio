@@ -94,7 +94,7 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 				if currentNode != nil {
 					page3TransTable.Clear()
 					categoryName := currentNode.GetText()
-					transactions, _ := ledger.GetTransactionsForCategory(workingLedger.Name, categoryName, 50)
+					transactions, _ := ledger.GetTransactionsForCategory(workingLedger.Name, categoryName, 100)
 					populateTransactionsTable(page3TransTable, transactions, workingLedger.Currency)
 					if categoryName == "." {
 						page3TransTable.SetTitle("[ All Transactions ]")

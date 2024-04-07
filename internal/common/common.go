@@ -19,6 +19,8 @@ import (
 	"github.com/c-bata/go-prompt"
 	"github.com/spf13/viper"
 	"golang.org/x/term"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 var termState *term.State
@@ -271,4 +273,18 @@ func SliceContains(slice []string, item string) bool {
 		}
 	}
 	return false
+}
+
+// FormatAccountsTableTitle formats the title depending on the value of account balance
+func FormatAccountsTableTitle(accountName string, currency string, balance float64) string {
+  var title string
+  balanceColor := "blue"
+  if balance < 0 {
+    balanceColor = "red"
+  }
+  p := message.NewPrinter(language.MustParse(Locales[currency]))
+  accountBalance := p.Sprintf("%0.2f", balance)
+	accountBalance = strings.TrimPrefix(accountBalance, "-")
+  title = fmt.Sprintf("[ %s [%s]( %s%s )[none] ]", accountName, balanceColor, CurrencySymbols[currency], accountBalance)
+  return title
 }

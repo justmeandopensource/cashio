@@ -175,7 +175,7 @@ func jumpToAccounts(workingLedger ledger.Ledger, table *tview.Table) {
 	re := regexp.MustCompile(`^\s*- (.+)`)
 	match := re.FindStringSubmatch(accountName)
 	if len(match) >= 2 {
-		accounts, _ := ledger.FetchAccounts(workingLedger.Name, "", true)
+		accounts, _ := ledger.FetchAccounts(workingLedger.Name, "", false)
 		if ledger.IsPlaceHolderAccount(match[1], accounts) {
 			return
 		}
@@ -184,9 +184,10 @@ func jumpToAccounts(workingLedger ledger.Ledger, table *tview.Table) {
 		}
 		page2TransTable.Clear()
 		page2TransTable.ScrollToBeginning()
-		transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, match[1], 50)
+		transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, match[1], 100)
 		populateTransactionsTable(page2TransTable, transactions, workingLedger.Currency)
-		page2TransTable.SetTitle("[ " + match[1] + " ]")
+    balance := ledger.GetAccountBalance(accounts, match[1])
+		page2TransTable.SetTitle(common.FormatAccountsTableTitle(match[1], workingLedger.Currency, balance))
 		pages.SwitchToPage(workingLedger.Name + page2)
 		accountNode := findNodeByText(page2AccTree.GetRoot(), match[1])
 		expandParentNodes(page2AccTreeMap, accountNode)
