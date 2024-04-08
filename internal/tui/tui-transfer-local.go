@@ -178,6 +178,14 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 		switch {
 		case len(config.AccountNodeName) > 0:
 			tableTransactions, _ = ledger.GetTransactionsForAccount(config.WorkingLedger.Name, config.AccountNodeName, 100)
+      switch config.AccountNodeName {
+        case ".", "Assets", "Liabilities":
+          break
+        default:
+          accounts, _ := ledger.FetchAccounts(config.WorkingLedger.Name, "", false)
+          balance := ledger.GetAccountBalance(accounts, config.AccountNodeName)
+          config.SourceTable.SetTitle(common.FormatAccountsTableTitle(config.AccountNodeName, config.WorkingLedger.Currency, balance))
+      }
 		case len(config.CategoryNodeName) > 0:
 			tableTransactions, _ = ledger.GetTransactionsForCategory(config.WorkingLedger.Name, config.CategoryNodeName, 100)
 		}
