@@ -6,8 +6,24 @@ on:
       - "v*"
 
 jobs:
-  releases-matrix:
-    name: Release Go Binary
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+  build-and-release:
+    name: Build and Release
+    needs: create-release
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -23,3 +39,5 @@ jobs:
         goversion: "https://dl.google.com/go/go1.20.3.linux-amd64.tar.gz"
         project_path: "./"
         binary_name: "cashio"
+        extra_files: LICENSE
+        overwrite: true
