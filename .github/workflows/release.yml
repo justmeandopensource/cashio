@@ -5,10 +5,15 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - name: Create Release
         id: create_release
@@ -31,13 +36,23 @@ jobs:
         goarch: [amd64]
     steps:
     - uses: actions/checkout@v3
-    - uses: wangyoucao577/go-release-action@v1
+    - name: Set up Go
+      uses: actions/setup-go@v4
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        goos: ${{ matrix.goos }}
-        goarch: ${{ matrix.goarch }}
-        goversion: "https://dl.google.com/go/go1.20.3.linux-amd64.tar.gz"
-        project_path: "./"
-        binary_name: "cashio"
-        extra_files: LICENSE
-        overwrite: true
+        go-version: '1.20'
+    - name: Build
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+      run: |
+        go build -v -o cashio-${{ matrix.goos }}-${{ matrix.goarch }}
+        
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./cashio-${{ matrix.goos }}-${{ matrix.goarch }}
+        asset_name: cashio-${{ matrix.goos }}-${{ matrix.goarch }}
+        asset_content_type: application/octet-stream
