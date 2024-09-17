@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/justmeandopensource/cashio/internal/common"
 	"github.com/justmeandopensource/cashio/internal/ledger"
 	"github.com/rivo/tview"
 )
@@ -22,22 +23,22 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 
 	// accounts treeview
 	page3CatTree = tview.NewTreeView().
-		SetRoot(tview.NewTreeNode(".").SetSelectable(true).SetColor(tcell.Color246)).
+		SetRoot(tview.NewTreeNode(".").SetSelectable(true).SetColor(common.TCellColorDefaultText)).
 		SetCurrentNode(tview.NewTreeNode("").SetSelectable(false))
 
 	page3CatTree.SetTitle(fmt.Sprintf("[ Categories (%s) ]", workingLedger.Name))
-	page3CatTree.SetBackgroundColor(tcell.Color235)
+	page3CatTree.SetBackgroundColor(tcell.ColorDefault)
 	page3CatTree.SetBorder(true)
-	page3CatTree.SetBorderColor(tcell.Color246)
+	page3CatTree.SetBorderColor(common.TCellColorBorderInactive)
 
 	incomeCategories, _ := ledger.FetchCategories(workingLedger.Name, "income", false)
 	incomeNode := tview.NewTreeNode("income").SetIndent(1)
-	incomeNode.SetColor(tcell.Color246)
+	incomeNode.SetColor(common.TCellColorDefaultText)
 	addCategoriesToTreeView(incomeCategories, incomeNode, 0)
 
 	expenseCategories, _ := ledger.FetchCategories(workingLedger.Name, "expense", false)
 	expenseNode := tview.NewTreeNode("expense").SetIndent(1)
-	expenseNode.SetColor(tcell.Color246)
+	expenseNode.SetColor(common.TCellColorDefaultText)
 	addCategoriesToTreeView(expenseCategories, expenseNode, 0)
 
 	page3CatTree.GetRoot().AddChild(incomeNode)
@@ -46,11 +47,11 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 	page3CatTreeMap[expenseNode] = page3CatTree.GetRoot()
 
 	page3CatTree.SetBlurFunc(func() {
-		page3CatTree.SetBorderColor(tcell.Color246)
+		page3CatTree.SetBorderColor(common.TCellColorBorderInactive)
 	})
 
 	page3CatTree.SetFocusFunc(func() {
-		page3CatTree.SetBorderColor(tview.Styles.SecondaryTextColor)
+		page3CatTree.SetBorderColor(common.TCellColorBorderActive)
 	})
 
 	page3CatTree.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -124,17 +125,18 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 
 	// transaction table
 	page3TransTable = tview.NewTable()
-	page3TransTable.SetBorderColor(tcell.Color246)
+	page3TransTable.SetBorderColor(common.TCellColorBorderInactive)
+  page3TransTable.SetBackgroundColor(tcell.ColorDefault)
 	transactions, _ := ledger.GetTransactionsForCategory(workingLedger.Name, ".", 100)
 	populateTransactionsTable(page3TransTable, transactions, workingLedger.Currency)
 	page3TransTable.SetTitle("[ All Transactions ]")
 
 	page3TransTable.SetBlurFunc(func() {
-		page3TransTable.SetBorderColor(tcell.Color246)
+		page3TransTable.SetBorderColor(common.TCellColorBorderInactive)
 	})
 
 	page3TransTable.SetFocusFunc(func() {
-		page3TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+		page3TransTable.SetBorderColor(common.TCellColorBorderActive)
 	})
 
 	page3TransTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -198,7 +200,7 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 func addCategoriesToTreeView(categories []*ledger.Category, node *tview.TreeNode, parentID int) {
 	for _, category := range categories {
 		if category.ParentID == parentID {
-			childNode := tview.NewTreeNode(category.Name).SetExpanded(false).SetIndent(1).SetColor(tcell.Color246)
+			childNode := tview.NewTreeNode(category.Name).SetExpanded(false).SetIndent(1).SetColor(common.TCellColorDefaultText)
 			node.AddChild(childNode)
 			page3CatTreeMap[childNode] = node
 

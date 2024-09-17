@@ -24,22 +24,22 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 
 	// accounts treeview
 	page2AccTree = tview.NewTreeView().
-		SetRoot(tview.NewTreeNode(".").SetSelectable(true).SetColor(tcell.Color246)).
+		SetRoot(tview.NewTreeNode(".").SetSelectable(true).SetColor(common.TCellColorDefaultText)).
 		SetCurrentNode(tview.NewTreeNode("").SetSelectable(false))
 
 	page2AccTree.SetTitle(fmt.Sprintf("[ Accounts (%s) ]", workingLedger.Name))
-	page2AccTree.SetBackgroundColor(tcell.Color235)
+	page2AccTree.SetBackgroundColor(tcell.ColorDefault)
 	page2AccTree.SetBorder(true)
-	page2AccTree.SetBorderColor(tcell.Color246)
+	page2AccTree.SetBorderColor(common.TCellColorBorderInactive)
 
 	assetAccounts, _ := ledger.FetchAccounts(workingLedger.Name, "asset", false)
 	assetsNode := tview.NewTreeNode("assets").SetIndent(1)
-	assetsNode.SetColor(tcell.Color246)
+	assetsNode.SetColor(common.TCellColorDefaultText)
 	addAccountsToTreeView(assetAccounts, assetsNode, 0)
 
 	liabilityAccounts, _ := ledger.FetchAccounts(workingLedger.Name, "liability", false)
 	liabilitiesNode := tview.NewTreeNode("liabilities").SetIndent(1)
-	liabilitiesNode.SetColor(tcell.Color246)
+	liabilitiesNode.SetColor(common.TCellColorDefaultText)
 	addAccountsToTreeView(liabilityAccounts, liabilitiesNode, 0)
 
 	page2AccTree.GetRoot().AddChild(assetsNode)
@@ -48,11 +48,11 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 	page2AccTreeMap[liabilitiesNode] = page2AccTree.GetRoot()
 
 	page2AccTree.SetBlurFunc(func() {
-		page2AccTree.SetBorderColor(tcell.Color246)
+		page2AccTree.SetBorderColor(common.TCellColorBorderInactive)
 	})
 
 	page2AccTree.SetFocusFunc(func() {
-		page2AccTree.SetBorderColor(tview.Styles.SecondaryTextColor)
+		page2AccTree.SetBorderColor(common.TCellColorBorderActive) //borderBlue
 	})
 
 	page2AccTree.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -130,17 +130,18 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 
 	// transaction table
 	page2TransTable = tview.NewTable()
-	page2TransTable.SetBorderColor(tcell.Color246)
+	page2TransTable.SetBorderColor(common.TCellColorBorderInactive)
+  page2TransTable.SetBackgroundColor(tcell.ColorDefault)
 	transactions, _ := ledger.GetTransactionsForAccount(workingLedger.Name, ".", 100)
 	populateTransactionsTable(page2TransTable, transactions, workingLedger.Currency)
 	page2TransTable.SetTitle("[ All Transactions ]")
 
 	page2TransTable.SetBlurFunc(func() {
-		page2TransTable.SetBorderColor(tcell.Color246)
+		page2TransTable.SetBorderColor(common.TCellColorBorderInactive)
 	})
 
 	page2TransTable.SetFocusFunc(func() {
-		page2TransTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+		page2TransTable.SetBorderColor(common.TCellColorBorderActive) //borderBlue
 	})
 
 	page2TransTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -209,7 +210,7 @@ func setupTransByAccPage(workingLedger ledger.Ledger) {
 func addAccountsToTreeView(accounts []*ledger.Account, node *tview.TreeNode, parentID int) {
 	for _, account := range accounts {
 		if account.ParentID == parentID {
-			childNode := tview.NewTreeNode(account.Name).SetExpanded(false).SetIndent(1).SetColor(tcell.Color246)
+			childNode := tview.NewTreeNode(account.Name).SetExpanded(false).SetIndent(1).SetColor(common.TCellColorDefaultText)
 			node.AddChild(childNode)
 			page2AccTreeMap[childNode] = node
 
@@ -228,7 +229,7 @@ func showDeleteConfirmationModal(workingLedger ledger.Ledger, transactionID int)
 	modal.SetText("Delete the transaction?")
 	modal.AddButtons([]string{"Yes", "No"})
 	modal.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
-	modal.SetBackgroundColor(tcell.Color235)
+	modal.SetBackgroundColor(common.TCellColorTransRowActiveBg)
 
 	modal.SetDoneFunc(func(_ int, buttonLabel string) {
 		if buttonLabel == "Yes" {

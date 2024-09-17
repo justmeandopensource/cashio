@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/justmeandopensource/cashio/internal/common"
 	"github.com/justmeandopensource/cashio/internal/ledger"
 	"github.com/rivo/tview"
 )
@@ -20,17 +21,18 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 	stocksStatusBar = tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter)
   stocksStatusBar.SetBackgroundColor(tcell.ColorDefault)
 	stocksTable = tview.NewTable()
-	stocksTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+	stocksTable.SetBorderColor(common.TCellColorBorderActive)
+  stocksTable.SetBackgroundColor(tcell.ColorDefault)
 	stocksTable.SetTitle(fmt.Sprintf("[ Stocks Dashboard (%s) ]", workingLedger.Name))
 	stocks, _ := ledger.FetchStocks(workingLedger.Name, "all")
 	populateStocksTable(stocks, workingLedger.Currency)
 
 	stocksTable.SetBlurFunc(func() {
-		stocksTable.SetBorderColor(tcell.Color246)
+		stocksTable.SetBorderColor(common.TCellColorBorderInactive)
 	})
 
 	stocksTable.SetFocusFunc(func() {
-		stocksTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+		stocksTable.SetBorderColor(common.TCellColorBorderActive)
 	})
 
 	stocksTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {

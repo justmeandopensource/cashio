@@ -26,12 +26,12 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 	assetsTable.SetFixed(1, 1)
 	assetsTable.SetSelectable(true, false)
 	assetsTable.SetBorder(true)
-	assetsTable.SetBorderColor(tview.Styles.SecondaryTextColor)
-	assetsTable.SetBackgroundColor(tcell.Color235)
-	assetsTable.SetSelectedStyle(tcell.StyleDefault.Background(tcell.Color238).Bold(true))
+	assetsTable.SetBorderColor(common.TCellColorBorderActive)
+	assetsTable.SetBackgroundColor(tcell.ColorDefault)
+	assetsTable.SetSelectedStyle(tcell.StyleDefault.Background(common.TCellColorAccountsRowActiveBg).Bold(true))
 
-	assetsTable.SetCell(0, 0, tview.NewTableCell(" Account").SetSelectable(false).SetExpansion(2).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
-	assetsTable.SetCell(0, 1, tview.NewTableCell(" Balance").SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+	assetsTable.SetCell(0, 0, tview.NewTableCell(" Account").SetSelectable(false).SetExpansion(2).SetTextColor(tcell.ColorWhite).SetBackgroundColor(common.TCellColorTableHeaderRow))
+	assetsTable.SetCell(0, 1, tview.NewTableCell(" Balance").SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorWhite).SetBackgroundColor(common.TCellColorTableHeaderRow))
 
 	rowIndex := 1
 	for _, account := range assetAccounts {
@@ -40,11 +40,11 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 	}
 
 	assetsTable.SetBlurFunc(func() {
-		assetsTable.SetBorderColor(tcell.Color246)
+		assetsTable.SetBorderColor(common.TCellColorBorderInactive)
 	})
 
 	assetsTable.SetFocusFunc(func() {
-		assetsTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+		assetsTable.SetBorderColor(common.TCellColorBorderActive)
 	})
 
 	assetsTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -68,12 +68,12 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 	liabilitiesTable.SetFixed(1, 1)
 	liabilitiesTable.SetSelectable(true, false)
 	liabilitiesTable.SetBorder(true)
-	liabilitiesTable.SetBorderColor(tcell.Color246)
-	liabilitiesTable.SetBackgroundColor(tcell.Color235)
-	liabilitiesTable.SetSelectedStyle(tcell.StyleDefault.Background(tcell.Color238).Bold(true))
+	liabilitiesTable.SetBorderColor(common.TCellColorBorderInactive)
+	liabilitiesTable.SetBackgroundColor(tcell.ColorDefault)
+	liabilitiesTable.SetSelectedStyle(tcell.StyleDefault.Background(common.TCellColorAccountsRowActiveBg).Bold(true))
 
-	liabilitiesTable.SetCell(0, 0, tview.NewTableCell(" Account").SetSelectable(false).SetExpansion(2).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
-	liabilitiesTable.SetCell(0, 1, tview.NewTableCell(" Balance").SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+	liabilitiesTable.SetCell(0, 0, tview.NewTableCell(" Account").SetSelectable(false).SetExpansion(2).SetTextColor(tcell.ColorWhite).SetBackgroundColor(common.TCellColorTableHeaderRow))
+	liabilitiesTable.SetCell(0, 1, tview.NewTableCell(" Balance").SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorWhite).SetBackgroundColor(common.TCellColorTableHeaderRow))
 
 	rowIndex = 1
 	for _, account := range liabilityAccounts {
@@ -82,11 +82,11 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 	}
 
 	liabilitiesTable.SetBlurFunc(func() {
-		liabilitiesTable.SetBorderColor(tcell.Color246)
+		liabilitiesTable.SetBorderColor(common.TCellColorBorderInactive)
 	})
 
 	liabilitiesTable.SetFocusFunc(func() {
-		liabilitiesTable.SetBorderColor(tview.Styles.SecondaryTextColor)
+		liabilitiesTable.SetBorderColor(common.TCellColorBorderActive)
 	})
 
 	liabilitiesTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -134,9 +134,9 @@ func setupAccBalancePage(workingLedger ledger.Ledger) {
 // generateAccountRows generates a row for the given account with balance and adds it to the tview table
 func generateAccountRows(table *tview.Table, account *ledger.Account, currency string, rowIndex *int, level int) {
 
-	defaultTextColor := tcell.Color246
+	defaultTextColor := common.TCellColorDefaultText
 
-	balanceColor := tcell.Color246
+	balanceColor := common.TCellColorDefaultText
 	balanceBgColor := tcell.ColorDefault
 
 	p := message.NewPrinter(language.MustParse(common.Locales[currency]))
@@ -150,12 +150,11 @@ func generateAccountRows(table *tview.Table, account *ledger.Account, currency s
 
 	switch {
 	case account.Placeholder == 1:
-		balanceColor = tcell.ColorBlue
-		balanceBgColor = tcell.Color236
+		balanceColor = common.TCellColorBlue
 	case account.Balance > 0:
-		balanceColor = tcell.ColorGreen
+		balanceColor = common.TCellColorGreen
 	case account.Balance < 0:
-		balanceColor = tcell.ColorRed
+		balanceColor = common.TCellColorRed
 	}
 
 	table.SetCell(*rowIndex, 0, tview.NewTableCell(strings.Repeat("    ", level)+"- "+account.Name).SetExpansion(2).SetAlign(tview.AlignLeft).SetTextColor(defaultTextColor).SetBackgroundColor(balanceBgColor))

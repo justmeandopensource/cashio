@@ -22,8 +22,8 @@ func populateTransactionsTable(transactionsTable *tview.Table, transactionsList 
 	transactionsTable.SetFixed(1, 1)
 	transactionsTable.SetSelectable(true, false)
 	transactionsTable.SetBorder(true)
-	transactionsTable.SetBackgroundColor(tcell.Color235)
-	transactionsTable.SetSelectedStyle(tcell.StyleDefault.Background(tcell.Color238).Bold(true))
+	transactionsTable.SetBackgroundColor(tcell.ColorDefault)
+	transactionsTable.SetSelectedStyle(tcell.StyleDefault.Background(common.TCellColorTransRowActiveBg).Bold(true))
 
 	colNames := []string{
 		"ID",
@@ -37,16 +37,16 @@ func populateTransactionsTable(transactionsTable *tview.Table, transactionsList 
 
 	for i, item := range colNames {
 		if item == "Credit" || item == "Debit" {
-			transactionsTable.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+			transactionsTable.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorWhite).SetBackgroundColor(common.TCellColorTableHeaderRow))
 		} else {
-			transactionsTable.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+			transactionsTable.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetSelectable(false).SetTextColor(tcell.ColorWhite).SetBackgroundColor(common.TCellColorTableHeaderRow))
 		}
 	}
 
 	p := message.NewPrinter(language.MustParse(common.Locales[currency]))
 	for i, item := range transactionsList {
 
-		defaultTextColor := tcell.Color246
+		defaultTextColor := common.TCellColorDefaultText
 		id := strconv.Itoa(item.ID)
 		date := item.Date.Format("2006-01-02")
 
@@ -66,13 +66,13 @@ func populateTransactionsTable(transactionsTable *tview.Table, transactionsList 
 			category = ""
 		}
 
-		transactionsTable.SetCell(i+1, 0, tview.NewTableCell(common.PadLeft(id, 1)).SetTextColor(defaultTextColor).SetBackgroundColor(tcell.Color236))
+		transactionsTable.SetCell(i+1, 0, tview.NewTableCell(common.PadLeft(id, 1)).SetTextColor(defaultTextColor).SetBackgroundColor(common.TCellColorTableAltColumns))
 		transactionsTable.SetCell(i+1, 1, tview.NewTableCell(common.PadLeft(date, 1)).SetTextColor(defaultTextColor))
-		transactionsTable.SetCell(i+1, 2, tview.NewTableCell(common.PadLeft(category, 1)).SetTextColor(defaultTextColor).SetBackgroundColor(tcell.Color236))
-		transactionsTable.SetCell(i+1, 3, tview.NewTableCell(common.PadLeft(credit, 1)).SetAlign(tview.AlignRight).SetTextColor(tcell.ColorGreen))
-		transactionsTable.SetCell(i+1, 4, tview.NewTableCell(common.PadLeft(debit, 1)).SetAlign(tview.AlignRight).SetTextColor(tcell.ColorRed).SetBackgroundColor(tcell.Color236))
+		transactionsTable.SetCell(i+1, 2, tview.NewTableCell(common.PadLeft(category, 1)).SetTextColor(defaultTextColor).SetBackgroundColor(common.TCellColorTableAltColumns))
+		transactionsTable.SetCell(i+1, 3, tview.NewTableCell(common.PadLeft(credit, 1)).SetAlign(tview.AlignRight).SetTextColor(common.TCellColorGreen))
+		transactionsTable.SetCell(i+1, 4, tview.NewTableCell(common.PadLeft(debit, 1)).SetAlign(tview.AlignRight).SetTextColor(common.TCellColorRed).SetBackgroundColor(common.TCellColorTableAltColumns))
 		transactionsTable.SetCell(i+1, 5, tview.NewTableCell(common.PadLeft(item.Notes, 1)).SetMaxWidth(30).SetExpansion(2).SetTextColor(defaultTextColor))
-		transactionsTable.SetCell(i+1, 6, tview.NewTableCell(common.PadLeft(item.Account, 1)).SetTextColor(defaultTextColor).SetBackgroundColor(tcell.Color236))
+		transactionsTable.SetCell(i+1, 6, tview.NewTableCell(common.PadLeft(item.Account, 1)).SetTextColor(defaultTextColor).SetBackgroundColor(common.TCellColorTableAltColumns))
 	}
 }
 
@@ -92,8 +92,8 @@ func populateStocksTable(stocksList []*ledger.Stock, currency string) {
 	stocksTable.SetFixed(1, 1)
 	stocksTable.SetSelectable(true, false)
 	stocksTable.SetBorder(true)
-	stocksTable.SetBackgroundColor(tcell.Color235)
-	stocksTable.SetSelectedStyle(tcell.StyleDefault.Background(tcell.Color238).Bold(true))
+	stocksTable.SetBackgroundColor(tcell.ColorDefault)
+	stocksTable.SetSelectedStyle(tcell.StyleDefault.Background(common.TCellColorTransRowActiveBg).Bold(true))
 
 	colNames := []string{
 		"ID",
@@ -113,9 +113,9 @@ func populateStocksTable(stocksList []*ledger.Stock, currency string) {
 	for i, item := range colNames {
 		switch item {
 		case "ID", "Units", "NAV", "Invested", "Value":
-			stocksTable.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+			stocksTable.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorWhite).SetBackgroundColor(common.TCellColorTableHeaderRow))
 		default:
-			stocksTable.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+			stocksTable.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetSelectable(false).SetTextColor(tcell.ColorWhite).SetBackgroundColor(common.TCellColorTableHeaderRow))
 		}
 	}
 
@@ -123,7 +123,7 @@ func populateStocksTable(stocksList []*ledger.Stock, currency string) {
 
 	for i, item := range stocksList {
 
-		defaultTextColor := tcell.Color246
+		defaultTextColor := common.TCellColorDefaultText
 		statusTextColor := defaultTextColor
 
 		id := strconv.Itoa(item.ID)
@@ -140,10 +140,11 @@ func populateStocksTable(stocksList []*ledger.Stock, currency string) {
 		perc_change = fmt.Sprintf("%0.2f%%", change)
 
 		var lossOrGainColor tcell.Color
+
 		if curr_value > item.Invested {
-			lossOrGainColor = tcell.ColorLimeGreen
+			lossOrGainColor = common.TCellColorGreen
 		} else if curr_value < item.Invested {
-			lossOrGainColor = tcell.ColorRed
+			lossOrGainColor = common.TCellColorRed
 		} else {
 			lossOrGainColor = defaultTextColor
 		}
@@ -151,17 +152,17 @@ func populateStocksTable(stocksList []*ledger.Stock, currency string) {
 			statusTextColor = tcell.ColorOrange
 		}
 
-		stocksTable.SetCell(i+1, 0, tview.NewTableCell(common.PadLeft(id, 1)).SetAlign(tview.AlignRight).SetTextColor(defaultTextColor).SetBackgroundColor(tcell.Color236))
+		stocksTable.SetCell(i+1, 0, tview.NewTableCell(common.PadLeft(id, 1)).SetAlign(tview.AlignRight).SetTextColor(defaultTextColor).SetBackgroundColor(common.TCellColorTableAltColumns))
 		stocksTable.SetCell(i+1, 1, tview.NewTableCell(common.PadLeft(item.Name, 1)).SetTextColor(defaultTextColor).SetExpansion(1))
-		stocksTable.SetCell(i+1, 2, tview.NewTableCell(common.PadLeft(item.Plan, 1)).SetTextColor(defaultTextColor).SetBackgroundColor(tcell.Color236))
+		stocksTable.SetCell(i+1, 2, tview.NewTableCell(common.PadLeft(item.Plan, 1)).SetTextColor(defaultTextColor).SetBackgroundColor(common.TCellColorTableAltColumns))
 		stocksTable.SetCell(i+1, 3, tview.NewTableCell(common.PadLeft(item.Code, 1)).SetTextColor(statusTextColor))
-		stocksTable.SetCell(i+1, 4, tview.NewTableCell(common.PadLeft(item.Type, 1)).SetTextColor(defaultTextColor).SetBackgroundColor(tcell.Color236))
+		stocksTable.SetCell(i+1, 4, tview.NewTableCell(common.PadLeft(item.Type, 1)).SetTextColor(defaultTextColor).SetBackgroundColor(common.TCellColorTableAltColumns))
 		stocksTable.SetCell(i+1, 5, tview.NewTableCell(common.PadLeft(item.Status, 1)).SetTextColor(statusTextColor))
-		stocksTable.SetCell(i+1, 6, tview.NewTableCell(common.PadLeft(units, 1)).SetAlign(tview.AlignRight).SetTextColor(defaultTextColor).SetBackgroundColor(tcell.Color236))
+		stocksTable.SetCell(i+1, 6, tview.NewTableCell(common.PadLeft(units, 1)).SetAlign(tview.AlignRight).SetTextColor(defaultTextColor).SetBackgroundColor(common.TCellColorTableAltColumns))
 		stocksTable.SetCell(i+1, 7, tview.NewTableCell(common.PadLeft(nav, 1)).SetAlign(tview.AlignRight).SetTextColor(defaultTextColor))
-		stocksTable.SetCell(i+1, 8, tview.NewTableCell(common.PadLeft(item.NavDate, 1)).SetTextColor(defaultTextColor).SetBackgroundColor(tcell.Color236))
-		stocksTable.SetCell(i+1, 9, tview.NewTableCell(common.PadLeft(invested, 1)).SetAlign(tview.AlignRight).SetTextColor(tcell.ColorCadetBlue))
-		stocksTable.SetCell(i+1, 10, tview.NewTableCell(common.PadLeft(value, 1)).SetAlign(tview.AlignRight).SetTextColor(lossOrGainColor).SetBackgroundColor(tcell.Color236))
+		stocksTable.SetCell(i+1, 8, tview.NewTableCell(common.PadLeft(item.NavDate, 1)).SetTextColor(defaultTextColor).SetBackgroundColor(common.TCellColorTableAltColumns))
+		stocksTable.SetCell(i+1, 9, tview.NewTableCell(common.PadLeft(invested, 1)).SetAlign(tview.AlignRight).SetTextColor(common.TCellColorBlue))
+		stocksTable.SetCell(i+1, 10, tview.NewTableCell(common.PadLeft(value, 1)).SetAlign(tview.AlignRight).SetTextColor(lossOrGainColor).SetBackgroundColor(common.TCellColorTableAltColumns))
 		stocksTable.SetCell(i+1, 11, tview.NewTableCell(common.PadLeft(perc_change, 1)).SetAlign(tview.AlignRight).SetTextColor(lossOrGainColor))
 
 		switch {
@@ -253,9 +254,9 @@ func showSplitsForTransaction(widgetFocus tview.Primitive, workingLedger ledger.
 	table.SetTitle(fmt.Sprintf("[ splits for transaction id %d ]", transactionID))
 	table.SetSelectable(true, false)
 	table.SetBorder(true)
-	table.SetBackgroundColor(tcell.Color235)
+	table.SetBackgroundColor(common.TCellColorTransRowActiveBg)
 	table.SetBorderColor(tview.Styles.SecondaryTextColor)
-	table.SetSelectedStyle(tcell.StyleDefault.Background(tcell.Color238).Bold(true))
+	table.SetSelectedStyle(tcell.StyleDefault.Background(common.TCellColorTransRowActiveBg).Bold(true))
 
 	colNames := []string{
 		"Category",
@@ -266,9 +267,9 @@ func showSplitsForTransaction(widgetFocus tview.Primitive, workingLedger ledger.
 
 	for i, item := range colNames {
 		if item == "Credit" || item == "Debit" {
-			table.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+			table.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorWhite).SetBackgroundColor(common.TCellColorTableHeaderRow))
 		} else {
-			table.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+			table.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetSelectable(false).SetTextColor(tcell.ColorWhite).SetBackgroundColor(common.TCellColorTableHeaderRow))
 		}
 	}
 
@@ -277,7 +278,7 @@ func showSplitsForTransaction(widgetFocus tview.Primitive, workingLedger ledger.
 	p := message.NewPrinter(language.MustParse(common.Locales[workingLedger.Currency]))
 	for i, item := range splitTransactions {
 
-		defaultTextColor := tcell.Color246
+		defaultTextColor := common.TCellColorDefaultText
 
 		var credit, debit, category string
 
@@ -296,8 +297,8 @@ func showSplitsForTransaction(widgetFocus tview.Primitive, workingLedger ledger.
 		}
 
 		table.SetCell(i+1, 0, tview.NewTableCell(common.PadLeft(category, 1)).SetTextColor(defaultTextColor))
-		table.SetCell(i+1, 1, tview.NewTableCell(common.PadLeft(credit, 1)).SetAlign(tview.AlignRight).SetTextColor(tcell.ColorGreen))
-		table.SetCell(i+1, 2, tview.NewTableCell(common.PadLeft(debit, 1)).SetAlign(tview.AlignRight).SetTextColor(tcell.ColorRed))
+		table.SetCell(i+1, 1, tview.NewTableCell(common.PadLeft(credit, 1)).SetAlign(tview.AlignRight).SetTextColor(common.TCellColorGreen))
+		table.SetCell(i+1, 2, tview.NewTableCell(common.PadLeft(debit, 1)).SetAlign(tview.AlignRight).SetTextColor(common.TCellColorRed))
 		table.SetCell(i+1, 3, tview.NewTableCell(common.PadLeft(item.Notes, 1)).SetExpansion(2).SetTextColor(defaultTextColor))
 	}
 
@@ -335,9 +336,9 @@ func showTransactionsForStock(widgetFocus tview.Primitive, workingLedger ledger.
 	table.SetTitle(fmt.Sprintf("[ %v ]", stockName))
 	table.SetSelectable(true, false)
 	table.SetBorder(true)
-	table.SetBackgroundColor(tcell.Color235)
+	table.SetBackgroundColor(common.TCellColorTransRowActiveBg)
 	table.SetBorderColor(tview.Styles.SecondaryTextColor)
-	table.SetSelectedStyle(tcell.StyleDefault.Background(tcell.Color238).Bold(true))
+	table.SetSelectedStyle(tcell.StyleDefault.Background(common.TCellColorTransRowActiveBg).Bold(true))
 
 	colNames := []string{
 		"Date",
@@ -351,9 +352,9 @@ func showTransactionsForStock(widgetFocus tview.Primitive, workingLedger ledger.
 	for i, item := range colNames {
 		switch item {
 		case "Units", "NAV", "Amount":
-			table.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+			table.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetAlign(tview.AlignRight).SetSelectable(false).SetTextColor(tcell.ColorWhite).SetBackgroundColor(common.TCellColorTableHeaderRow))
 		default:
-			table.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetSelectable(false).SetTextColor(tcell.ColorBlack).SetBackgroundColor(tcell.ColorYellow))
+			table.SetCell(0, i, tview.NewTableCell(common.PadLeft(item, 1)).SetSelectable(false).SetTextColor(tcell.ColorWhite).SetBackgroundColor(common.TCellColorTableHeaderRow))
 		}
 	}
 
@@ -367,11 +368,11 @@ func showTransactionsForStock(widgetFocus tview.Primitive, workingLedger ledger.
 	p := message.NewPrinter(language.MustParse(common.Locales[workingLedger.Currency]))
 	for i, item := range stockTransactions {
 
-		defaultTextColor := tcell.Color246
-		statusTextColor := tcell.ColorRed
+		defaultTextColor := common.TCellColorDefaultText
+		statusTextColor := common.TCellColorRed
 
 		if strings.Contains(strings.ToLower(item.TransactionType), "purchase") {
-			statusTextColor = tcell.ColorGreen
+			statusTextColor = common.TCellColorGreen
 		}
 
 		var units, nav, amount, bankName string
@@ -386,11 +387,11 @@ func showTransactionsForStock(widgetFocus tview.Primitive, workingLedger ledger.
 			bankName = ""
 		}
 
-		table.SetCell(i+1, 0, tview.NewTableCell(common.PadLeft(item.Date.Format("2006-01-02"), 1)).SetTextColor(defaultTextColor).SetBackgroundColor(tcell.Color236))
+		table.SetCell(i+1, 0, tview.NewTableCell(common.PadLeft(item.Date.Format("2006-01-02"), 1)).SetTextColor(defaultTextColor).SetBackgroundColor(common.TCellColorTransRowActiveBg))
 		table.SetCell(i+1, 1, tview.NewTableCell(common.PadLeft(item.TransactionType, 1)).SetTextColor(defaultTextColor).SetExpansion(1))
-		table.SetCell(i+1, 2, tview.NewTableCell(common.PadLeft(units, 1)).SetAlign(tview.AlignRight).SetTextColor(statusTextColor).SetBackgroundColor(tcell.Color236))
+		table.SetCell(i+1, 2, tview.NewTableCell(common.PadLeft(units, 1)).SetAlign(tview.AlignRight).SetTextColor(statusTextColor).SetBackgroundColor(common.TCellColorTransRowActiveBg))
 		table.SetCell(i+1, 3, tview.NewTableCell(common.PadLeft(nav, 1)).SetAlign(tview.AlignRight).SetTextColor(statusTextColor))
-		table.SetCell(i+1, 4, tview.NewTableCell(common.PadLeft(amount, 1)).SetAlign(tview.AlignRight).SetAlign(tview.AlignRight).SetTextColor(statusTextColor).SetBackgroundColor(tcell.Color236))
+		table.SetCell(i+1, 4, tview.NewTableCell(common.PadLeft(amount, 1)).SetAlign(tview.AlignRight).SetAlign(tview.AlignRight).SetTextColor(statusTextColor).SetBackgroundColor(common.TCellColorTransRowActiveBg))
 		table.SetCell(i+1, 5, tview.NewTableCell(common.PadLeft(bankName, 1)).SetAlign(tview.AlignRight).SetTextColor(defaultTextColor))
 	}
 
@@ -425,7 +426,7 @@ func showModal(widgetFocus tview.Primitive, message string) {
 	modal.SetText(message)
 	modal.AddButtons([]string{"Close"})
 	modal.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
-	modal.SetBackgroundColor(tcell.Color235)
+	modal.SetBackgroundColor(common.TCellColorTransRowActiveBg)
 
 	modal.SetDoneFunc(func(_ int, buttonLabel string) {
 		if buttonLabel == "Close" {

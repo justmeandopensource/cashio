@@ -1,6 +1,10 @@
 package common
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/gdamore/tcell/v2"
+)
 
 const (
 	ColorDefault = "\x1b[39m"
@@ -8,6 +12,19 @@ const (
 	ColorGreen   = "\x1b[32m"
 	ColorBlue    = "\x1b[94m"
 	ColorYellow  = "\x1b[33m"
+
+  TCellColorDefaultText         = tcell.Color246
+  TCellColorBorderActive        = tcell.Color31
+  TCellColorBorderInactive      = tcell.Color240
+  TCellColorAccountsRowActiveBg = tcell.Color237
+  TCellColorTransRowActiveBg    = tcell.Color237
+  TCellColorTableAltColumns     = tcell.Color235
+  TCellColorTableHeaderRow      = tcell.Color24
+  TCellColorFormBg              = tcell.Color236
+  TCellColorFormHighlight       = tcell.Color24
+  TCellColorBlue                = tcell.Color38
+  TCellColorGreen               = tcell.Color34
+  TCellColorRed                 = tcell.Color202
 )
 
 // ColorizeRed returns a given string that is formatted in red color

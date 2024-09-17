@@ -51,7 +51,7 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		childForm := tview.NewForm()
 		childForm.SetTitle(fmt.Sprintf("[ Split %d ]", splitCounter))
 		childForm.SetBorder(true)
-		childForm.SetBorderColor(tview.Styles.SecondaryTextColor)
+		childForm.SetBorderColor(common.TCellColorBorderActive)
 		childForm.AddTextView("Balance", fmt.Sprintf("%v", baseAmount), 15, 1, true, true)
 		childForm.AddInputField("Amount", "", 12, nil, nil)
 		fieldAmount := childForm.GetFormItemByLabel("Amount").(*tview.InputField)
@@ -61,7 +61,7 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		// child category field
 		childForm.AddInputField("Category", "", 20, nil, nil)
 		fieldCategory := childForm.GetFormItemByLabel("Category").(*tview.InputField)
-		fieldCategory.SetAutocompleteStyles(tcell.Color236, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+		fieldCategory.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 		fieldCategory.SetAutocompleteFunc(func(currentText string) (entries []string) {
 			if len(currentText) == 0 {
 				return
@@ -138,14 +138,17 @@ func showAddTransactionForm(config AddTransactionConfig) {
 			splitCounter = 0
 		})
 		childForm.SetButtonsAlign(tview.AlignCenter)
-		childForm.SetButtonBackgroundColor(tcell.Color238)
-		childForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+		childForm.SetButtonBackgroundColor(common.TCellColorFormBg)
+    childForm.SetButtonTextColor(common.TCellColorDefaultText)
+		childForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
 		// child form footer
 		childForm.AddTextView("  ", "", 50, 1, true, false)
 
 		childForm.SetBackgroundColor(tcell.ColorDefault)
-		childForm.SetFieldBackgroundColor(tcell.Color238)
+		childForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+    childForm.SetFieldTextColor(common.TCellColorDefaultText)
+    childForm.SetLabelColor(common.TCellColorBlue)
 
 		childForm.SetFocus(1)
 
@@ -178,8 +181,8 @@ func showAddTransactionForm(config AddTransactionConfig) {
 	})
 	fieldTransType := mainForm.GetFormItemByLabel("Type").(*tview.DropDown)
 	fieldTransType.SetListStyles(
-		tcell.StyleDefault.Background(tcell.Color236),
-		tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor),
+		tcell.StyleDefault.Background(common.TCellColorFormBg),
+		tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight),
 	)
 	fieldTransType.SetFieldBackgroundColor(tcell.ColorDefault)
 
@@ -196,7 +199,7 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		transAccountID = ledger.GetAccountID(text, accounts)
 	})
 	fieldAccount := mainForm.GetFormItemByLabel("Account").(*tview.InputField)
-	fieldAccount.SetAutocompleteStyles(tcell.Color236, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+	fieldAccount.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 	fieldAccount.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if len(currentText) == 0 {
 			return
@@ -245,7 +248,7 @@ func showAddTransactionForm(config AddTransactionConfig) {
 	// Category field
 	mainForm.AddInputField("Category", "", 20, nil, nil)
 	fieldCategory := mainForm.GetFormItemByLabel("Category").(*tview.InputField)
-	fieldCategory.SetAutocompleteStyles(tcell.Color236, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+	fieldCategory.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 	fieldCategory.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if len(currentText) == 0 {
 			return
@@ -352,16 +355,19 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		inputFieldFocused = false
 	})
 	mainForm.SetButtonsAlign(tview.AlignCenter)
-	mainForm.SetButtonBackgroundColor(tcell.Color238)
-	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+	mainForm.SetButtonBackgroundColor(common.TCellColorFormBg)
+  mainForm.SetButtonTextColor(common.TCellColorDefaultText)
+	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
 	mainForm.AddTextView("  ", "", 50, 1, true, false)
 
 	mainForm.SetTitle("[ Add a new transaction ]")
 	mainForm.SetBorder(true)
-	mainForm.SetBorderColor(tview.Styles.SecondaryTextColor)
+	mainForm.SetBorderColor(common.TCellColorBorderActive)
 	mainForm.SetBackgroundColor(tcell.ColorDefault)
-	mainForm.SetFieldBackgroundColor(tcell.Color238)
+	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+  mainForm.SetFieldTextColor(common.TCellColorDefaultText)
+  mainForm.SetLabelColor(common.TCellColorBlue)
 
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
