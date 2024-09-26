@@ -139,7 +139,7 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		})
 		childForm.SetButtonsAlign(tview.AlignCenter)
 		childForm.SetButtonBackgroundColor(common.TCellColorFormBg)
-    childForm.SetButtonTextColor(common.TCellColorDefaultText)
+    childForm.SetButtonTextColor(tcell.ColorWhite)
 		childForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
 		// child form footer
@@ -147,7 +147,7 @@ func showAddTransactionForm(config AddTransactionConfig) {
 
 		childForm.SetBackgroundColor(tcell.ColorDefault)
 		childForm.SetFieldBackgroundColor(common.TCellColorFormBg)
-    childForm.SetFieldTextColor(common.TCellColorDefaultText)
+    childForm.SetFieldTextColor(tcell.ColorWhite)
     childForm.SetLabelColor(common.TCellColorBlue)
 
 		childForm.SetFocus(1)
@@ -356,7 +356,7 @@ func showAddTransactionForm(config AddTransactionConfig) {
 	})
 	mainForm.SetButtonsAlign(tview.AlignCenter)
 	mainForm.SetButtonBackgroundColor(common.TCellColorFormBg)
-  mainForm.SetButtonTextColor(common.TCellColorDefaultText)
+  mainForm.SetButtonTextColor(tcell.ColorWhite)
 	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
 	mainForm.AddTextView("  ", "", 50, 1, true, false)
@@ -366,7 +366,7 @@ func showAddTransactionForm(config AddTransactionConfig) {
 	mainForm.SetBorderColor(common.TCellColorBorderActive)
 	mainForm.SetBackgroundColor(tcell.ColorDefault)
 	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
-  mainForm.SetFieldTextColor(common.TCellColorDefaultText)
+  mainForm.SetFieldTextColor(tcell.ColorWhite)
   mainForm.SetLabelColor(common.TCellColorBlue)
 
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
