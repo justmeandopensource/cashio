@@ -23,7 +23,7 @@ func showSearchPage(sourceTable *tview.Table, workingLedger ledger.Ledger) {
 	inputField.SetBorderColor(common.TCellColorBorderActive)
 	inputField.SetBorderPadding(0, 0, 1, 1)
 	inputField.SetPlaceholder("enter search keyword(s)")
-	inputField.SetPlaceholderStyle(tcell.StyleDefault.Foreground(tcell.Color242).Background(tcell.ColorDefault))
+	inputField.SetPlaceholderStyle(tcell.StyleDefault.Foreground(common.TCellColorDullText).Background(tcell.ColorDefault))
 
 	inputField.SetDoneFunc(func(key tcell.Key) {
 		if key == tcell.KeyEnter {

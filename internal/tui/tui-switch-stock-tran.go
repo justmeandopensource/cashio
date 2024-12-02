@@ -42,7 +42,7 @@ func showSwitchStockTransactionForm(workingLedger ledger.Ledger) {
 		fromStockID = ledger.GetStockID(fromStockName, stocks)
 	})
 	fieldFromStock := mainForm.GetFormItemByLabel("From Stock").(*tview.InputField)
-	fieldFromStock.SetAutocompleteStyles(tcell.Color236, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+	fieldFromStock.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 	fieldFromStock.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if len(currentText) == 0 {
 			return
@@ -75,7 +75,7 @@ func showSwitchStockTransactionForm(workingLedger ledger.Ledger) {
 		toStockID = ledger.GetStockID(toStockName, stocks)
 	})
 	fieldToStock := mainForm.GetFormItemByLabel("To Stock").(*tview.InputField)
-	fieldToStock.SetAutocompleteStyles(tcell.Color236, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+	fieldToStock.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 	fieldToStock.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if len(currentText) == 0 {
 			return
@@ -188,14 +188,16 @@ func showSwitchStockTransactionForm(workingLedger ledger.Ledger) {
 	})
 
 	mainForm.SetButtonsAlign(tview.AlignCenter)
-	mainForm.SetButtonBackgroundColor(tcell.Color238)
-	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+	mainForm.SetButtonBackgroundColor(common.TCellColorFormBg)
+	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
 	mainForm.SetTitle(mainFormTitle)
 	mainForm.SetBorder(true)
-	mainForm.SetBorderColor(tview.Styles.SecondaryTextColor)
+	mainForm.SetBorderColor(common.TCellColorBorderActive)
 	mainForm.SetBackgroundColor(tcell.ColorDefault)
-	mainForm.SetFieldBackgroundColor(tcell.Color238)
+	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+  mainForm.SetFieldTextColor(tcell.ColorWhite)
+  mainForm.SetLabelColor(common.TCellColorBlue)
 	mainForm.SetFocus(1)
 
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {

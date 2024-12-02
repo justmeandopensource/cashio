@@ -178,7 +178,7 @@ func setupTransByCatPage(workingLedger ledger.Ledger) {
 
 	statusBar := tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).
 		SetText(fmt.Sprintf(
-			"[yellow]%s\t%s\t%s\t%s\t[blue]%s\t%s",
+			"[blue]%s\t%s\t%s\t%s\t[green]%s\t%s",
 			"(1)home", "(2)accounts", "(4)stocks", "(R)eports",
 			"(a)dd transaction", "(t)ransfer funds"))
 

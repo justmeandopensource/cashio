@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/justmeandopensource/cashio/internal/common"
 	"github.com/justmeandopensource/cashio/internal/ledger"
 	"github.com/rivo/tview"
 )
@@ -39,8 +40,8 @@ func showAddStockForm(workingLedger ledger.Ledger) {
 		}
 	})
 	mainForm.GetFormItemByLabel("Type").(*tview.DropDown).SetListStyles(
-		tcell.StyleDefault.Background(tcell.Color236),
-		tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor),
+		tcell.StyleDefault.Background(common.TCellColorFormBg),
+		tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight),
 	).SetFieldBackgroundColor(tcell.ColorDefault)
 
 	// stock name
@@ -95,14 +96,16 @@ func showAddStockForm(workingLedger ledger.Ledger) {
 		inputFieldFocused = false
 	})
 	mainForm.SetButtonsAlign(tview.AlignCenter)
-	mainForm.SetButtonBackgroundColor(tcell.Color238)
-	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+	mainForm.SetButtonBackgroundColor(common.TCellColorFormBg)
+	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
 	mainForm.SetTitle(mainFormTitle)
 	mainForm.SetBorder(true)
-	mainForm.SetBorderColor(tview.Styles.SecondaryTextColor)
+	mainForm.SetBorderColor(common.TCellColorBorderActive)
 	mainForm.SetBackgroundColor(tcell.ColorDefault)
-	mainForm.SetFieldBackgroundColor(tcell.Color238)
+	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+  mainForm.SetFieldTextColor(tcell.ColorWhite)
+  mainForm.SetLabelColor(common.TCellColorBlue)
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
 			pages.RemovePage(pageName)

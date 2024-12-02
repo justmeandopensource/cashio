@@ -21,10 +21,11 @@ func CategoryStatsUI(ledgerName string) {
 	defer ui.Close()
 
 	tree := createCategoriesTree(ledgerName)
+  tree.BorderStyle.Fg = ui.Color(common.ColorActiveBorder)
 	bcMonthly := termui.NewBarChart()
-	bcMonthly.BorderStyle.Fg = ui.Color(246)
+	bcMonthly.BorderStyle.Fg = ui.Color(common.ColorInactiveBorder)
 	bcYearly := termui.NewBarChart()
-	bcYearly.BorderStyle.Fg = ui.Color(246)
+	bcYearly.BorderStyle.Fg = ui.Color(common.ColorInactiveBorder)
 
 	grid := ui.NewGrid()
 

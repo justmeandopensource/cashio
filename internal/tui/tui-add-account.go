@@ -74,7 +74,7 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 				newAccountNode := findNodeByText(page2AccTree.GetRoot(), accountName)
 				expandParentNodes(page2AccTreeMap, newAccountNode)
 				page2AccTree.SetCurrentNode(newAccountNode)
-				page2TransTable.SetBorderColor(tcell.Color246)
+				page2TransTable.SetBorderColor(common.TCellColorBorderInactive)
 			}
 		}
 		pages.RemovePage(pageName)
@@ -87,14 +87,15 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 		inputFieldFocused = false
 	})
 	mainForm.SetButtonsAlign(tview.AlignCenter)
-	mainForm.SetButtonBackgroundColor(tcell.Color238)
-	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+	mainForm.SetButtonBackgroundColor(common.TCellColorFormBg)
+	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
 	mainForm.SetTitle(mainFormTitle)
 	mainForm.SetBorder(true)
-	mainForm.SetBorderColor(tview.Styles.SecondaryTextColor)
+	mainForm.SetBorderColor(common.TCellColorBorderActive)
 	mainForm.SetBackgroundColor(tcell.ColorDefault)
-	mainForm.SetFieldBackgroundColor(tcell.Color238)
+  mainForm.SetLabelColor(common.TCellColorBlue)
+	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
 			pages.RemovePage(pageName)

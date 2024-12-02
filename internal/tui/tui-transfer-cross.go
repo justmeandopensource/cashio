@@ -53,7 +53,7 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		fromAccountID = ledger.GetAccountID(fromAccountName, fromAccounts)
 	})
 	fieldFromAccount := mainForm.GetFormItemByLabel("From Account").(*tview.InputField)
-	fieldFromAccount.SetAutocompleteStyles(tcell.Color236, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+	fieldFromAccount.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 	fieldFromAccount.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if len(currentText) == 0 {
 			return
@@ -98,7 +98,7 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		toAccountID = ledger.GetAccountID(toAccountName, toAccounts)
 	})
 	fieldToAccount := mainForm.GetFormItemByLabel("To Account").(*tview.InputField)
-	fieldToAccount.SetAutocompleteStyles(tcell.Color236, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+	fieldToAccount.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 	fieldToAccount.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if len(currentText) == 0 {
 			return
@@ -138,7 +138,7 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		feeCategoryID = ledger.GetCategoryID(text, categories)
 	})
 	fieldFeeCategory := mainForm.GetFormItemByLabel("Fee Category").(*tview.InputField)
-	fieldFeeCategory.SetAutocompleteStyles(tcell.Color236, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+	fieldFeeCategory.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 	fieldFeeCategory.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if len(currentText) == 0 {
 			return
@@ -273,14 +273,15 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		inputFieldFocused = false
 	})
 	mainForm.SetButtonsAlign(tview.AlignCenter)
-	mainForm.SetButtonBackgroundColor(tcell.Color238)
-	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+	mainForm.SetButtonBackgroundColor(common.TCellColorFormBg)
+	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
 	mainForm.SetTitle(mainFormTitle)
 	mainForm.SetBorder(true)
-	mainForm.SetBorderColor(tview.Styles.SecondaryTextColor)
+	mainForm.SetBorderColor(common.TCellColorBorderActive)
 	mainForm.SetBackgroundColor(tcell.ColorDefault)
-	mainForm.SetFieldBackgroundColor(tcell.Color238)
+  mainForm.SetLabelColor(common.TCellColorBlue)
+	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
 			pages.RemovePage(pageName)

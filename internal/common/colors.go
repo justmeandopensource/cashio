@@ -13,7 +13,11 @@ const (
 	ColorBlue    = "\x1b[94m"
 	ColorYellow  = "\x1b[33m"
 
+  ColorActiveBorder   = 38
+  ColorInactiveBorder = 246
+
   TCellColorDefaultText         = tcell.Color246
+  TCellColorDullText            = tcell.Color242
   TCellColorBorderActive        = tcell.Color31
   TCellColorBorderInactive      = tcell.Color240
   TCellColorAccountsRowActiveBg = tcell.Color237

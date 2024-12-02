@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/justmeandopensource/cashio/internal/common"
 	"github.com/justmeandopensource/cashio/internal/ledger"
 	"github.com/rivo/tview"
 )
@@ -62,7 +63,7 @@ func showAddCategoryForm(workingLedger ledger.Ledger, categoryID int, categoryTy
 				newCategoryNode := findNodeByText(page3CatTree.GetRoot(), categoryName)
 				expandParentNodes(page3CatTreeMap, newCategoryNode)
 				page3CatTree.SetCurrentNode(newCategoryNode)
-				page3TransTable.SetBorderColor(tcell.Color246)
+				page3TransTable.SetBorderColor(common.TCellColorBorderInactive)
 			}
 		}
 		pages.RemovePage(pageName)
@@ -75,14 +76,15 @@ func showAddCategoryForm(workingLedger ledger.Ledger, categoryID int, categoryTy
 		inputFieldFocused = false
 	})
 	mainForm.SetButtonsAlign(tview.AlignCenter)
-	mainForm.SetButtonBackgroundColor(tcell.Color238)
-	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
+	mainForm.SetButtonBackgroundColor(common.TCellColorFormBg)
+	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
 	mainForm.SetTitle(mainFormTitle)
 	mainForm.SetBorder(true)
-	mainForm.SetBorderColor(tview.Styles.SecondaryTextColor)
+	mainForm.SetBorderColor(common.TCellColorBorderActive)
 	mainForm.SetBackgroundColor(tcell.ColorDefault)
-	mainForm.SetFieldBackgroundColor(tcell.Color238)
+  mainForm.SetLabelColor(common.TCellColorBlue)
+	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
 			pages.RemovePage(pageName)

@@ -93,7 +93,7 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 
 	statusBar := tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter).
 		SetText(fmt.Sprintf(
-			"[yellow]%s\t%s\t%s\t%s\t[blue]%s\t%s\t%s\t%s\t%s\t%s",
+			"[blue]%s\t%s\t%s\t%s\t[green]%s\t%s\t%s\t%s\t%s\t%s",
 			"(1)home", "(2)accounts", "(3)categories", "(R)eports",
 			"(n)ew stock", "(p)urchase units", "(r)edeem units", "(s)switch units", "(t)oggle status", "(u)pdate nav"))
 
