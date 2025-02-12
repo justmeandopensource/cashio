@@ -231,6 +231,41 @@ func showAddTransactionForm(config AddTransactionConfig) {
 	// Notes field
 	mainForm.AddInputField("Notes", "", 50, nil, nil)
 	fieldNotes := mainForm.GetFormItemByLabel("Notes").(*tview.InputField)
+  debouncer := common.NewDebouncer(300 * time.Millisecond)
+  var lastSearchText string
+  var selectedText string
+	fieldNotes.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
+
+  fieldNotes.SetChangedFunc(func(text string) {
+    currentText := strings.TrimSpace(text)
+    if currentText != selectedText {
+      selectedText = ""
+    }
+    if selectedText == "" && len(currentText) >= 3 && currentText != lastSearchText {
+      lastSearchText = currentText
+      debouncer.Debounce(func() {
+        go func() {
+          notes, err := ledger.GetTransactionNotesForKeywords(config.WorkingLedger.Name, currentText)
+          if err != nil {
+            return
+          }
+          app.QueueUpdateDraw(func() {
+            fieldNotes.SetAutocompleteFunc(func(currentText string) []string {
+              return notes
+            })
+          })
+        }()
+      })
+    }
+  })
+
+  fieldNotes.SetAutocompletedFunc(func(text string, _, source int) bool {
+    if source != tview.AutocompletedNavigate {
+      selectedText = text
+      fieldNotes.SetText(text)
+    }
+    return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
+  })
 
 	// Split? field
 	mainForm.AddCheckbox("Split?", false, func(checked bool) {

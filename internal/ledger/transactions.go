@@ -488,6 +488,41 @@ func DeleteTransaction(ledgerName string, transactionID int) error {
 	return nil
 }
 
+// GetTransactionNotesForKeywords fetches transaction notes matching the keywords
+// and returns them as a slice of string
+func GetTransactionNotesForKeywords(ledgerName string, keywords string) ([]string, error) {
+
+	keywords = strings.ReplaceAll(keywords, " ", "%")
+	keywords = "%" + keywords + "%"
+
+	query := fmt.Sprintf(`
+    SELECT DISTINCT notes
+    FROM %s_transactions
+    WHERE notes LIKE '%s'
+      AND notes NOT LIKE '<trans>%%'
+      AND notes NOT LIKE '<split>%%'
+    ORDER BY date DESC
+    LIMIT 15
+	`, ledgerName, keywords)
+
+	rows, err := common.DbConn.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+  var notes []string
+  for rows.Next() {
+    var note string
+    if err := rows.Scan(&note); err != nil {
+      return nil, err
+    }
+    notes = append(notes, note)
+  }
+
+  return notes, nil
+}
+
 // TransferFunds adds transfer transactions contained in a slice of Transaction struct to database
 func TransferFunds(fromLedger string, toLedger string, transactions []Transaction) error {
 
