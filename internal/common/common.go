@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antonmedv/expr"
+	"github.com/expr-lang/expr"
 	"github.com/c-bata/go-prompt"
 	"github.com/spf13/viper"
 	"golang.org/x/term"

@@ -55,7 +55,7 @@ func showAddStockTransactionForm(workingLedger ledger.Ledger, stockName string, 
 	})
 
 	// Account field
-	mainForm.AddInputField(accountLabel, "", 20, nil, func(text string) {
+	mainForm.AddInputField(accountLabel, "", 30, nil, func(text string) {
 		if text == "null" {
 			bankAccountID = -1
 		} else {
@@ -63,7 +63,7 @@ func showAddStockTransactionForm(workingLedger ledger.Ledger, stockName string, 
 		}
 	})
 	fieldAccount := mainForm.GetFormItemByLabel(accountLabel).(*tview.InputField)
-	fieldAccount.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
+	fieldAccount.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault.Foreground(common.TCellColorDefaultText).Background(common.TCellColorFormBg), tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 	fieldAccount.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if len(currentText) == 0 {
 			return

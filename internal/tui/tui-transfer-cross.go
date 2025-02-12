@@ -53,7 +53,7 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		fromAccountID = ledger.GetAccountID(fromAccountName, fromAccounts)
 	})
 	fieldFromAccount := mainForm.GetFormItemByLabel("From Account").(*tview.InputField)
-	fieldFromAccount.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
+	fieldFromAccount.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault.Foreground(common.TCellColorDefaultText).Background(common.TCellColorFormBg), tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 	fieldFromAccount.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if len(currentText) == 0 {
 			return
@@ -98,7 +98,7 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		toAccountID = ledger.GetAccountID(toAccountName, toAccounts)
 	})
 	fieldToAccount := mainForm.GetFormItemByLabel("To Account").(*tview.InputField)
-	fieldToAccount.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
+	fieldToAccount.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault.Foreground(common.TCellColorDefaultText).Background(common.TCellColorFormBg), tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 	fieldToAccount.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if len(currentText) == 0 {
 			return
@@ -138,7 +138,7 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		feeCategoryID = ledger.GetCategoryID(text, categories)
 	})
 	fieldFeeCategory := mainForm.GetFormItemByLabel("Fee Category").(*tview.InputField)
-	fieldFeeCategory.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
+	fieldFeeCategory.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault.Foreground(common.TCellColorDefaultText).Background(common.TCellColorFormBg), tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 	fieldFeeCategory.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if len(currentText) == 0 {
 			return
@@ -166,7 +166,7 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 	})
 
 	// notes
-	mainForm.AddInputField("Notes", "", 50, nil, nil)
+	mainForm.AddInputField("Notes", "", 38, nil, nil)
 
 	// status text
 	mainForm.AddTextView("  ", "", 30, 1, true, false)

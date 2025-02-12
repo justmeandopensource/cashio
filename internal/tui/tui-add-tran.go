@@ -199,7 +199,7 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		transAccountID = ledger.GetAccountID(text, accounts)
 	})
 	fieldAccount := mainForm.GetFormItemByLabel("Account").(*tview.InputField)
-	fieldAccount.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
+	fieldAccount.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault.Foreground(common.TCellColorDefaultText).Background(common.TCellColorFormBg), tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 	fieldAccount.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if len(currentText) == 0 {
 			return
@@ -229,12 +229,12 @@ func showAddTransactionForm(config AddTransactionConfig) {
 	})
 
 	// Notes field
-	mainForm.AddInputField("Notes", "", 50, nil, nil)
+	mainForm.AddInputField("Notes", "", 40, nil, nil)
 	fieldNotes := mainForm.GetFormItemByLabel("Notes").(*tview.InputField)
   debouncer := common.NewDebouncer(300 * time.Millisecond)
   var lastSearchText string
   var selectedText string
-	fieldNotes.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
+	fieldNotes.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault.Foreground(common.TCellColorDefaultText).Background(common.TCellColorFormBg), tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
   fieldNotes.SetChangedFunc(func(text string) {
     currentText := strings.TrimSpace(text)

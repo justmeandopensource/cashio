@@ -37,12 +37,12 @@ func showSwitchStockTransactionForm(workingLedger ledger.Ledger) {
 	mainForm.AddInputField("Date", time.Now().Format("2006-01-02"), 11, nil, nil)
 
 	// from stock
-	mainForm.AddInputField("From Stock", "", 100, nil, func(text string) {
+	mainForm.AddInputField("From Stock", "", 50, nil, func(text string) {
 		fromStockName = strings.TrimSpace(text)
 		fromStockID = ledger.GetStockID(fromStockName, stocks)
 	})
 	fieldFromStock := mainForm.GetFormItemByLabel("From Stock").(*tview.InputField)
-	fieldFromStock.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
+	fieldFromStock.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault.Foreground(common.TCellColorDefaultText).Background(common.TCellColorFormBg), tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 	fieldFromStock.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if len(currentText) == 0 {
 			return
@@ -70,12 +70,12 @@ func showSwitchStockTransactionForm(workingLedger ledger.Ledger) {
 	})
 
 	// to stock
-	mainForm.AddInputField("To Stock", "", 100, nil, func(text string) {
+	mainForm.AddInputField("To Stock", "", 50, nil, func(text string) {
 		toStockName = strings.TrimSpace(text)
 		toStockID = ledger.GetStockID(toStockName, stocks)
 	})
 	fieldToStock := mainForm.GetFormItemByLabel("To Stock").(*tview.InputField)
-	fieldToStock.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
+	fieldToStock.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault.Foreground(common.TCellColorDefaultText).Background(common.TCellColorFormBg), tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 	fieldToStock.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if len(currentText) == 0 {
 			return

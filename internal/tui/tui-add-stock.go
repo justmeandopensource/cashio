@@ -45,7 +45,7 @@ func showAddStockForm(workingLedger ledger.Ledger) {
 	).SetFieldBackgroundColor(tcell.ColorDefault)
 
 	// stock name
-	mainForm.AddInputField("Stock Name", "", 100, nil, nil)
+	mainForm.AddInputField("Stock Name", "", 60, nil, nil)
 	fieldStockName := mainForm.GetFormItemByLabel("Stock Name").(*tview.InputField)
 
 	// stock plan
