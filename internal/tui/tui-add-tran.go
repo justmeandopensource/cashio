@@ -245,7 +245,7 @@ func showAddTransactionForm(config AddTransactionConfig) {
       lastSearchText = currentText
       debouncer.Debounce(func() {
         go func() {
-          notes, err := ledger.GetTransactionNotesForKeywords(config.WorkingLedger.Name, currentText)
+          notes, err := ledger.GetTransactionNotesForKeywords(config.WorkingLedger.Name, currentText, false)
           if err != nil {
             return
           }

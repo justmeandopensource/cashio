@@ -490,20 +490,35 @@ func DeleteTransaction(ledgerName string, transactionID int) error {
 
 // GetTransactionNotesForKeywords fetches transaction notes matching the keywords
 // and returns them as a slice of string
-func GetTransactionNotesForKeywords(ledgerName string, keywords string) ([]string, error) {
+func GetTransactionNotesForKeywords(ledgerName string, keywords string, filterTransferTn bool) ([]string, error) {
 
 	keywords = strings.ReplaceAll(keywords, " ", "%")
 	keywords = "%" + keywords + "%"
 
-	query := fmt.Sprintf(`
-    SELECT DISTINCT notes
-    FROM %s_transactions
-    WHERE notes LIKE '%s'
-      AND notes NOT LIKE '<trans>%%'
-      AND notes NOT LIKE '<split>%%'
-    ORDER BY date DESC
-    LIMIT 15
-	`, ledgerName, keywords)
+  var query string
+
+  if filterTransferTn {
+    query = fmt.Sprintf(`
+      SELECT DISTINCT
+        trim(substr(notes, 
+               instr(notes, '[') + 1, 
+               instr(notes, ']') - instr(notes, '[') - 1)) as extracted_text
+      FROM %s_transactions
+      WHERE notes LIKE '<trans>%%[%s]'
+      ORDER BY date DESC
+      LIMIT 15
+    `, ledgerName, keywords)
+  } else {
+    query = fmt.Sprintf(`
+      SELECT DISTINCT notes
+      FROM %s_transactions
+      WHERE notes LIKE '%s'
+        AND notes NOT LIKE '<trans>%%'
+        AND notes NOT LIKE '<split>%%'
+      ORDER BY date DESC
+      LIMIT 15
+    `, ledgerName, keywords)
+  }
 
 	rows, err := common.DbConn.Query(query)
 	if err != nil {
