@@ -38,6 +38,11 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 	stocksTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
+      case 'l':
+				row, _ := stocksTable.GetSelection()
+				stockName := strings.TrimSpace(stocksTable.GetCell(row, 1).Text)
+				stockID := ledger.GetStockID(stockName, stocks)
+				showTransactionsForStock(stocksTable, workingLedger, stockName, stockID)
 			case 'n':
 				showAddStockForm(workingLedger)
 			case 'p':
@@ -76,13 +81,6 @@ func setupStocksPage(workingLedger ledger.Ledger) {
 				}
 				stocks, _ := ledger.FetchStocks(workingLedger.Name, "all")
 				populateStocksTable(stocks, workingLedger.Currency)
-			}
-		} else {
-			if event.Key() == tcell.KeyEnter {
-				row, _ := stocksTable.GetSelection()
-				stockName := strings.TrimSpace(stocksTable.GetCell(row, 1).Text)
-				stockID := ledger.GetStockID(stockName, stocks)
-				showTransactionsForStock(stocksTable, workingLedger, stockName, stockID)
 			}
 		}
 		return event

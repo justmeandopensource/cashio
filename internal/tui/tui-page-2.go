@@ -228,8 +228,10 @@ func showDeleteConfirmationModal(workingLedger ledger.Ledger, transactionID int)
 	modal := tview.NewModal()
 	modal.SetText("Delete the transaction?")
 	modal.AddButtons([]string{"Yes", "No"})
-	modal.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
-	modal.SetBackgroundColor(common.TCellColorTransRowActiveBg)
+	modal.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
+  modal.Box.SetBackgroundColor(tcell.ColorDefault)
+	modal.SetBackgroundColor(tcell.ColorDefault)
+  modal.SetBorderColor(common.TCellColorBorderActive)
 
 	modal.SetDoneFunc(func(_ int, buttonLabel string) {
 		if buttonLabel == "Yes" {

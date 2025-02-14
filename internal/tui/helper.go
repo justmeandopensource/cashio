@@ -254,8 +254,8 @@ func showSplitsForTransaction(widgetFocus tview.Primitive, workingLedger ledger.
 	table.SetTitle(fmt.Sprintf("[ splits for transaction id %d ]", transactionID))
 	table.SetSelectable(true, false)
 	table.SetBorder(true)
-	table.SetBackgroundColor(common.TCellColorTransRowActiveBg)
-	table.SetBorderColor(tview.Styles.SecondaryTextColor)
+	table.SetBackgroundColor(tcell.ColorDefault)
+	table.SetBorderColor(common.TCellColorBorderActive)
 	table.SetSelectedStyle(tcell.StyleDefault.Background(common.TCellColorTransRowActiveBg).Bold(true))
 
 	colNames := []string{
@@ -336,8 +336,8 @@ func showTransactionsForStock(widgetFocus tview.Primitive, workingLedger ledger.
 	table.SetTitle(fmt.Sprintf("[ %v ]", stockName))
 	table.SetSelectable(true, false)
 	table.SetBorder(true)
-	table.SetBackgroundColor(common.TCellColorTransRowActiveBg)
-	table.SetBorderColor(tview.Styles.SecondaryTextColor)
+	table.SetBackgroundColor(tcell.ColorDefault)
+	table.SetBorderColor(common.TCellColorBorderActive)
 	table.SetSelectedStyle(tcell.StyleDefault.Background(common.TCellColorTransRowActiveBg).Bold(true))
 
 	colNames := []string{
@@ -398,15 +398,11 @@ func showTransactionsForStock(widgetFocus tview.Primitive, workingLedger ledger.
 	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyRune {
 			switch event.Rune() {
-			case 'q':
+			case 'h':
 				pages.RemovePage("stockTransactions")
 				inputFieldFocused = false
 				app.SetFocus(widgetFocus)
 			}
-		} else if event.Key() == tcell.KeyEsc {
-			pages.RemovePage("stockTransactions")
-			inputFieldFocused = false
-			app.SetFocus(widgetFocus)
 		}
 		return event
 	})
@@ -425,8 +421,10 @@ func showModal(widgetFocus tview.Primitive, message string) {
 	modal := tview.NewModal()
 	modal.SetText(message)
 	modal.AddButtons([]string{"Close"})
-	modal.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tview.Styles.SecondaryTextColor))
-	modal.SetBackgroundColor(common.TCellColorTransRowActiveBg)
+	modal.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
+  modal.Box.SetBackgroundColor(tcell.ColorDefault)
+	modal.SetBackgroundColor(tcell.ColorDefault)
+  modal.SetBorderColor(common.TCellColorBorderActive)
 
 	modal.SetDoneFunc(func(_ int, buttonLabel string) {
 		if buttonLabel == "Close" {
