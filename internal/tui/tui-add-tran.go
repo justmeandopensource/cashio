@@ -283,7 +283,7 @@ func showAddTransactionForm(config AddTransactionConfig) {
 	// Category field
 	mainForm.AddInputField("Category", "", 20, nil, nil)
 	fieldCategory := mainForm.GetFormItemByLabel("Category").(*tview.InputField)
-	fieldCategory.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
+	fieldCategory.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault.Foreground(common.TCellColorDefaultText).Background(common.TCellColorFormBg), tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 	fieldCategory.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if len(currentText) == 0 {
 			return
