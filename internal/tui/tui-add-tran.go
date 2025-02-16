@@ -41,6 +41,9 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		categoriesFormatted = ledger.FormatCategories(categories, "")
 	)
 
+  // #########################################################
+	// ################### CHILD FORM ##########################
+  // #########################################################
 	var displaySplitForm func()
 
 	displaySplitForm = func() {
@@ -48,17 +51,39 @@ func showAddTransactionForm(config AddTransactionConfig) {
 			return
 		}
 		splitCounter += 1
+
+    // ============================
+    // CHILD FORM: Config
+    // ============================
 		childForm := tview.NewForm()
 		childForm.SetTitle(fmt.Sprintf("[ Split %d ]", splitCounter))
 		childForm.SetBorder(true)
 		childForm.SetBorderColor(common.TCellColorBorderActive)
+		childForm.SetBackgroundColor(tcell.ColorDefault)
+		childForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+    childForm.SetFieldTextColor(tcell.ColorWhite)
+    childForm.SetLabelColor(common.TCellColorBlue)
+
+    // ============================
+    // CHILD FORM: Balance
+    // ============================
 		childForm.AddTextView("Balance", fmt.Sprintf("%v", baseAmount), 15, 1, true, true)
+
+    // ============================
+    // CHILD FORM: Amount
+    // ============================
 		childForm.AddInputField("Amount", "", 12, nil, nil)
 		fieldAmount := childForm.GetFormItemByLabel("Amount").(*tview.InputField)
-		childForm.AddInputField("Notes", "", 50, nil, nil)
+
+    // ============================
+    // CHILD FORM: Notes
+    // ============================
+		childForm.AddInputField("Notes", "", 40, nil, nil)
 		fieldNotes := childForm.GetFormItemByLabel("Notes").(*tview.InputField)
 
-		// child category field
+    // ============================
+    // CHILD FORM: Category
+    // ============================
 		childForm.AddInputField("Category", "", 20, nil, nil)
 		fieldCategory := childForm.GetFormItemByLabel("Category").(*tview.InputField)
 		fieldCategory.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault, tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
@@ -83,7 +108,9 @@ func showAddTransactionForm(config AddTransactionConfig) {
 			return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
 		})
 
-		// child form buttons
+    // ============================
+    // CHILD FORM: Buttons
+    // ============================
 		childForm.AddButton("Next", func() {
 			amountText := childForm.GetFormItemByLabel("Amount").(*tview.InputField).GetText()
 			amountText = strings.TrimSpace(amountText)
@@ -142,16 +169,14 @@ func showAddTransactionForm(config AddTransactionConfig) {
     childForm.SetButtonTextColor(tcell.ColorWhite)
 		childForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
-		// child form footer
-		childForm.AddTextView("  ", "", 50, 1, true, false)
+    // ============================
+    // CHILD FORM: Footer
+    // ============================
+		childForm.AddTextView("  ", "", 40, 1, true, false)
 
-		childForm.SetBackgroundColor(tcell.ColorDefault)
-		childForm.SetFieldBackgroundColor(common.TCellColorFormBg)
-    childForm.SetFieldTextColor(tcell.ColorWhite)
-    childForm.SetLabelColor(common.TCellColorBlue)
-
-		childForm.SetFocus(1)
-
+    // ============================
+    // CHILD FORM: Input Capture
+    // ============================
 		childForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 			if event.Key() == tcell.KeyEsc {
 				splitTransactions = splitTransactions[:0]
@@ -162,6 +187,11 @@ func showAddTransactionForm(config AddTransactionConfig) {
 			return event
 		})
 
+    childForm.SetFocus(1)
+
+    // ============================
+    // CHILD FORM: GRID
+    // ============================
 		childGrid := tview.NewGrid().
 			SetRows(0, 21, 0).
 			SetColumns(0, 55, 0).
@@ -170,10 +200,25 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		pages.AddPage(fmt.Sprintf("split%d", splitCounter), childGrid, true, true)
 	}
 
-	// Main mainForm
-	mainForm := tview.NewForm()
+  // #########################################################
+	// ################### MAIN FORM ###########################
+  // #########################################################
 
-	// Transaction Type field
+  // ============================
+  // MAIN FORM: Config
+  // ============================
+	mainForm := tview.NewForm()
+	mainForm.SetTitle("[ Add a new transaction ]")
+	mainForm.SetBorder(true)
+	mainForm.SetBorderColor(common.TCellColorBorderActive)
+	mainForm.SetBackgroundColor(tcell.ColorDefault)
+	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+  mainForm.SetFieldTextColor(tcell.ColorWhite)
+  mainForm.SetLabelColor(common.TCellColorBlue)
+
+  // ============================
+  // MAIN FORM: Transaction Type
+  // ============================
 	mainForm.AddDropDown("Type", []string{"income", "expense"}, 1, func(option string, _ int) {
 		transType = option
 		categories, _ = ledger.FetchCategories(config.WorkingLedger.Name, transType, false)
@@ -186,7 +231,9 @@ func showAddTransactionForm(config AddTransactionConfig) {
 	)
 	fieldTransType.SetFieldBackgroundColor(tcell.ColorDefault)
 
-	// Date field
+  // ============================
+  // MAIN FORM: Date
+  // ============================
 	mainForm.AddInputField("Date", time.Now().Format("2006-01-02"), 11, nil, func(text string) {
 		if strings.TrimSpace(text) != "" {
 			transDate, _ = time.Parse("2006-01-02", text)
@@ -194,7 +241,9 @@ func showAddTransactionForm(config AddTransactionConfig) {
 	})
 	fieldDate := mainForm.GetFormItemByLabel("Date").(*tview.InputField)
 
-	// Account field
+  // ============================
+  // MAIN FORM: Account
+  // ============================
 	mainForm.AddInputField("Account", "", 20, nil, func(text string) {
 		transAccountID = ledger.GetAccountID(text, accounts)
 	})
@@ -221,14 +270,18 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
 	})
 
-	// Amount field
+  // ============================
+  // MAIN FORM: Amount
+  // ============================
 	mainForm.AddInputField("Amount", "", 11, nil, func(text string) {
 		amount := common.ProcessExpression(text)
 		baseAmount = decimal.NewFromFloat(amount)
 		transAmount = decimal.NewFromFloat(amount)
 	})
 
-	// Notes field
+  // ============================
+  // MAIN FORM: Notes
+  // ============================
 	mainForm.AddInputField("Notes", "", 40, nil, nil)
 	fieldNotes := mainForm.GetFormItemByLabel("Notes").(*tview.InputField)
   debouncer := common.NewDebouncer(300 * time.Millisecond)
@@ -267,7 +320,9 @@ func showAddTransactionForm(config AddTransactionConfig) {
     return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
   })
 
-	// Split? field
+  // ============================
+  // MAIN FORM: Split
+  // ============================
 	mainForm.AddCheckbox("Split?", false, func(checked bool) {
 		if checked {
 			isSplit = 1
@@ -280,7 +335,9 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		}
 	})
 
-	// Category field
+  // ============================
+  // MAIN FORM: Category
+  // ============================
 	mainForm.AddInputField("Category", "", 20, nil, nil)
 	fieldCategory := mainForm.GetFormItemByLabel("Category").(*tview.InputField)
 	fieldCategory.SetAutocompleteStyles(common.TCellColorFormBg, tcell.StyleDefault.Foreground(common.TCellColorDefaultText).Background(common.TCellColorFormBg), tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
@@ -305,7 +362,9 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
 	})
 
-	// Form buttons
+  // ============================
+  // MAIN FORM: Buttons
+  // ============================
 	mainForm.AddButton("Submit", func() {
 		missingFields := false
 		date := strings.TrimSpace(fieldDate.GetText())
@@ -394,16 +453,14 @@ func showAddTransactionForm(config AddTransactionConfig) {
   mainForm.SetButtonTextColor(tcell.ColorWhite)
 	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
-	mainForm.AddTextView("  ", "", 50, 1, true, false)
+  // ============================
+  // MAIN FORM: Footer
+  // ============================
+	mainForm.AddTextView("  ", "", 40, 1, true, false)
 
-	mainForm.SetTitle("[ Add a new transaction ]")
-	mainForm.SetBorder(true)
-	mainForm.SetBorderColor(common.TCellColorBorderActive)
-	mainForm.SetBackgroundColor(tcell.ColorDefault)
-	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
-  mainForm.SetFieldTextColor(tcell.ColorWhite)
-  mainForm.SetLabelColor(common.TCellColorBlue)
-
+  // ============================
+  // MAIN FORM: Input Capture
+  // ============================
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
 			pages.RemovePage("addTransactionForm")
@@ -413,6 +470,9 @@ func showAddTransactionForm(config AddTransactionConfig) {
 		return event
 	})
 
+  // ============================
+  // MAIN FORM: GRID
+  // ============================
 	grid := tview.NewGrid().
 		SetRows(0, 21, 0).
 		SetColumns(0, 55, 0).
