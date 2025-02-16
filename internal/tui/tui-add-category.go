@@ -20,25 +20,42 @@ func showAddCategoryForm(workingLedger ledger.Ledger, categoryID int, categoryTy
 		pageName      = "addCategoryForm"
 	)
 
-	// form
+  // #########################################################
+	// ######################### FORM ##########################
+  // #########################################################
 	mainForm := tview.NewForm()
+	mainForm.SetTitle(mainFormTitle)
+	mainForm.SetBorder(true)
+	mainForm.SetBorderColor(common.TCellColorBorderActive)
+	mainForm.SetBackgroundColor(tcell.ColorDefault)
+	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+  mainForm.SetLabelColor(common.TCellColorBlue)
 
-	// category name
+  // ============================
+  // FORM: Category
+  // ============================
 	mainForm.AddInputField("Category Name", "", 20, nil, nil)
 	categoryField := mainForm.GetFormItemByLabel("Category Name").(*tview.InputField)
 
-	// placeholder
+  // ============================
+  // FORM: Placeholder
+  // ============================
 	mainForm.AddCheckbox("Placeholder?", false, func(checked bool) {
 		if checked {
 			placeholder = 1
 		}
 	})
 
-	// status text
+  // ============================
+  // FORM: Footer
+  // ============================
 	mainForm.AddTextView("  ", "", 30, 1, true, false)
 	errorField := mainForm.GetFormItemByLabel("  ").(*tview.TextView)
 	errorField.SetDynamicColors(true)
 
+  // ============================
+  // FORM: Buttons
+  // ============================
 	mainForm.AddButton("Submit", func() {
 		categoryName := strings.TrimSpace(categoryField.GetText())
 		if categoryName == "" {
@@ -70,6 +87,7 @@ func showAddCategoryForm(workingLedger ledger.Ledger, categoryID int, categoryTy
 		app.SetFocus(page3CatTree)
 		inputFieldFocused = false
 	})
+
 	mainForm.AddButton("Cancel", func() {
 		pages.RemovePage(pageName)
 		app.SetFocus(page3CatTree)
@@ -79,12 +97,9 @@ func showAddCategoryForm(workingLedger ledger.Ledger, categoryID int, categoryTy
 	mainForm.SetButtonBackgroundColor(common.TCellColorFormBg)
 	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
-	mainForm.SetTitle(mainFormTitle)
-	mainForm.SetBorder(true)
-	mainForm.SetBorderColor(common.TCellColorBorderActive)
-	mainForm.SetBackgroundColor(tcell.ColorDefault)
-  mainForm.SetLabelColor(common.TCellColorBlue)
-	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+  // ============================
+  // FORM: Input Capture
+  // ============================
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
 			pages.RemovePage(pageName)
@@ -94,6 +109,9 @@ func showAddCategoryForm(workingLedger ledger.Ledger, categoryID int, categoryTy
 		return event
 	})
 
+  // ============================
+  // FORM: Grid
+  // ============================
 	grid := tview.NewGrid().
 		SetRows(0, 11, 0).
 		SetColumns(0, 45, 0).

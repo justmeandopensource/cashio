@@ -43,18 +43,44 @@ func showAddStockTransactionForm(workingLedger ledger.Ledger, stockName string, 
 		accountLabel = "Redeem to"
 	}
 
+  // #########################################################
+	// ######################### FORM ##########################
+  // #########################################################
 	mainForm := tview.NewForm()
+	mainForm.SetTitle(mainFormTitle)
+	mainForm.SetBorder(true)
+	mainForm.SetBorderColor(common.TCellColorBorderActive)
+	mainForm.SetBackgroundColor(tcell.ColorDefault)
+	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+  mainForm.SetLabelColor(common.TCellColorBlue)
 
+  // ============================
+  // FORM: Stock Name
+  // ============================
 	mainForm.AddTextView("Stock", stockName, 0, 1, true, false)
+
+  // ============================
+  // FORM: Date
+  // ============================
 	mainForm.AddInputField("Date", time.Now().Format("2006-01-02"), 11, nil, nil)
+
+  // ============================
+  // FORM: Units
+  // ============================
 	mainForm.AddInputField(unitsLabel, "", 11, nil, func(text string) {
 		units = common.ProcessExpression(text)
 	})
+
+  // ============================
+  // FORM: Purchase Amount
+  // ============================
 	mainForm.AddInputField(amountLabel, "", 11, nil, func(text string) {
 		amount = common.ProcessExpression(text)
 	})
 
-	// Account field
+  // ============================
+  // FORM: Purchase Account
+  // ============================
 	mainForm.AddInputField(accountLabel, "", 30, nil, func(text string) {
 		if text == "null" {
 			bankAccountID = -1
@@ -85,12 +111,16 @@ func showAddStockTransactionForm(workingLedger ledger.Ledger, stockName string, 
 		return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
 	})
 
-	// status text
+  // ============================
+  // FORM: Footer
+  // ============================
 	mainForm.AddTextView("  ", "", 30, 1, true, false)
 	errorField = mainForm.GetFormItemByLabel("  ").(*tview.TextView)
 	errorField.SetDynamicColors(true)
 
-	// Form buttons
+  // ============================
+  // FORM: Buttons
+  // ============================
 	mainForm.AddButton("Submit", func() {
 
 		dateText := mainForm.GetFormItemByLabel("Date").(*tview.InputField).GetText()
@@ -150,14 +180,9 @@ func showAddStockTransactionForm(workingLedger ledger.Ledger, stockName string, 
 	mainForm.SetButtonBackgroundColor(common.TCellColorFormBg)
 	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
-	mainForm.SetTitle(mainFormTitle)
-	mainForm.SetBorder(true)
-	mainForm.SetBorderColor(common.TCellColorBorderActive)
-	mainForm.SetBackgroundColor(tcell.ColorDefault)
-  mainForm.SetLabelColor(common.TCellColorBlue)
-	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
-	mainForm.SetFocus(1)
-
+  // ============================
+  // FORM: Input Capture
+  // ============================
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
 			pages.RemovePage(pageName)
@@ -167,6 +192,11 @@ func showAddStockTransactionForm(workingLedger ledger.Ledger, stockName string, 
 		return event
 	})
 
+	mainForm.SetFocus(1)
+
+  // ============================
+  // FORM: Grid
+  // ============================
 	grid := tview.NewGrid().
 		SetRows(0, 17, 0).
 		SetColumns(0, 70, 0).

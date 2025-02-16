@@ -30,13 +30,26 @@ func showSwitchStockTransactionForm(workingLedger ledger.Ledger) {
 		errorField     *tview.TextView
 	)
 
-	// form
+  // #########################################################
+	// ######################### FORM ##########################
+  // #########################################################
 	mainForm := tview.NewForm()
+	mainForm.SetTitle(mainFormTitle)
+	mainForm.SetBorder(true)
+	mainForm.SetBorderColor(common.TCellColorBorderActive)
+	mainForm.SetBackgroundColor(tcell.ColorDefault)
+	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+  mainForm.SetFieldTextColor(tcell.ColorWhite)
+  mainForm.SetLabelColor(common.TCellColorBlue)
 
-	// date
+  // ============================
+  // FORM: Date
+  // ============================
 	mainForm.AddInputField("Date", time.Now().Format("2006-01-02"), 11, nil, nil)
 
-	// from stock
+  // ============================
+  // FORM: From Stock
+  // ============================
 	mainForm.AddInputField("From Stock", "", 50, nil, func(text string) {
 		fromStockName = strings.TrimSpace(text)
 		fromStockID = ledger.GetStockID(fromStockName, stocks)
@@ -64,12 +77,16 @@ func showSwitchStockTransactionForm(workingLedger ledger.Ledger) {
 		return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
 	})
 
-	// from units
+  // ============================
+  // FORM: From Units
+  // ============================
 	mainForm.AddInputField("From Units", "", 11, nil, func(text string) {
 		fromUnits = common.ProcessExpression(text)
 	})
 
-	// to stock
+  // ============================
+  // FORM: To Stock
+  // ============================
 	mainForm.AddInputField("To Stock", "", 50, nil, func(text string) {
 		toStockName = strings.TrimSpace(text)
 		toStockID = ledger.GetStockID(toStockName, stocks)
@@ -97,22 +114,30 @@ func showSwitchStockTransactionForm(workingLedger ledger.Ledger) {
 		return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
 	})
 
-	// to units
+  // ============================
+  // FORM: To Units
+  // ============================
 	mainForm.AddInputField("To Units", "", 11, nil, func(text string) {
 		toUnits = common.ProcessExpression(text)
 	})
 
-	// amount
+  // ============================
+  // FORM: Amount
+  // ============================
 	mainForm.AddInputField(fmt.Sprintf("Amount (%v)", workingLedger.Currency), "", 11, nil, func(text string) {
 		amount = common.ProcessExpression(text)
 	})
 
-	// status text
+  // ============================
+  // FORM: Footer
+  // ============================
 	mainForm.AddTextView("  ", "", 30, 1, true, false)
 	errorField = mainForm.GetFormItemByLabel("  ").(*tview.TextView)
 	errorField.SetDynamicColors(true)
 
-	// Form buttons
+  // ============================
+  // FORM: Buttons
+  // ============================
 	mainForm.AddButton("Submit", func() {
 
 		dateText := mainForm.GetFormItemByLabel("Date").(*tview.InputField).GetText()
@@ -191,15 +216,9 @@ func showSwitchStockTransactionForm(workingLedger ledger.Ledger) {
 	mainForm.SetButtonBackgroundColor(common.TCellColorFormBg)
 	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
-	mainForm.SetTitle(mainFormTitle)
-	mainForm.SetBorder(true)
-	mainForm.SetBorderColor(common.TCellColorBorderActive)
-	mainForm.SetBackgroundColor(tcell.ColorDefault)
-	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
-  mainForm.SetFieldTextColor(tcell.ColorWhite)
-  mainForm.SetLabelColor(common.TCellColorBlue)
-	mainForm.SetFocus(1)
-
+  // ============================
+  // FORM: Input Capture
+  // ============================
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
 			pages.RemovePage(pageName)
@@ -209,6 +228,11 @@ func showSwitchStockTransactionForm(workingLedger ledger.Ledger) {
 		return event
 	})
 
+	mainForm.SetFocus(1)
+
+  // ============================
+  // FORM: Grid
+  // ============================
 	grid := tview.NewGrid().
 		SetRows(0, 19, 0).
 		SetColumns(0, 70, 0).

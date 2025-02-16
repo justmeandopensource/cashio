@@ -21,14 +21,26 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 		pageName       = "addAccountForm"
 	)
 
-	// form
+  // #########################################################
+	// ######################### FORM ##########################
+  // #########################################################
 	mainForm := tview.NewForm()
+	mainForm.SetTitle(mainFormTitle)
+	mainForm.SetBorder(true)
+	mainForm.SetBorderColor(common.TCellColorBorderActive)
+	mainForm.SetBackgroundColor(tcell.ColorDefault)
+	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+  mainForm.SetLabelColor(common.TCellColorBlue)
 
-	// account name
+  // ============================
+  // FORM: Account
+  // ============================
 	mainForm.AddInputField("Account Name", "", 20, nil, nil)
 	accountField := mainForm.GetFormItemByLabel("Account Name").(*tview.InputField)
 
-	// placeholder
+  // ============================
+  // FORM: Placeholder
+  // ============================
 	mainForm.AddCheckbox("Placeholder?", false, func(checked bool) {
 		if checked {
 			placeholder = 1
@@ -38,15 +50,23 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 		}
 	})
 
+  // ============================
+  // FORM: Opening Balance
+  // ============================
 	mainForm.AddInputField("Opening Balance", "", 11, nil, func(text string) {
 		openingBalance = common.ProcessExpression(text)
 	})
 
-	// status text
+  // ============================
+  // FORM: Footer
+  // ============================
 	mainForm.AddTextView("  ", "", 30, 1, true, false)
 	errorField := mainForm.GetFormItemByLabel("  ").(*tview.TextView)
 	errorField.SetDynamicColors(true)
 
+  // ============================
+  // FORM: Buttons
+  // ============================
 	mainForm.AddButton("Submit", func() {
 		accountName := strings.TrimSpace(accountField.GetText())
 		if accountName == "" {
@@ -81,6 +101,7 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 		app.SetFocus(page2AccTree)
 		inputFieldFocused = false
 	})
+
 	mainForm.AddButton("Cancel", func() {
 		pages.RemovePage(pageName)
 		app.SetFocus(page2AccTree)
@@ -90,12 +111,9 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 	mainForm.SetButtonBackgroundColor(common.TCellColorFormBg)
 	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
-	mainForm.SetTitle(mainFormTitle)
-	mainForm.SetBorder(true)
-	mainForm.SetBorderColor(common.TCellColorBorderActive)
-	mainForm.SetBackgroundColor(tcell.ColorDefault)
-  mainForm.SetLabelColor(common.TCellColorBlue)
-	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+  // ============================
+  // FORM: Input Capture
+  // ============================
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
 			pages.RemovePage(pageName)
@@ -105,6 +123,9 @@ func showAddAccountForm(workingLedger ledger.Ledger, accountID int, accountType 
 		return event
 	})
 
+  // ============================
+  // FORM: Grid
+  // ============================
 	grid := tview.NewGrid().
 		SetRows(0, 13, 0).
 		SetColumns(0, 45, 0).

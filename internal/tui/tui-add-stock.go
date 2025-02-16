@@ -24,10 +24,22 @@ func showAddStockForm(workingLedger ledger.Ledger) {
 		pageName      = "addStockForm"
 	)
 
-	// form
+  // #########################################################
+	// ######################### FORM ##########################
+  // #########################################################
 	mainForm := tview.NewForm()
+	mainForm.SetTitle(mainFormTitle)
+	mainForm.SetBorder(true)
+	mainForm.SetBorderColor(common.TCellColorBorderActive)
+	mainForm.SetBackgroundColor(tcell.ColorDefault)
+	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+  mainForm.SetFieldTextColor(tcell.ColorWhite)
+  mainForm.SetLabelColor(common.TCellColorBlue)
+  
 
-	// stock type
+  // ============================
+  // FORM: Stock Type
+  // ============================
 	mainForm.AddDropDown("Type", []string{"mutual fund", "gold", "others"}, 0, func(option string, optionIndex int) {
 		stockType = option
 		if option == "mutual fund" {
@@ -44,23 +56,34 @@ func showAddStockForm(workingLedger ledger.Ledger) {
 		tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight),
 	).SetFieldBackgroundColor(tcell.ColorDefault)
 
-	// stock name
+  // ============================
+  // FORM: Stock Name
+  // ============================
 	mainForm.AddInputField("Stock Name", "", 60, nil, nil)
 	fieldStockName := mainForm.GetFormItemByLabel("Stock Name").(*tview.InputField)
 
-	// stock plan
+  // ============================
+  // FORM: Stock Plan
+  // ============================
 	mainForm.AddInputField("Stock Plan", "", 20, nil, nil)
 	fieldStockPlan := mainForm.GetFormItemByLabel("Stock Plan").(*tview.InputField)
 
-	// stock code
+  // ============================
+  // FORM: Stock Code
+  // ============================
 	mainForm.AddInputField("Stock Code", "", 20, nil, nil)
 	fieldStockCode := mainForm.GetFormItemByLabel("Stock Code").(*tview.InputField)
 
-	// status text
+  // ============================
+  // FORM: Footer
+  // ============================
 	mainForm.AddTextView("  ", "", 30, 1, true, false)
 	errorField := mainForm.GetFormItemByLabel("  ").(*tview.TextView)
 	errorField.SetDynamicColors(true)
 
+  // ============================
+  // FORM: Buttons
+  // ============================
 	mainForm.AddButton("Submit", func() {
 		stockName = strings.TrimSpace(fieldStockName.GetText())
 		stockCode = strings.TrimSpace(fieldStockCode.GetText())
@@ -90,6 +113,7 @@ func showAddStockForm(workingLedger ledger.Ledger) {
 		app.SetFocus(stocksTable)
 		inputFieldFocused = false
 	})
+
 	mainForm.AddButton("Cancel", func() {
 		pages.RemovePage(pageName)
 		app.SetFocus(stocksTable)
@@ -99,13 +123,9 @@ func showAddStockForm(workingLedger ledger.Ledger) {
 	mainForm.SetButtonBackgroundColor(common.TCellColorFormBg)
 	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
-	mainForm.SetTitle(mainFormTitle)
-	mainForm.SetBorder(true)
-	mainForm.SetBorderColor(common.TCellColorBorderActive)
-	mainForm.SetBackgroundColor(tcell.ColorDefault)
-	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
-  mainForm.SetFieldTextColor(tcell.ColorWhite)
-  mainForm.SetLabelColor(common.TCellColorBlue)
+  // ============================
+  // FORM: Input Capture
+  // ============================
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
 			pages.RemovePage(pageName)
@@ -114,8 +134,12 @@ func showAddStockForm(workingLedger ledger.Ledger) {
 		}
 		return event
 	})
+
 	mainForm.SetFocus(1)
 
+  // ============================
+  // FORM: Grid
+  // ============================
 	grid := tview.NewGrid().
 		SetRows(0, 15, 0).
 		SetColumns(0, 75, 0).

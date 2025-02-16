@@ -40,10 +40,20 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 		errorField        *tview.TextView
 	)
 
-	// form
+  // #########################################################
+	// ######################### FORM ##########################
+  // #########################################################
 	mainForm := tview.NewForm()
+	mainForm.SetTitle(mainFormTitle)
+	mainForm.SetBorder(true)
+	mainForm.SetBorderColor(common.TCellColorBorderActive)
+	mainForm.SetBackgroundColor(tcell.ColorDefault)
+	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+  mainForm.SetLabelColor(common.TCellColorBlue)
 
-	// Cross ledger? field
+  // ============================
+  // FORM: Cross Ledger
+  // ============================
 	mainForm.AddCheckbox("Cross Ledger?", false, func(checked bool) {
 		if checked {
 			pages.HidePage("transferFundsLocalForm")
@@ -51,10 +61,14 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 		}
 	})
 
-	// date
+  // ============================
+  // FORM: Date
+  // ============================
 	mainForm.AddInputField("Date", time.Now().Format("2006-01-02"), 11, nil, nil)
 
-	// from account
+  // ============================
+  // FORM: From Account
+  // ============================
 	mainForm.AddInputField("From Account", "", 20, nil, func(text string) {
 		fromAccountName = strings.TrimSpace(text)
 		fromAccountID = ledger.GetAccountID(fromAccountName, accounts)
@@ -82,12 +96,16 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 		return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
 	})
 
-	// amount
+  // ============================
+  // FORM: Amount
+  // ============================
 	mainForm.AddInputField(fmt.Sprintf("Amount (%v)", config.WorkingLedger.Currency), "", 11, nil, func(text string) {
 		amount = common.ProcessExpression(text)
 	})
 
-	// to account
+  // ============================
+  // FORM: To Account
+  // ============================
 	mainForm.AddInputField("To Account", "", 20, nil, func(text string) {
 		toAccountName = strings.TrimSpace(text)
 		toAccountID = ledger.GetAccountID(toAccountName, accounts)
@@ -115,7 +133,9 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 		return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
 	})
 
-	// notes
+  // ============================
+  // FORM: Notes
+  // ============================
 	mainForm.AddInputField("Notes", "", 36, nil, nil)
 	fieldNotes := mainForm.GetFormItemByLabel("Notes").(*tview.InputField)
   debouncer := common.NewDebouncer(300 * time.Millisecond)
@@ -154,11 +174,16 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
     return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
   })
 
-	// status text
+  // ============================
+  // FORM: Footer
+  // ============================
 	mainForm.AddTextView("  ", "", 30, 1, true, false)
 	errorField = mainForm.GetFormItemByLabel("  ").(*tview.TextView)
 	errorField.SetDynamicColors(true)
 
+  // ============================
+  // FORM: Buttons
+  // ============================
 	mainForm.AddButton("Submit", func() {
 
 		notesText := mainForm.GetFormItemByLabel("Notes").(*tview.InputField).GetText()
@@ -231,6 +256,7 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 		app.SetFocus(config.SourceTable)
 		inputFieldFocused = false
 	})
+
 	mainForm.AddButton("Cancel", func() {
 		pages.RemovePage(pageName)
 		app.SetFocus(config.SourceTable)
@@ -240,12 +266,9 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 	mainForm.SetButtonBackgroundColor(common.TCellColorFormBg)
 	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
-	mainForm.SetTitle(mainFormTitle)
-	mainForm.SetBorder(true)
-	mainForm.SetBorderColor(common.TCellColorBorderActive)
-	mainForm.SetBackgroundColor(tcell.ColorDefault)
-  mainForm.SetLabelColor(common.TCellColorBlue)
-	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+  // ============================
+  // FORM: Input Capture
+  // ============================
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
 			pages.RemovePage(pageName)
@@ -255,6 +278,9 @@ func showTransferFundsLocalForm(config TransferFundsConfig) {
 		return event
 	})
 
+  // ============================
+  // FORM: GRID
+  // ============================
 	grid := tview.NewGrid().
 		SetRows(0, 19, 0).
 		SetColumns(0, 55, 0).

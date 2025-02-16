@@ -203,10 +203,6 @@ func showAddTransactionForm(config AddTransactionConfig) {
   // #########################################################
 	// ################### MAIN FORM ###########################
   // #########################################################
-
-  // ============================
-  // MAIN FORM: Config
-  // ============================
 	mainForm := tview.NewForm()
 	mainForm.SetTitle("[ Add a new transaction ]")
 	mainForm.SetBorder(true)

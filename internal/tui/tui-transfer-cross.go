@@ -41,13 +41,25 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		errorField            *tview.TextView
 	)
 
-	// form
+  // #########################################################
+	// ######################### FORM ##########################
+  // #########################################################
 	mainForm := tview.NewForm()
+	mainForm.SetTitle(mainFormTitle)
+	mainForm.SetBorder(true)
+	mainForm.SetBorderColor(common.TCellColorBorderActive)
+	mainForm.SetBackgroundColor(tcell.ColorDefault)
+	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+  mainForm.SetLabelColor(common.TCellColorBlue)
 
-	// date
+  // ============================
+  // FORM: Date
+  // ============================
 	mainForm.AddInputField("Date", time.Now().Format("2006-01-02"), 11, nil, nil)
 
-	// from account
+  // ============================
+  // FORM: From Account
+  // ============================
 	mainForm.AddInputField("From Account", "", 20, nil, func(text string) {
 		fromAccountName = strings.TrimSpace(text)
 		fromAccountID = ledger.GetAccountID(fromAccountName, fromAccounts)
@@ -75,7 +87,9 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
 	})
 
-	// To ledger
+  // ============================
+  // FORM: To Ledger
+  // ============================
 	ledgersList, _ := ledger.GetLedgersList()
 	indexToRemove := -1
 	for i, ledger := range ledgersList {
@@ -92,7 +106,9 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		toAccountsFormatted = ledger.FormatAccounts(toAccounts, "")
 	})
 
-	// to account
+  // ============================
+  // FORM: To Account
+  // ============================
 	mainForm.AddInputField("To Account", "", 20, nil, func(text string) {
 		toAccountName = strings.TrimSpace(text)
 		toAccountID = ledger.GetAccountID(toAccountName, toAccounts)
@@ -120,12 +136,16 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
 	})
 
-	// from amount
+  // ============================
+  // FORM: From Amount
+  // ============================
 	mainForm.AddInputField(fmt.Sprintf("Amount (%v)", config.WorkingLedger.Currency), "", 11, nil, func(text string) {
 		fromAmount = common.ProcessExpression(text)
 	})
 
-	// fees
+  // ============================
+  // FORM: Fees
+  // ============================
 	mainForm.AddInputField(fmt.Sprintf("Fees (%v)", config.WorkingLedger.Currency), "", 11, nil, func(text string) {
 		fees = common.ProcessExpression(text)
 		if fees > 0 {
@@ -133,7 +153,9 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		}
 	})
 
-	// fees category
+  // ============================
+  // FORM: Fees Category
+  // ============================
 	mainForm.AddInputField("Fee Category", "", 20, nil, func(text string) {
 		feeCategoryID = ledger.GetCategoryID(text, categories)
 	})
@@ -160,12 +182,16 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
 	})
 
-	// to amount
+  // ============================
+  // FORM: To Amount
+  // ============================
 	mainForm.AddInputField(fmt.Sprintf("Amount (%v)", ledger.GetCurrencyForLedger(toLedger)), "", 11, nil, func(text string) {
 		toAmount = common.ProcessExpression(text)
 	})
 
-	// notes
+  // ============================
+  // FORM: Notes
+  // ============================
 	mainForm.AddInputField("Notes", "", 38, nil, nil)
 	fieldNotes := mainForm.GetFormItemByLabel("Notes").(*tview.InputField)
   debouncer := common.NewDebouncer(300 * time.Millisecond)
@@ -204,11 +230,16 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
     return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
   })
 
-	// status text
+  // ============================
+  // FORM: Footer
+  // ============================
 	mainForm.AddTextView("  ", "", 30, 1, true, false)
 	errorField = mainForm.GetFormItemByLabel("  ").(*tview.TextView)
 	errorField.SetDynamicColors(true)
 
+  // ============================
+  // FORM: Buttons
+  // ============================
 	mainForm.AddButton("Submit", func() {
 
 		notesText := mainForm.GetFormItemByLabel("Notes").(*tview.InputField).GetText()
@@ -303,6 +334,7 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		app.SetFocus(config.SourceTable)
 		inputFieldFocused = false
 	})
+
 	mainForm.AddButton("Cancel", func() {
 		pages.RemovePage(pageName)
 		app.SetFocus(config.SourceTable)
@@ -312,12 +344,9 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 	mainForm.SetButtonBackgroundColor(common.TCellColorFormBg)
 	mainForm.SetButtonActivatedStyle(tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(common.TCellColorFormHighlight))
 
-	mainForm.SetTitle(mainFormTitle)
-	mainForm.SetBorder(true)
-	mainForm.SetBorderColor(common.TCellColorBorderActive)
-	mainForm.SetBackgroundColor(tcell.ColorDefault)
-  mainForm.SetLabelColor(common.TCellColorBlue)
-	mainForm.SetFieldBackgroundColor(common.TCellColorFormBg)
+  // ============================
+  // FORM: Input Capture
+  // ============================
 	mainForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEsc {
 			pages.RemovePage(pageName)
@@ -327,6 +356,9 @@ func showTransferFundsCrossForm(config TransferFundsConfig) {
 		return event
 	})
 
+  // ============================
+  // FORM: GRID
+  // ============================
 	grid := tview.NewGrid().
 		SetRows(0, 25, 0).
 		SetColumns(0, 55, 0).
