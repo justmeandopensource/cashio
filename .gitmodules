@@ -1,0 +1,6 @@
+[submodule "cashio-api"]
+	path = cashio-api
+	url = https://github.com/justmeandopensource/cashio-api.git
+[submodule "cashio-ui"]
+	path = cashio-ui
+	url = https://github.com/justmeandopensource/cashio-ui.git

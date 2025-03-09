@@ -1,0 +1,20 @@
+DOMAIN="cashio.local"
+
+# postgres
+POSTGRES_USER="admin"
+POSTGRES_PASSWORD="password"
+POSTGRES_DB="cashio"
+POSTGRES_HOST="myhost"
+POSTGRES_PORT=5432
+
+# database url
+SQLALCHEMY_DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+
+# origins allowed access to the backend
+ALLOWED_ORIGINS=["https://${DOMAIN}"]
+
+# for jwt
+SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+ALGORITHM="HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+

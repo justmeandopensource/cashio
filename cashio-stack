@@ -1,0 +1,227 @@
+#!/usr/bin/env bash
+
+# Define paths
+# Change below path to wherever you have checkout the cashio repo
+CASHIO_DIR="$HOME/cashio"
+
+CASHIO_DB_BACKUP_DIR="$CASHIO_DIR/backup"
+CASHIO_DB_BACKUP_FILE="cashio-db.backup"
+
+# Database variables
+POSTGRES_USER="cashio"
+POSTGRES_PASSWORD="cashio"
+POSTGRES_DB="cashio"
+POSTGRES_HOST="localhost"
+
+# Function to build services
+build_services() {
+    local service=$1
+
+    if [[ -z "$service" ]]; then
+        echo "Building all services..."
+        cd "$CASHIO_DIR" && docker-compose build
+    else
+        echo "Building $service..."
+        cd "$CASHIO_DIR" && docker-compose build "$service"
+    fi
+}
+
+# Function to start services
+start_services() {
+    local service=$1
+
+    if [[ -z "$service" ]]; then
+        echo "Starting all services..."
+        cd "$CASHIO_DIR" && docker-compose up -d
+    else
+        echo "Starting $service..."
+        cd "$CASHIO_DIR" && docker-compose up -d "$service"
+    fi
+}
+
+# Function to restart services
+restart_services() {
+    local service=$1
+
+    if [[ -z "$service" ]]; then
+        echo "Restarting all services..."
+        cd "$CASHIO_DIR" && docker-compose up -d --force-recreate
+    else
+        echo "Restarting $service..."
+        cd "$CASHIO_DIR" && docker-compose up -d --force-recreate "$service"
+    fi
+}
+
+# Function to stop services
+stop_services() {
+    local service=$1
+
+    if [[ -z "$service" ]]; then
+        echo "Stopping all services..."
+        cd "$CASHIO_DIR" && docker-compose stop
+    else
+        echo "Stopping $service..."
+        cd "$CASHIO_DIR" && docker-compose stop "$service"
+    fi
+}
+
+# Function to stop and remove services
+stop_remove_services() {
+    local service=$1
+
+    if [[ -z "$service" ]]; then
+        echo "Stopping & removing all services..."
+        cd "$CASHIO_DIR" && docker-compose down
+    else
+        echo "Stopping & removing $service..."
+        cd "$CASHIO_DIR" && docker-compose rm -sf "$service"
+    fi
+}
+
+backup() {
+    echo "Backing up $POSTGRES_DB database"
+    DKR_OPTS=(
+        "--rm"
+        "-v" "$CASHIO_DB_BACKUP_DIR:/backup"
+        "--network" "host"
+        "--user" "$(id -u):$(id -g)"
+        "-e" "PGPASSWORD=$POSTGRES_PASSWORD"
+    )
+    DKR_CMD=(
+        "pg_dump"
+        "-h" "$POSTGRES_HOST"
+        "-U" "$POSTGRES_USER"
+        "-F" "c"
+        "-f" "/backup/$CASHIO_DB_BACKUP_FILE"
+        "$POSTGRES_DB"
+    )
+    cd "$CASHIO_DIR" && docker run "${DKR_OPTS[@]}" postgres:latest "${DKR_CMD[@]}"
+}
+
+drop_db() {
+    echo "Dropping $POSTGRES_DB database..."
+    DKR_OPTS=(
+        "--rm"
+        "--network" "host"
+        "-e" "PGPASSWORD=$POSTGRES_PASSWORD"
+    )
+    DKR_CMD=(
+        "psql"
+        "-h" "$POSTGRES_HOST"
+        "-U" "$POSTGRES_USER"
+        "-c" "DROP DATABASE IF EXISTS $POSTGRES_DB WITH (FORCE);"
+        "postgres"
+    )
+    docker run "${DKR_OPTS[@]}" postgres:latest "${DKR_CMD[@]}"
+}
+
+create_db() {
+    echo "Creating $POSTGRES_DB database..."
+    DKR_OPTS=(
+        "--rm"
+        "--network" "host"
+        "-e" "PGPASSWORD=$POSTGRES_PASSWORD"
+    )
+    DKR_CMD=(
+        "psql"
+        "-h" "$POSTGRES_HOST"
+        "-U" "$POSTGRES_USER"
+        "-c" "CREATE DATABASE $POSTGRES_DB;"
+        "postgres"
+    )
+    docker run "${DKR_OPTS[@]}" postgres:latest "${DKR_CMD[@]}"
+}
+
+reset_db() {
+    drop_db
+    create_db
+}
+
+restore() {
+    # Restore the database from the backup file
+    echo "Restoring $POSTGRES_DB database from backup..."
+    DKR_OPTS_RESTORE=(
+        "--rm"
+        "-v" "$CASHIO_DB_BACKUP_DIR:/backup"
+        "--network" "host"
+        "--user" "$(id -u):$(id -g)"
+        "-e" "PGPASSWORD=$POSTGRES_PASSWORD"
+    )
+    DKR_CMD_RESTORE=(
+        "pg_restore"
+        "-h" "$POSTGRES_HOST"
+        "-U" "$POSTGRES_USER"
+        "-d" "$POSTGRES_DB"
+        "-F" "c"
+        "/backup/$CASHIO_DB_BACKUP_FILE"
+    )
+    docker run "${DKR_OPTS_RESTORE[@]}" postgres:latest "${DKR_CMD_RESTORE[@]}"
+}
+
+reset_and_restore() {
+    reset_db
+    restore
+    echo "$POSTGRES_DB Database has been reset and restored from backup."
+}
+
+# Function to show status
+show_status() {
+    cd "$CASHIO_DIR" && docker compose ps
+}
+
+# Function to show help
+show_help() {
+    echo "Usage: $0 [command] [service]"
+    echo "Commands:"
+    echo "  start [service]   - Start all services or specified service"
+    echo "  stop [service]    - Stop all services or specified service"
+    echo "  restart [service] - Restart all services or specified service"
+    echo "  down [service]    - Stop and remove all services or specified service"
+    echo "  build [service]   - Build all services or specified service"
+    echo "  backup           - Backup the database"
+    echo "  restore          - Restore the database from backup"
+    echo "  status           - Show service status"
+    echo "  help             - Show this help message"
+    echo ""
+    echo "Available services: cashio-api, cashio-ui, cashio-db"
+}
+
+# Main logic based on command argument
+case "$1" in
+    start)
+        start_services "$2"
+        ;;
+    stop)
+        stop_services "$2"
+        ;;
+    restart)
+        restart_services "$2"
+        ;;
+    down)
+        stop_remove_services "$2"
+        ;;
+    build)
+        if [[ -z "$2" ]]; then
+            build_services
+        else
+            build_services "$2"
+        fi
+        ;;
+    status)
+        show_status
+        ;;
+    backup)
+        backup
+        ;;
+    restore)
+        reset_and_restore
+        ;;
+    help)
+        show_help
+        ;;
+    *)
+        echo "Unknown command: $1"
+        show_help
+        exit 1
+        ;;
+esac

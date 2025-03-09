@@ -1,0 +1,47 @@
+services:
+
+  cashio-db:
+    image: postgres:latest
+    container_name: cashio-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  cashio-api:
+    build:
+      context: ./cashio-api
+      dockerfile: Dockerfile
+    container_name: cashio-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - .env:/app/.env
+      - ./certs:/app/certs
+    depends_on:
+      - cashio-db
+    restart: unless-stopped
+
+  cashio-ui:
+    build:
+      context: ./cashio-ui
+      dockerfile: Dockerfile
+    container_name: cashio-ui
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./certs:/etc/nginx/certs
+    depends_on:
+      - cashio-api
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
