@@ -31,7 +31,7 @@ Before you begin, ensure you have the following installed:
 
 1. Clone the repository with submodules:
    ```bash
-   git clone --recurse-submodules https://github.com/yourusername/cashio.git
+   git clone --recurse-submodules https://github.com/justmeandopensource/cashio.git
    cd cashio
    ```
 
