@@ -15,6 +15,7 @@ A personal finance web application for tracking incomes, expenses and managing a
 ## Project Overview
 
 Cashio is composed of two main components:
+
 - **cashio-api**: Backend service built with Python FastAPI
 - **cashio-ui**: Frontend application built with React, Chakra-UI, and TanStack Query
 
@@ -23,6 +24,7 @@ Both components are included as submodules in this repository.
 ## Prerequisites
 
 Before you begin, ensure you have the following installed:
+
 - Git
 - Docker and Docker Compose
 - OpenSSL (for certificate generation)
@@ -30,6 +32,7 @@ Before you begin, ensure you have the following installed:
 ## Getting Started
 
 1. Clone the repository with submodules:
+
    ```bash
    git clone --recurse-submodules https://github.com/justmeandopensource/cashio.git
    cd cashio
@@ -57,6 +60,7 @@ openssl req -x509 -new -key certs/ca-key.pem -days 3650 -out certs/ca-cert.pem -
 ```
 
 This creates two files:
+
 - `certs/ca-key.pem`: Root CA's private key (keep this secure!)
 - `certs/ca-cert.pem`: Root CA's public certificate (will be used to sign server certificates)
 
@@ -68,17 +72,41 @@ Now, create a certificate for server that will be signed by root CA:
 # Generate a private key for the server
 openssl genpkey -algorithm RSA -out certs/key.pem
 
+# Create a configuration file for certificate with SAN extension
+cat > certs/server.cnf << EOF
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+prompt = no
+
+[req_distinguished_name]
+CN = \${DOMAIN}
+
+[v3_req]
+keyUsage = keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = \${DOMAIN}
+EOF
+
+# Replace ${DOMAIN} placeholder with your actual domain
+sed -i "s/\${DOMAIN}/${DOMAIN}/g" certs/server.cnf
+# Replace ${DOMAIN} with the value you set for DOMAIN in your .env file, e.g., "cashio.local"
+
 # Create a certificate signing request (CSR)
-openssl req -new -key certs/key.pem -out certs/server.csr -subj "/CN=${DOMAIN}"
+openssl req -new -key certs/key.pem -out certs/server.csr -config certs/server.cnf
 # Replace ${DOMAIN} with the value you set for DOMAIN in your .env file, e.g., "cashio.local"
 
 # Sign the CSR with the CA certificate (valid for 1 year)
-openssl x509 -req -in certs/server.csr -CA certs/ca-cert.pem -CAkey certs/ca-key.pem -CAcreateserial -out certs/cert.pem -days 365
+openssl x509 -req -in certs/server.csr -CA certs/ca-cert.pem -CAkey certs/ca-key.pem -CAcreateserial -out certs/cert.pem -days 365 -extensions v3_req -extfile certs/server.cnf
 ```
 
 Note: Make sure the domain name in your certificate matches the DOMAIN value you set in your .env file.
 
 The process creates these files:
+
 - `certs/key.pem`: Server's private key
 - `certs/server.csr`: Certificate signing request (temporary file)
 - `certs/cert.pem`: Signed server certificate
@@ -95,6 +123,7 @@ Cashio requires environment variables to be configured before running the applic
 ### Backend Configuration
 
 1. Copy the template environment file to create your own:
+
    ```bash
    cp dotenv-template .env
    ```
@@ -105,6 +134,7 @@ Cashio requires environment variables to be configured before running the applic
 ### Frontend Configuration
 
 1. Copy the frontend template environment file:
+
    ```bash
    cp cashio-ui/dotenv-template cashio-ui/.env
    ```
@@ -120,6 +150,7 @@ docker-compose up -d
 ```
 
 This will start all required services:
+
 - PostgreSQL database (cashio-db)
 - FastAPI backend (cashio-api)
 - React frontend with Nginx (cashio-ui)
@@ -127,11 +158,13 @@ This will start all required services:
 You can access the application by navigating to `https://${DOMAIN}` in your browser, where ${DOMAIN} is the value you configured in your .env file. Make sure your `/etc/hosts` file includes an entry for your domain (e.g., `cashio.local`) pointing to `127.0.0.1`.
 
 Example hosts file entry:
+
 ```
 127.0.0.1   cashio.local
 ```
 
 To stop the application:
+
 ```bash
 docker-compose down
 ```
@@ -143,6 +176,7 @@ The `cashio-stack` script provides a simplified interface for managing the Cashi
 ### Setup
 
 1. Make sure the script is executable:
+
    ```bash
    chmod +x cashio-stack
    ```
@@ -165,27 +199,35 @@ The script provides the following commands:
 #### Service Management
 
 - **Start services**:
+
   ```bash
   ./cashio-stack start [service]
   ```
+
   Starts all services or a specific service (cashio-api, cashio-ui, or cashio-db).
 
 - **Stop services**:
+
   ```bash
   ./cashio-stack stop [service]
   ```
+
   Stops all services or a specific service.
 
 - **Restart services**:
+
   ```bash
   ./cashio-stack restart [service]
   ```
+
   Restarts all services or a specific service.
 
 - **Remove services**:
+
   ```bash
   ./cashio-stack down [service]
   ```
+
   Stops and removes all services or a specific service.
 
 - **Build services**:
@@ -197,9 +239,11 @@ The script provides the following commands:
 #### Database Operations
 
 - **Backup database**:
+
   ```bash
   ./cashio-stack backup
   ```
+
   Creates a backup of the PostgreSQL database in the `$CASHIO_DIR/backup` directory.
 
 - **Restore database**:
@@ -211,9 +255,11 @@ The script provides the following commands:
 #### Status and Help
 
 - **Show status**:
+
   ```bash
   ./cashio-stack status
   ```
+
   Displays the current status of all services.
 
 - **Show help**:
@@ -225,26 +271,31 @@ The script provides the following commands:
 ### Examples
 
 Start the entire application:
+
 ```bash
 ./cashio-stack start
 ```
 
 Restart only the API service:
+
 ```bash
 ./cashio-stack restart cashio-api
 ```
 
 Build the UI service:
+
 ```bash
 ./cashio-stack build cashio-ui
 ```
 
 Backup the database before making changes:
+
 ```bash
 ./cashio-stack backup
 ```
 
 Check the status of all services:
+
 ```bash
 ./cashio-stack status
 ```
