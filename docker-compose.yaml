@@ -1,5 +1,4 @@
 services:
-
   cashio-db:
     image: postgres:latest
     container_name: cashio-db
@@ -44,4 +43,3 @@ services:
 
 volumes:
   postgres_data:
-
