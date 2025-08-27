@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # Define paths
 # Change below path to wherever you have checkout the cashio repo

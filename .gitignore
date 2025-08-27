@@ -1,3 +1,4 @@
 backup
 certs
 .env
+.DS_Store
