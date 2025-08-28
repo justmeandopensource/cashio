@@ -381,6 +381,35 @@ release() {
     echo "   git push origin v$UI_VERSION"
 }
 
+# Function to update submodules to latest tags
+update_submodules() {
+    print_header "Updating Submodules to Latest Tags"
+
+    # Update cashio-api
+    print_warning "Updating cashio-api submodule..."
+    cd "$CASHIO_API_DIR"
+    git fetch --tags
+    LATEST_API_TAG=$(git tag -l --sort=-v:refname | head -n 1)
+    git checkout "$LATEST_API_TAG"
+    print_success "cashio-api updated to tag $LATEST_API_TAG"
+    cd "$CASHIO_DIR"
+
+    # Update cashio-ui
+    print_warning "Updating cashio-ui submodule..."
+    cd "$CASHIO_UI_DIR"
+    git fetch --tags
+    LATEST_UI_TAG=$(git tag -l --sort=-v:refname | head -n 1)
+    git checkout "$LATEST_UI_TAG"
+    print_success "cashio-ui updated to tag $LATEST_UI_TAG"
+    cd "$CASHIO_DIR"
+
+    # Commit the changes
+    print_warning "Committing submodule updates..."
+    git add cashio-api cashio-ui
+    git commit -m "chore: update submodules to latest tags"
+    print_success "Submodule updates committed"
+}
+
 # Function to show status
 status() {
     print_header "Development Environment Status"
@@ -424,6 +453,7 @@ show_help() {
     echo "  cleanup-test      Clean up after integration test"
     echo "  restore-database  Restore database from backup"
     echo "  release           Run semantic release locally (creates versions and tags)"
+    echo "  update-submodules Update submodules to their latest tags"
     echo "  status            Show status of services and submodules"
     echo "  help              Show this help message"
     echo ""
@@ -433,6 +463,7 @@ show_help() {
     echo "  3. Use 'start-local' for day-to-day development"
     echo "  4. Use 'test-integration' before releasing"
     echo "  5. Use 'release' to create new versions (then manually push)"
+    echo "  6. Use 'update-submodules' to update backend and frontend to latest tags (then manually push)"
 }
 
 # Main script logic
@@ -460,6 +491,9 @@ case "${1:-}" in
         ;;
     release)
         release
+        ;;
+    update-submodules)
+        update_submodules
         ;;
     status)
         status
