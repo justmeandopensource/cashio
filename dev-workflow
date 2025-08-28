@@ -385,6 +385,9 @@ release() {
 update_submodules() {
     print_header "Updating Submodules to Latest Tags"
 
+    # Disable detached HEAD warning
+    git config advice.detachedHead false
+
     # Update cashio-api
     print_warning "Updating cashio-api submodule..."
     cd "$CASHIO_DIR"/cashio-api
