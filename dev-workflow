@@ -41,7 +41,7 @@ print_error() {
 # Function to setup development environment
 setup_dev() {
     print_header "Setting up Development Environment"
-    
+
     # Copy environment files if they don't exist
     if [ ! -f "$CASHIO_DIR/.env" ]; then
         cp "$CASHIO_DIR/dotenv-template-dev" "$CASHIO_DIR/.env"
@@ -49,33 +49,33 @@ setup_dev() {
     else
         print_warning ".env already exists, skipping"
     fi
-    
+
     if [ ! -f "$CASHIO_API_DIR/.env" ]; then
         cp "$CASHIO_DIR/dotenv-template-dev" "$CASHIO_API_DIR/.env"
         print_success "Created cashio-api/.env from dotenv-template-dev"
     else
         print_warning "cashio-api/.env already exists, skipping"
     fi
-    
+
     if [ ! -f "$CASHIO_UI_DIR/.env" ]; then
         cp "$CASHIO_UI_DIR/dotenv-template-dev" "$CASHIO_UI_DIR/.env"
         print_success "Created cashio-ui/.env from dotenv-template-dev"
     else
         print_warning "cashio-ui/.env already exists, skipping"
     fi
-    
+
     # Setup Python virtual environment for API
-    print_header "Setting up Python Virtual Environment"
     if [ ! -d "$CASHIO_API_DIR/.venv" ]; then
         cd "$CASHIO_API_DIR"
         python3 -m venv .venv
         print_success "Created Python virtual environment in $CASHIO_API_DIR/.venv"
-        
+
         # Install Python dependencies
         print_warning "Installing Python dependencies..."
         source .venv/bin/activate
         pip install --upgrade pip
         pip install -r requirements.txt
+        deactivate
         print_success "Python dependencies installed"
     else
         print_warning "Python virtual environment already exists, checking dependencies..."
@@ -90,8 +90,9 @@ setup_dev() {
         else
             print_success "Python dependencies already installed"
         fi
+        deactivate
     fi
-    
+
     # Setup Node.js dependencies for UI
     print_header "Setting up Node.js Dependencies"
     if [ ! -d "$CASHIO_UI_DIR/node_modules" ]; then
@@ -102,33 +103,33 @@ setup_dev() {
     else
         print_success "Node.js dependencies already installed"
     fi
-    
+
     # Ensure certificates exist
     if [ ! -d "$CASHIO_DIR/certs" ]; then
         mkdir -p "$CASHIO_DIR/certs"
         print_warning "Certificates directory created. You may need to generate SSL certificates."
         print_warning "Run: ./dev-workflow setup-certs"
     fi
-    
+
     print_success "Development environment setup complete!"
 }
 
 # Function to setup SSL certificates for development
 setup_certs() {
     print_header "Setting up SSL Certificates"
-    
+
     cd "$CASHIO_DIR"
-    
+
     # Check if certificates already exist
     if [ -f "certs/ca-cert.pem" ] && [ -f "certs/ca-key.pem" ] && [ -f "certs/cert.pem" ] && [ -f "certs/key.pem" ]; then
         print_success "SSL certificates already exist, skipping generation"
         print_warning "To regenerate certificates, remove the certs directory first: rm -rf certs"
         return 0
     fi
-    
+
     # Ensure certs directory exists
     mkdir -p certs
-    
+
     # Generate Root CA Certificate
     if [ ! -f "certs/ca-cert.pem" ] || [ ! -f "certs/ca-key.pem" ]; then
         print_warning "Generating Root CA Certificate..."
@@ -138,7 +139,7 @@ setup_certs() {
     else
         print_success "Root CA Certificate already exists"
     fi
-    
+
     # Generate Server Certificate
     if [ ! -f "certs/key.pem" ]; then
         print_warning "Generating Server private key..."
@@ -147,7 +148,7 @@ setup_certs() {
     else
         print_success "Server private key already exists"
     fi
-    
+
     # Create server config
     cat > certs/server.cnf << EOF
 [req]
@@ -169,11 +170,11 @@ DNS.1 = cashio.local
 DNS.2 = localhost
 IP.1 = 127.0.0.1
 EOF
-    
+
     # Create and sign certificate
     openssl req -new -key certs/key.pem -out certs/server.csr -config certs/server.cnf
     openssl x509 -req -in certs/server.csr -CA certs/ca-cert.pem -CAkey certs/ca-key.pem -CAcreateserial -out certs/cert.pem -days 365 -extensions v3_req -extfile certs/server.cnf
-    
+
     print_success "SSL certificates generated!"
     print_warning "Don't forget to add certs/ca-cert.pem to your browser's trusted certificates"
     print_warning "Add '127.0.0.1 cashio.local' to your /etc/hosts file"
@@ -182,20 +183,20 @@ EOF
 # Function to run local development servers (without Docker)
 start_local() {
     print_header "Starting Local Development Servers"
-    
+
     # Check if virtual environment exists
     if [ ! -d "$CASHIO_API_DIR/.venv" ]; then
         print_error "Python virtual environment not found!"
         print_warning "Please run './dev-workflow setup-dev' first to set up the environment"
         exit 1
     fi
-    
+
     # Start database only via Docker
     cd "$CASHIO_DIR"
     docker compose -f docker-compose.yaml up -d cashio-db
-    
+
     print_success "Database started via Docker"
-    
+
     # Start API locally with virtual environment
     print_header "Starting API Server (local)"
     cd "$CASHIO_API_DIR"
@@ -205,7 +206,7 @@ start_local() {
     API_PID=$!
     echo $API_PID > /tmp/cashio-api.pid
     print_success "API server started (PID: $API_PID)"
-    
+
     # Start UI locally
     print_header "Starting UI Server (local)"
     cd "$CASHIO_UI_DIR"
@@ -213,7 +214,7 @@ start_local() {
     UI_PID=$!
     echo $UI_PID > /tmp/cashio-ui.pid
     print_success "UI server started (PID: $UI_PID)"
-    
+
     print_success "Local development servers started!"
     echo -e "${BLUE}Frontend:${NC} http://localhost:3000"
     echo -e "${BLUE}API:${NC} http://localhost:8000"
@@ -223,21 +224,21 @@ start_local() {
 # Function to stop local development servers
 stop_local() {
     print_header "Stopping Local Development Servers"
-    
+
     # Stop API server
     if [ -f /tmp/cashio-api.pid ]; then
         API_PID=$(cat /tmp/cashio-api.pid)
         kill $API_PID 2>/dev/null && print_success "API server stopped" || print_warning "API server already stopped"
         rm -f /tmp/cashio-api.pid
     fi
-    
+
     # Stop UI server
     if [ -f /tmp/cashio-ui.pid ]; then
         UI_PID=$(cat /tmp/cashio-ui.pid)
         kill $UI_PID 2>/dev/null && print_success "UI server stopped" || print_warning "UI server already stopped"
         rm -f /tmp/cashio-ui.pid
     fi
-    
+
     # Stop database
     cd "$CASHIO_DIR"
     docker compose -f docker-compose.yaml stop cashio-db
@@ -247,22 +248,22 @@ stop_local() {
 # Function to test the full integration
 test_integration() {
     print_header "Testing Integration"
-    
+
     cd "$CASHIO_DIR"
-    
+
     print_warning "Make sure to manually update submodules to desired commits/tags before running this!"
     echo ""
-    
+
     # Show current submodule status
     print_header "Current Submodule Status"
     git submodule status
     echo ""
-    
+
     # Build and test with production-like setup
     print_warning "Building Docker containers with current submodule code..."
     docker compose -f docker-compose.yaml build
     docker compose -f docker-compose.yaml up -d
-    
+
     print_success "Integration test environment started!"
     echo -e "${BLUE}Test at:${NC} https://cashio.local"
     print_warning "This is using whatever code is currently in the submodules"
@@ -272,10 +273,10 @@ test_integration() {
 # Function to cleanup after integration test
 cleanup_test() {
     print_header "Cleaning up Integration Test"
-    
+
     cd "$CASHIO_DIR"
     docker compose -f docker-compose.yaml down
-    
+
     print_success "Integration test environment cleaned up!"
 }
 
@@ -341,19 +342,21 @@ restore_database() {
 # Function to create releases locally
 release() {
     print_header "Creating Local Releases"
-    
+
     print_warning "This function creates local releases with semantic versioning."
     print_warning "Remember to manually push commits and tags to remote repositories!"
     echo ""
-    
+
     # Run semantic release for API (creates local commit and tag)
     cd "$CASHIO_API_DIR"
     print_header "Creating API Release"
+    source .venv/bin/activate
     python build.py
+    deactivate
     API_VERSION=$(python -c "import app.version; print(app.version.__version__)")
     API_COMMIT=$(git rev-parse HEAD)
     print_success "API released with version: $API_VERSION (commit: $API_COMMIT)"
-    
+
     # Run semantic release for UI (creates local commit and tag)
     cd "$CASHIO_UI_DIR"
     print_header "Creating UI Release"
@@ -361,7 +364,7 @@ release() {
     UI_VERSION=$(node -p "require('./package.json').version")
     UI_COMMIT=$(git rev-parse HEAD)
     print_success "UI released with version: $UI_VERSION (commit: $UI_COMMIT)"
-    
+
     print_header "Release Summary"
     echo -e "${GREEN}✓ API v$API_VERSION created locally${NC}"
     echo -e "${GREEN}✓ UI v$UI_VERSION created locally${NC}"
@@ -381,16 +384,16 @@ release() {
 # Function to show status
 status() {
     print_header "Development Environment Status"
-    
+
     # Check Docker containers
     cd "$CASHIO_DIR"
     echo -e "${BLUE}Docker Services:${NC}"
     docker compose ps
-    
+
     echo ""
     echo -e "${BLUE}Submodule Status:${NC}"
     git submodule status
-    
+
     echo ""
     echo -e "${BLUE}Local Development Servers:${NC}"
     if [ -f /tmp/cashio-api.pid ] && kill -0 $(cat /tmp/cashio-api.pid) 2>/dev/null; then
@@ -398,7 +401,7 @@ status() {
     else
         echo "API server: stopped"
     fi
-    
+
     if [ -f /tmp/cashio-ui.pid ] && kill -0 $(cat /tmp/cashio-ui.pid) 2>/dev/null; then
         print_success "UI server running (PID: $(cat /tmp/cashio-ui.pid))"
     else
