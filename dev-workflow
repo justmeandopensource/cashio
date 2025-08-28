@@ -387,20 +387,28 @@ update_submodules() {
 
     # Update cashio-api
     print_warning "Updating cashio-api submodule..."
-    cd "$CASHIO_API_DIR"
+    cd "$CASHIO_DIR"/cashio-api
     git fetch --tags
     LATEST_API_TAG=$(git tag -l --sort=-v:refname | head -n 1)
-    git checkout "$LATEST_API_TAG"
-    print_success "cashio-api updated to tag $LATEST_API_TAG"
+    if [ -z "$LATEST_API_TAG" ]; then
+        print_error "No tags found for cashio-api. Skipping update."
+    else
+        git checkout "$LATEST_API_TAG"
+        print_success "cashio-api updated to tag $LATEST_API_TAG"
+    fi
     cd "$CASHIO_DIR"
 
     # Update cashio-ui
     print_warning "Updating cashio-ui submodule..."
-    cd "$CASHIO_UI_DIR"
+    cd "$CASHIO_DIR"/cashio-ui
     git fetch --tags
     LATEST_UI_TAG=$(git tag -l --sort=-v:refname | head -n 1)
-    git checkout "$LATEST_UI_TAG"
-    print_success "cashio-ui updated to tag $LATEST_UI_TAG"
+    if [ -z "$LATEST_UI_TAG" ]; then
+        print_error "No tags found for cashio-ui. Skipping update."
+    else
+        git checkout "$LATEST_UI_TAG"
+        print_success "cashio-ui updated to tag $LATEST_UI_TAG"
+    fi
     cd "$CASHIO_DIR"
 
     # Commit the changes
