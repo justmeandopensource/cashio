@@ -381,43 +381,20 @@ release() {
     echo -e "${GREEN}✓ UI v$UI_VERSION created and pushed to origin${NC}"
 }
 
-# Function to update submodules to latest tags
+# Function to update submodules to latest commits
 update_submodules() {
-    print_header "Updating Submodules to Latest Tags"
-
-    # Disable detached HEAD warning
-    git config advice.detachedHead false
-
-    # Update cashio-api
-    print_warning "Updating cashio-api submodule..."
-    cd "$CASHIO_DIR"/cashio-api
-    git fetch --tags
-    LATEST_API_TAG=$(git tag -l --sort=-v:refname | head -n 1)
-    if [ -z "$LATEST_API_TAG" ]; then
-        print_error "No tags found for cashio-api. Skipping update."
-    else
-        git checkout "$LATEST_API_TAG"
-        print_success "cashio-api updated to tag $LATEST_API_TAG"
-    fi
     cd "$CASHIO_DIR"
+    print_header "Updating Submodules to Latest Commits"
 
-    # Update cashio-ui
-    print_warning "Updating cashio-ui submodule..."
-    cd "$CASHIO_DIR"/cashio-ui
-    git fetch --tags
-    LATEST_UI_TAG=$(git tag -l --sort=-v:refname | head -n 1)
-    if [ -z "$LATEST_UI_TAG" ]; then
-        print_error "No tags found for cashio-ui. Skipping update."
-    else
-        git checkout "$LATEST_UI_TAG"
-        print_success "cashio-ui updated to tag $LATEST_UI_TAG"
-    fi
-    cd "$CASHIO_DIR"
+    # Update all submodules to the latest commit on their respective branches
+    git submodule update --remote
+
+    print_success "Submodules updated to latest commits"
 
     # Commit the changes
     print_warning "Committing submodule updates..."
     git add cashio-api cashio-ui
-    git commit -m "chore: update submodules to latest tags"
+    git commit -m "chore: update submodules to latest commits"
     print_success "Submodule updates committed"
 
     # Push the changes
@@ -469,7 +446,7 @@ show_help() {
     echo "  cleanup-test      Clean up after integration test"
     echo "  restore-database  Restore database from backup"
     echo "  release           Run semantic release locally (creates versions and tags)"
-    echo "  update-submodules Update submodules to their latest tags"
+    echo "  update-submodules Update submodules to their latest commits"
     echo "  status            Show status of services and submodules"
     echo "  help              Show this help message"
     echo ""
