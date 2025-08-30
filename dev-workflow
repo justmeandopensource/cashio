@@ -341,10 +341,9 @@ restore_database() {
 
 # Function to create releases locally
 release() {
-    print_header "Creating Local Releases"
+    print_header "Creating and Pushing Local Releases"
 
-    print_warning "This function creates local releases with semantic versioning."
-    print_warning "Remember to manually push commits and tags to remote repositories!"
+    print_warning "This function creates local releases with semantic versioning and pushes them to the remote 'origin'."
     echo ""
 
     # Run semantic release for API (creates local commit and tag)
@@ -357,6 +356,12 @@ release() {
     API_COMMIT=$(git rev-parse HEAD)
     print_success "API released with version: $API_VERSION (commit: $API_COMMIT)"
 
+    # Push API changes
+    print_header "Pushing API Release to origin"
+    git push origin main
+    git push origin "v$API_VERSION"
+    print_success "API v$API_VERSION pushed to origin"
+
     # Run semantic release for UI (creates local commit and tag)
     cd "$CASHIO_UI_DIR"
     print_header "Creating UI Release"
@@ -365,20 +370,15 @@ release() {
     UI_COMMIT=$(git rev-parse HEAD)
     print_success "UI released with version: $UI_VERSION (commit: $UI_COMMIT)"
 
+    # Push UI changes
+    print_header "Pushing UI Release to origin"
+    git push origin main
+    git push origin "v$UI_VERSION"
+    print_success "UI v$UI_VERSION pushed to origin"
+
     print_header "Release Summary"
-    echo -e "${GREEN}✓ API v$API_VERSION created locally${NC}"
-    echo -e "${GREEN}✓ UI v$UI_VERSION created locally${NC}"
-    echo ""
-    print_warning "Next steps (manual):"
-    echo -e "${YELLOW}1. Push API repository:${NC}"
-    echo "   cd $CASHIO_API_DIR"
-    echo "   git push origin main"
-    echo "   git push origin v$API_VERSION"
-    echo ""
-    echo -e "${YELLOW}2. Push UI repository:${NC}"
-    echo "   cd $CASHIO_UI_DIR"
-    echo "   git push origin main"
-    echo "   git push origin v$UI_VERSION"
+    echo -e "${GREEN}✓ API v$API_VERSION created and pushed to origin${NC}"
+    echo -e "${GREEN}✓ UI v$UI_VERSION created and pushed to origin${NC}"
 }
 
 # Function to update submodules to latest tags
@@ -419,6 +419,11 @@ update_submodules() {
     git add cashio-api cashio-ui
     git commit -m "chore: update submodules to latest tags"
     print_success "Submodule updates committed"
+
+    # Push the changes
+    print_header "Pushing submodule updates to origin"
+    git push origin main
+    print_success "Submodule updates pushed to origin"
 }
 
 # Function to show status
@@ -474,7 +479,7 @@ show_help() {
     echo "  3. Use 'start-local' for day-to-day development"
     echo "  4. Use 'test-integration' before releasing"
     echo "  5. Use 'release' to create new versions (then manually push)"
-    echo "  6. Use 'update-submodules' to update backend and frontend to latest tags (then manually push)"
+    echo "  6. Use 'update-submodules' to update backend and frontend to latest tags (and push to remote)"
 }
 
 # Main script logic
