@@ -7,14 +7,10 @@ POSTGRES_DB="cashio"
 POSTGRES_HOST="localhost"
 POSTGRES_PORT=5432
 
-# database url
-SQLALCHEMY_DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
-
 # origins allowed access to the backend
-ALLOWED_ORIGINS=["https://${DOMAIN}:3000", "http://${DOMAIN}:3000", "http://localhost:3000"]
+ALLOWED_ORIGINS=["https://cashio.local", "https://cashio.local:3000", "http://cashio.local:3000", "http://localhost:3000"]
 
 # for jwt
 SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 ALGORITHM="HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES=30
-

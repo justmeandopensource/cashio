@@ -16,6 +16,8 @@ services:
       context: ./cashio-api
       dockerfile: Dockerfile
     container_name: cashio-api
+    environment:
+      - POSTGRES_HOST=cashio-db
     ports:
       - "8000:8000"
     volumes:
