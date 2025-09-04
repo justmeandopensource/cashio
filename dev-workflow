@@ -64,6 +64,15 @@ setup_dev() {
         print_warning "cashio-ui/.env already exists, skipping"
     fi
 
+    # Copy environment file for cashio-ui submodule if it doesn't exist
+    CASHIO_SUBMODULE_UI_DIR="$CASHIO_DIR/cashio-ui"
+    if [ ! -f "$CASHIO_SUBMODULE_UI_DIR/.env" ]; then
+        cp "$CASHIO_SUBMODULE_UI_DIR/dotenv-template-dev" "$CASHIO_SUBMODULE_UI_DIR/.env"
+        print_success "Created cashio/cashio-ui/.env from dotenv-template-dev (for submodule)"
+    else
+        print_warning "cashio/cashio-ui/.env already exists, skipping (for submodule)"
+    fi
+
     # Setup Python virtual environment for API
     if [ ! -d "$CASHIO_API_DIR/.venv" ]; then
         cd "$CASHIO_API_DIR"
