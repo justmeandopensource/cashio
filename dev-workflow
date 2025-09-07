@@ -7,8 +7,8 @@ set -e
 
 # Configuration
 CASHIO_DIR="/Users/venkatn/Dev/repos/jmos/cashio"
-CASHIO_API_DIR="/Users/venkatn/Dev/repos/jmos/cashio-api"
-CASHIO_UI_DIR="/Users/venkatn/Dev/repos/jmos/cashio-ui"
+CASHIO_API_DIR="/Users/venkatn/Dev/repos/jmos/cashio-dev/cashio-api"
+CASHIO_UI_DIR="/Users/venkatn/Dev/repos/jmos/cashio-dev/cashio-ui"
 CASHIO_DB_BACKUP_DIR="$CASHIO_DIR/backup"
 CASHIO_DB_BACKUP_FILE="cashio-db.backup"
 
