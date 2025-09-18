@@ -18,11 +18,13 @@ services:
     container_name: cashio-api
     environment:
       - POSTGRES_HOST=cashio-db
+      - BACKUP_DIR=/app/backups
     ports:
       - "8000:8000"
     volumes:
       - .env:/app/.env
       - ./certs:/app/certs
+      - backups_data:/app/backups
     depends_on:
       - cashio-db
     restart: unless-stopped
@@ -45,3 +47,4 @@ services:
 
 volumes:
   postgres_data:
+  backups_data:
