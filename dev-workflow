@@ -200,6 +200,11 @@ start_local() {
         exit 1
     fi
 
+    # Clear log files
+    > /tmp/cashio-api.log
+    > /tmp/cashio-ui.log
+    print_success "Log files cleared: /tmp/cashio-api.log, /tmp/cashio-ui.log"
+
     # Start database only via Docker
     cd "$CASHIO_DIR"
     docker compose -f docker-compose.yaml up -d cashio-db
@@ -209,25 +214,27 @@ start_local() {
     # Start API locally with virtual environment
     print_header "Starting API Server (local)"
     cd "$CASHIO_API_DIR"
-    # Activate virtual environment and start uvicorn in background
+    # Activate virtual environment and start uvicorn in background with nohup and logging
     source .venv/bin/activate
-    python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
+    nohup python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 > /tmp/cashio-api.log 2>&1 &
     API_PID=$!
     echo $API_PID > /tmp/cashio-api.pid
-    print_success "API server started (PID: $API_PID)"
+    print_success "API server started (PID: $API_PID, logs: /tmp/cashio-api.log)"
 
     # Start UI locally
     print_header "Starting UI Server (local)"
     cd "$CASHIO_UI_DIR"
-    npm run dev -- --port 3000 &
+    nohup npm run dev -- --port 3000 > /tmp/cashio-ui.log 2>&1 &
     UI_PID=$!
     echo $UI_PID > /tmp/cashio-ui.pid
-    print_success "UI server started (PID: $UI_PID)"
+    print_success "UI server started (PID: $UI_PID, logs: /tmp/cashio-ui.log)"
 
     print_success "Local development servers started!"
     echo -e "${BLUE}Frontend:${NC} http://localhost:3000"
     echo -e "${BLUE}API:${NC} http://localhost:8000"
     echo -e "${BLUE}Database:${NC} localhost:5432"
+    echo -e "${BLUE}API Logs:${NC} tail -f /tmp/cashio-api.log"
+    echo -e "${BLUE}UI Logs:${NC} tail -f /tmp/cashio-ui.log"
 }
 
 # Function to stop local development servers
