@@ -1,0 +1,31 @@
+from datetime import datetime
+
+from pydantic import BaseModel
+
+
+class LedgerCreate(BaseModel, str_strip_whitespace=True):
+    name: str
+    currency_symbol: str
+    description: str | None = None
+    notes: str | None = None
+    nav_service_type: str = "india"
+    api_key: str | None = None
+
+
+class Ledger(LedgerCreate, str_strip_whitespace=True):
+    user_id: int
+    ledger_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class LedgerUpdate(BaseModel, str_strip_whitespace=True):
+    name: str | None = None
+    currency_symbol: str | None = None
+    description: str | None = None
+    notes: str | None = None
+    nav_service_type: str | None = None
+    api_key: str | None = None

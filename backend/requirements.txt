@@ -1,0 +1,13 @@
+fastapi==0.115.8
+uvicorn[standard]==0.34.0
+SQLAlchemy==2.0.38
+psycopg2-binary==2.9.10
+python-jose==3.3.0
+passlib==1.7.4
+bcrypt==3.2.0
+python-multipart==0.0.20
+pydantic-settings==2.7.1
+httpx==0.28.1
+nest_asyncio==1.6.0
+numpy==1.26.4
+scipy==1.13.1

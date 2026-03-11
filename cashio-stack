@@ -1,0 +1,454 @@
+#!/bin/bash
+
+# cashio-stack: Robust Docker Compose helper for the cashio monorepo
+# Usage: ./cashio-stack <command> [service]
+
+set -e
+
+# Detect project root (directory containing this script)
+CASHIO_DIR="$(cd "$(dirname "$0")" && pwd)"
+COMPOSE_FILE="$CASHIO_DIR/docker-compose.yaml"
+
+AVAILABLE_SERVICES=(db backend frontend)
+
+function print_services() {
+    echo "  db        - PostgreSQL database"
+    echo "  backend   - FastAPI backend service"
+    echo "  frontend  - Frontend (Nginx/web)"
+    echo "  all (default)"
+}
+
+function build_services() {
+    local service=$1
+    cd "$CASHIO_DIR"
+    if [[ -z "$service" || "$service" == "all" ]]; then
+        echo "[+] Building all services..."
+        docker compose build
+    elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
+        echo "[+] Building service: $service"
+        docker compose build $service
+    else
+        echo "[!] Unknown service: $service"
+        print_services
+    fi
+}
+
+function start_services() {
+    local service=$1
+    cd "$CASHIO_DIR"
+    if [[ -z "$service" || "$service" == "all" ]]; then
+        echo "[+] Starting all services..."
+        docker compose up -d
+    elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
+        echo "[+] Starting service: $service"
+        docker compose up -d $service
+    else
+        echo "[!] Unknown service: $service"
+        print_services
+    fi
+}
+
+function stop_services() {
+    local service=$1
+    cd "$CASHIO_DIR"
+    if [[ -z "$service" || "$service" == "all" ]]; then
+        echo "[+] Stopping all services..."
+        docker compose stop
+    elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
+        echo "[+] Stopping service: $service"
+        docker compose stop $service
+    else
+        echo "[!] Unknown service: $service"
+        print_services
+    fi
+}
+
+function restart_services() {
+    local service=$1
+    cd "$CASHIO_DIR"
+    if [[ -z "$service" || "$service" == "all" ]]; then
+        echo "[+] Restarting all services..."
+        docker compose up -d --force-recreate
+    elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
+        echo "[+] Restarting service: $service"
+        docker compose up -d --force-recreate $service
+    else
+        echo "[!] Unknown service: $service"
+        print_services
+    fi
+}
+
+function down_services() {
+    local service=$1
+    cd "$CASHIO_DIR"
+    if [[ -z "$service" || "$service" == "all" ]]; then
+        echo "[+] Stopping and removing all services..."
+        docker compose down
+    elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
+        echo "[+] Removing service: $service (stops container, removes it from project)"
+        docker compose rm -sf $service
+    else
+        echo "[!] Unknown service: $service"
+        print_services
+    fi
+}
+
+function show_logs() {
+    local service=$1
+    cd "$CASHIO_DIR"
+    if [[ -z "$service" || "$service" == "all" ]]; then
+        echo "[+] Showing logs for all services... (Press Ctrl+C to exit)"
+        docker compose logs -f
+    elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
+        echo "[+] Showing logs for service: $service (Press Ctrl+C to exit)"
+        docker compose logs -f $service
+    else
+        echo "[!] Unknown service for logs: $service"
+        print_services
+    fi
+}
+
+function local_pid_on_port() {
+    # Returns the PID listening on a given port; works on Linux and macOS
+    lsof -ti "TCP:$1" -sTCP:LISTEN 2>/dev/null | head -1
+}
+
+function show_status() {
+    cd "$CASHIO_DIR"
+
+    echo "=== Containers ==="
+    docker compose ps
+    echo ""
+
+    echo "=== Local Dev Servers ==="
+    if ! command -v lsof &>/dev/null; then
+        echo "  [!] lsof not found — install it to see local dev server status"
+    else
+        local backend_pid frontend_pid
+        backend_pid=$(local_pid_on_port 8000)
+        frontend_pid=$(local_pid_on_port 3000)
+
+        if [[ -n "$backend_pid" ]]; then
+            echo "  backend   [LOCAL]  pid=$backend_pid  http://localhost:8000  (FastAPI/uvicorn, auto-reload)"
+        else
+            echo "  backend   [not running locally]"
+        fi
+
+        if [[ -n "$frontend_pid" ]]; then
+            echo "  frontend  [LOCAL]  pid=$frontend_pid  http://localhost:3000  (Vite dev server, HMR)"
+        else
+            echo "  frontend  [not running locally]"
+        fi
+    fi
+    echo ""
+}
+
+# --- Local dev helpers ---
+
+function container_is_running() {
+    local service=$1
+    cd "$CASHIO_DIR"
+    docker compose ps --status running --services 2>/dev/null | grep -q "^${service}$"
+}
+
+function stop_container_if_running() {
+    local service=$1
+    echo "[~] Checking if $service container is running..."
+    if container_is_running "$service"; then
+        echo "[+] Stopping $service container..."
+        cd "$CASHIO_DIR" && docker compose stop "$service"
+        echo "[✓] $service container stopped"
+    else
+        echo "[~] $service container is not running"
+    fi
+}
+
+function ensure_db_running() {
+    echo "[~] Checking if db container is running..."
+    if container_is_running db; then
+        echo "[✓] db container is already running"
+    else
+        echo "[+] Starting db container (required for backend)..."
+        cd "$CASHIO_DIR" && docker compose up -d db
+        echo "[~] Waiting for db to become ready..."
+        sleep 3
+        echo "[✓] db container started"
+    fi
+}
+
+function find_python() {
+    local venv_paths=(
+        "$CASHIO_DIR/backend/.venv"
+        "$CASHIO_DIR/backend/venv"
+        "$CASHIO_DIR/.venv"
+        "$CASHIO_DIR/venv"
+    )
+    for venv in "${venv_paths[@]}"; do
+        if [[ -f "$venv/bin/python" && -f "$venv/bin/pip" ]]; then
+            echo "$venv/bin/python"
+            return
+        fi
+    done
+    echo ""
+}
+
+function require_python() {
+    local python_cmd
+    python_cmd=$(find_python)
+    if [[ -z "$python_cmd" ]]; then
+        echo "[~] No valid virtual environment found. Creating one at backend/.venv..." >&2
+        if ! command -v python3 &>/dev/null; then
+            echo "[!] python3 not found. Install Python 3 and try again." >&2
+            exit 1
+        fi
+        # Remove any broken remnant from a previous failed attempt
+        rm -rf "$CASHIO_DIR/backend/.venv"
+        python3 -m venv "$CASHIO_DIR/backend/.venv"
+        if [[ ! -f "$CASHIO_DIR/backend/.venv/bin/python" || ! -f "$CASHIO_DIR/backend/.venv/bin/pip" ]]; then
+            echo "[!] Failed to create virtual environment." >&2
+            echo "[!] On Ubuntu/Debian, run: sudo apt install python3-venv" >&2
+            exit 1
+        fi
+        echo "[✓] Virtual environment created" >&2
+        python_cmd="$CASHIO_DIR/backend/.venv/bin/python"
+    fi
+    if ! "$python_cmd" -c "import fastapi" &>/dev/null; then
+        echo "[~] Installing backend dependencies..." >&2
+        "${python_cmd%/bin/python}/bin/pip" install -r "$CASHIO_DIR/backend/requirements.txt" >&2 || {
+            echo "[!] Failed to install dependencies." >&2
+            exit 1
+        }
+        echo "[✓] Dependencies installed" >&2
+    fi
+    echo "$python_cmd"
+}
+
+function load_env() {
+    local env_file="$CASHIO_DIR/.env"
+    if [[ ! -f "$env_file" ]]; then
+        echo "[!] .env file not found at $env_file"
+        exit 1
+    fi
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        [[ "$line" =~ ^[[:space:]]*# ]] && continue           # skip comments
+        [[ -z "${line//[[:space:]]/}" ]] && continue          # skip blank lines
+        [[ "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]] || continue # skip non-assignments
+        local key="${line%%=*}"
+        local value="${line#*=}"
+        # Strip surrounding single or double quotes
+        if [[ "$value" =~ ^\"(.*)\"$ ]]; then
+            value="${BASH_REMATCH[1]}"
+        elif [[ "$value" =~ ^\'(.*)\'$ ]]; then
+            value="${BASH_REMATCH[1]}"
+        fi
+        export "$key=$value"
+    done < "$env_file"
+}
+
+function read_env_value() {
+    # Usage: read_env_value KEY [default]
+    local key=$1
+    local default=${2:-}
+    local value
+    value=$(grep -E "^${key}=" "$CASHIO_DIR/.env" 2>/dev/null | cut -d= -f2- | tr -d '"'"'")
+    echo "${value:-$default}"
+}
+
+function start_local_backend() {
+    echo ""
+    echo "=== Starting Local Backend Dev Server ==="
+    echo ""
+
+    stop_container_if_running backend
+    ensure_db_running
+
+    if [[ ! -f "$CASHIO_DIR/.env" ]]; then
+        echo "[!] .env file not found at $CASHIO_DIR/.env"
+        exit 1
+    fi
+
+    local python_cmd
+    python_cmd=$(require_python)
+    echo "[~] Using Python: $python_cmd"
+
+    echo "[+] Starting FastAPI dev server (auto-reload enabled)..."
+    echo "[~] Backend:  http://localhost:8000"
+    echo "[~] API docs: http://localhost:8000/docs"
+    echo ""
+
+    cd "$CASHIO_DIR/backend"
+    load_env
+    exec "$python_cmd" -m app.main
+}
+
+function start_local_frontend() {
+    echo ""
+    echo "=== Starting Local Frontend Dev Server ==="
+    echo ""
+
+    stop_container_if_running frontend
+
+    if ! command -v npm &>/dev/null; then
+        echo "[!] npm not found. Install Node.js to run the frontend locally."
+        exit 1
+    fi
+
+    if [[ ! -d "$CASHIO_DIR/frontend/node_modules" ]]; then
+        echo "[!] node_modules not found. Running npm install..."
+        cd "$CASHIO_DIR/frontend" && npm install
+        echo "[✓] Dependencies installed"
+    fi
+
+    local api_url
+    api_url=$(read_env_value VITE_CASHIO_API_BASE_URL "http://localhost:8000")
+    echo "[~] API URL: $api_url"
+    echo "[+] Starting Vite dev server (HMR enabled)..."
+    echo "[~] Frontend: http://localhost:5173"
+    echo ""
+
+    cd "$CASHIO_DIR/frontend"
+    exec env VITE_CASHIO_API_BASE_URL="$api_url" npm run dev
+}
+
+function start_local() {
+    echo ""
+    echo "=== Starting Local Dev Environment (backend + frontend) ==="
+    echo ""
+
+    stop_container_if_running frontend
+    stop_container_if_running backend
+    ensure_db_running
+
+    if [[ ! -f "$CASHIO_DIR/.env" ]]; then
+        echo "[!] .env file not found at $CASHIO_DIR/.env"
+        exit 1
+    fi
+
+    local python_cmd
+    python_cmd=$(require_python)
+    echo "[~] Using Python: $python_cmd"
+
+    if ! command -v npm &>/dev/null; then
+        echo "[!] npm not found. Install Node.js to run the frontend locally."
+        exit 1
+    fi
+
+    if [[ ! -d "$CASHIO_DIR/frontend/node_modules" ]]; then
+        echo "[!] node_modules not found. Running npm install..."
+        cd "$CASHIO_DIR/frontend" && npm install
+        echo "[✓] Dependencies installed"
+    fi
+
+    # Start backend in background
+    echo ""
+    echo "[+] Starting FastAPI dev server in background..."
+    cd "$CASHIO_DIR/backend"
+    load_env
+    "$python_cmd" -m app.main &
+    local BACKEND_PID=$!
+    echo "[✓] Backend started (PID: $BACKEND_PID)"
+    echo "[~] Backend:  http://localhost:8000"
+    echo "[~] API docs: http://localhost:8000/docs"
+
+    # Trap Ctrl+C / termination to kill both servers
+    trap "echo ''; echo '[+] Shutting down local dev servers...'; kill $BACKEND_PID 2>/dev/null || true; echo '[✓] Done'; exit 0" INT TERM
+
+    # Small delay so backend logs don't interleave with the startup message
+    sleep 1
+
+    local api_url
+    api_url=$(read_env_value VITE_CASHIO_API_BASE_URL "http://localhost:8000")
+    echo ""
+    echo "[+] Starting Vite dev server (foreground)..."
+    echo "[~] Frontend: http://localhost:5173"
+    echo "[~] API URL:  $api_url"
+    echo "[~] Press Ctrl+C to stop both servers"
+    echo ""
+
+    cd "$CASHIO_DIR/frontend"
+    env VITE_CASHIO_API_BASE_URL="$api_url" npm run dev
+
+    # Frontend exited normally — clean up backend
+    echo ""
+    echo "[+] Frontend server stopped. Shutting down backend..."
+    kill $BACKEND_PID 2>/dev/null || true
+    trap - INT TERM
+}
+
+function show_help() {
+    echo "Usage: $0 <command> [service]"
+    echo ""
+    echo "Docker Compose commands:"
+    echo "  start [service]          Start all or one containerised service"
+    echo "  stop [service]           Stop all or one containerised service"
+    echo "  restart [service]        Restart all or one containerised service"
+    echo "  down [service]           Stop and remove all or one containerised service"
+    echo "  build [service]          Build all or one container image"
+    echo "  logs [service]           Follow logs for all or a specific service"
+    echo "  status                   Show container status"
+    echo ""
+    echo "Local dev commands (hot-reload, no Docker build required):"
+    echo "  start-local              Start backend + frontend dev servers locally"
+    echo "  start-local-backend      Start FastAPI dev server locally (keeps db container)"
+    echo "  start-local-frontend     Start Vite dev server locally"
+    echo ""
+    echo "  help                     Show this help message"
+    echo ""
+    echo "Services:"
+    print_services
+    echo "[docker compose must be installed]
+"
+}
+
+# Ensure docker compose is installed
+if ! command -v docker &>/dev/null; then
+    echo "[!] Docker must be installed!"
+    exit 1
+fi
+
+docker compose version >/dev/null 2>&1 || { echo "[!] docker compose plugin is required (not docker-compose)."; exit 1; }
+
+# Main logic
+case "$1" in
+    start)
+        start_services "$2"
+        ;;
+    stop)
+        stop_services "$2"
+        ;;
+    restart)
+        restart_services "$2"
+        ;;
+    down)
+        down_services "$2"
+        ;;
+    build)
+        build_services "$2"
+        ;;
+    logs)
+        show_logs "$2"
+        ;;
+    status)
+        show_status
+        ;;
+    start-local)
+        start_local
+        ;;
+    start-local-backend)
+        start_local_backend
+        ;;
+    start-local-frontend)
+        start_local_frontend
+        ;;
+    help|--help|-h)
+        show_help
+        ;;
+    "" )
+        show_help
+        ;;
+    *)
+        echo "[!] Unknown command: $1\n"
+        show_help
+        exit 1
+        ;;
+    esac

@@ -1,0 +1,134 @@
+#!/bin/bash
+# Unified monorepo release script
+set -e
+
+# Usage: ./release [version]
+# If no version is provided, script will prompt user
+
+# Ensure we're in the repo root
+cd "$(dirname "$0")"
+
+# ── helpers ────────────────────────────────────────────────────────────────────
+
+info()    { echo "  ✓ $*"; }
+warn()    { echo "  ! $*"; }
+die()     { echo "ERROR: $*" >&2; exit 1; }
+
+# Cross-platform in-place sed
+sed_inplace() {
+  local pattern="$1" file="$2"
+  if sed --version 2>/dev/null | grep -q GNU; then
+    # GNU sed (Linux)
+    sed -i -E "$pattern" "$file"
+  else
+    # BSD sed (macOS)
+    sed -i '' -E "$pattern" "$file"
+  fi
+}
+
+# ── preflight checks ───────────────────────────────────────────────────────────
+
+command -v jq  >/dev/null 2>&1 || die "'jq' is required but not installed."
+command -v npm >/dev/null 2>&1 || die "'npm' is required but not installed."
+
+# Abort if working tree is dirty — we don't want unrelated changes in the release commit
+if [ -d .git ]; then
+  if ! git diff --quiet || ! git diff --cached --quiet; then
+    die "Working tree has uncommitted changes. Commit or stash them before releasing."
+  fi
+fi
+
+# ── version input ──────────────────────────────────────────────────────────────
+
+if [[ -z "$1" ]]; then
+  # Show current version as a hint
+  current=""
+  [ -f VERSION ] && current=$(cat VERSION)
+  [ -n "$current" ] && echo "Current version: $current"
+  read -rp "Enter new version (e.g., 1.2.3): " version
+else
+  version="$1"
+fi
+
+# Validate X.Y.Z format
+if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  die "Version must be in format X.Y.Z (got: '$version')"
+fi
+
+# ── confirmation ───────────────────────────────────────────────────────────────
+
+echo ""
+echo "About to release version $version. This will:"
+echo "  - Update VERSION, package.json, version.ts, version.py"
+echo "  - Create git commit: 'release: v$version'"
+echo "  - Create git tag:    v$version"
+echo ""
+read -rp "Proceed? [y/N] " confirm
+[[ "$confirm" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 0; }
+echo ""
+
+# ── update version files ───────────────────────────────────────────────────────
+
+echo "$version" > VERSION
+info "VERSION updated"
+
+if [ -f frontend/package.json ]; then
+  tmpfile=$(mktemp)
+  jq --arg v "$version" '.version = $v' frontend/package.json > "$tmpfile" && mv "$tmpfile" frontend/package.json
+  info "frontend/package.json updated"
+
+  if [ -f frontend/package-lock.json ]; then
+    (cd frontend && npm install --package-lock-only --silent)
+    info "frontend/package-lock.json updated"
+  else
+    warn "frontend/package-lock.json not found — skipping"
+  fi
+
+  if [ -f frontend/src/version.ts ]; then
+    echo "export const VERSION = \"$version\";" > frontend/src/version.ts
+    info "frontend/src/version.ts updated"
+  else
+    warn "frontend/src/version.ts not found — skipping"
+  fi
+else
+  warn "frontend/package.json not found — skipping frontend version updates"
+fi
+
+if [ -f backend/app/version.py ]; then
+  sed_inplace 's/^(__version__ = ")([^"]*)(")/\1'"$version"'\3/' backend/app/version.py
+  info "backend/app/version.py updated"
+else
+  warn "backend/app/version.py not found — skipping"
+fi
+
+# ── git commit & tag ───────────────────────────────────────────────────────────
+
+if [ -d .git ]; then
+  git add \
+    VERSION \
+    frontend/package.json \
+    frontend/package-lock.json \
+    frontend/src/version.ts \
+    backend/app/version.py \
+    2>/dev/null || true
+
+  git commit -m "release: v$version"
+  git tag "v$version"
+  info "Git commit and tag created: v$version"
+
+  echo ""
+  read -rp "Push commit and tag to origin? [y/N] " push_confirm
+  if [[ "$push_confirm" =~ ^[Yy]$ ]]; then
+    git push && git push origin "v$version"
+    info "Pushed to origin"
+  else
+    echo ""
+    echo "  To push later, run:"
+    echo "    git push && git push origin v$version"
+  fi
+else
+  warn ".git directory not found — no commit or tag created"
+fi
+
+echo ""
+echo "Release complete: v$version"

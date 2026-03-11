@@ -1,0 +1,20 @@
+# Combined dockerignore for monorepo (frontend & backend)
+# Node/Frontend
+frontend/node_modules
+frontend/dist
+frontend/build
+frontend/Dockerfile
+frontend/certs
+# Backend/Python
+backend/venv
+backend/.venv
+backend/.env
+backend/**/__pycache__/
+backend/.vscode/
+backend/.idea/
+backend/dist/
+backend/build/
+# Misc
+.git
+.gitignore
+.dockerignore

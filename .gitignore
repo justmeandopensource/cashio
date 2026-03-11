@@ -1,0 +1,11 @@
+# Frontend
+frontend/node_modules
+frontend/dist
+# Backend
+backend/**/__pycache__
+backend/**/?venv
+# Shared
+.DS_Store
+.env
+.python-version
+.claude
