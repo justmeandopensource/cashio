@@ -7,8 +7,6 @@ import {
   Tr,
   Th,
   Td,
-  Wrap,
-  WrapItem,
   Tag,
   TagLabel,
   Popover,
@@ -200,54 +198,53 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
               }}
             >
               <Td width="8%"><Text color={tertiaryTextColor}>{formatDate(transaction.date)}</Text></Td>
-              <Td width="15%"><Text color={tertiaryTextColor}>{transaction.category_name}</Text></Td>
+              <Td width="15%"><Text color={tertiaryTextColor} isTruncated title={transaction.category_name}>{transaction.category_name}</Text></Td>
               {showAccountName && (
                 <Td width="12%">
                   {transaction.account_name && transaction.account_id && (
-                    <ChakraLink as={Link} to={`/account/${transaction.account_id}`} color={accountLinkColor}>
+                    <ChakraLink as={Link} to={`/account/${transaction.account_id}`} color={accountLinkColor} isTruncated display="block" title={transaction.account_name}>
                       {transaction.account_name}
                     </ChakraLink>
                   )}
                 </Td>
               )}
                <Td>
-                 <Box>
-                   {transaction.notes && <Text mb={((transaction.store || transaction.location) || (transaction.tags && transaction.tags.length > 0)) ? 2 : 0} color={tertiaryTextColor}>{transaction.notes}</Text>}
+                 <Flex alignItems="center" flexWrap="wrap" gap={2}>
+                   {transaction.notes && (
+                     <Text color={tertiaryTextColor} title={transaction.notes} flexShrink={1} minW={0}>
+                       {transaction.notes}
+                     </Text>
+                   )}
                    {(transaction.store || transaction.location) && (
-                     <Box mb={transaction.tags && transaction.tags.length > 0 ? 2 : 0}>
-                       <Tag
-                         size="sm"
-                         borderRadius="full"
-                         bg={storeTagBg}
-                         color={storeTagColor}
-                         border="1px solid"
-                         borderColor={storeTagBorderColor}
-                         fontSize="xs"
-                         fontWeight="medium"
-                       >
-                         <TagLabel>
-                           {[transaction.store, transaction.location].filter(Boolean).join(", ")}
-                         </TagLabel>
-                       </Tag>
-                     </Box>
+                     <Tag
+                       size="sm"
+                       borderRadius="full"
+                       bg={storeTagBg}
+                       color={storeTagColor}
+                       border="1px solid"
+                       borderColor={storeTagBorderColor}
+                       fontSize="xs"
+                       fontWeight="medium"
+                       flexShrink={0}
+                     >
+                       <TagLabel>
+                         {[transaction.store, transaction.location].filter(Boolean).join(", ")}
+                       </TagLabel>
+                     </Tag>
                    )}
-                   {transaction.tags && transaction.tags.length > 0 && (
-                     <Wrap spacing={2}>
-                       {transaction.tags.map((tag) => (
-                         <WrapItem key={tag.tag_id}>
-                           <Tag
-                             size="sm"
-                             borderRadius="md"
-                             bg={tagBg}
-                             color={tagColor}
-                           >
-                             <TagLabel>{tag.name}</TagLabel>
-                           </Tag>
-                         </WrapItem>
-                       ))}
-                     </Wrap>
-                   )}
-                 </Box>
+                   {transaction.tags && transaction.tags.map((tag) => (
+                     <Tag
+                       key={tag.tag_id}
+                       size="sm"
+                       borderRadius="md"
+                       bg={tagBg}
+                       color={tagColor}
+                       flexShrink={0}
+                     >
+                       <TagLabel>{tag.name}</TagLabel>
+                     </Tag>
+                   ))}
+                 </Flex>
                </Td>
                <Td width="3%">
                  <Flex gap={1} flexWrap="wrap">
