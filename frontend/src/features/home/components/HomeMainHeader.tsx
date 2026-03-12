@@ -4,11 +4,10 @@ import {
   Button,
   useColorModeValue,
   Icon,
-  HStack,
   Text,
   Flex,
 } from "@chakra-ui/react";
-import { BookText } from "lucide-react";
+import { Plus } from "lucide-react";
 import { FC } from "react";
 
 interface HomeMainHeaderProps {
@@ -16,64 +15,45 @@ interface HomeMainHeaderProps {
 }
 
 const HomeMainHeader: FC<HomeMainHeaderProps> = ({ onCreateLedger }) => {
-  const gradientBg = useColorModeValue(
-    "linear(135deg, brand.500, brand.600)",
-    "linear(135deg, brand.600, brand.700)"
-  );
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const titleColor = useColorModeValue("gray.900", "gray.50");
+  const subtitleColor = useColorModeValue("gray.500", "gray.400");
+  const headerShadow = useColorModeValue("sm", "0 2px 8px rgba(0,0,0,0.6)");
 
   return (
     <Box
-      bgGradient={gradientBg}
-      color="white"
-      p={6}
-      position="sticky"
-      top={0}
-      zIndex={10}
-      boxShadow="lg"
+      px={{ base: 4, md: 8 }}
+      py={6}
+      borderBottom="1px solid"
+      borderColor={borderColor}
+      boxShadow={headerShadow}
+      sx={{ clipPath: "inset(0 -20px -20px 0)" }}
     >
-      <Flex
-        justifyContent="space-between"
-        align={{ base: "center", md: "center" }}
-        flexDirection={{ base: "column", md: "row" }}
-        gap={4}
-        width="100%"
-      >
-        <HStack spacing={3} align="center" flex={1} justifyContent={{ base: "flex-start", md: "flex-start" }} width={{ base: "100%", md: "auto" }}>
-          <Box
-            p={3}
-            bg="whiteAlpha.200"
-            borderRadius="md"
-            backdropFilter="blur(20px)"
-            border="1px solid whiteAlpha.300"
-            boxShadow="xl"
+      <Flex justify="space-between" align="center">
+        <Box>
+          <Heading
+            as="h1"
+            fontSize={{ base: "xl", md: "2xl" }}
+            fontWeight="bold"
+            color={titleColor}
+            letterSpacing="-0.02em"
           >
-            <Icon as={BookText} boxSize={6} />
-          </Box>
-          <Box>
-            <Heading
-              as="h1"
-              size="lg"
-              fontWeight="bold"
-              letterSpacing="-0.02em"
-            >
-              My Ledgers
-            </Heading>
-            <Text fontSize="sm" color="whiteAlpha.900" fontWeight="medium">
-              Select or create a new ledger
-            </Text>
-          </Box>
-        </HStack>
+            My Ledgers
+          </Heading>
+          <Text fontSize="sm" color={subtitleColor} mt={0.5}>
+            Select a ledger to get started
+          </Text>
+        </Box>
 
         <Button
-          color="white"
-          variant="ghost"
-          bg="whiteAlpha.100"
           onClick={onCreateLedger}
-          w={{ base: "100%", md: "auto" }}
-          _hover={{ bg: "whiteAlpha.300" }}
-          flexShrink={0}
+          colorScheme="brand"
+          size="sm"
+          leftIcon={<Icon as={Plus} boxSize={4} />}
+          borderRadius="lg"
+          fontWeight="semibold"
         >
-          Create New Ledger
+          New Ledger
         </Button>
       </Flex>
     </Box>

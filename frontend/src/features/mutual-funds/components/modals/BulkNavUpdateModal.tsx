@@ -76,6 +76,10 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
    const warningColor = useColorModeValue("orange.500", "orange.300");
    const infoColor = useColorModeValue("blue.500", "blue.300");
    const tealColor = useColorModeValue("teal.500", "teal.300");
+  const modalHeaderBorderColor = borderColor;
+  const modalTitleColor = useColorModeValue("gray.900", "gray.50");
+  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
+  const modalIconColor = useColorModeValue("brand.600", "brand.300");
 
   useEffect(() => {
     if (isOpen) {
@@ -214,23 +218,20 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
     >
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent bg={bgColor} borderRadius="md" boxShadow="2xl" border="1px solid" borderColor={borderColor} overflow="hidden" mx={4} maxHeight="90vh" display="flex" flexDirection="column">
-        <Box bgGradient="linear(135deg, teal.400, teal.600)" color="white" px={8} py={4} position="relative">
-          <VStack spacing={2} align="stretch">
-            <HStack spacing={4} align="center">
-              <Box p={3} bg="whiteAlpha.200" borderRadius="md" backdropFilter="blur(10px)">
-                <RefreshCw size={24} />
-              </Box>
-              <Box>
-                <Text fontSize="2xl" fontWeight="bold" lineHeight="1.2">
-                  Bulk NAV Update
-                </Text>
-                <Text fontSize="md" color="whiteAlpha.900">
-                  {fetchedCount} of {mutualFunds.length} funds fetched
-                </Text>
-              </Box>
-            </HStack>
-            
-          </VStack>
+        <Box px={8} py={5} borderBottom="1px solid" borderColor={modalHeaderBorderColor}>
+          <HStack spacing={3} align="center">
+            <Box p={2} bg={modalIconBg} borderRadius="lg">
+              <Icon as={RefreshCw} boxSize={5} color={modalIconColor} />
+            </Box>
+            <Box>
+              <Text fontSize="lg" fontWeight="bold" color={modalTitleColor}>
+                Bulk NAV Update
+              </Text>
+              <Text fontSize="sm" color={subTextColor}>
+                {fetchedCount} of {mutualFunds.length} funds fetched
+              </Text>
+            </Box>
+          </HStack>
         </Box>
 
         <ModalBody px={8} py={6} flex="1" overflowY="auto" overflowX="hidden">

@@ -142,10 +142,8 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   const tagColor = useColorModeValue("gray.700", "gray.200");
   const popoverBg = useColorModeValue("brand.100", "brand.800");
   const popoverArrowBg = useColorModeValue("brand.100", "brand.800");
-  const popoverHeaderBg = useColorModeValue(
-    "linear(to-r, brand.400, brand.600)",
-    "linear(to-r, brand.600, brand.800)"
-  );
+  const popoverHeaderBorderColor = useColorModeValue("gray.100", "gray.700");
+  const popoverHeaderBg = useColorModeValue("gray.50", "gray.700");
   const popoverItemBorderColor = useColorModeValue("brand.200", "brand.700");
   const popoverItemHoverBg = useColorModeValue("brand.50", "brand.700");
   const popoverItemColor = useColorModeValue("brand.900", "brand.100");
@@ -287,17 +285,19 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                         ) : (
                           <Box>
                             <Flex
-                              bgGradient={popoverHeaderBg}
+                              bg={popoverHeaderBg}
                               p={2}
                               fontWeight="bold"
+                              borderBottom="1px solid"
+                              borderColor={popoverHeaderBorderColor}
                             >
-                              <Box flex="2" color="white">
+                              <Box flex="2" color={popoverItemColor}>
                                 Category
                               </Box>
-                              <Box flex="1" textAlign="right" color="white">
+                              <Box flex="1" textAlign="right" color={popoverItemColor}>
                                 Amount
                               </Box>
-                              <Box flex="3" ml={4} color="white">
+                              <Box flex="3" ml={4} color={popoverItemColor}>
                                 Notes
                               </Box>
                             </Flex>
@@ -386,15 +386,16 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                     <PopoverContent bg={popoverBg} color="white" maxW="300px">
                       <PopoverArrow bg={popoverArrowBg} />
                       <PopoverHeader
-                        bgGradient={popoverHeaderBg}
-                        color="white"
+                        bg={popoverHeaderBg}
                         borderTopRadius="md"
                         py={3}
                         px={4}
+                        borderBottom="1px solid"
+                        borderColor={popoverHeaderBorderColor}
                       >
                         <Flex align="center">
-                          <Icon as={CreditCard} mr={2} />
-                          <Text fontWeight="bold">
+                          <Icon as={CreditCard} mr={2} color={popoverItemColor} />
+                          <Text fontWeight="bold" color={popoverItemColor}>
                             {transaction.debit > 0
                               ? "Funds transferred to"
                               : "Funds transferred from"}

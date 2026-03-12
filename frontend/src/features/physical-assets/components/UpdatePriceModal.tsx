@@ -22,6 +22,7 @@ import {
   InputLeftAddon,
   Alert,
   AlertIcon,
+  Icon,
   AlertTitle,
   AlertDescription,
 } from "@chakra-ui/react";
@@ -59,6 +60,11 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
   const textColor = useColorModeValue("gray.600", "gray.300");
   const textColorSecondary = useColorModeValue("gray.500", "gray.400");
   const textColorTertiary = useColorModeValue("gray.600", "gray.200");
+  const modalHeaderBorderColor = borderColor;
+  const modalTitleColor = useColorModeValue("gray.900", "gray.50");
+  const modalSubtitleColor = textColorSecondary;
+  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
+  const modalIconColor = useColorModeValue("brand.600", "brand.300");
    const buttonBorderColor = useColorModeValue("gray.300", "gray.600");
    const buttonHoverBg = useColorModeValue("gray.50", "gray.600");
    const buttonHoverBorderColor = useColorModeValue("gray.400", "gray.500");
@@ -181,49 +187,41 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
         display="flex"
         flexDirection="column"
       >
-        {/* Modern gradient header */}
+        {/* Flat header */}
         <Box
-          bgGradient="linear(135deg, teal.400, teal.600)"
-          color="white"
           px={{ base: 4, sm: 8 }}
-          py={{ base: 6, sm: 6 }}
-          pt={{ base: 12, sm: 6 }}
-          position="relative"
+          py={5}
+          borderBottom="1px solid"
+          borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={{ base: 3, sm: 4 }} align="center">
-            <Box
-              p={{ base: 2, sm: 3 }}
-              bg="whiteAlpha.200"
-              borderRadius="md"
-              backdropFilter="blur(10px)"
-            >
-              <RefreshCw size={24} style={{ margin: 0 }} />
+          <HStack spacing={3} align="center">
+            <Box p={2} bg={modalIconBg} borderRadius="lg">
+              <Icon as={RefreshCw} boxSize={5} color={modalIconColor} />
             </Box>
 
             <Box>
-              <HStack spacing={3} mb={2}>
+              <HStack spacing={3} mb={1}>
                 <Text
-                  fontSize={{ base: "xl", sm: "2xl" }}
+                  fontSize="lg"
                   fontWeight="bold"
-                  lineHeight="1.2"
+                  color={modalTitleColor}
                 >
                   Update Price
                 </Text>
                 <Badge
-                  bg="whiteAlpha.200"
-                  color="white"
+                  colorScheme="teal"
+                  variant="subtle"
                   fontSize="sm"
                   borderRadius="full"
-                  px={3}
-                  py={1}
+                  px={2}
+                  py={0.5}
                 >
                   {asset.asset_type?.name}
                 </Badge>
               </HStack>
               <Text
-                fontSize={{ base: "sm", sm: "md" }}
-                color="whiteAlpha.900"
-                fontWeight="medium"
+                fontSize="sm"
+                color={modalSubtitleColor}
               >
                 {asset.name}
               </Text>

@@ -3,8 +3,8 @@ import Layout from "@components/Layout";
 import InsightsMain from "./components/InsightsMain";
 import PageContainer from "@components/shared/PageContainer";
 import PageHeader from "@components/shared/PageHeader";
-import { PieChart, ChevronDown } from "lucide-react";
-import { Box, Flex, FormControl, Select } from "@chakra-ui/react";
+import { PieChart } from "lucide-react";
+import { Box, Flex, FormControl, Select, useColorModeValue } from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
 import useLedgerStore from "@/components/shared/store";
 import { useQuery } from "@tanstack/react-query";
@@ -138,6 +138,10 @@ const Insights = () => {
     setSearchParams({ visualization: newVisualization });
   };
 
+  const selectBorderColor = useColorModeValue("brand.400", "brand.500");
+  const selectColor = useColorModeValue("brand.700", "brand.200");
+  const selectHoverBorderColor = useColorModeValue("brand.500", "brand.400");
+
   const handleLogout = (): void => {
     localStorage.removeItem("access_token");
     navigate("/login");
@@ -161,13 +165,14 @@ const Insights = () => {
                   value={selectedLedgerId || ""}
                   onChange={handleLedgerChange}
                   isDisabled={isLoading}
-                  icon={<ChevronDown />}
-                  variant="ghost"
-                  color="white"
-                  bg="whiteAlpha.100"
-                  _hover={{ bg: "whiteAlpha.300" }}
-                  size="md"
+                  size="sm"
                   w="100%"
+                  borderRadius="lg"
+                  borderColor={selectBorderColor}
+                  color={selectColor}
+                  fontWeight="semibold"
+                  focusBorderColor="brand.500"
+                  _hover={{ borderColor: selectHoverBorderColor }}
                 >
                   <option value="">Select Ledger</option>
                   {ledgers?.map((ledger) => (
@@ -184,14 +189,15 @@ const Insights = () => {
                 <Select
                   value={selectedVisualization}
                   onChange={handleVisualizationChange}
-                  icon={<ChevronDown />}
-                  variant="ghost"
-                  color="white"
-                  bg="whiteAlpha.100"
-                  _hover={{ bg: "whiteAlpha.300" }}
-                  size="md"
+                  size="sm"
                   minW={{ base: "100%", lg: "260px" }}
                   w="100%"
+                  borderRadius="lg"
+                  borderColor={selectBorderColor}
+                  color={selectColor}
+                  fontWeight="semibold"
+                  focusBorderColor="brand.500"
+                  _hover={{ borderColor: selectHoverBorderColor }}
                 >
                   {visualizationOptions.map((option) => (
                     <option key={option.value} value={option.value}>

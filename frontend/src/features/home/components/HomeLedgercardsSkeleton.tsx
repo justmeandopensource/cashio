@@ -1,41 +1,40 @@
 import {
   Box,
   Skeleton,
+  SkeletonText,
   SimpleGrid,
-  Card,
-  CardBody,
   useColorModeValue,
+  Flex,
 } from "@chakra-ui/react";
 
 const HomeLedgerCardsSkeleton = () => {
   const skeletonCards = Array(2).fill(0);
-  const bgColor = useColorModeValue("brand.50", "brand.900");
+  const cardBg = useColorModeValue("white", "gray.800");
+  const cardBorder = useColorModeValue("gray.200", "gray.700");
 
   return (
-    <Box mb={8}>
-      <Skeleton height="36px" width="120px" mb={6} />
-      <SimpleGrid columns={{ base: 1, sm: 2, md: 2, lg: 4 }} spacing={6}>
-        {skeletonCards.map((_, index) => (
-          <Card key={index} bg={bgColor} opacity={0.85}>
-            <CardBody display="flex" alignItems="center" p={6}>
-              <Skeleton width="36px" height="36px" borderRadius="md" mr={4} />
-              <Skeleton height="24px" width="70%" />
-            </CardBody>
-          </Card>
-        ))}
-        {/* "Add New" card skeleton */}
-        <Card bg={bgColor} opacity={0.7}>
-          <CardBody
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            p={6}
-          >
-            <Skeleton width="32px" height="32px" borderRadius="full" />
-          </CardBody>
-        </Card>
-      </SimpleGrid>
-    </Box>
+    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+      {skeletonCards.map((_, index) => (
+        <Box
+          key={index}
+          bg={cardBg}
+          border="1px solid"
+          borderColor={cardBorder}
+          borderRadius="xl"
+          p={5}
+        >
+          <Flex align="flex-start" gap={4}>
+            <Skeleton w="52px" h="52px" borderRadius="xl" flexShrink={0} />
+            <Box flex={1}>
+              <Skeleton h="16px" w="55%" mb={2} borderRadius="md" />
+              <SkeletonText noOfLines={2} spacing={2} skeletonHeight="12px" />
+              <Skeleton h="11px" w="30%" mt={3} borderRadius="md" />
+            </Box>
+          </Flex>
+        </Box>
+      ))}
+
+    </SimpleGrid>
   );
 };
 

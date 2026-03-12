@@ -21,6 +21,7 @@ import {
   useColorModeValue,
   FormHelperText,
   FormErrorMessage,
+  Icon,
 } from "@chakra-ui/react";
 import {
   Plus,
@@ -61,6 +62,11 @@ const CreateAssetTypeModal: FC<CreateAssetTypeModalProps> = ({
   const inputBg = useColorModeValue("white", "gray.700");
   const inputBorderColor = useColorModeValue("gray.200", "gray.600");
   const focusBorderColor = useColorModeValue("teal.500", "teal.300");
+  const modalHeaderBorderColor = borderColor;
+  const modalTitleColor = useColorModeValue("gray.900", "gray.50");
+  const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
+  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
+  const modalIconColor = useColorModeValue("brand.600", "brand.300");
 
   const createAssetTypeMutation = useCreateAssetType();
 
@@ -194,38 +200,29 @@ const CreateAssetTypeModal: FC<CreateAssetTypeModalProps> = ({
         display="flex"
         flexDirection="column"
       >
-        {/* Modern gradient header */}
+        {/* Flat header */}
         <Box
-          bgGradient="linear(135deg, teal.400, teal.600)"
-          color="white"
           px={{ base: 4, sm: 8 }}
-          py={{ base: 6, sm: 6 }}
-          pt={{ base: 12, sm: 6 }}
-          position="relative"
+          py={5}
+          borderBottom="1px solid"
+          borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={{ base: 3, sm: 4 }} align="center">
-            <Box
-              p={{ base: 2, sm: 3 }}
-              bg="whiteAlpha.200"
-              borderRadius="md"
-              backdropFilter="blur(10px)"
-            >
-              <Plus size={24} style={{ margin: 0 }} />
+          <HStack spacing={3} align="center">
+            <Box p={2} bg={modalIconBg} borderRadius="lg">
+              <Icon as={Plus} boxSize={5} color={modalIconColor} />
             </Box>
 
             <Box>
               <Text
-                fontSize={{ base: "xl", sm: "2xl" }}
+                fontSize="lg"
                 fontWeight="bold"
-                lineHeight="1.2"
-                mb={2}
+                color={modalTitleColor}
               >
                 Create Asset Type
               </Text>
               <Text
-                fontSize={{ base: "sm", sm: "md" }}
-                color="whiteAlpha.900"
-                fontWeight="medium"
+                fontSize="sm"
+                color={modalSubtitleColor}
               >
                 Define a new type of asset to track
               </Text>

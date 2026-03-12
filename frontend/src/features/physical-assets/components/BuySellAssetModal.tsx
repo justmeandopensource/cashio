@@ -31,6 +31,7 @@ import {
   FormErrorMessage,
   InputGroup,
   InputLeftAddon,
+  Icon,
 } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -96,6 +97,11 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
   const buttonHoverBorderColor = useColorModeValue("gray.400", "gray.500");
   const tabBuyHoverBg = useColorModeValue("teal.50", "teal.700");
   const tabSellHoverBg = useColorModeValue("red.50", "red.700");
+  const modalHeaderBorderColor = borderColor;
+  const modalTitleColor = useColorModeValue("gray.900", "gray.50");
+  const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
+  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
+  const modalIconColor = useColorModeValue("brand.600", "brand.300");
 
   const { data: accounts, isLoading: accountsLoading } = useQuery<Account[]>({
     queryKey: ["accounts", ledgerId],
@@ -597,49 +603,41 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
         display="flex"
         flexDirection="column"
       >
-        {/* Modern gradient header */}
+        {/* Flat header */}
         <Box
-          bgGradient="linear(135deg, teal.400, teal.600)"
-          color="white"
           px={{ base: 4, sm: 8 }}
-          py={{ base: 6, sm: 6 }}
-          pt={{ base: 12, sm: 6 }}
-          position="relative"
+          py={5}
+          borderBottom="1px solid"
+          borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={{ base: 3, sm: 4 }} align="center">
-            <Box
-              p={{ base: 2, sm: 3 }}
-              bg="whiteAlpha.200"
-              borderRadius="md"
-              backdropFilter="blur(10px)"
-            >
-              <Coins size={24} style={{ margin: 0 }} />
+          <HStack spacing={3} align="center">
+            <Box p={2} bg={modalIconBg} borderRadius="lg">
+              <Icon as={Coins} boxSize={5} color={modalIconColor} />
             </Box>
 
             <Box>
-              <HStack spacing={3} mb={2}>
+              <HStack spacing={3} mb={1}>
                 <Text
-                  fontSize={{ base: "xl", sm: "2xl" }}
+                  fontSize="lg"
                   fontWeight="bold"
-                  lineHeight="1.2"
+                  color={modalTitleColor}
                 >
                   {asset.name}
                 </Text>
                 <Badge
-                  bg="whiteAlpha.200"
-                  color="white"
+                  colorScheme="teal"
+                  variant="subtle"
                   fontSize="sm"
                   borderRadius="full"
-                  px={3}
-                  py={1}
+                  px={2}
+                  py={0.5}
                 >
                   {asset.asset_type?.name}
                 </Badge>
               </HStack>
               <Text
-                fontSize={{ base: "sm", sm: "md" }}
-                color="whiteAlpha.900"
-                fontWeight="medium"
+                fontSize="sm"
+                color={modalSubtitleColor}
               >
                 {tabIndex === 0 ? "Buy asset" : "Sell asset"}
               </Text>

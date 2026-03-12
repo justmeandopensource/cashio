@@ -173,20 +173,21 @@ const Ledger = () => {
           >
             <HStack spacing={2} justifyContent={{ base: "center", md: "flex-start" }} width={{ base: "100%", md: "auto" }}>
               <Button
-                color="white"
-                variant="ghost"
-                bg="whiteAlpha.100"
+                colorScheme="brand"
+                size="sm"
+                borderRadius="lg"
+                fontWeight="semibold"
                 onClick={() => handleAddTransaction(undefined)}
-                _hover={{ bg: "whiteAlpha.300" }}
               >
                 Add Transaction
               </Button>
               <Button
-                color="white"
-                variant="ghost"
-                bg="whiteAlpha.100"
+                colorScheme="brand"
+                variant="outline"
+                size="sm"
+                borderRadius="lg"
+                fontWeight="semibold"
                 onClick={() => setIsTransferModalOpen(true)}
-                _hover={{ bg: "whiteAlpha.300" }}
               >
                 Transfer Funds
               </Button>

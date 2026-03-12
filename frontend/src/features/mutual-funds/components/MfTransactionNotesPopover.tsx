@@ -69,6 +69,11 @@ const MfTransactionNotesPopover: FC<MfTransactionNotesPopoverProps> = ({
   const toast = useToast();
   const popoverBg = useColorModeValue("white", "gray.800");
   const popoverBorderColor = useColorModeValue("gray.100", "gray.700");
+  const popoverHeaderBorderColor = popoverBorderColor;
+  const popoverHeaderBg = useColorModeValue("gray.50", "gray.700");
+  const popoverTitleColor = useColorModeValue("gray.900", "gray.50");
+  const popoverIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
+  const popoverIconColor = useColorModeValue("brand.600", "brand.300");
 
   const updateNotesMutation = useUpdateMfTransactionNotes();
 
@@ -137,25 +142,31 @@ const MfTransactionNotesPopover: FC<MfTransactionNotesPopoverProps> = ({
       >
         <PopoverArrow bg={popoverBg} />
         <PopoverHeader
-          bgGradient="linear(135deg, teal.400, teal.600)"
-          color="white"
+          bg={popoverHeaderBg}
           px={4}
           py={3}
           fontWeight="bold"
-          borderBottom="none"
+          borderBottom="1px solid"
+          borderColor={popoverHeaderBorderColor}
           display="flex"
           justifyContent="space-between"
           alignItems="center"
         >
-          Transaction Note
+          <Flex align="center" gap={2}>
+            <Box p={1} bg={popoverIconBg} borderRadius="md">
+              <FileText size={14} color={popoverIconColor} />
+            </Box>
+            <Text fontSize="sm" fontWeight="bold" color={popoverTitleColor}>
+              Transaction Note
+            </Text>
+          </Flex>
           {!isEditing && (
             <IconButton
               aria-label={transaction.notes ? "Edit note" : "Add note"}
               icon={<Edit size={16} />}
               size="xs"
-              color="white"
               variant="ghost"
-              _hover={{ bg: "teal.700" }}
+              colorScheme="teal"
               onClick={() => setIsEditing(true)}
             />
           )}

@@ -6,9 +6,6 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-  PopoverArrow,
-  PopoverBody,
-  PopoverFooter,
   VStack,
   Link as ChakraLink,
   HStack,
@@ -17,17 +14,17 @@ import {
   Icon,
   Button,
   useColorModeValue,
+  Tooltip,
 } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { useNavigate } from "react-router-dom";
-import { LogOut, User, ChevronUp, Sun, Moon, Laptop } from "lucide-react";
+import { LogOut, User, ChevronsUpDown, Sun, Moon, Monitor } from "lucide-react";
 import { VERSION } from "../../version";
 
 interface UserProfile {
   full_name: string;
   email: string;
-  // Add other user properties as needed
 }
 
 interface UserProfileDisplayProps {
@@ -65,20 +62,24 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [triggerWidth, setTriggerWidth] = useState(0);
 
-   // Modern color scheme
-   const bgColor = useColorModeValue("primaryBg", "primaryBg");
-   const borderColor = useColorModeValue("tertiaryBg", "gray.700");
-   const hoverBg = useColorModeValue("secondaryBg", "secondaryBg");
-   const secondaryTextColor = useColorModeValue(
-     "secondaryTextColor",
-     "secondaryTextColor"
-   );
-   const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
-  const cardBg = useColorModeValue("secondaryBg", "secondaryBg");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const hoverBg = useColorModeValue("gray.100", "gray.700");
+  const popoverBg = useColorModeValue("white", "gray.800");
+  const userHeaderBg = useColorModeValue("gray.50", "gray.750");
+  const primaryTextColor = useColorModeValue("gray.800", "gray.100");
+  const secondaryTextColor = useColorModeValue("gray.500", "gray.400");
   const avatarBg = useColorModeValue("brand.500", "brand.600");
   const errorBorderColor = useColorModeValue("red.200", "red.700");
   const errorTextColor = useColorModeValue("red.600", "red.300");
-  const brandIconColor = useColorModeValue("brand.500", "brand.300");
+  const themeSegmentBg = useColorModeValue("gray.100", "gray.700");
+  const themeActiveBg = useColorModeValue("white", "gray.600");
+  const themeActiveColor = useColorModeValue("brand.600", "brand.300");
+  const themeInactiveColor = useColorModeValue("gray.500", "gray.400");
+  const signOutColor = useColorModeValue("red.600", "red.400");
+  const signOutHoverBg = useColorModeValue("red.50", "rgba(254,178,178,0.08)");
+  const triggerHoverBg = useColorModeValue("gray.100", "gray.700");
+  const triggerNameColor = useColorModeValue("gray.700", "gray.200");
+  const triggerEmailColor = useColorModeValue("gray.500", "gray.400");
 
   useEffect(() => {
     const measureTriggerWidth = () => {
@@ -86,22 +87,17 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
         setTriggerWidth(triggerRef.current.offsetWidth);
       }
     };
-
     measureTriggerWidth();
-
     window.addEventListener("resize", measureTriggerWidth);
     return () => window.removeEventListener("resize", measureTriggerWidth);
   }, [userProfile]);
 
-  // Keep Chakra's color mode in sync with the system preference when "system" is selected
   useEffect(() => {
     if (selectedTheme !== "system") return;
-
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const apply = (e: MediaQueryList | MediaQueryListEvent) => {
       setColorMode(e.matches ? "dark" : "light");
     };
-
     apply(mediaQuery);
     mediaQuery.addEventListener("change", apply);
     return () => mediaQuery.removeEventListener("change", apply);
@@ -115,20 +111,20 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
       .toUpperCase();
   };
 
+  const themeOptions = [
+    { key: "light" as const, icon: Sun, label: "Light" },
+    { key: "dark" as const, icon: Moon, label: "Dark" },
+    { key: "system" as const, icon: Monitor, label: "System" },
+  ];
+
   if (isLoading) {
     return (
-      <Box
-        p={3}
-        borderRadius="md"
-        bg={cardBg}
-        border="1px solid"
-        borderColor={borderColor}
-      >
+      <Box px={2} py={2}>
         <HStack spacing={3}>
-          <Box width="40px" height="40px" borderRadius="md" bg={hoverBg} />
+          <Box width="36px" height="36px" borderRadius="full" bg={themeSegmentBg} flexShrink={0} />
           <Box flex="1">
-            <Box height="16px" bg={hoverBg} borderRadius="md" mb={1} />
-            <Box height="12px" bg={hoverBg} borderRadius="md" width="70%" />
+            <Box height="13px" bg={themeSegmentBg} borderRadius="md" mb={1.5} />
+            <Box height="11px" bg={themeSegmentBg} borderRadius="md" width="65%" />
           </Box>
         </HStack>
       </Box>
@@ -138,9 +134,9 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
   if (isError || !userProfile) {
     return (
       <Box
-        p={3}
+        px={2}
+        py={2}
         borderRadius="md"
-        bg={cardBg}
         border="1px solid"
         borderColor={errorBorderColor}
         color={errorTextColor}
@@ -157,67 +153,62 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
         <Button
           ref={triggerRef}
           variant="ghost"
-          p={3}
+          px={2}
+          py={2}
           height="auto"
-          borderRadius="md"
+          borderRadius="lg"
           bg="transparent"
-          border="1px solid"
-          borderColor={borderColor}
-          _hover={{
-            bg: hoverBg,
-            transform: "translateY(-2px)",
-            boxShadow: "lg",
-          }}
-          _active={{ transform: "translateY(0)" }}
-          _focus={{ outline: "none", ring: 0, borderColor: borderColor }}
-          transition="all 0.2s ease"
+          _hover={{ bg: triggerHoverBg }}
+          _active={{ bg: triggerHoverBg }}
+          _focus={{ outline: "none", boxShadow: "none" }}
+          transition="background 0.15s ease"
           width="full"
           justifyContent="flex-start"
           sx={{ "&:focus": { outline: "none" } }}
         >
-          <HStack spacing={3} width="full">
+          <HStack spacing={2.5} width="full">
             <Avatar
               size="sm"
               name={userProfile.full_name}
               src=""
               getInitials={getInitials}
               bg={avatarBg}
-              borderRadius="md"
+              borderRadius="full"
               color="white"
               fontWeight="bold"
-              fontSize="sm"
+              fontSize="xs"
+              flexShrink={0}
             />
-
-             <Box flex="1" textAlign="left" minWidth="0">
-               <Text
-                 fontWeight="semibold"
-                 fontSize="sm"
-                 color={tertiaryTextColor}
-                 noOfLines={1}
-               >
-                 {userProfile.full_name}
-               </Text>
-               <Text fontSize="xs" color={tertiaryTextColor} noOfLines={1}>
-                 {userProfile.email}
-               </Text>
-             </Box>
-
+            <Box flex="1" textAlign="left" minWidth="0">
+              <Text
+                fontWeight="semibold"
+                fontSize="sm"
+                color={triggerNameColor}
+                noOfLines={1}
+                lineHeight="1.3"
+              >
+                {userProfile.full_name}
+              </Text>
+              <Text fontSize="xs" color={triggerEmailColor} noOfLines={1} lineHeight="1.3">
+                {userProfile.email}
+              </Text>
+            </Box>
             <Icon
-              as={ChevronUp}
-              boxSize={4}
-              color={secondaryTextColor}
-              opacity={0.7}
+              as={ChevronsUpDown}
+              boxSize={3.5}
+              color={triggerEmailColor}
+              flexShrink={0}
             />
           </HStack>
         </Button>
       </PopoverTrigger>
 
       <PopoverContent
-        bg={bgColor}
-        borderColor="transparent"
-        boxShadow="rgba(0, 0, 0, 0.1) 0px 4px 12px"
+        bg={popoverBg}
+        borderColor={borderColor}
+        boxShadow="0 8px 30px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)"
         borderRadius="xl"
-        border="none"
+        border="1px solid"
         width={triggerWidth > 0 ? `${triggerWidth}px` : "240px"}
         maxWidth="none"
         overflow="hidden"
@@ -225,116 +216,138 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
         tabIndex={-1}
         _focus={{ outline: "none" }}
         style={{ outline: "none" }}
-        css={{
-          "--popper-arrow-shadow-color": "transparent",
-        }}
+        css={{ "--popper-arrow-shadow-color": "transparent" }}
         sx={{ "&:focus": { outline: "none" } }}
       >
-        <PopoverArrow bg={bgColor} shadow="none" border="none" />
-
-        <PopoverBody p={0} pt={4}>
-          <VStack align="stretch" spacing={0}>
-             <ChakraLink
-               onClick={() => navigate("/profile")}
-               display="flex"
-               alignItems="center"
-               px={4}
-               py={4}
-               color={tertiaryTextColor}
-               fontWeight="medium"
-               fontSize="md"
-               tabIndex={-1}
-               _hover={{ bg: hoverBg }}
-               transition="all 0.2s"
-             >
-               <Icon as={User} boxSize={4} mr={3} color={brandIconColor} />
-               Profile Settings
-             </ChakraLink>
-            <Divider borderColor={borderColor} />
-            <Box px={4} py={4}>
-              <Text
-                fontSize="sm"
-                fontWeight="medium"
-                color={secondaryTextColor}
-                mb={3}
-              >
-                Theme
+        {/* User info header */}
+        <Box px={4} py={4} bg={userHeaderBg} borderBottom="1px solid" borderColor={borderColor}>
+          <HStack spacing={3}>
+            <Avatar
+              size="md"
+              name={userProfile.full_name}
+              src=""
+              getInitials={getInitials}
+              bg={avatarBg}
+              borderRadius="full"
+              color="white"
+              fontWeight="bold"
+              fontSize="sm"
+              flexShrink={0}
+            />
+            <Box minWidth="0">
+              <Text fontWeight="bold" fontSize="sm" color={primaryTextColor} noOfLines={1}>
+                {userProfile.full_name}
               </Text>
-               <VStack spacing={2} align="stretch">
-                 <Button
-                   variant={selectedTheme === "light" ? "solid" : "outline"}
-                   onClick={() => {
-                     setSelectedTheme("light");
-                     localStorage.setItem(THEME_PREF_KEY, "light");
-                     setColorMode("light");
-                   }}
-                   size="sm"
-                   leftIcon={<Icon as={Sun} />}
-                   justifyContent="flex-start"
-                 >
-                   Light
-                 </Button>
-                 <Button
-                   variant={selectedTheme === "dark" ? "solid" : "outline"}
-                   onClick={() => {
-                     setSelectedTheme("dark");
-                     localStorage.setItem(THEME_PREF_KEY, "dark");
-                     setColorMode("dark");
-                   }}
-                   size="sm"
-                   leftIcon={<Icon as={Moon} />}
-                   justifyContent="flex-start"
-                 >
-                   Dark
-                 </Button>
-                 <Button
-                   variant={selectedTheme === "system" ? "solid" : "outline"}
-                   onClick={() => {
-                     setSelectedTheme("system");
-                     localStorage.setItem(THEME_PREF_KEY, "system");
-                     // color mode is applied reactively by the useEffect above
-                   }}
-                   size="sm"
-                   leftIcon={<Icon as={Laptop} />}
-                   justifyContent="flex-start"
-                 >
-                   System
-                 </Button>
-               </VStack>
+              <Text fontSize="xs" color={secondaryTextColor} noOfLines={1}>
+                {userProfile.email}
+              </Text>
             </Box>
+          </HStack>
+        </Box>
 
-            <Divider borderColor={borderColor} />
+        <VStack align="stretch" spacing={0} p={2}>
+          {/* Theme toggle */}
+          <Box px={2} py={2}>
+            <Text fontSize="xs" fontWeight="semibold" color={secondaryTextColor} mb={2} textTransform="uppercase" letterSpacing="0.06em">
+              Appearance
+            </Text>
+            <HStack
+              spacing={0}
+              gap="1px"
+              bg={themeSegmentBg}
+              borderRadius="lg"
+              p={1}
+            >
+              {themeOptions.map(({ key, icon, label }) => {
+                const isActive = selectedTheme === key;
+                return (
+                  <Tooltip key={key} label={label} placement="top" hasArrow openDelay={600}>
+                    <Button
+                      flex={1}
+                      size="sm"
+                      variant="unstyled"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      gap={1.5}
+                      height="28px"
+                      borderRadius="md"
+                      bg={isActive ? themeActiveBg : "transparent"}
+                      color={isActive ? themeActiveColor : themeInactiveColor}
+                      boxShadow={isActive ? "sm" : "none"}
+                      fontWeight={isActive ? "semibold" : "normal"}
+                      fontSize="xs"
+                      transition="all 0.15s ease"
+                      onClick={() => {
+                        setSelectedTheme(key);
+                        localStorage.setItem(THEME_PREF_KEY, key);
+                        if (key !== "system") setColorMode(key);
+                      }}
+                      _hover={{ color: isActive ? themeActiveColor : primaryTextColor }}
+                      _focus={{ outline: "none", boxShadow: "none" }}
+                    >
+                      <Icon as={icon} boxSize={3.5} />
+                      <Text as="span">{label}</Text>
+                    </Button>
+                  </Tooltip>
+                );
+              })}
+            </HStack>
+          </Box>
 
-             <ChakraLink
-               onClick={handleLogout}
-               display="flex"
-               alignItems="center"
-               px={4}
-               py={4}
-               color={tertiaryTextColor}
-               fontWeight="medium"
-               fontSize="md"
-               tabIndex={-1}
-               _hover={{ bg: hoverBg }}
-               transition="all 0.2s"
-             >
-               <Icon as={LogOut} boxSize={4} mr={3} />
-               Sign Out
-             </ChakraLink>
-          </VStack>
-        </PopoverBody>
+          <Divider borderColor={borderColor} my={1} />
 
-        <PopoverFooter
+          {/* Profile settings */}
+          <ChakraLink
+            onClick={() => navigate("/profile")}
+            display="flex"
+            alignItems="center"
+            px={3}
+            py={2.5}
+            borderRadius="lg"
+            color={primaryTextColor}
+            fontWeight="medium"
+            fontSize="sm"
+            tabIndex={-1}
+            _hover={{ bg: hoverBg, textDecoration: "none" }}
+            transition="background 0.15s"
+          >
+            <Icon as={User} boxSize={4} mr={3} color={secondaryTextColor} />
+            Profile Settings
+          </ChakraLink>
+
+          {/* Sign out */}
+          <ChakraLink
+            onClick={handleLogout}
+            display="flex"
+            alignItems="center"
+            px={3}
+            py={2.5}
+            borderRadius="lg"
+            color={signOutColor}
+            fontWeight="medium"
+            fontSize="sm"
+            tabIndex={-1}
+            _hover={{ bg: signOutHoverBg, textDecoration: "none" }}
+            transition="background 0.15s"
+          >
+            <Icon as={LogOut} boxSize={4} mr={3} />
+            Sign Out
+          </ChakraLink>
+        </VStack>
+
+        {/* Version footer */}
+        <Box
           px={4}
-          py={3}
-          bg={cardBg}
+          py={2.5}
           borderTop="1px solid"
           borderColor={borderColor}
+          bg={userHeaderBg}
         >
           <Text fontSize="xs" color={secondaryTextColor}>
-            Version {VERSION}
+            Cashio v{VERSION}
           </Text>
-        </PopoverFooter>
+        </Box>
       </PopoverContent>
     </Popover>
   );

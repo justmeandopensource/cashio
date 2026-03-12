@@ -34,10 +34,7 @@ export const MobileHeader: React.FC<{
 }> = ({ onMenuOpen, title = "Dashboard" }) => {
   const headerBg = useColorModeValue("primaryBg", "primaryBg");
   const borderColor = useColorModeValue("tertiaryBg", "tertiaryBg");
-  const gradientBg = useColorModeValue(
-    "linear(135deg, brand.500, brand.600)",
-    "linear(135deg, brand.600, brand.700)"
-  );
+  const mobileButtonColor = useColorModeValue("gray.600", "gray.300");
 
   return (
     <Box
@@ -48,8 +45,6 @@ export const MobileHeader: React.FC<{
       bg={headerBg}
       borderBottom="1px solid"
       borderColor={borderColor}
-      backdropFilter="blur(10px)"
-      boxShadow="lg"
     >
       <Flex align="center" justify="space-between" px={4} py={3}>
         <Button
@@ -57,15 +52,9 @@ export const MobileHeader: React.FC<{
           variant="ghost"
           size="sm"
           borderRadius="md"
-          bgGradient={gradientBg}
-          color="white"
-          _hover={{
-            transform: "scale(1.05)",
-            boxShadow: "lg",
-          }}
-          _active={{ transform: "scale(0.95)" }}
-          transition="all 0.2s ease"
-          boxShadow="md"
+          color={mobileButtonColor}
+          _hover={{ bg: useColorModeValue("gray.100", "gray.700") }}
+          _active={{ bg: useColorModeValue("gray.200", "gray.600") }}
         >
           <Icon as={Menu} boxSize={5} />
         </Button>
@@ -93,18 +82,21 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-   // Modern color scheme
    const sidebarBg = useColorModeValue("bodyBg", "bodyBg");
-   const sidebarColor = useColorModeValue("primaryTextColor", "primaryTextColor");
    const borderColor = useColorModeValue("tertiaryBg", "gray.700");
-   const activeBg = useColorModeValue("brand.100", "brand.700");
-  const activeColor = useColorModeValue("brand.700", "brand.200");
-  const hoverBg = useColorModeValue("secondaryBg", "secondaryBg");
-  const cardBg = useColorModeValue("bodyBg", "bodyBg");
-  const gradientBg = useColorModeValue(
-    "linear(135deg, brand.500, brand.600)",
-    "linear(135deg, brand.600, brand.700)"
-  );
+   const activeBg = useColorModeValue("brand.50", "whiteAlpha.150");
+   const activeColor = useColorModeValue("brand.700", "brand.200");
+   const activeIconColor = useColorModeValue("brand.600", "brand.300");
+   const inactiveColor = useColorModeValue("gray.600", "gray.400");
+   const inactiveIconColor = useColorModeValue("gray.400", "gray.500");
+   const hoverBg = useColorModeValue("gray.100", "whiteAlpha.100");
+   const hoverColor = useColorModeValue("gray.800", "gray.100");
+   const cardBg = useColorModeValue("bodyBg", "bodyBg");
+   const brandTitleColor = useColorModeValue("gray.900", "gray.50");
+   const brandSubtitleColor = useColorModeValue("gray.500", "gray.400");
+   const brandIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
+   const brandIconColor = useColorModeValue("brand.600", "brand.300");
+   const sidebarShadow = useColorModeValue("xl", "4px 0 12px rgba(0,0,0,0.6)");
 
   const menuItems = [
     { path: "/", label: "Dashboard", icon: Home },
@@ -140,61 +132,34 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
       <ChakraLink
         display="flex"
         alignItems="center"
+        gap={3}
         onClick={onClick || (() => navigate(path))}
-        py={{ base: 4, md: 3 }}
-        px={{ base: 4, md: 4 }}
-        borderRadius="md"
+        py={2.5}
+        px={3}
+        borderRadius="lg"
         bg={isActive ? activeBg : "transparent"}
-        color={isActive ? activeColor : sidebarColor}
+        color={isActive ? activeColor : inactiveColor}
         fontWeight={isActive ? "semibold" : "medium"}
-        fontSize={{ base: "md", md: "md" }}
+        fontSize="sm"
         _hover={{
           bg: isActive ? activeBg : hoverBg,
-          transform: "translateX(4px)",
-          boxShadow: isActive ? "lg" : "md",
+          color: isActive ? activeColor : hoverColor,
+          textDecoration: "none",
         }}
-        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-        position="relative"
+        transition="background 0.15s ease, color 0.15s ease"
         width="full"
         textDecoration="none"
-        _focus={{ boxShadow: "outline" }}
-        border="1px solid transparent"
-        _focusVisible={{
-          borderColor: "brand.500",
-          boxShadow: "0 0 0 3px rgba(56, 178, 172, 0.1)",
-        }}
+        _focus={{ boxShadow: "none" }}
+        _focusVisible={{ boxShadow: "0 0 0 2px var(--chakra-colors-brand-500)" }}
       >
-        {isActive && (
-          <Box
-            position="absolute"
-            left="0"
-            top="50%"
-            transform="translateY(-50%)"
-            width="4px"
-            height="24px"
-            bg="brand.500"
-            borderRadius="full"
-            boxShadow="0 0 8px rgba(56, 178, 172, 0.3)"
-          />
-        )}
-        <Flex align="center" gap={{ base: 4, md: 3 }}>
-          <Box
-            p={2}
-            borderRadius="md"
-            bg={isActive ? "whiteAlpha.200" : "transparent"}
-            transition="all 0.2s ease"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Icon
-              as={icon}
-              boxSize={{ base: 5, md: 4 }}
-              opacity={isActive ? 1 : 0.7}
-            />
-          </Box>
-          <Text>{label}</Text>
-        </Flex>
+        <Icon
+          as={icon}
+          boxSize={4}
+          color={isActive ? activeIconColor : inactiveIconColor}
+          flexShrink={0}
+          transition="color 0.15s ease"
+        />
+        <Text>{label}</Text>
       </ChakraLink>
     );
   };
@@ -218,31 +183,25 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
         left={0}
         overflowY="auto"
         flexShrink={0}
-        boxShadow="xl"
+        boxShadow={sidebarShadow}
       >
-        {/* Modern Header */}
-        <Box bgGradient={gradientBg} color="white" p={6} boxShadow="lg">
+        {/* Brand Header */}
+        <Box px={4} py={5}>
           <HStack spacing={3} align="center">
-            <Box
-              p={3}
-              bg="whiteAlpha.200"
-              borderRadius="md"
-              backdropFilter="blur(20px)"
-              border="1px solid whiteAlpha.300"
-              boxShadow="xl"
-            >
-              <Icon as={Wallet} boxSize={6} />
+            <Box p={2} bg={brandIconBg} borderRadius="lg">
+              <Icon as={Wallet} boxSize={5} color={brandIconColor} />
             </Box>
             <Box>
               <Heading
                 as="h1"
-                size="lg"
+                fontSize="md"
                 fontWeight="bold"
                 letterSpacing="-0.02em"
+                color={brandTitleColor}
               >
                 Cashio
               </Heading>
-              <Text fontSize="sm" color="whiteAlpha.900" fontWeight="medium">
+              <Text fontSize="xs" color={brandSubtitleColor}>
                 Financial Management
               </Text>
             </Box>
@@ -250,8 +209,8 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
         </Box>
 
         {/* Navigation */}
-        <Box flex="1" px={4} py={6}>
-          <VStack align="stretch" spacing={2}>
+        <Box flex="1" px={3} py={4}>
+          <VStack align="stretch" spacing={1}>
             {menuItems.map((item) => (
               <NavItem
                 key={item.path}
@@ -264,7 +223,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
         </Box>
 
         {/* User Profile at bottom */}
-        <Box p={4} borderTop="1px solid" borderColor={borderColor} bg={cardBg}>
+        <Box px={3} py={3} borderTop="1px solid" borderColor={borderColor}>
           <UserProfileDisplay handleLogout={handleLogout} />
         </Box>
       </Box>
@@ -284,73 +243,47 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
           borderColor={borderColor}
         >
           <DrawerHeader
-            bgGradient={gradientBg}
-            color="white"
-            pb={6}
+            px={4}
+            py={4}
+            borderBottom="1px solid"
+            borderColor={borderColor}
             position="relative"
-            boxShadow="lg"
           >
-            <Button
-              position="absolute"
-              top={4}
-              right={4}
-              onClick={onClose}
-              variant="ghost"
-              size="sm"
-              color="white"
-              _hover={{
-                bg: "whiteAlpha.200",
-                transform: "scale(1.05)",
-              }}
-              _active={{ transform: "scale(0.95)" }}
-              borderRadius="md"
-              transition="all 0.2s ease"
-            >
-              <Icon as={X} boxSize={4} />
-            </Button>
-
-            <HStack spacing={3} align="center" mt={2}>
-              <Box
-                p={3}
-                bg="whiteAlpha.200"
-                borderRadius="md"
-                backdropFilter="blur(20px)"
-                border="1px solid whiteAlpha.300"
-                boxShadow="xl"
-              >
-                <Icon as={Wallet} boxSize={6} />
+            <HStack spacing={3} align="center">
+              <Box p={2} bg={brandIconBg} borderRadius="lg">
+                <Icon as={Wallet} boxSize={5} color={brandIconColor} />
               </Box>
-              <Box>
+              <Box flex={1}>
                 <Heading
                   as="h1"
-                  size="lg"
+                  fontSize="md"
                   fontWeight="bold"
                   letterSpacing="-0.02em"
+                  color={brandTitleColor}
                 >
                   Cashio
                 </Heading>
-                <Text fontSize="sm" color="whiteAlpha.900" fontWeight="medium">
+                <Text fontSize="xs" color={brandSubtitleColor}>
                   Financial Management
                 </Text>
               </Box>
+              <Button
+                onClick={onClose}
+                variant="ghost"
+                size="sm"
+                color={inactiveColor}
+                _hover={{ bg: hoverBg }}
+                borderRadius="md"
+              >
+                <Icon as={X} boxSize={4} />
+              </Button>
             </HStack>
           </DrawerHeader>
 
           <DrawerBody px={0} py={6}>
             <Flex direction="column" justify="space-between" h="full">
               <Box px={6}>
-                <VStack align="stretch" spacing={2}>
-                  <Text
-                    fontSize="xs"
-                    fontWeight="bold"
-                    color="gray.500"
-                    textTransform="uppercase"
-                    letterSpacing="wider"
-                    mb={3}
-                    px={4}
-                  >
-                    Navigation
-                  </Text>
+                <VStack align="stretch" spacing={1}>
                   {menuItems.map((item) => (
                     <NavItem
                       key={item.path}

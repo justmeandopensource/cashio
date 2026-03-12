@@ -47,6 +47,11 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
   const textSecondary = useColorModeValue("gray.600", "gray.400");
   const textMuted = useColorModeValue("gray.500", "gray.500");
   const iconColor = useColorModeValue("teal.500", "teal.300");
+  const modalHeaderBorderColor = borderColor;
+  const modalTitleColor = useColorModeValue("gray.900", "gray.50");
+  const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
+  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
+  const modalIconColor = useColorModeValue("brand.600", "brand.300");
 
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return "Not available";
@@ -84,58 +89,45 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
         display="flex"
         flexDirection="column"
       >
-        {/* Header with gradient background */}
+        {/* Flat header */}
         <Box
-          bgGradient="linear(135deg, teal.400, teal.600)"
-          color="white"
           px={{ base: 4, sm: 8 }}
-          py={{ base: 6, sm: 6 }}
-          pt={{ base: 12, sm: 6 }}
-          position="relative"
+          py={5}
+          borderBottom="1px solid"
+          borderColor={modalHeaderBorderColor}
         >
           <ModalCloseButton
-            color="white"
-            _hover={{ bg: "whiteAlpha.200" }}
             size="lg"
             borderRadius="full"
-            top={{ base: 4, sm: 6 }}
+            top={{ base: 4, sm: 4 }}
             right={{ base: 4, sm: 6 }}
           />
 
-          
-
-          <HStack spacing={{ base: 3, sm: 4 }} align="start">
-            <Box
-              p={{ base: 2, sm: 3 }}
-              bg="whiteAlpha.200"
-              borderRadius="md"
-              backdropFilter="blur(10px)"
-            >
-              <Icon as={BookText} boxSize={{ base: 5, sm: 6 }} />
+          <HStack spacing={3} align="center">
+            <Box p={2} bg={modalIconBg} borderRadius="lg">
+              <Icon as={BookText} boxSize={5} color={modalIconColor} />
             </Box>
 
-            <VStack align="start" spacing={2} flex={1}>
+            <VStack align="start" spacing={1} flex={1}>
               <HStack
                 spacing={3}
                 align="center"
                 flexWrap={{ base: "wrap", sm: "nowrap" }}
               >
                 <Text
-                  fontSize={{ base: "xl", sm: "2xl" }}
+                  fontSize="lg"
                   fontWeight="bold"
-                  lineHeight="1.2"
+                  color={modalTitleColor}
                 >
                   {ledgerName}
                 </Text>
                 <Badge
-                  colorScheme="whiteAlpha"
-                  variant="solid"
-                  fontSize={{ base: "sm", sm: "md" }}
-                  px={3}
-                  py={1}
+                  colorScheme="teal"
+                  variant="subtle"
+                  fontSize="sm"
+                  px={2}
+                  py={0.5}
                   borderRadius="full"
-                  bg="whiteAlpha.200"
-                  color="white"
                   flexShrink={0}
                 >
                   {currencySymbol}
@@ -143,10 +135,8 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
               </HStack>
 
               <Text
-                fontSize={{ base: "md", sm: "lg" }}
-                color="whiteAlpha.900"
-                fontWeight="medium"
-                lineHeight="1.4"
+                fontSize="sm"
+                color={modalSubtitleColor}
                 fontStyle={!description ? "italic" : "normal"}
               >
                 {description || "No description"}

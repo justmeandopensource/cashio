@@ -33,6 +33,11 @@ const PortfolioChangeModal: FC<PortfolioChangeModalProps> = ({
 }) => {
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.100", "gray.700");
+  const modalHeaderBorderColor = borderColor;
+  const modalTitleColor = useColorModeValue("gray.900", "gray.50");
+  const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
+  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
+  const modalIconColor = useColorModeValue("brand.600", "brand.300");
 
   const totalValueFormatted = splitCurrencyForDisplay(Math.abs(totalValueChange), currencySymbol);
   const totalValuePercentFormatted = {
@@ -61,28 +66,24 @@ const PortfolioChangeModal: FC<PortfolioChangeModalProps> = ({
         mx={4}
       >
         <Box
-          bgGradient="linear(135deg, teal.400, teal.600)"
-          color="white"
           px={6}
-          py={4}
-          position="relative"
+          py={5}
+          borderBottom="1px solid"
+          borderColor={modalHeaderBorderColor}
         >
-          <VStack spacing={2} align="center">
-            <Box
-              p={2}
-              bg="whiteAlpha.200"
-              borderRadius="full"
-              backdropFilter="blur(10px)"
-            >
-              <CheckCircle size={24} />
+          <HStack spacing={3} align="center">
+            <Box p={2} bg={modalIconBg} borderRadius="lg">
+              <Icon as={CheckCircle} boxSize={5} color={modalIconColor} />
             </Box>
-            <Text fontSize="xl" fontWeight="bold" textAlign="center">
-              Portfolio Updated Successfully
-            </Text>
-            <Text fontSize="sm" color="whiteAlpha.900" textAlign="center">
-              Your mutual fund NAVs have been updated
-            </Text>
-          </VStack>
+            <Box>
+              <Text fontSize="lg" fontWeight="bold" color={modalTitleColor}>
+                Portfolio Updated Successfully
+              </Text>
+              <Text fontSize="sm" color={modalSubtitleColor}>
+                Your mutual fund NAVs have been updated
+              </Text>
+            </Box>
+          </HStack>
         </Box>
 
         <ModalBody px={6} py={6}>

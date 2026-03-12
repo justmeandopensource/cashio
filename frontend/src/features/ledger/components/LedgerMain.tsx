@@ -146,11 +146,12 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
                    borderRadius="md"
                    whiteSpace="nowrap"
                    flex={{ base: 1, md: "none" }}
+                   border="1px solid"
+                   borderColor="transparent"
                    _selected={{
                      color: selectedTabColor,
                      bg: selectedTabBg,
                      fontWeight: "semibold",
-                     border: "1px solid",
                      borderColor: selectedTabBorderColor,
                    }}
                    color={tabColor}
@@ -175,11 +176,12 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
                   borderRadius="md"
                   whiteSpace="nowrap"
                   flex={{ base: 1, md: "none" }}
+                  border="1px solid"
+                  borderColor="transparent"
                   _selected={{
                     color: selectedTabColor,
                     bg: selectedTabBg,
                     fontWeight: "semibold",
-                    border: "1px solid",
                     borderColor: selectedTabBorderColor,
                   }}
                   color={tabColor}
@@ -199,11 +201,12 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
                   borderRadius="md"
                   whiteSpace="nowrap"
                   flex={{ base: 1, md: "none" }}
+                  border="1px solid"
+                  borderColor="transparent"
                   _selected={{
                     color: selectedTabColor,
                     bg: selectedTabBg,
                     fontWeight: "semibold",
-                    border: "1px solid",
                     borderColor: selectedTabBorderColor,
                   }}
                   color={tabColor}
@@ -223,11 +226,12 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
                   borderRadius="md"
                   whiteSpace="nowrap"
                   flex={{ base: 1, md: "none" }}
+                  border="1px solid"
+                  borderColor="transparent"
                   _selected={{
                     color: selectedTabColor,
                     bg: selectedTabBg,
                     fontWeight: "semibold",
-                    border: "1px solid",
                     borderColor: selectedTabBorderColor,
                   }}
                   color={tabColor}

@@ -52,8 +52,6 @@ const Account: React.FC = () => {
   const grayColor = useColorModeValue("secondaryTextColor", "secondaryTextColor");
   const grayBgColor = useColorModeValue("secondaryBg", "secondaryBg");
   const grayBorderColor = useColorModeValue("tertiaryBg", "tertiaryBg");
-  const buttonBg = useColorModeValue("buttonPrimaryBg", "buttonPrimaryBg");
-  const buttonHoverBg = useColorModeValue("buttonPrimaryHoverBg", "buttonPrimaryHoverBg");
 
   // Function to get balance color based on balance value and account type
   const getBalanceStyling = (balance: number, accountType?: string) => {
@@ -230,27 +228,27 @@ const Account: React.FC = () => {
             gap={2}
             width="100%"
           >
-            <HStack spacing={2}></HStack>
             <HStack
               spacing={2}
               justifyContent={{ base: "center", md: "flex-start" }}
               width={{ base: "100%", md: "auto" }}
             >
               <Button
-                color="white"
-                variant="ghost"
-                bg={buttonBg}
+                colorScheme="brand"
+                size="sm"
+                borderRadius="lg"
+                fontWeight="semibold"
                 onClick={() => setIsCreateModalOpen(true)}
-                _hover={{ bg: buttonHoverBg }}
               >
                 Add Transaction
               </Button>
               <Button
-                color="white"
-                variant="ghost"
-                bg={buttonBg}
+                colorScheme="brand"
+                variant="outline"
+                size="sm"
+                borderRadius="lg"
+                fontWeight="semibold"
                 onClick={() => setIsTransferModalOpen(true)}
-                _hover={{ bg: buttonHoverBg }}
               >
                 Transfer Funds
               </Button>

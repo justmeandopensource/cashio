@@ -20,20 +20,25 @@ interface PageHeaderProps {
 }
 
 const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, headerContent, backIcon, backOnClick }) => {
-  const gradientBg = useColorModeValue(
-    "linear(135deg, brand.500, brand.600)",
-    "linear(135deg, brand.600, brand.700)"
-  );
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const titleColor = useColorModeValue("gray.900", "gray.50");
+  const subtitleColor = useColorModeValue("gray.500", "gray.400");
+  const iconBoxBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
+  const iconColor = useColorModeValue("brand.600", "brand.300");
+  const backIconColor = useColorModeValue("gray.500", "gray.400");
+  const headerShadow = useColorModeValue("sm", "0 2px 8px rgba(0,0,0,0.6)");
 
   return (
     <Box
-      bgGradient={gradientBg}
-      color="white"
-      p={6}
+      px={{ base: 4, md: 8 }}
+      py={6}
       position="sticky"
       top={0}
       zIndex={10}
-      boxShadow="lg"
+      borderBottom="1px solid"
+      borderColor={borderColor}
+      boxShadow={headerShadow}
+      sx={{ clipPath: "inset(0 -20px -20px 0)" }}
     >
       <Flex
         justifyContent="space-between"
@@ -43,46 +48,46 @@ const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, heade
         width="100%"
       >
         <HStack spacing={3} align="center" flex={1} justifyContent={{ base: "flex-start", md: "flex-start" }} width={{ base: "100%", md: "auto" }}>
-           {backIcon && (
-             <Icon
-               as={backIcon}
-               boxSize={5}
-               onClick={backOnClick}
-               cursor="pointer"
-               color="whiteAlpha.800"
-               _hover={{ color: "white" }}
-             />
-           )}
-           {icon && (
-             <Box
-               p={3}
-               bg="whiteAlpha.200"
-               borderRadius="md"
-               backdropFilter="blur(20px)"
-               border="1px solid whiteAlpha.300"
-               boxShadow="xl"
-             >
-               <Icon as={icon} boxSize={6} />
-             </Box>
-           )}
-            <Box flex={1}>
-             <Heading
-               as="h1"
-               size="lg"
-               fontWeight="bold"
-               letterSpacing="-0.02em"
-             >
-               {title}
-             </Heading>
-             <Text fontSize="sm" color="whiteAlpha.900" fontWeight="medium">
-               {subtitle || <span>&nbsp;</span>}
-             </Text>
-           </Box>
+          {backIcon && (
+            <Icon
+              as={backIcon}
+              boxSize={5}
+              onClick={backOnClick}
+              cursor="pointer"
+              color={backIconColor}
+              _hover={{ color: titleColor }}
+            />
+          )}
+          {icon && (
+            <Box
+              p={2.5}
+              bg={iconBoxBg}
+              borderRadius="lg"
+            >
+              <Icon as={icon} boxSize={5} color={iconColor} />
+            </Box>
+          )}
+          <Box flex={1}>
+            <Heading
+              as="h1"
+              fontSize={{ base: "xl", md: "2xl" }}
+              fontWeight="bold"
+              letterSpacing="-0.02em"
+              color={titleColor}
+            >
+              {title}
+            </Heading>
+            {subtitle && (
+              <Text fontSize="sm" color={subtitleColor} mt={0.5}>
+                {subtitle}
+              </Text>
+            )}
+          </Box>
         </HStack>
-         <HStack justifyContent={{ base: "center", md: "flex-end" }} flexShrink={1} width={{ base: "100%", md: "auto" }}>
-           {headerContent}
-           {actions && <Box w="100%">{actions}</Box>}
-         </HStack>
+        <HStack justifyContent={{ base: "center", md: "flex-end" }} flexShrink={1} width={{ base: "100%", md: "auto" }}>
+          {headerContent}
+          {actions && <Box w="100%">{actions}</Box>}
+        </HStack>
       </Flex>
     </Box>
   );

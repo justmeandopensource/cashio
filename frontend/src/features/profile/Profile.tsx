@@ -51,6 +51,7 @@ const Profile: React.FC = () => {
                   minW={{ base: "auto", md: "auto" }}
                   borderBottom="none"
                   justifyContent={{ base: "space-around", md: "flex-start" }}
+                  gap={1}
                 >
                    <Tab
                      px={{ base: 4, md: 6 }}
@@ -60,11 +61,12 @@ const Profile: React.FC = () => {
                      whiteSpace="nowrap"
                      flex={{ base: 1, md: "none" }}
                      color={tabColor}
+                     border="1px solid"
+                     borderColor="transparent"
                      _selected={{
                        color: selectedTabColor,
                        bg: selectedTabBg,
                        fontWeight: "semibold",
-                       border: "1px solid",
                        borderColor: selectedTabBorderColor,
                      }}
                      _hover={{
@@ -81,11 +83,12 @@ const Profile: React.FC = () => {
                      whiteSpace="nowrap"
                      flex={{ base: 1, md: "none" }}
                      color={tabColor}
+                     border="1px solid"
+                     borderColor="transparent"
                      _selected={{
                        color: selectedTabColor,
                        bg: selectedTabBg,
                        fontWeight: "semibold",
-                       border: "1px solid",
                        borderColor: selectedTabBorderColor,
                      }}
                      _hover={{
@@ -102,11 +105,12 @@ const Profile: React.FC = () => {
                      whiteSpace="nowrap"
                      flex={{ base: 1, md: "none" }}
                      color={tabColor}
+                     border="1px solid"
+                     borderColor="transparent"
                      _selected={{
                        color: selectedTabColor,
                        bg: selectedTabBg,
                        fontWeight: "semibold",
-                       border: "1px solid",
                        borderColor: selectedTabBorderColor,
                      }}
                      _hover={{

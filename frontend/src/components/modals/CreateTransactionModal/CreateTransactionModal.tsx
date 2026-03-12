@@ -24,6 +24,7 @@ import {
   InputLeftAddon,
   Stack,
   FormHelperText,
+  Icon,
 } from "@chakra-ui/react";
 import { AxiosError } from "axios";
 import api from "@/lib/api";
@@ -132,6 +133,11 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
    const addonColor = useColorModeValue("gray.600", "gray.200");
    const errorBg = useColorModeValue("red.50", "red.700");
    const successBg = useColorModeValue("teal.50", "teal.700");
+  const modalHeaderBorderColor = borderColor;
+  const modalTitleColor = useColorModeValue("gray.900", "gray.50");
+  const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
+  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
+  const modalIconColor = useColorModeValue("brand.600", "brand.300");
 
   const resetForm = () => {
     setDate(new Date());
@@ -374,38 +380,29 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
         display="flex"
         flexDirection="column"
       >
-        {/* Modern gradient header */}
+        {/* Flat header */}
         <Box
-          bgGradient="linear(135deg, teal.400, teal.600)"
-          color="white"
           px={{ base: 4, sm: 8 }}
-          py={{ base: 6, sm: 6 }}
-          pt={{ base: 12, sm: 6 }}
-          position="relative"
+          py={5}
+          borderBottom="1px solid"
+          borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={{ base: 3, sm: 4 }} align="center">
-            <Box
-              p={{ base: 2, sm: 3 }}
-              bg="whiteAlpha.200"
-              borderRadius="md"
-              backdropFilter="blur(10px)"
-            >
-              <Plus size={24} style={{ margin: 0 }} />
+          <HStack spacing={3} align="center">
+            <Box p={2} bg={modalIconBg} borderRadius="lg">
+              <Icon as={Plus} boxSize={5} color={modalIconColor} />
             </Box>
 
             <Box>
               <Box
-                fontSize={{ base: "xl", sm: "2xl" }}
+                fontSize="lg"
                 fontWeight="bold"
-                lineHeight="1.2"
+                color={modalTitleColor}
               >
                 Add Transaction
               </Box>
               <Box
-                fontSize={{ base: "sm", sm: "md" }}
-                color="whiteAlpha.900"
-                fontWeight="medium"
-                mt={1}
+                fontSize="sm"
+                color={modalSubtitleColor}
               >
                 Record your {type === "expense" ? "expense" : "income"}
               </Box>
