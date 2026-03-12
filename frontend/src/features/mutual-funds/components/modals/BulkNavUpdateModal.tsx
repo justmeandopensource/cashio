@@ -67,6 +67,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
    const bgColor = useColorModeValue("white", "gray.800");
    const borderColor = useColorModeValue("gray.100", "gray.700");
    const cardBg = useColorModeValue("gray.50", "gray.700");
+   const footerBg = useColorModeValue("gray.50", "gray.900");
    const textColor = useColorModeValue("gray.800", "gray.100");
    const subTextColor = useColorModeValue("gray.600", "gray.400");
    const mutedTextColor = useColorModeValue("gray.400", "gray.500");
@@ -232,7 +233,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
           </VStack>
         </Box>
 
-        <ModalBody px={8} py={6} flex="1" overflow="auto">
+        <ModalBody px={8} py={6} flex="1" overflowY="auto" overflowX="hidden">
           <VStack spacing={6} align="stretch">
             <Box overflowX="auto" borderRadius="md" border="1px solid" borderColor={borderColor}>
               <Table variant="simple" size="sm">
@@ -314,7 +315,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
           </VStack>
         </ModalBody>
 
-        <ModalFooter px={8} py={4} bg={cardBg} borderTop="1px solid" borderColor={borderColor}>
+        <ModalFooter px={8} py={4} bg={footerBg} borderTop="1px solid" borderColor={borderColor}>
           <VStack spacing={3} align="stretch" flex={1}>
             {results.size > 0 && (
               <HStack spacing={2} justify="center">

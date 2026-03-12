@@ -168,7 +168,7 @@ const AccountDetailsModal: React.FC<AccountDetailsModalProps> = ({
           </HStack>
         </Box>
 
-        <ModalBody p={{ base: 4, sm: 8 }} flex="1" overflow="auto">
+        <ModalBody p={{ base: 4, sm: 8 }} flex="1" overflowY="auto" overflowX="hidden">
           <VStack spacing={{ base: 4, sm: 6 }} align="stretch">
             {/* Notes Section - Always shown */}
             <Box

@@ -118,6 +118,7 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.100", "gray.700");
   const cardBg = useColorModeValue("gray.50", "gray.700");
+  const footerBg = useColorModeValue("gray.50", "gray.900");
   const inputBg = useColorModeValue("white", "gray.700");
   const inputBorderColor = useColorModeValue("gray.200", "gray.600");
    const focusBorderColor = useColorModeValue("teal.500", "teal.300");
@@ -418,7 +419,8 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
           flex="1"
           display="flex"
           flexDirection="column"
-          overflow="auto"
+          overflowY="auto"
+          overflowX="hidden"
           justifyContent={{ base: "space-between", sm: "flex-start" }}
         >
           <VStack spacing={{ base: 5, sm: 6 }} align="stretch" w="100%">
@@ -826,7 +828,7 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
           display={{ base: "none", sm: "flex" }}
           px={8}
           py={6}
-          bg={cardBg}
+          bg={footerBg}
           borderTop="1px solid"
           borderColor={borderColor}
         >
