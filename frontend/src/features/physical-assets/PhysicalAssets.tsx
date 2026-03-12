@@ -74,9 +74,9 @@ const PhysicalAssets: FC = () => {
 
   // Tab colors
   const selectedTabColor = useColorModeValue("brand.700", "brand.200");
-  const selectedTabBg = useColorModeValue("brand.50", "brand.900");
+  const selectedTabBg = useColorModeValue("brand.50", "brand.800");
   const selectedTabBorderColor = useColorModeValue("brand.400", "brand.500");
-  const hoverTabBg = useColorModeValue("brand.100", "brand.800");
+  const hoverTabBg = useColorModeValue("brand.100", "brand.700");
   const tabColor = useColorModeValue("gray.600", "gray.400");
   const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
 
@@ -216,7 +216,7 @@ const PhysicalAssets: FC = () => {
     <Box>
       <Tabs variant="soft-rounded" colorScheme="brand" size={{ base: "md", md: "md" }} index={tabIndex} onChange={handleTabChange}>
         <Box p={{ base: 2, md: 4 }}>
-            <TabList borderBottom="none">
+            <TabList borderBottom="none" gap={1}>
               <Tab
                 px={{ base: 4, md: 6 }}
                 py={4}

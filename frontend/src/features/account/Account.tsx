@@ -44,11 +44,11 @@ const Account: React.FC = () => {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(false);
 
   const greenColor = useColorModeValue("green.500", "green.300");
-  const greenBgColor = useColorModeValue("green.50", "green.900");
-  const greenBorderColor = useColorModeValue("green.200", "green.700");
+  const greenBgColor = useColorModeValue("green.50", "green.800");
+  const greenBorderColor = useColorModeValue("green.200", "green.600");
   const redColor = useColorModeValue("red.500", "red.300");
-  const redBgColor = useColorModeValue("red.50", "red.900");
-  const redBorderColor = useColorModeValue("red.200", "red.700");
+  const redBgColor = useColorModeValue("red.50", "red.800");
+  const redBorderColor = useColorModeValue("red.200", "red.600");
   const grayColor = useColorModeValue("secondaryTextColor", "secondaryTextColor");
   const grayBgColor = useColorModeValue("secondaryBg", "secondaryBg");
   const grayBorderColor = useColorModeValue("tertiaryBg", "tertiaryBg");

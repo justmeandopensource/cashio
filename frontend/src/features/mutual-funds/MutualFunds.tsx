@@ -240,9 +240,9 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
   };
 
   const selectedTabColor = useColorModeValue("brand.700", "brand.200");
-  const selectedTabBg = useColorModeValue("brand.50", "brand.900");
+  const selectedTabBg = useColorModeValue("brand.50", "brand.800");
   const selectedTabBorderColor = useColorModeValue("brand.400", "brand.500");
-  const hoverTabBg = useColorModeValue("brand.100", "brand.800");
+  const hoverTabBg = useColorModeValue("brand.100", "brand.700");
   const tabColor = useColorModeValue("gray.600", "gray.400");
 
   if (!ledgerId) {
@@ -259,7 +259,7 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
         onChange={handleSubTabChange}
       >
         <Box p={{ base: 2, md: 4 }}>
-           <TabList borderBottom="none">
+           <TabList borderBottom="none" gap={1}>
                             <Tab
                             px={{ base: 4, md: 6 }}
                             py={4}

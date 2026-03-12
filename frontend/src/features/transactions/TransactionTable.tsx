@@ -135,11 +135,11 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
 
   const hoverBg = useColorModeValue("secondaryBg", "secondaryBg");
   const accountLinkColor = useColorModeValue("brand.500", "brand.300");
-  const storeTagBg = useColorModeValue("brand.50", "brand.900");
+  const storeTagBg = useColorModeValue("brand.50", "brand.800");
   const storeTagColor = useColorModeValue("brand.700", "brand.200");
-  const storeTagBorderColor = useColorModeValue("brand.200", "brand.700");
-  const tagBg = useColorModeValue("tertiaryBg", "tertiaryBg");
-  const tagColor = useColorModeValue("primaryTextColor", "primaryTextColor");
+  const storeTagBorderColor = useColorModeValue("brand.200", "brand.600");
+  const tagBg = useColorModeValue("gray.200", "gray.600");
+  const tagColor = useColorModeValue("gray.700", "gray.200");
   const popoverBg = useColorModeValue("brand.100", "brand.800");
   const popoverArrowBg = useColorModeValue("brand.100", "brand.800");
   const popoverHeaderBg = useColorModeValue(
@@ -147,7 +147,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
     "linear(to-r, brand.600, brand.800)"
   );
   const popoverItemBorderColor = useColorModeValue("brand.200", "brand.700");
-  const popoverItemHoverBg = useColorModeValue("brand.50", "brand.900");
+  const popoverItemHoverBg = useColorModeValue("brand.50", "brand.700");
   const popoverItemColor = useColorModeValue("brand.900", "brand.100");
   const creditColor = useColorModeValue("brand.500", "brand.300");
   const debitColor = useColorModeValue("red.500", "red.300");

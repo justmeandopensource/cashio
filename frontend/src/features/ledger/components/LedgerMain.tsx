@@ -61,9 +61,9 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
   const tabBg = useColorModeValue("primaryBg", "gray.700");
   const tabBorderColor = useColorModeValue("tertiaryBg", "gray.600");
   const selectedTabColor = useColorModeValue("brand.700", "brand.200");
-  const selectedTabBg = useColorModeValue("brand.50", "brand.900");
+  const selectedTabBg = useColorModeValue("brand.50", "brand.800");
   const selectedTabBorderColor = useColorModeValue("brand.400", "brand.500");
-  const hoverTabBg = useColorModeValue("brand.100", "brand.800");
+  const hoverTabBg = useColorModeValue("brand.100", "brand.700");
   const tabColor = useColorModeValue("gray.600", "gray.400");
 
   const { data: accounts, isError, isLoading } = useQuery<Account[]>({
@@ -137,6 +137,7 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
                 minW={{ base: "auto", md: "auto" }}
                 borderBottom="none"
                 justifyContent={{ base: "space-around", md: "flex-start" }}
+                gap={1}
               >
                  <Tab
                    px={{ base: 4, md: 6 }}

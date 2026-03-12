@@ -135,15 +135,15 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
     onOpen();
   };
 
-  const groupBg = useColorModeValue("teal.50", "teal.900");
+  const groupBg = useColorModeValue("teal.50", "teal.800");
   const hoverBg = useColorModeValue("secondaryBg", "secondaryBg");
   const groupColor = useColorModeValue("brand.600", "brand.200");
   const iconColor = useColorModeValue("brand.500", "brand.300");
   const hoverIconColor = useColorModeValue("brand.600", "brand.400");
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
-  const cardBorderColor = useColorModeValue("tertiaryBg", "tertiaryBg");
-  const groupCardBg = useColorModeValue("teal.50", "teal.900");
-  const groupCardBorderColor = useColorModeValue("brand.200", "brand.700");
+  const cardBorderColor = useColorModeValue("gray.200", "gray.600");
+  const groupCardBg = useColorModeValue("teal.50", "teal.800");
+  const groupCardBorderColor = useColorModeValue("brand.200", "brand.600");
    const groupTextColor = useColorModeValue("brand.700", "brand.200");
    const tertiaryTextColor = useColorModeValue("tertiaryTextColor", "tertiaryTextColor");
    const loadingBg = useColorModeValue("gray.50", "primaryBg");

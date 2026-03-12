@@ -1,4 +1,4 @@
-import React, { PureComponent, useState } from "react";
+import React, { PureComponent, useMemo, useState } from "react";
 import {
   Box,
   VStack,
@@ -25,48 +25,93 @@ import config from "@/config";
 import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
 
-// Soft, pleasant color palette
-const INCOME_COLORS_LIGHT = [
-  "#6FD6B0", // Soft Teal
-  "#5ECBBC", // Mint Green
-  "#4EBFB9", // Sea Green
-  "#3EB3B5", // Aqua
-  "#2EA7B1", // Turquoise
-  "#1E9BAD", // Blue-Green
+// Distinct base colors — one per top-level category.
+// Children get HSL-derived shades of their parent's base color.
+const BASE_COLORS_LIGHT = [
+  "#0d9488", // teal
+  "#2563eb", // blue
+  "#ea580c", // orange
+  "#7c3aed", // violet
+  "#16a34a", // green
+  "#db2777", // pink
+  "#ca8a04", // yellow
+  "#dc2626", // red
+  "#0891b2", // cyan
+  "#9333ea", // purple
 ];
 
-const INCOME_COLORS_DARK = [
-  "#004d40", // Darker Teal
-  "#00695c",
-  "#00897b",
-  "#26a69a",
-  "#4db6ac",
-  "#80cbc4", // Lighter Teal
+const BASE_COLORS_DARK = [
+  "#2dd4bf", // teal-400
+  "#60a5fa", // blue-400
+  "#fb923c", // orange-400
+  "#a78bfa", // violet-400
+  "#4ade80", // green-400
+  "#f472b6", // pink-400
+  "#facc15", // yellow-400
+  "#f87171", // red-400
+  "#22d3ee", // cyan-400
+  "#c084fc", // purple-400
 ];
 
-const EXPENSE_COLORS_LIGHT = [
-  "#F5845A", // Warm Coral
-  "#E97B4E", // Burnt Orange
-  "#EB6D3F", // Deep Tangerine
-  "#F4A460", // Sandy Brown
-  "#E67E51", // Soft Terracotta
-  "#F1B16D", // Muted Apricot
-  "#D4694C", // Rust
-  "#F08080", // Light Coral
-  "#CD5C5C", // Indian Red
-  "#E99B6C", // Soft Copper
-  "#C76D5D", // Dark Salmon
-  "#F3A062", // Warm Amber
-];
+// --- Color helpers ---
 
-const EXPENSE_COLORS_DARK = [
-  "#4A0000", // Very dark red, almost black
-  "#660000",
-  "#800000", // Maroon
-  "#990000",
-  "#B30000",
-  "#CC0000", // Darker red
-];
+function hexToHsl(hex: string): [number, number, number] {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  return [h * 360, s * 100, l * 100];
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  const sl = s / 100, ll = l / 100;
+  const a = sl * Math.min(ll, 1 - ll);
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const color = ll - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, "0");
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+function generateShades(baseHex: string, count: number): string[] {
+  if (count <= 1) return [baseHex];
+  const [h, s, l] = hexToHsl(baseHex);
+  const spread = Math.min(20, 40 / count);
+  return Array.from({ length: count }, (_, i) => {
+    const lightness = Math.max(20, Math.min(80, l - (spread * (count - 1)) / 2 + spread * i));
+    return hslToHex(h, s, lightness);
+  });
+}
+
+function assignColorsToCategories(categories: CategoryData[], baseColors: string[]): CategoryData[] {
+  return categories.map((category, index) => {
+    const baseColor = baseColors[index % baseColors.length];
+    if (category.children && category.children.length > 0) {
+      const shades = generateShades(baseColor, category.children.length);
+      return {
+        ...category,
+        color: baseColor,
+        children: category.children.map((child, childIndex) => ({
+          ...child,
+          color: shades[childIndex],
+        })),
+      };
+    }
+    return { ...category, color: baseColor };
+  });
+}
 
 interface CategoryData {
   name: string;
@@ -94,6 +139,7 @@ interface CustomizedTreemapContentProps {
   width?: number;
   height?: number;
   index?: number;
+  color?: string;
   colors: string[];
   strokeColor: string;
 }
@@ -219,9 +265,13 @@ class CustomizedTreemapContent extends PureComponent<CustomizedTreemapContentPro
       width = 0,
       height = 0,
       index = 0,
+      color,
       colors,
       strokeColor,
     } = this.props;
+
+    const fallbackColor = colors[Math.floor((index / (root?.children?.length || 1)) * colors.length)];
+    const fillColor = color ?? (depth < 2 ? fallbackColor : "#ffffff00");
 
     return (
       <g>
@@ -231,14 +281,7 @@ class CustomizedTreemapContent extends PureComponent<CustomizedTreemapContentPro
           width={width}
           height={height}
           style={{
-            fill:
-              depth < 2
-                ? colors[
-                    Math.floor(
-                      (index / (root?.children?.length || 1)) * colors.length,
-                    )
-                  ]
-                : "#ffffff00",
+            fill: fillColor,
             stroke: strokeColor,
             strokeWidth: 2 / (depth + 1e-10),
             strokeOpacity: 1 / (depth + 1e-10),
@@ -260,8 +303,7 @@ const CurrentMonthOverview: React.FC = () => {
    const treemapStrokeColor = useColorModeValue("#fff", "gray.800");
    const expenseColor = useColorModeValue("red.500", "red.400");
 
-  const incomeColors = useColorModeValue(INCOME_COLORS_LIGHT, INCOME_COLORS_DARK);
-  const expenseColors = useColorModeValue(EXPENSE_COLORS_LIGHT, EXPENSE_COLORS_DARK);
+  const baseColors = useColorModeValue(BASE_COLORS_LIGHT, BASE_COLORS_DARK);
 
   // Currency symbol from global store
   const { ledgerId, currencySymbol } = useLedgerStore();
@@ -291,6 +333,15 @@ const CurrentMonthOverview: React.FC = () => {
     enabled: !!ledgerId,
     staleTime: 1000 * 60 * 5,
   });
+
+  const coloredIncomeData = useMemo(
+    () => assignColorsToCategories(data?.income_categories_breakdown ?? [], baseColors),
+    [data?.income_categories_breakdown, baseColors]
+  );
+  const coloredExpenseData = useMemo(
+    () => assignColorsToCategories(data?.expense_categories_breakdown ?? [], baseColors),
+    [data?.expense_categories_breakdown, baseColors]
+  );
 
   // Render loading state
   if (isLoading) {
@@ -428,15 +479,14 @@ const CurrentMonthOverview: React.FC = () => {
       </HStack>
 
       {/* Treemap Visualizations with Side-by-Side Layout */}
-      {(data.income_categories_breakdown.length > 0 ||
-        data.expense_categories_breakdown.length > 0) && (
+      {(coloredIncomeData.length > 0 || coloredExpenseData.length > 0) && (
         <Grid
           templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
           gap={6}
           width="full"
         >
           {/* Income Treemap */}
-          {data.income_categories_breakdown.length > 0 && (
+          {coloredIncomeData.length > 0 && (
             <GridItem>
               <Box width="full">
                 <Heading
@@ -452,13 +502,13 @@ const CurrentMonthOverview: React.FC = () => {
                 <Box height="300px" width="full">
                   <ResponsiveContainer width="100%" height="100%">
                     <Treemap
-                      data={data.income_categories_breakdown}
+                      data={coloredIncomeData}
                       dataKey="value"
                       aspectRatio={4 / 3}
                       stroke={treemapStrokeColor}
                       content={
                         <CustomizedTreemapContent
-                          colors={incomeColors}
+                          colors={baseColors}
                           strokeColor={treemapStrokeColor}
                         />
                       }
@@ -472,7 +522,7 @@ const CurrentMonthOverview: React.FC = () => {
           )}
 
           {/* Expense Treemap */}
-          {data.expense_categories_breakdown.length > 0 && (
+          {coloredExpenseData.length > 0 && (
             <GridItem>
               <Box width="full">
                 <Heading
@@ -488,13 +538,13 @@ const CurrentMonthOverview: React.FC = () => {
                 <Box height="300px" width="full">
                   <ResponsiveContainer width="100%" height="100%">
                     <Treemap
-                      data={data.expense_categories_breakdown}
+                      data={coloredExpenseData}
                       dataKey="value"
                       aspectRatio={4 / 3}
                       stroke={treemapStrokeColor}
                       content={
                         <CustomizedTreemapContent
-                          colors={expenseColors}
+                          colors={baseColors}
                           strokeColor={treemapStrokeColor}
                         />
                       }
@@ -508,10 +558,10 @@ const CurrentMonthOverview: React.FC = () => {
           )}
 
           {/* Nested Category Breakdown Section */}
-          {data.income_categories_breakdown.length > 0 && (
+          {coloredIncomeData.length > 0 && (
             <GridItem>
                <NestedCategoryBreakdown
-                 categories={data.income_categories_breakdown}
+                 categories={coloredIncomeData}
                  type="income"
                  currencySymbol={currencySymbol as string}
                  primaryTextColor={primaryTextColor}
@@ -519,10 +569,10 @@ const CurrentMonthOverview: React.FC = () => {
             </GridItem>
           )}
 
-          {data.expense_categories_breakdown.length > 0 && (
+          {coloredExpenseData.length > 0 && (
             <GridItem>
                <NestedCategoryBreakdown
-                 categories={data.expense_categories_breakdown}
+                 categories={coloredExpenseData}
                  type="expense"
                  currencySymbol={currencySymbol as string}
                  primaryTextColor={primaryTextColor}
@@ -533,8 +583,7 @@ const CurrentMonthOverview: React.FC = () => {
       )}
 
       {/* No Data State */}
-      {data.income_categories_breakdown.length === 0 &&
-        data.expense_categories_breakdown.length === 0 && (
+      {coloredIncomeData.length === 0 && coloredExpenseData.length === 0 && (
           <Center
             height="300px"
             bg={bgColor}
