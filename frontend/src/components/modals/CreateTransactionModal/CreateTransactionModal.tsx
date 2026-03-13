@@ -116,6 +116,7 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
   const [isStoreSuggestionsOpen, setIsStoreSuggestionsOpen] = useState<boolean>(false);
   const [isLocationSuggestionsOpen, setIsLocationSuggestionsOpen] = useState<boolean>(false);
   const [isTagInputActive, setIsTagInputActive] = useState<boolean>(false);
+  const [isSplitDropdownOpen, setIsSplitDropdownOpen] = useState<boolean>(false);
   const [categorySearch, setCategorySearch] = useState<string>("");
   const [isCategoryOpen, setIsCategoryOpen] = useState<boolean>(false);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
@@ -518,7 +519,7 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
           setHighlightedAccountIndex(-1);
           return;
         }
-        if (isNotesSuggestionsOpen || isStoreSuggestionsOpen || isLocationSuggestionsOpen) {
+        if (isNotesSuggestionsOpen || isStoreSuggestionsOpen || isLocationSuggestionsOpen || isSplitDropdownOpen) {
           // Let child components close their own suggestion dropdowns
           return;
         }
@@ -530,7 +531,7 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
       if (e.key === "Enter") {
         const target = e.target as HTMLElement;
         if (target.tagName === "TEXTAREA") return;
-        if (isCategoryOpen || isAccountOpen || isNotesSuggestionsOpen || isStoreSuggestionsOpen || isLocationSuggestionsOpen || isTagInputActive) return;
+        if (isCategoryOpen || isAccountOpen || isNotesSuggestionsOpen || isStoreSuggestionsOpen || isLocationSuggestionsOpen || isTagInputActive || isSplitDropdownOpen) return;
         if (isSaveDisabled || isLoading) return;
         e.preventDefault();
         handleSubmitRef.current();
@@ -538,7 +539,7 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
     };
     document.addEventListener("keydown", onKeyDown, true);
     return () => document.removeEventListener("keydown", onKeyDown, true);
-  }, [isOpen, isCategoryOpen, isAccountOpen, isNotesSuggestionsOpen, isStoreSuggestionsOpen, isLocationSuggestionsOpen, isTagInputActive, isSaveDisabled, isLoading, onClose]);
+  }, [isOpen, isCategoryOpen, isAccountOpen, isNotesSuggestionsOpen, isStoreSuggestionsOpen, isLocationSuggestionsOpen, isTagInputActive, isSplitDropdownOpen, isSaveDisabled, isLoading, onClose]);
 
   return (
     <Modal
@@ -1004,6 +1005,8 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
                  bgColor={inputBg}
                  highlightColor={highlightColor}
                  buttonColorScheme="teal"
+                 ledgerId={ledgerId as string}
+                 onDropdownOpenChange={setIsSplitDropdownOpen}
                />
             ) : (
               /* Category Dropdown Card */
