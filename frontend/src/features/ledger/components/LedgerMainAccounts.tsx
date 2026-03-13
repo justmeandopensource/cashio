@@ -567,7 +567,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
   return (
     <Box bg={loadingBg} p={{ base: 3, md: 4, lg: 6 }} borderRadius="lg">
       {/* Summary bar */}
-      <SimpleGrid columns={3} spacing={{ base: 3, md: 4 }} mb={{ base: 4, md: 6 }}>
+      <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 3, md: 4 }} mb={{ base: 4, md: 6 }}>
         {/* Total Assets */}
         <Box
           bg={cardBg}
