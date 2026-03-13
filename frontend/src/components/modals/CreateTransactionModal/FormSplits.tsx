@@ -76,6 +76,9 @@ const FormSplits: React.FC<FormSplitsProps> = ({
   const splitCardBg = useColorModeValue("white", "gray.800");
   const splitBorderColor = useColorModeValue("gray.100", "gray.600");
   const progressTrackBg = useColorModeValue("gray.200", "gray.600");
+  const subtitleColor = useColorModeValue("gray.600", "gray.300");
+  const allocationLabelColor = useColorModeValue("gray.500", "gray.400");
+  const addonColor = useColorModeValue("gray.600", "gray.200");
 
   // Update splits based on the current amount
   const updateSplitsBasedOnAmount = useCallback((): void => {
@@ -218,7 +221,7 @@ const FormSplits: React.FC<FormSplitsProps> = ({
             <Text fontWeight="semibold" fontSize="lg" mb={1}>
               Split Details
             </Text>
-            <Text fontSize="sm" color="gray.600">
+            <Text fontSize="sm" color={subtitleColor}>
               Allocate amounts across multiple categories
             </Text>
           </Box>
@@ -253,7 +256,7 @@ const FormSplits: React.FC<FormSplitsProps> = ({
                         bg={inputBorderColor}
                         borderWidth="2px"
                         borderColor={inputBorderColor}
-                        color="gray.600"
+                        color={addonColor}
                         fontWeight="semibold"
                         fontSize="sm"
                       >
@@ -443,7 +446,7 @@ const FormSplits: React.FC<FormSplitsProps> = ({
               <VStack spacing={2} align="stretch">
                 {/* Labels */}
                 <HStack justifyContent="space-between">
-                  <Text fontSize="xs" fontWeight="semibold" color={inputBorderColor} textTransform="uppercase" letterSpacing="wider">
+                  <Text fontSize="xs" fontWeight="semibold" color={allocationLabelColor} textTransform="uppercase" letterSpacing="wider">
                     Allocation
                   </Text>
                   <Text fontSize="xs" fontWeight="bold" color={isComplete ? "teal.500" : isOver ? "red.500" : "gray.500"}>
