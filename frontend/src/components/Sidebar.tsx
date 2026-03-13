@@ -187,18 +187,18 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
         {/* Brand Header */}
         <Box px={4} py={5}>
           <HStack spacing={3} align="flex-start">
-            <Icon as={Wallet} boxSize={5} mt="2px" color={brandIconColor} flexShrink={0} />
+            <Icon as={Wallet} boxSize={6} mt="3px" color={brandIconColor} flexShrink={0} />
             <Box>
               <Heading
                 as="h1"
-                fontSize="md"
+                fontSize="xl"
                 fontWeight="bold"
                 letterSpacing="-0.02em"
                 color={brandTitleColor}
               >
                 Cashio
               </Heading>
-              <Text fontSize="xs" color={brandSubtitleColor}>
+              <Text fontSize="sm" color={brandSubtitleColor}>
                 Financial Management
               </Text>
             </Box>
@@ -247,18 +247,18 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
             position="relative"
           >
             <HStack spacing={3} align="flex-start">
-              <Icon as={Wallet} boxSize={5} mt="2px" color={brandIconColor} flexShrink={0} />
+              <Icon as={Wallet} boxSize={6} mt="3px" color={brandIconColor} flexShrink={0} />
               <Box flex={1}>
                 <Heading
                   as="h1"
-                  fontSize="md"
+                  fontSize="xl"
                   fontWeight="bold"
                   letterSpacing="-0.02em"
                   color={brandTitleColor}
                 >
                   Cashio
                 </Heading>
-                <Text fontSize="xs" color={brandSubtitleColor}>
+                <Text fontSize="sm" color={brandSubtitleColor}>
                   Financial Management
                 </Text>
               </Box>

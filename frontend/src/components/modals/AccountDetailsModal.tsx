@@ -3,8 +3,8 @@ import {
   Modal,
   ModalOverlay,
   ModalContent,
+  ModalFooter,
   ModalBody,
-  ModalCloseButton,
   VStack,
   HStack,
   Box,
@@ -16,7 +16,7 @@ import {
   Icon,
   Button,
 } from "@chakra-ui/react";
-import { Building, ShieldAlert, FileText, Edit } from "lucide-react";
+import { Building, ShieldAlert, FileText } from "lucide-react";
 
 interface AccountDetailsModalProps {
   isOpen: boolean;
@@ -53,6 +53,7 @@ const AccountDetailsModal: React.FC<AccountDetailsModalProps> = ({
   const textSecondary = useColorModeValue("gray.600", "gray.400");
   const textMuted = useColorModeValue("gray.500", "gray.500");
   const iconColor = useColorModeValue("teal.500", "teal.300");
+  const footerBg = useColorModeValue("gray.50", "gray.900");
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
@@ -109,13 +110,6 @@ const AccountDetailsModal: React.FC<AccountDetailsModalProps> = ({
           borderBottom="1px solid"
           borderColor={modalHeaderBorderColor}
         >
-          <ModalCloseButton
-            size="lg"
-            borderRadius="full"
-            top={{ base: 4, sm: 4 }}
-            right={{ base: 4, sm: 6 }}
-          />
-
           <HStack spacing={3} align="flex-start">
             <Icon as={accountType === "asset" ? Building : ShieldAlert} boxSize={5} mt="3px" color={modalIconColor} />
 
@@ -296,21 +290,72 @@ const AccountDetailsModal: React.FC<AccountDetailsModalProps> = ({
                 </Flex>
               </VStack>
             </Box>
-            {onEditAccount && (
+            {/* Mobile-only action buttons */}
+            <Box display={{ base: "block", sm: "none" }}>
+              {onEditAccount && (
+                <Button
+                  colorScheme="teal"
+                  size="lg"
+                  width="100%"
+                  mb={3}
+                  borderRadius="md"
+                  onClick={() => {
+                    onEditAccount();
+                    onClose();
+                  }}
+                >
+                  Edit Account
+                </Button>
+              )}
               <Button
-                colorScheme="teal"
+                variant="ghost"
+                colorScheme="gray"
+                onClick={onClose}
+                width="100%"
                 size="lg"
-                width="full"
-                onClick={() => {
-                  onEditAccount();
-                  onClose();
-                }}
+                borderRadius="md"
               >
-                Edit Account
+                Cancel
               </Button>
-            )}
+            </Box>
           </VStack>
         </ModalBody>
+
+        {/* Desktop-only footer */}
+        <ModalFooter
+          display={{ base: "none", sm: "flex" }}
+          px={8}
+          py={6}
+          bg={footerBg}
+          borderTop="1px solid"
+          borderColor={borderColor}
+        >
+          {onEditAccount && (
+            <Button
+              colorScheme="teal"
+              mr={3}
+              onClick={() => {
+                onEditAccount();
+                onClose();
+              }}
+              px={8}
+              py={3}
+              borderRadius="md"
+            >
+              Edit Account
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            colorScheme="gray"
+            onClick={onClose}
+            px={6}
+            py={3}
+            borderRadius="md"
+          >
+            Cancel
+          </Button>
+        </ModalFooter>
       </ModalContent>
     </Modal>
   );
