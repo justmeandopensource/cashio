@@ -16,6 +16,9 @@ import {
   PieChart,
   Building2,
   RefreshCw,
+  Wallet,
+  BadgeCheck,
+  Activity,
 } from "lucide-react";
 import { Amc, MutualFund } from "../types";
 import {
@@ -171,8 +174,21 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
   const unrealizedPnlColor = useColorModeValue("red.500", "red.300");
   const totalFundsColor = useColorModeValue("blue.600", "blue.400");
   const emptyStateBorderColor = useColorModeValue("tertiaryBg", "tertiaryBg");
-   const emptyStateIconColor = useColorModeValue("tertiaryTextColor", "tertiaryTextColor");
-   const overviewBg = useColorModeValue("primaryBg", "cardDarkBg");
+  const emptyStateIconColor = useColorModeValue("tertiaryTextColor", "tertiaryTextColor");
+  const overviewBg = useColorModeValue("primaryBg", "cardDarkBg");
+  const investedTopAccent = "blue.400";
+  const valueTopAccent = "teal.400";
+  const gainPositiveAccent = "green.400";
+  const gainNegativeAccent = "red.400";
+  const realizedTopAccent = totalRealizedGain >= 0 ? gainPositiveAccent : gainNegativeAccent;
+  const unrealizedTopAccent = totalUnrealizedPnL >= 0 ? gainPositiveAccent : gainNegativeAccent;
+  const fundsTopAccent = "purple.400";
+  const cardBorderColor = useColorModeValue("gray.200", "gray.700");
+  const labelIconColor = useColorModeValue("gray.400", "gray.500");
+  const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
+  const pnlPositiveBadgeBg = useColorModeValue("green.50", "green.900");
+  const pnlNegativeBadgeBg = useColorModeValue("red.50", "red.900");
+  const pnlBadgeBg = totalUnrealizedPnL >= 0 ? pnlPositiveBadgeBg : pnlNegativeBadgeBg;
 
   return (
     <Box>
@@ -236,23 +252,27 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
              </Flex>
 
              <SimpleGrid
-               columns={{ base: 1, sm: 2, lg: 5 }}
+               columns={{ base: 2, sm: 3, lg: 5 }}
                spacing={{ base: 4, md: 6 }}
              >
-               <Box p={4} borderRadius="lg" boxShadow="md" bg={emptyStateBg}>
-                 <Text fontSize="sm" color={tertiaryTextColor} mb={1}>
-                   Total Invested
-                 </Text>
+               <Box p={4} borderRadius="md" boxShadow="sm" bg={cardBg} border="1px solid" borderColor={cardBorderColor} transition="box-shadow 0.2s" _hover={{ boxShadow: "md" }} borderTopWidth="3px" borderTopColor={investedTopAccent}>
+                 <Flex align="center" gap={1.5} mb={1}>
+                   <Icon as={Wallet} boxSize={3} color={labelIconColor} />
+                   <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={labelIconColor}>
+                     Total Invested
+                   </Text>
+                 </Flex>
                  <HStack spacing={0} align="baseline">
                    <Text
-                     fontSize={{ base: "xl", md: "2xl" }}
+                     fontSize={{ base: "md", md: "xl" }}
                      fontWeight="semibold"
                      color={tertiaryTextColor}
+                     lineHeight="short"
                    >
                      {splitCurrencyForDisplay(totalInvested, currencySymbol || "₹").main}
                    </Text>
                    <Text
-                     fontSize={{ base: "md", md: "lg" }}
+                     fontSize="xs"
                      fontWeight="semibold"
                      color={tertiaryTextColor}
                      opacity={0.7}
@@ -262,20 +282,24 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                  </HStack>
                </Box>
 
-               <Box p={4} borderRadius="lg" boxShadow="md" bg={emptyStateBg}>
-                 <Text fontSize="sm" color={emptyStateTextColor} mb={1}>
-                   Total Value
-                 </Text>
+               <Box p={4} borderRadius="md" boxShadow="sm" bg={cardBg} border="1px solid" borderColor={cardBorderColor} transition="box-shadow 0.2s" _hover={{ boxShadow: "md" }} borderTopWidth="3px" borderTopColor={valueTopAccent}>
+                 <Flex align="center" gap={1.5} mb={1}>
+                   <Icon as={TrendingUp} boxSize={3} color={labelIconColor} />
+                   <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={labelIconColor}>
+                     Total Value
+                   </Text>
+                 </Flex>
                  <HStack spacing={0} align="baseline">
                    <Text
-                     fontSize={{ base: "xl", md: "2xl" }}
+                     fontSize={{ base: "md", md: "xl" }}
                      fontWeight="semibold"
                      color={totalValueColor}
+                     lineHeight="short"
                    >
                      {splitCurrencyForDisplay(totalCurrentValue, currencySymbol || "₹").main}
                    </Text>
                    <Text
-                     fontSize={{ base: "md", md: "lg" }}
+                     fontSize="xs"
                      fontWeight="semibold"
                      color={totalValueColor}
                      opacity={0.7}
@@ -285,23 +309,24 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                  </HStack>
                </Box>
 
-               <Box p={4} borderRadius="lg" boxShadow="md" bg={emptyStateBg}>
-                 <Text fontSize="sm" color={emptyStateTextColor} mb={1}>
-                   Total Realized Gain
-                 </Text>
+               <Box p={4} borderRadius="md" boxShadow="sm" bg={cardBg} border="1px solid" borderColor={cardBorderColor} transition="box-shadow 0.2s" _hover={{ boxShadow: "md" }} borderTopWidth="3px" borderTopColor={realizedTopAccent}>
+                 <Flex align="center" gap={1.5} mb={1}>
+                   <Icon as={BadgeCheck} boxSize={3} color={labelIconColor} />
+                   <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={labelIconColor}>
+                     Total Realized Gain
+                   </Text>
+                 </Flex>
                  <HStack spacing={0} align="baseline">
                    <Text
-                     fontSize={{ base: "xl", md: "2xl" }}
+                     fontSize={{ base: "md", md: "xl" }}
                      fontWeight="semibold"
                      color={totalRealizedGain >= 0 ? realizedGainColor : unrealizedPnlColor}
+                     lineHeight="short"
                    >
-                     {
-                       splitCurrencyForDisplay(Math.abs(totalRealizedGain), currencySymbol || "₹")
-                         .main
-                     }
+                     {(totalRealizedGain >= 0 ? "+" : "−") + splitCurrencyForDisplay(Math.abs(totalRealizedGain), currencySymbol || "₹").main}
                    </Text>
                    <Text
-                     fontSize={{ base: "md", md: "lg" }}
+                     fontSize="xs"
                      fontWeight="semibold"
                      color={totalRealizedGain >= 0 ? realizedGainColor : unrealizedPnlColor}
                      opacity={0.7}
@@ -314,26 +339,25 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                  </HStack>
                </Box>
 
-               <Box p={4} borderRadius="lg" boxShadow="md" bg={emptyStateBg}>
-                 <Text fontSize="sm" color={emptyStateTextColor} mb={1}>
-                   Total Unrealized P&L
-                 </Text>
+               <Box p={4} borderRadius="md" boxShadow="sm" bg={cardBg} border="1px solid" borderColor={cardBorderColor} transition="box-shadow 0.2s" _hover={{ boxShadow: "md" }} borderTopWidth="3px" borderTopColor={unrealizedTopAccent}>
+                 <Flex align="center" gap={1.5} mb={1}>
+                   <Icon as={Activity} boxSize={3} color={labelIconColor} />
+                   <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={labelIconColor}>
+                     Total Unrealized P&L
+                   </Text>
+                 </Flex>
                  <VStack align="start" spacing={0}>
                    <HStack spacing={0} align="baseline">
                      <Text
-                       fontSize={{ base: "xl", md: "2xl" }}
+                       fontSize={{ base: "md", md: "xl" }}
                        fontWeight="semibold"
                        color={totalUnrealizedPnL >= 0 ? realizedGainColor : unrealizedPnlColor}
+                       lineHeight="short"
                      >
-                       {
-                         splitCurrencyForDisplay(
-                           Math.abs(totalUnrealizedPnL),
-                           currencySymbol || "₹"
-                         ).main
-                       }
+                       {(totalUnrealizedPnL >= 0 ? "+" : "−") + splitCurrencyForDisplay(Math.abs(totalUnrealizedPnL), currencySymbol || "₹").main}
                      </Text>
                      <Text
-                       fontSize={{ base: "md", md: "lg" }}
+                       fontSize="xs"
                        fontWeight="semibold"
                        color={totalUnrealizedPnL >= 0 ? realizedGainColor : unrealizedPnlColor}
                        opacity={0.7}
@@ -346,33 +370,47 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                        }
                      </Text>
                    </HStack>
-                    <HStack spacing={0} align="baseline">
-                      <Text
-                        fontSize="sm"
-                        color={totalUnrealizedPnL >= 0 ? realizedGainColor : unrealizedPnlColor}
-                      >
-                        {splitPercentageForDisplay(totalPnLPercentage).main}
-                      </Text>
-                      <Text
-                        fontSize="xs"
-                        color={totalUnrealizedPnL >= 0 ? realizedGainColor : unrealizedPnlColor}
-                        opacity={0.7}
-                      >
-                        {splitPercentageForDisplay(totalPnLPercentage).decimals}
-                      </Text>
-                    </HStack>
+                    <Flex
+                     mt={1}
+                     display="inline-flex"
+                     align="baseline"
+                     gap={0}
+                     px={2}
+                     py={0.5}
+                     borderRadius="full"
+                     bg={pnlBadgeBg}
+                   >
+                     <Text
+                       fontSize="2xs"
+                       fontWeight="semibold"
+                       color={totalUnrealizedPnL >= 0 ? realizedGainColor : unrealizedPnlColor}
+                     >
+                       {splitPercentageForDisplay(totalPnLPercentage).main}
+                     </Text>
+                     <Text
+                       fontSize="2xs"
+                       color={totalUnrealizedPnL >= 0 ? realizedGainColor : unrealizedPnlColor}
+                       opacity={0.8}
+                     >
+                       {splitPercentageForDisplay(totalPnLPercentage).decimals}
+                     </Text>
+                   </Flex>
                  </VStack>
                </Box>
 
-               <Box p={4} borderRadius="lg" boxShadow="md" bg={emptyStateBg}>
-                 <Text fontSize="sm" color={emptyStateTextColor} mb={1}>
-                   Total Funds
-                 </Text>
+               <Box p={4} borderRadius="md" boxShadow="sm" bg={cardBg} border="1px solid" borderColor={cardBorderColor} transition="box-shadow 0.2s" _hover={{ boxShadow: "md" }} borderTopWidth="3px" borderTopColor={fundsTopAccent}>
+                 <Flex align="center" gap={1.5} mb={1}>
+                   <Icon as={PieChart} boxSize={3} color={labelIconColor} />
+                   <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={labelIconColor}>
+                     Total Funds
+                   </Text>
+                 </Flex>
                  <VStack align="start" spacing={0}>
                    <Text
-                     fontSize={{ base: "xl", md: "2xl" }}
+                     fontSize={{ base: "md", md: "xl" }}
                      fontWeight="bold"
                      color={totalFundsColor}
+                     lineHeight="short"
                    >
                      {filteredMutualFunds.filter(fund => toNumber(fund.total_units) > 0).length}
                    </Text>
