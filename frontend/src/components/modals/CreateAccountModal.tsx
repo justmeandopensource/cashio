@@ -93,8 +93,7 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = textColorSecondary;
-  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-  const modalIconColor = useColorModeValue("brand.600", "brand.300");
+  const modalIconColor = useColorModeValue("gray.400", "gray.500");
 
   // Update parentAccount state when parentAccountId prop changes
   useEffect(() => {
@@ -239,10 +238,8 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
           borderBottom="1px solid"
           borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={3} align="center">
-            <Box p={2} bg={modalIconBg} borderRadius="lg">
-              <Icon as={Plus} boxSize={5} color={modalIconColor} />
-            </Box>
+          <HStack spacing={3} align="flex-start">
+            <Icon as={Plus} boxSize={5} mt="3px" color={modalIconColor} />
 
             <Box>
               <Box
@@ -559,32 +556,17 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
               isLoading={createAccountMutation.isPending}
               isDisabled={!accountName || isGroupAccountsError}
               loadingText="Creating..."
-              leftIcon={<CheckCircle />}
-              _hover={{
-                transform: createAccountMutation.isPending
-                  ? "none"
-                  : "translateY(-2px)",
-                boxShadow: createAccountMutation.isPending ? "none" : "lg",
-              }}
-              transition="all 0.2s"
             >
               Create Account
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
+              colorScheme="gray"
               onClick={onClose}
               size="lg"
               width="100%"
               borderRadius="md"
               isDisabled={createAccountMutation.isPending}
-              leftIcon={<X />}
-               borderWidth="2px"
-               borderColor={buttonBorderColor}
-               color={textColorTertiary}
-               _hover={{
-                 bg: buttonHoverBg,
-                 borderColor: buttonHoverBorderColor,
-               }}
             >
               Cancel
             </Button>
@@ -610,32 +592,17 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
             isLoading={createAccountMutation.isPending}
             isDisabled={!accountName || isGroupAccountsError}
             loadingText="Creating..."
-            leftIcon={<CheckCircle />}
-            _hover={{
-              transform: createAccountMutation.isPending
-                ? "none"
-                : "translateY(-2px)",
-              boxShadow: createAccountMutation.isPending ? "none" : "lg",
-            }}
-            transition="all 0.2s"
           >
             Create Account
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
+            colorScheme="gray"
             onClick={onClose}
             isDisabled={createAccountMutation.isPending}
-            leftIcon={<X />}
             px={6}
             py={3}
             borderRadius="md"
-             borderWidth="2px"
-             borderColor={buttonBorderColor}
-             color={textColorTertiary}
-             _hover={{
-               bg: buttonHoverBg,
-               borderColor: buttonHoverBorderColor,
-             }}
           >
             Cancel
           </Button>

@@ -116,8 +116,7 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
-  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-  const modalIconColor = useColorModeValue("brand.600", "brand.300");
+  const modalIconColor = useColorModeValue("gray.400", "gray.500");
 
   const createMutualFundMutation = useMutation({
     mutationFn: (fundData: MutualFundCreate) =>
@@ -303,10 +302,8 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
           borderBottom="1px solid"
           borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={3} align="center">
-            <Box p={2} bg={modalIconBg} borderRadius="lg">
-              <Icon as={TrendingUp} boxSize={5} color={modalIconColor} />
-            </Box>
+          <HStack spacing={3} align="flex-start">
+            <Icon as={TrendingUp} boxSize={5} mt="3px" color={modalIconColor} />
 
             <Box>
               <Text
@@ -714,13 +711,7 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
             <Button
               type="submit"
               form="create-mutual-fund-form"
-              bg="teal.500"
-              color="white"
-              _hover={{
-                bg: "teal.600",
-                transform: isLoading ? "none" : "translateY(-2px)",
-                boxShadow: isLoading ? "none" : "lg",
-              }}
+              colorScheme="teal"
               size="lg"
               width="100%"
               mb={3}
@@ -728,29 +719,19 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
               isLoading={isLoading}
               loadingText="Creating Mutual Fund..."
               isDisabled={!isFormValid || amcs.length === 0}
-              leftIcon={<CheckCircle />}
-              transition="all 0.2s"
               onClick={handleSubmit}
             >
               Create Mutual Fund
             </Button>
 
             <Button
-              variant="outline"
+              variant="ghost"
+              colorScheme="gray"
               onClick={handleClose}
               size="lg"
               width="100%"
               borderRadius="md"
-              borderWidth="2px"
-              borderColor={useColorModeValue("gray.300", "gray.600")}
-              color={useColorModeValue("gray.600", "gray.200")}
-              _hover={{
-                bg: useColorModeValue("gray.50", "gray.600"),
-                borderColor: useColorModeValue("gray.400", "gray.500"),
-              }}
               isDisabled={isLoading}
-              leftIcon={<X />}
-              transition="all 0.2s"
             >
               Cancel
             </Button>
@@ -769,13 +750,7 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
           <Button
             type="submit"
             form="create-mutual-fund-form"
-            bg="teal.500"
-            color="white"
-            _hover={{
-              bg: "teal.600",
-              transform: isLoading ? "none" : "translateY(-2px)",
-              boxShadow: isLoading ? "none" : "lg",
-            }}
+            colorScheme="teal"
             mr={3}
             px={8}
             py={3}
@@ -783,28 +758,19 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
             isLoading={isLoading}
             loadingText="Creating Mutual Fund..."
             isDisabled={!isFormValid || amcs.length === 0}
-            leftIcon={<CheckCircle />}
-            transition="all 0.2s"
             onClick={handleSubmit}
           >
             Create Mutual Fund
           </Button>
 
           <Button
-            variant="outline"
+            variant="ghost"
+            colorScheme="gray"
             onClick={handleClose}
             isDisabled={isLoading}
-            leftIcon={<X />}
             px={6}
             py={3}
             borderRadius="md"
-            borderWidth="2px"
-            borderColor={useColorModeValue("gray.300", "gray.600")}
-            color={useColorModeValue("gray.600", "gray.200")}
-            _hover={{
-              bg: useColorModeValue("gray.50", "gray.600"),
-              borderColor: useColorModeValue("gray.400", "gray.500"),
-            }}
           >
             Cancel
           </Button>

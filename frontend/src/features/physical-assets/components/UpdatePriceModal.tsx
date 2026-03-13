@@ -63,8 +63,7 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = textColorSecondary;
-  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-  const modalIconColor = useColorModeValue("brand.600", "brand.300");
+  const modalIconColor = useColorModeValue("gray.400", "gray.500");
    const buttonBorderColor = useColorModeValue("gray.300", "gray.600");
    const buttonHoverBg = useColorModeValue("gray.50", "gray.600");
    const buttonHoverBorderColor = useColorModeValue("gray.400", "gray.500");
@@ -194,10 +193,8 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
           borderBottom="1px solid"
           borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={3} align="center">
-            <Box p={2} bg={modalIconBg} borderRadius="lg">
-              <Icon as={RefreshCw} boxSize={5} color={modalIconColor} />
-            </Box>
+          <HStack spacing={3} align="flex-start">
+            <Icon as={RefreshCw} boxSize={5} mt="3px" color={modalIconColor} />
 
             <Box>
               <HStack spacing={3} mb={1}>
@@ -443,13 +440,7 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
           {/* Mobile-only action buttons that stay at bottom */}
           <Box display={{ base: "block", sm: "none" }} mt={6}>
             <Button
-              bg="teal.500"
-              color="white"
-              _hover={{
-                bg: "teal.600",
-                transform: isLoading ? "none" : "translateY(-2px)",
-                boxShadow: isLoading ? "none" : "lg",
-              }}
+              colorScheme="teal"
               onClick={handleUpdate}
               size="lg"
               width="100%"
@@ -462,27 +453,17 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
                 !!errors.price ||
                 newPriceValue === currentPrice
               }
-              leftIcon={<RefreshCw />}
-              transition="all 0.2s"
             >
               Update Price
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
+              colorScheme="gray"
               onClick={handleClose}
               size="lg"
               width="100%"
               borderRadius="md"
-              borderWidth="2px"
-               borderColor={buttonBorderColor}
-               color={textColorTertiary}
-                 _hover={{
-                   bg: buttonHoverBg,
-                   borderColor: buttonHoverBorderColor,
-                   transform: "translateY(-2px)",
-                 }}
               isDisabled={isLoading}
-              transition="all 0.2s"
             >
               Cancel
             </Button>
@@ -499,14 +480,8 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
           borderColor={borderColor}
         >
           <Button
-            bg="teal.500"
-            color="white"
+            colorScheme="teal"
             mr={3}
-            _hover={{
-              bg: "teal.600",
-              transform: isLoading ? "none" : "translateY(-2px)",
-              boxShadow: isLoading ? "none" : "lg",
-            }}
             onClick={handleUpdate}
             px={8}
             py={3}
@@ -518,25 +493,17 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
               !!errors.price ||
               newPriceValue === currentPrice
             }
-            leftIcon={<RefreshCw />}
-            transition="all 0.2s"
           >
             Update Price
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
+            colorScheme="gray"
             onClick={handleClose}
             isDisabled={isLoading}
             px={6}
             py={3}
             borderRadius="md"
-            borderWidth="2px"
-             borderColor={buttonBorderColor}
-             color={textColorTertiary}
-             _hover={{
-               bg: buttonHoverBg,
-               borderColor: buttonHoverBorderColor,
-             }}
           >
             Cancel
           </Button>

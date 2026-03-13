@@ -78,8 +78,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
    const tealColor = useColorModeValue("teal.500", "teal.300");
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
-  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-  const modalIconColor = useColorModeValue("brand.600", "brand.300");
+  const modalIconColor = useColorModeValue("gray.400", "gray.500");
 
   useEffect(() => {
     if (isOpen) {
@@ -219,10 +218,8 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent bg={bgColor} borderRadius="md" boxShadow="2xl" border="1px solid" borderColor={borderColor} overflow="hidden" mx={4} maxHeight="90vh" display="flex" flexDirection="column">
         <Box px={8} py={5} borderBottom="1px solid" borderColor={modalHeaderBorderColor}>
-          <HStack spacing={3} align="center">
-            <Box p={2} bg={modalIconBg} borderRadius="lg">
-              <Icon as={RefreshCw} boxSize={5} color={modalIconColor} />
-            </Box>
+          <HStack spacing={3} align="flex-start">
+            <Icon as={RefreshCw} boxSize={5} mt="3px" color={modalIconColor} />
             <Box>
               <Text fontSize="lg" fontWeight="bold" color={modalTitleColor}>
                 Bulk NAV Update

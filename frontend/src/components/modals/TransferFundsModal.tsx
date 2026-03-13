@@ -132,8 +132,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
-  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-  const modalIconColor = useColorModeValue("brand.600", "brand.300");
+  const modalIconColor = useColorModeValue("gray.400", "gray.500");
 
   const resetForm = useCallback(() => {
     setDate(new Date());
@@ -336,10 +335,8 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
           borderBottom="1px solid"
           borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={3} align="center">
-            <Box p={2} bg={modalIconBg} borderRadius="lg">
-              <Icon as={ArrowRightLeft} boxSize={5} color={modalIconColor} />
-            </Box>
+          <HStack spacing={3} align="flex-start">
+            <Icon as={ArrowRightLeft} boxSize={5} mt="3px" color={modalIconColor} />
 
             <Box>
               <Box
@@ -750,30 +747,17 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                 (isDifferentLedger &&
                   (!destinationLedgerId || !destinationAmount))
               }
-              leftIcon={<Check />}
-              _hover={{
-                transform: isLoading ? "none" : "translateY(-2px)",
-                boxShadow: isLoading ? "none" : "lg",
-              }}
-              transition="all 0.2s"
             >
               Complete Transfer
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
+              colorScheme="gray"
               onClick={onClose}
               size="lg"
               width="100%"
               borderRadius="md"
               isDisabled={isLoading}
-              leftIcon={<X />}
-               borderWidth="2px"
-               borderColor={buttonBorderColor}
-               color={buttonColor}
-               _hover={{
-                 bg: buttonHoverBg,
-                 borderColor: buttonHoverBorderColor,
-               }}
             >
               Cancel
             </Button>
@@ -806,30 +790,17 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                (isDifferentLedger &&
                  (!destinationLedgerId || !destinationAmount))
              }
-             leftIcon={<Check />}
-             _hover={{
-               transform: isLoading ? "none" : "translateY(-2px)",
-               boxShadow: isLoading ? "none" : "lg",
-             }}
-             transition="all 0.2s"
            >
              Complete Transfer
            </Button>
           <Button
-            variant="outline"
+            variant="ghost"
+            colorScheme="gray"
             onClick={onClose}
             isDisabled={isLoading}
-            leftIcon={<X />}
             px={6}
             py={3}
             borderRadius="md"
-             borderWidth="2px"
-             borderColor={buttonBorderColor}
-             color={buttonColor}
-             _hover={{
-               bg: buttonHoverBg,
-               borderColor: buttonHoverBorderColor,
-             }}
           >
             Cancel
           </Button>

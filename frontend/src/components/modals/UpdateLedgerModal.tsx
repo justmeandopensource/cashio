@@ -142,8 +142,7 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
-  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-  const modalIconColor = useColorModeValue("brand.600", "brand.300");
+  const modalIconColor = useColorModeValue("gray.400", "gray.500");
 
   const handleSubmit = async (): Promise<void> => {
     if (!ledgerName || !selectedCurrency) {
@@ -263,10 +262,8 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
           borderBottom="1px solid"
           borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={3} align="center">
-            <Box p={2} bg={modalIconBg} borderRadius="lg">
-              <Icon as={Edit} boxSize={5} color={modalIconColor} />
-            </Box>
+          <HStack spacing={3} align="flex-start">
+            <Icon as={Edit} boxSize={5} mt="3px" color={modalIconColor} />
 
             <Box>
               <Box
@@ -518,30 +515,17 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
               isLoading={isLoading}
               loadingText="Updating..."
               isDisabled={!ledgerName || !selectedCurrency || !hasChanges}
-              leftIcon={<Check />}
-              _hover={{
-                transform: isLoading ? "none" : "translateY(-2px)",
-                boxShadow: isLoading ? "none" : "lg",
-              }}
-              transition="all 0.2s"
             >
               Update Ledger
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
+              colorScheme="gray"
               onClick={onClose}
               width="100%"
               size="lg"
               borderRadius="md"
               isDisabled={isLoading}
-              leftIcon={<X />}
-              borderWidth="2px"
-              borderColor={useColorModeValue("gray.300", "gray.600")}
-              color={useColorModeValue("gray.600", "gray.200")}
-              _hover={{
-                bg: useColorModeValue("gray.50", "gray.600"),
-                borderColor: useColorModeValue("gray.400", "gray.500"),
-              }}
             >
               Cancel
             </Button>
@@ -567,30 +551,17 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
             isLoading={isLoading}
             loadingText="Updating..."
             isDisabled={!ledgerName || !selectedCurrency || !hasChanges}
-            leftIcon={<Check />}
-            _hover={{
-              transform: isLoading ? "none" : "translateY(-2px)",
-              boxShadow: isLoading ? "none" : "lg",
-            }}
-            transition="all 0.2s"
           >
             Update Ledger
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
+            colorScheme="gray"
             onClick={onClose}
             isDisabled={isLoading}
-            leftIcon={<X />}
             px={6}
             py={3}
             borderRadius="md"
-            borderWidth="2px"
-            borderColor={useColorModeValue("gray.300", "gray.600")}
-            color={useColorModeValue("gray.600", "gray.200")}
-            _hover={{
-              bg: useColorModeValue("gray.50", "gray.600"),
-              borderColor: useColorModeValue("gray.400", "gray.500"),
-            }}
           >
             Cancel
           </Button>

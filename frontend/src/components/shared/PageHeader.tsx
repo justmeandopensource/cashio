@@ -23,8 +23,7 @@ const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, heade
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const titleColor = useColorModeValue("gray.900", "gray.50");
   const subtitleColor = useColorModeValue("gray.500", "gray.400");
-  const iconBoxBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-  const iconColor = useColorModeValue("brand.600", "brand.300");
+  const iconColor = useColorModeValue("gray.400", "gray.500");
   const backIconColor = useColorModeValue("gray.500", "gray.400");
   const headerShadow = useColorModeValue("sm", "0 2px 8px rgba(0,0,0,0.6)");
 
@@ -47,11 +46,12 @@ const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, heade
         gap={4}
         width="100%"
       >
-        <HStack spacing={3} align="center" flex={1} justifyContent={{ base: "flex-start", md: "flex-start" }} width={{ base: "100%", md: "auto" }}>
+        <HStack spacing={3} align="flex-start" flex={1} justifyContent={{ base: "flex-start", md: "flex-start" }} width={{ base: "100%", md: "auto" }}>
           {backIcon && (
             <Icon
               as={backIcon}
               boxSize={5}
+              mt={{ base: "2px", md: "4px" }}
               onClick={backOnClick}
               cursor="pointer"
               color={backIconColor}
@@ -59,13 +59,7 @@ const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, heade
             />
           )}
           {icon && (
-            <Box
-              p={2.5}
-              bg={iconBoxBg}
-              borderRadius="lg"
-            >
-              <Icon as={icon} boxSize={5} color={iconColor} />
-            </Box>
+            <Icon as={icon} boxSize={{ base: 5, md: 6 }} mt={{ base: "2px", md: "3px" }} color={iconColor} flexShrink={0} />
           )}
           <Box flex={1}>
             <Heading

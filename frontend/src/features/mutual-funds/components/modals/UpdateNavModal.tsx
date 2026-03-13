@@ -76,8 +76,7 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = textColorSecondary;
-  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-  const modalIconColor = useColorModeValue("brand.600", "brand.300");
+  const modalIconColor = useColorModeValue("gray.400", "gray.500");
   const buttonBorderColor = useColorModeValue("gray.300", "gray.600");
   const buttonHoverBg = useColorModeValue("gray.50", "gray.600");
   const buttonHoverBorderColor = useColorModeValue("gray.400", "gray.500");
@@ -237,10 +236,8 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
           borderBottom="1px solid"
           borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={3} align="center">
-            <Box p={2} bg={modalIconBg} borderRadius="lg">
-              <Icon as={RefreshCw} boxSize={5} color={modalIconColor} />
-            </Box>
+          <HStack spacing={3} align="flex-start">
+            <Icon as={RefreshCw} boxSize={5} mt="3px" color={modalIconColor} />
 
             <Box>
               <Text
@@ -504,15 +501,7 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
           {/* Mobile-only action buttons that stay at bottom */}
           <Box display={{ base: "block", sm: "none" }} mt={6}>
             <Button
-              bg="teal.500"
-              color="white"
-              _hover={{
-                bg: "teal.600",
-                transform: updateNavMutation.isPending
-                  ? "none"
-                  : "translateY(-2px)",
-                boxShadow: updateNavMutation.isPending ? "none" : "lg",
-              }}
+              colorScheme="teal"
               onClick={handleSubmit}
               size="lg"
               width="100%"
@@ -525,28 +514,17 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
                 !!errors.nav ||
                 areNavsEqual
               }
-              leftIcon={<RefreshCw />}
-              transition="all 0.2s"
             >
               Update NAV
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
+              colorScheme="gray"
               onClick={handleClose}
               size="lg"
               width="100%"
               borderRadius="md"
-              borderWidth="2px"
-               borderColor={buttonBorderColor}
-               color={textColorTertiary}
-               _hover={{
-                 bg: buttonHoverBg,
-                 borderColor: buttonHoverBorderColor,
-                transform: "translateY(-2px)",
-              }}
               isDisabled={updateNavMutation.isPending}
-              transition="all 0.2s"
-              leftIcon={<X />}
             >
               Cancel
             </Button>
@@ -563,43 +541,26 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
           borderColor={borderColor}
         >
           <Button
-            bg="teal.500"
-            color="white"
+            colorScheme="teal"
             mr={3}
-            _hover={{
-              bg: "teal.600",
-              transform: updateNavMutation.isPending
-                ? "none"
-                : "translateY(-2px)",
-              boxShadow: updateNavMutation.isPending ? "none" : "lg",
-            }}
             onClick={handleSubmit}
             px={8}
             py={3}
             borderRadius="md"
             isLoading={updateNavMutation.isPending}
             loadingText="Updating NAV..."
-              isDisabled={!formData.nav.trim() || !!errors.nav || areNavsEqual}
-            leftIcon={<RefreshCw />}
-            transition="all 0.2s"
+            isDisabled={!formData.nav.trim() || !!errors.nav || areNavsEqual}
           >
             Update NAV
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
+            colorScheme="gray"
             onClick={handleClose}
             isDisabled={updateNavMutation.isPending}
-            leftIcon={<X />}
             px={6}
             py={3}
             borderRadius="md"
-            borderWidth="2px"
-             borderColor={buttonBorderColor}
-             color={textColorTertiary}
-             _hover={{
-               bg: buttonHoverBg,
-               borderColor: buttonHoverBorderColor,
-            }}
           >
             Cancel
           </Button>

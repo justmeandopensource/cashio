@@ -136,8 +136,7 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
-  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-  const modalIconColor = useColorModeValue("brand.600", "brand.300");
+  const modalIconColor = useColorModeValue("gray.400", "gray.500");
 
   const resetForm = () => {
     setDate(new Date());
@@ -387,10 +386,8 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
           borderBottom="1px solid"
           borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={3} align="center">
-            <Box p={2} bg={modalIconBg} borderRadius="lg">
-              <Icon as={Plus} boxSize={5} color={modalIconColor} />
-            </Box>
+          <HStack spacing={3} align="flex-start">
+            <Icon as={Plus} boxSize={5} mt="3px" color={modalIconColor} />
 
             <Box>
               <Box
@@ -790,30 +787,17 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
                 (isSplit && calculateRemainingAmount() !== 0) ||
                 (isSplit && !accountId && !selectedAccountId)
               }
-              leftIcon={<Check />}
-              _hover={{
-                transform: isLoading ? "none" : "translateY(-2px)",
-                boxShadow: isLoading ? "none" : "lg",
-              }}
-              transition="all 0.2s"
             >
               Save Transaction
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
+              colorScheme="gray"
               onClick={onClose}
               size="lg"
               width="100%"
               borderRadius="md"
               isDisabled={isLoading}
-              leftIcon={<X />}
-               borderWidth="2px"
-               borderColor={buttonBorderColor}
-               color={buttonColor}
-               _hover={{
-                 bg: buttonHoverBg,
-                 borderColor: buttonHoverBorderColor,
-               }}
             >
               Cancel
             </Button>
@@ -850,30 +834,17 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
               (isSplit && calculateRemainingAmount() !== 0) ||
               (isSplit && !accountId && !selectedAccountId)
             }
-            leftIcon={<Check />}
-            _hover={{
-              transform: isLoading ? "none" : "translateY(-2px)",
-              boxShadow: isLoading ? "none" : "lg",
-            }}
-            transition="all 0.2s"
           >
             Save Transaction
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
+            colorScheme="gray"
             onClick={onClose}
             isDisabled={isLoading}
-            leftIcon={<X />}
             px={6}
             py={3}
             borderRadius="md"
-             borderWidth="2px"
-             borderColor={buttonBorderColor}
-             color={buttonColor}
-             _hover={{
-               bg: buttonHoverBg,
-               borderColor: buttonHoverBorderColor,
-             }}
           >
             Cancel
           </Button>

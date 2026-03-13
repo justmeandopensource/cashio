@@ -94,8 +94,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
    const cardBg = useColorModeValue("bodyBg", "bodyBg");
    const brandTitleColor = useColorModeValue("gray.900", "gray.50");
    const brandSubtitleColor = useColorModeValue("gray.500", "gray.400");
-   const brandIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-   const brandIconColor = useColorModeValue("brand.600", "brand.300");
+   const brandIconColor = useColorModeValue("brand.500", "brand.400");
    const sidebarShadow = useColorModeValue("xl", "4px 0 12px rgba(0,0,0,0.6)");
 
   const menuItems = [
@@ -187,10 +186,8 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
       >
         {/* Brand Header */}
         <Box px={4} py={5}>
-          <HStack spacing={3} align="center">
-            <Box p={2} bg={brandIconBg} borderRadius="lg">
-              <Icon as={Wallet} boxSize={5} color={brandIconColor} />
-            </Box>
+          <HStack spacing={3} align="flex-start">
+            <Icon as={Wallet} boxSize={5} mt="2px" color={brandIconColor} flexShrink={0} />
             <Box>
               <Heading
                 as="h1"
@@ -249,10 +246,8 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
             borderColor={borderColor}
             position="relative"
           >
-            <HStack spacing={3} align="center">
-              <Box p={2} bg={brandIconBg} borderRadius="lg">
-                <Icon as={Wallet} boxSize={5} color={brandIconColor} />
-              </Box>
+            <HStack spacing={3} align="flex-start">
+              <Icon as={Wallet} boxSize={5} mt="2px" color={brandIconColor} flexShrink={0} />
               <Box flex={1}>
                 <Heading
                   as="h1"

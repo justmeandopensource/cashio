@@ -50,8 +50,7 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
-  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-  const modalIconColor = useColorModeValue("brand.600", "brand.300");
+  const modalIconColor = useColorModeValue("gray.400", "gray.500");
 
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return "Not available";
@@ -103,10 +102,8 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
             right={{ base: 4, sm: 6 }}
           />
 
-          <HStack spacing={3} align="center">
-            <Box p={2} bg={modalIconBg} borderRadius="lg">
-              <Icon as={BookText} boxSize={5} color={modalIconColor} />
-            </Box>
+          <HStack spacing={3} align="flex-start">
+            <Icon as={BookText} boxSize={5} mt="3px" color={modalIconColor} />
 
             <VStack align="start" spacing={1} flex={1}>
               <HStack
@@ -227,7 +224,6 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
             </Box>
             {onEditLedger && (
               <Button
-                leftIcon={<Edit size={20} />}
                 colorScheme="teal"
                 size="lg"
                 width="full"

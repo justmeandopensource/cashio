@@ -36,8 +36,7 @@ const PortfolioChangeModal: FC<PortfolioChangeModalProps> = ({
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
-  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-  const modalIconColor = useColorModeValue("brand.600", "brand.300");
+  const modalIconColor = useColorModeValue("gray.400", "gray.500");
 
   const totalValueFormatted = splitCurrencyForDisplay(Math.abs(totalValueChange), currencySymbol);
   const totalValuePercentFormatted = {
@@ -71,10 +70,8 @@ const PortfolioChangeModal: FC<PortfolioChangeModalProps> = ({
           borderBottom="1px solid"
           borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={3} align="center">
-            <Box p={2} bg={modalIconBg} borderRadius="lg">
-              <Icon as={CheckCircle} boxSize={5} color={modalIconColor} />
-            </Box>
+          <HStack spacing={3} align="flex-start">
+            <Icon as={CheckCircle} boxSize={5} mt="3px" color={modalIconColor} />
             <Box>
               <Text fontSize="lg" fontWeight="bold" color={modalTitleColor}>
                 Portfolio Updated Successfully

@@ -96,8 +96,7 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
-  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-  const modalIconColor = useColorModeValue("brand.600", "brand.300");
+  const modalIconColor = useColorModeValue("gray.400", "gray.500");
 
    const sourceFund = mutualFunds.find(fund => fund.mutual_fund_id === fromFundId);
    const toFund = mutualFunds.find(fund => fund.mutual_fund_id.toString() === formData.to_fund_id);
@@ -295,10 +294,8 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
           borderBottom="1px solid"
           borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={3} align="center">
-            <Box p={2} bg={modalIconBg} borderRadius="lg">
-              <Icon as={ArrowRightLeft} boxSize={5} color={modalIconColor} />
-            </Box>
+          <HStack spacing={3} align="flex-start">
+            <Icon as={ArrowRightLeft} boxSize={5} mt="3px" color={modalIconColor} />
 
             <Box>
               <Text
@@ -654,49 +651,33 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                 <Stack direction="row" spacing={3} width="full">
                    <Button
                      type="submit"
-                     bg="teal.500"
-                     color="white"
-                     _hover={{
-                       bg: "teal.600",
-                       transform: transferMutation.isPending ? "none" : "translateY(-2px)",
-                       boxShadow: transferMutation.isPending ? "none" : "lg",
-                     }}
+                     colorScheme="teal"
                      size="lg"
                      flex={1}
                      borderRadius="md"
                      isLoading={transferMutation.isPending}
                      loadingText="Processing Transfer..."
-                      isDisabled={
-                        !formData.to_fund_id ||
-                        !formData.source_units ||
-                        !formData.source_amount ||
-                        !formData.target_units ||
-                        !formData.target_amount ||
-                        sourceUnits > availableUnits ||
-                        Object.keys(errors).length > 0
-                      }
-                     leftIcon={<ArrowRightLeft size={16} />}
-                     transition="all 0.2s"
+                     isDisabled={
+                       !formData.to_fund_id ||
+                       !formData.source_units ||
+                       !formData.source_amount ||
+                       !formData.target_units ||
+                       !formData.target_amount ||
+                       sourceUnits > availableUnits ||
+                       Object.keys(errors).length > 0
+                     }
                    >
                      Transfer Units
                    </Button>
 
                   <Button
-                    variant="outline"
+                    variant="ghost"
+                    colorScheme="gray"
                     onClick={handleClose}
                     size="lg"
                     flex={1}
                     borderRadius="md"
-                    borderWidth="2px"
-                    borderColor={useColorModeValue("gray.300", "gray.600")}
-                    color={useColorModeValue("gray.600", "gray.200")}
-                    _hover={{
-                      bg: useColorModeValue("gray.50", "gray.600"),
-                      borderColor: useColorModeValue("gray.400", "gray.500"),
-                      transform: "translateY(-2px)",
-                    }}
                     isDisabled={transferMutation.isPending}
-                    transition="all 0.2s"
                   >
                     Cancel
                   </Button>
@@ -718,13 +699,7 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
           <Button
             type="submit"
             form="transfer-units-form"
-            bg="teal.500"
-            color="white"
-            _hover={{
-              bg: "teal.600",
-              transform: transferMutation.isPending ? "none" : "translateY(-2px)",
-              boxShadow: transferMutation.isPending ? "none" : "lg",
-            }}
+            colorScheme="teal"
             mr={3}
             px={8}
             py={3}
@@ -740,27 +715,19 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
               sourceUnits > availableUnits ||
               Object.keys(errors).length > 0
             }
-            leftIcon={<ArrowRightLeft size={16} />}
-            transition="all 0.2s"
             onClick={handleSubmit}
           >
             Transfer Units
           </Button>
 
           <Button
-            variant="outline"
+            variant="ghost"
+            colorScheme="gray"
             onClick={handleClose}
             isDisabled={transferMutation.isPending}
             px={6}
             py={3}
             borderRadius="md"
-            borderWidth="2px"
-            borderColor={useColorModeValue("gray.300", "gray.600")}
-            color={useColorModeValue("gray.600", "gray.200")}
-            _hover={{
-              bg: useColorModeValue("gray.50", "gray.600"),
-              borderColor: useColorModeValue("gray.400", "gray.500"),
-            }}
           >
             Cancel
           </Button>

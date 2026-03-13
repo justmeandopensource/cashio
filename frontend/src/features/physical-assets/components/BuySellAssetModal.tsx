@@ -100,8 +100,7 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
-  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-  const modalIconColor = useColorModeValue("brand.600", "brand.300");
+  const modalIconColor = useColorModeValue("gray.400", "gray.500");
 
   const { data: accounts, isLoading: accountsLoading } = useQuery<Account[]>({
     queryKey: ["accounts", ledgerId],
@@ -534,13 +533,7 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
       <Stack direction="row" spacing={3} width="full">
           <Button
             onClick={() => handleTransaction(type)}
-            bg={type === "buy" ? "teal.500" : "red.400"}
-            color="white"
-            _hover={{
-              bg: type === "buy" ? "teal.600" : "red.500",
-              transform: isLoading ? "none" : "translateY(-2px)",
-              boxShadow: isLoading ? "none" : "lg",
-            }}
+            colorScheme={type === "buy" ? "teal" : "red"}
             size="lg"
             flex={1}
             borderRadius="md"
@@ -553,28 +546,18 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
               (type === "sell" && asset.total_quantity === 0) ||
               Object.keys(errors).length > 0
             }
-            leftIcon={type === "buy" ? <TrendingUp /> : <TrendingDown />}
-            transition="all 0.2s"
           >
-           {type === "buy" ? "Buy Asset" : "Sell Asset"}
-         </Button>
+            {type === "buy" ? "Buy Asset" : "Sell Asset"}
+          </Button>
 
         <Button
-          variant="outline"
+          variant="ghost"
+          colorScheme="gray"
           onClick={handleClose}
           size="lg"
           flex={1}
           borderRadius="md"
-          borderWidth="2px"
-           borderColor={buttonBorderColor}
-           color={textColorSecondary}
-           _hover={{
-             bg: buttonHoverBg,
-             borderColor: buttonHoverBorderColor,
-            transform: "translateY(-2px)",
-          }}
           isDisabled={isLoading}
-          transition="all 0.2s"
         >
           Cancel
         </Button>
@@ -610,10 +593,8 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
           borderBottom="1px solid"
           borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={3} align="center">
-            <Box p={2} bg={modalIconBg} borderRadius="lg">
-              <Icon as={Coins} boxSize={5} color={modalIconColor} />
-            </Box>
+          <HStack spacing={3} align="flex-start">
+            <Icon as={Coins} boxSize={5} mt="3px" color={modalIconColor} />
 
             <Box>
               <HStack spacing={3} mb={1}>

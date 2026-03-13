@@ -80,8 +80,7 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
-  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-  const modalIconColor = useColorModeValue("brand.600", "brand.300");
+  const modalIconColor = useColorModeValue("gray.400", "gray.500");
 
   const handleSubmit = (): void => {
     if (!newLedgerName || !selectedCurrency) {
@@ -159,10 +158,8 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
           borderBottom="1px solid"
           borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={3} align="center">
-            <Box p={2} bg={modalIconBg} borderRadius="lg">
-              <Icon as={Plus} boxSize={5} color={modalIconColor} />
-            </Box>
+          <HStack spacing={3} align="flex-start">
+            <Icon as={Plus} boxSize={5} mt="3px" color={modalIconColor} />
 
             <Box>
               <Box
@@ -400,21 +397,16 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
               mb={3}
               borderRadius="md"
               isDisabled={!newLedgerName || !selectedCurrency}
-              leftIcon={<Plus />}
-              _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-              transition="all 0.2s"
             >
               Create Ledger
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
+              colorScheme="gray"
               onClick={onClose}
               width="100%"
               size="lg"
               borderRadius="md"
-              leftIcon={<X />}
-              borderWidth="2px"
-              _hover={{ bg: cardBg }}
             >
               Cancel
             </Button>
@@ -438,21 +430,16 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
             py={3}
             borderRadius="md"
             isDisabled={!newLedgerName || !selectedCurrency}
-            leftIcon={<Plus />}
-            _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-            transition="all 0.2s"
           >
             Create Ledger
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
+            colorScheme="gray"
             onClick={onClose}
-            leftIcon={<X />}
             px={6}
             py={3}
             borderRadius="md"
-            borderWidth="2px"
-            _hover={{ bg: inputBg }}
           >
             Cancel
           </Button>

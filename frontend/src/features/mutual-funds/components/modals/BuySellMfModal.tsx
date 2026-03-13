@@ -115,8 +115,7 @@ const BuySellMfModal: FC<BuySellMfModalProps> = ({
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
-  const modalIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.15)");
-  const modalIconColor = useColorModeValue("brand.600", "brand.300");
+  const modalIconColor = useColorModeValue("gray.400", "gray.500");
    const tabBuyHoverBg = useColorModeValue("teal.50", "teal.700");
    const tabSellHoverBg = useColorModeValue("red.50", "red.700");
 
@@ -713,15 +712,7 @@ const BuySellMfModal: FC<BuySellMfModalProps> = ({
       <Box display={{ base: "block", sm: "none" }}>
         <Button
           onClick={() => handleSubmit()}
-          bg={type === "buy" ? "teal.500" : "red.400"}
-          color="white"
-          _hover={{
-            bg: type === "buy" ? "teal.600" : "red.500",
-            transform: transactionMutation.isPending
-              ? "none"
-              : "translateY(-2px)",
-            boxShadow: transactionMutation.isPending ? "none" : "lg",
-          }}
+          colorScheme={type === "buy" ? "teal" : "red"}
           size="lg"
           width="100%"
           mb={3}
@@ -729,33 +720,18 @@ const BuySellMfModal: FC<BuySellMfModalProps> = ({
           isLoading={transactionMutation.isPending}
           loadingText={`Processing ${type === "buy" ? "Purchase" : "Sale"}...`}
           isDisabled={!isFormValid()}
-          leftIcon={
-            type === "buy" ? (
-              <TrendingUp size={16} />
-            ) : (
-              <TrendingDown size={16} />
-            )
-          }
-          transition="all 0.2s"
         >
           {type === "buy" ? "Buy Units" : "Sell Units"}
         </Button>
 
-         <Button
-           variant="outline"
-           onClick={handleClose}
-           size="lg"
-           width="100%"
-           borderRadius="md"
-           borderWidth="2px"
-           borderColor={buttonBorderColor}
-           color={buttonColor}
-           _hover={{
-             bg: buttonHoverBg,
-             borderColor: buttonHoverBorderColor,
-           }}
+        <Button
+          variant="ghost"
+          colorScheme="gray"
+          onClick={handleClose}
+          size="lg"
+          width="100%"
+          borderRadius="md"
           isDisabled={transactionMutation.isPending}
-          transition="all 0.2s"
         >
           Cancel
         </Button>
@@ -791,10 +767,8 @@ const BuySellMfModal: FC<BuySellMfModalProps> = ({
           borderBottom="1px solid"
           borderColor={modalHeaderBorderColor}
         >
-          <HStack spacing={3} align="center">
-            <Box p={2} bg={modalIconBg} borderRadius="lg">
-              <Icon as={Coins} boxSize={5} color={modalIconColor} />
-            </Box>
+          <HStack spacing={3} align="flex-start">
+            <Icon as={Coins} boxSize={5} mt="3px" color={modalIconColor} />
 
             <Box>
               <HStack spacing={3} mb={1} align="center">
@@ -921,15 +895,7 @@ const BuySellMfModal: FC<BuySellMfModalProps> = ({
         >
           <Button
             onClick={() => handleSubmit()}
-            bg={currentType === "buy" ? "teal.500" : "red.400"}
-            color="white"
-            _hover={{
-              bg: currentType === "buy" ? "teal.600" : "red.500",
-              transform: transactionMutation.isPending
-                ? "none"
-                : "translateY(-2px)",
-              boxShadow: transactionMutation.isPending ? "none" : "lg",
-            }}
+            colorScheme={currentType === "buy" ? "teal" : "red"}
             mr={3}
             px={8}
             py={3}
@@ -937,32 +903,18 @@ const BuySellMfModal: FC<BuySellMfModalProps> = ({
             isLoading={transactionMutation.isPending}
             loadingText={`Processing ${currentType === "buy" ? "Purchase" : "Sale"}...`}
             isDisabled={!isFormValid()}
-            leftIcon={
-              currentType === "buy" ? (
-                <TrendingUp size={16} />
-              ) : (
-                <TrendingDown size={16} />
-              )
-            }
-            transition="all 0.2s"
           >
             {currentType === "buy" ? "Buy Units" : "Sell Units"}
           </Button>
 
-           <Button
-             variant="outline"
-             onClick={handleClose}
-             isDisabled={transactionMutation.isPending}
-             px={6}
-             py={3}
-             borderRadius="md"
-             borderWidth="2px"
-             borderColor={buttonBorderColor}
-             color={buttonColor}
-             _hover={{
-               bg: buttonHoverBg,
-               borderColor: buttonHoverBorderColor,
-             }}
+          <Button
+            variant="ghost"
+            colorScheme="gray"
+            onClick={handleClose}
+            isDisabled={transactionMutation.isPending}
+            px={6}
+            py={3}
+            borderRadius="md"
           >
             Cancel
           </Button>
