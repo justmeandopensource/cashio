@@ -14,14 +14,40 @@ interface ChakraDatePickerProps {
   "data-testid"?: string;
 }
 
+const isSameDay = (a: Date, b: Date) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
+
+const toSmartLabel = (date: Date | null): string => {
+  if (!date) return "";
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  if (isSameDay(date, today)) return "Today";
+  if (isSameDay(date, yesterday)) return "Yesterday";
+
+  const diffDays = Math.floor((today.getTime() - date.getTime()) / 86_400_000);
+  if (diffDays > 0 && diffDays < 7)
+    return date.toLocaleDateString("en-US", { weekday: "long" });
+
+  const opts: Intl.DateTimeFormatOptions =
+    date.getFullYear() === today.getFullYear()
+      ? { weekday: "short", month: "short", day: "numeric" }
+      : { weekday: "short", month: "short", day: "numeric", year: "numeric" };
+
+  return date.toLocaleDateString("en-US", opts);
+};
+
 const CustomInput = React.forwardRef<
   HTMLInputElement,
-  { value?: string; onClick?: () => void; "data-testid"?: string }
->(({ value, onClick, "data-testid": testId }, ref) => (
+  { value?: string; onClick?: () => void; "data-testid"?: string; displayValue?: string }
+>(({ value, onClick, "data-testid": testId, displayValue }, ref) => (
   <Input
     onClick={onClick}
     ref={ref}
-    value={value}
+    value={displayValue ?? value}
     readOnly
     data-testid={testId}
   />
@@ -114,7 +140,7 @@ const ChakraDatePicker: React.FC<ChakraDatePickerProps> = ({
       selected={selected}
       onChange={onChange}
       dateFormat="yyyy/MM/dd"
-      customInput={<CustomInput data-testid={testId} />}
+      customInput={<CustomInput data-testid={testId} displayValue={toSmartLabel(selected)} />}
       showPopperArrow={false}
       popperPlacement="bottom-start"
       popperModifiers={

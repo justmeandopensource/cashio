@@ -7,11 +7,6 @@ import {
   Text,
   useColorModeValue,
   Icon,
-  Stat,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
-  Badge,
   Center,
   Grid,
   GridItem,
@@ -299,9 +294,14 @@ const CurrentMonthOverview: React.FC = () => {
   const cardBg = useColorModeValue("gray.50", "gray.700");
   const primaryTextColor = useColorModeValue("gray.800", "gray.400");
   const secondaryTextColor = useColorModeValue("gray.600", "gray.300");
-   const customToolTipBorderColor = useColorModeValue("gray.200", "gray.600");
-   const treemapStrokeColor = useColorModeValue("#fff", "gray.800");
-   const expenseColor = useColorModeValue("red.500", "red.400");
+  const customToolTipBorderColor = useColorModeValue("gray.200", "gray.600");
+  const treemapStrokeColor = useColorModeValue("#fff", "gray.800");
+  const expenseColor = useColorModeValue("red.500", "red.400");
+  const sectionBorderColor = useColorModeValue("gray.200", "gray.700");
+  const columnHeaderColor = useColorModeValue("gray.400", "gray.500");
+  const positiveColor = useColorModeValue("green.500", "green.300");
+  const incomeTopAccent = useColorModeValue("green.400", "green.400");
+  const expenseTopAccent = useColorModeValue("red.400", "red.400");
 
   const baseColors = useColorModeValue(BASE_COLORS_LIGHT, BASE_COLORS_DARK);
 
@@ -418,63 +418,77 @@ const CurrentMonthOverview: React.FC = () => {
 
       {/* Summary Cards */}
       <HStack
-        spacing={4}
+        spacing={{ base: 3, md: 4 }}
         mt={6}
-        mb={10}
+        mb={{ base: 4, md: 6 }}
         flexDirection={{ base: "column", md: "row" }}
       >
         {/* Income Card */}
-        <Box bg={cardBg} p={6} borderRadius="lg" width="full" boxShadow="md">
-          <VStack align="stretch" spacing={4}>
-            <HStack justifyContent="space-between">
-              <Heading size="md" color="teal.500">
-                Income
-              </Heading>
-              <Icon as={TrendingUp} color="teal.500" size={24} />
-            </HStack>
-
-            <Stat>
-              <StatLabel color={secondaryTextColor}>Total Income</StatLabel>
-              <StatNumber color={primaryTextColor}>
-                {formatNumberAsCurrency(
-                  data.total_income,
-                  currencySymbol as string,
-                )}
-              </StatNumber>
-              <StatHelpText>
-                <Badge colorScheme="teal" variant="subtle">
-                  This Month
-                </Badge>
-              </StatHelpText>
-            </Stat>
-          </VStack>
+        <Box
+          bg={cardBg}
+          p={{ base: 3, md: 4 }}
+          borderRadius="md"
+          boxShadow="sm"
+          border="1px solid"
+          borderColor={sectionBorderColor}
+          borderTopWidth="3px"
+          borderTopColor={incomeTopAccent}
+          width="full"
+        >
+          <Flex align="center" gap={1.5} mb={1}>
+            <Icon as={TrendingUp} boxSize={3} color={columnHeaderColor} />
+            <Text
+              fontSize="2xs"
+              fontWeight="semibold"
+              textTransform="uppercase"
+              letterSpacing="wider"
+              color={columnHeaderColor}
+            >
+              Income
+            </Text>
+          </Flex>
+          <Text
+            fontSize={{ base: "md", md: "xl" }}
+            fontWeight="bold"
+            color={positiveColor}
+            lineHeight="short"
+          >
+            {formatNumberAsCurrency(data.total_income, currencySymbol as string)}
+          </Text>
         </Box>
 
         {/* Expense Card */}
-        <Box bg={cardBg} p={6} borderRadius="lg" width="full" boxShadow="md">
-          <VStack align="stretch" spacing={4}>
-            <HStack justifyContent="space-between">
-               <Heading size="md" color={expenseColor}>
-                 Expenses
-               </Heading>
-               <Icon as={TrendingDown} color={expenseColor} size={24} />
-            </HStack>
-
-            <Stat>
-              <StatLabel color={secondaryTextColor}>Total Expenses</StatLabel>
-              <StatNumber color={primaryTextColor}>
-                {formatNumberAsCurrency(
-                  data.total_expense,
-                  currencySymbol as string,
-                )}
-              </StatNumber>
-              <StatHelpText>
-                <Badge colorScheme="red" variant="subtle">
-                  This Month
-                </Badge>
-              </StatHelpText>
-            </Stat>
-          </VStack>
+        <Box
+          bg={cardBg}
+          p={{ base: 3, md: 4 }}
+          borderRadius="md"
+          boxShadow="sm"
+          border="1px solid"
+          borderColor={sectionBorderColor}
+          borderTopWidth="3px"
+          borderTopColor={expenseTopAccent}
+          width="full"
+        >
+          <Flex align="center" gap={1.5} mb={1}>
+            <Icon as={TrendingDown} boxSize={3} color={columnHeaderColor} />
+            <Text
+              fontSize="2xs"
+              fontWeight="semibold"
+              textTransform="uppercase"
+              letterSpacing="wider"
+              color={columnHeaderColor}
+            >
+              Expenses
+            </Text>
+          </Flex>
+          <Text
+            fontSize={{ base: "md", md: "xl" }}
+            fontWeight="bold"
+            color={expenseColor}
+            lineHeight="short"
+          >
+            {formatNumberAsCurrency(data.total_expense, currencySymbol as string)}
+          </Text>
         </Box>
       </HStack>
 

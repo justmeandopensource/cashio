@@ -9,9 +9,6 @@ import {
   Flex,
   Icon,
   Center,
-  Stat,
-  StatLabel,
-  StatNumber,
   Select,
   FormControl,
 } from "@chakra-ui/react";
@@ -79,6 +76,11 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
   const legendHoverBg = useColorModeValue("gray.100", "gray.600");
   const subLegendHoverBg = useColorModeValue("gray.200", "gray.500");
   const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
+  const sectionBorderColor = useColorModeValue("gray.200", "gray.700");
+  const columnHeaderColor = useColorModeValue("gray.400", "gray.500");
+  const positiveColor = useColorModeValue("green.500", "green.300");
+  const portfolioTopAccent = useColorModeValue("green.400", "green.400");
+  const countTopAccent = useColorModeValue("blue.400", "blue.400");
 
   // Get color for asset class
   const getColorForAssetClass = (assetClass: string): string => {
@@ -379,28 +381,53 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
       </Box>
 
       {assetClassData.length > 0 && (
-        <VStack spacing={4} mt={6} width="full">
-          <HStack spacing={4} width="full" flexDirection={{ base: "column", md: "row" }}>
-            <Box bg={cardBg} p={6} borderRadius="lg" width="full" boxShadow="md">
-              <Stat>
-                <StatLabel color={secondaryTextColor}>Total Portfolio Value</StatLabel>
-                <StatNumber color={primaryTextColor}>{formatNumberAsCurrency(totalPortfolioValue, currencySymbol as string)}</StatNumber>
-              </Stat>
-            </Box>
-            <Box bg={cardBg} p={6} borderRadius="lg" width="full" boxShadow="md">
-              <Stat>
-                <StatLabel color={secondaryTextColor}>Asset Classes</StatLabel>
-                <StatNumber color={primaryTextColor}>{assetClassData.length}</StatNumber>
-              </Stat>
-            </Box>
-            <Box bg={cardBg} p={6} borderRadius="lg" width="full" boxShadow="md">
-              <Stat>
-                <StatLabel color={secondaryTextColor}>Total Sub-Classes</StatLabel>
-                <StatNumber color={primaryTextColor}>{subClassData.length}</StatNumber>
-              </Stat>
-            </Box>
-          </HStack>
-        </VStack>
+        <HStack spacing={{ base: 3, md: 4 }} mt={6} width="full" flexDirection={{ base: "column", md: "row" }}>
+          <Box
+            bg={cardBg} p={{ base: 3, md: 4 }} borderRadius="md" boxShadow="sm"
+            border="1px solid" borderColor={sectionBorderColor}
+            borderTopWidth="3px" borderTopColor={portfolioTopAccent} width="full"
+          >
+            <Flex align="center" gap={1.5} mb={1}>
+              <Icon as={TrendingUp} boxSize={3} color={columnHeaderColor} />
+              <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={columnHeaderColor}>
+                Total Portfolio Value
+              </Text>
+            </Flex>
+            <Text fontSize={{ base: "md", md: "xl" }} fontWeight="bold" color={positiveColor} lineHeight="short">
+              {formatNumberAsCurrency(totalPortfolioValue, currencySymbol as string)}
+            </Text>
+          </Box>
+          <Box
+            bg={cardBg} p={{ base: 3, md: 4 }} borderRadius="md" boxShadow="sm"
+            border="1px solid" borderColor={sectionBorderColor}
+            borderTopWidth="3px" borderTopColor={countTopAccent} width="full"
+          >
+            <Flex align="center" gap={1.5} mb={1}>
+              <Icon as={PieChartIcon} boxSize={3} color={columnHeaderColor} />
+              <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={columnHeaderColor}>
+                Asset Classes
+              </Text>
+            </Flex>
+            <Text fontSize={{ base: "md", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short">
+              {assetClassData.length}
+            </Text>
+          </Box>
+          <Box
+            bg={cardBg} p={{ base: 3, md: 4 }} borderRadius="md" boxShadow="sm"
+            border="1px solid" borderColor={sectionBorderColor}
+            borderTopWidth="3px" borderTopColor={countTopAccent} width="full"
+          >
+            <Flex align="center" gap={1.5} mb={1}>
+              <Icon as={PieChartIcon} boxSize={3} color={columnHeaderColor} />
+              <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={columnHeaderColor}>
+                Total Sub-Classes
+              </Text>
+            </Flex>
+            <Text fontSize={{ base: "md", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short">
+              {subClassData.length}
+            </Text>
+          </Box>
+        </HStack>
       )}
     </Box>
   );

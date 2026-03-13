@@ -9,11 +9,6 @@ import {
   useColorModeValue,
   Flex,
   Icon,
-  Stat,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
-  Badge,
   Center,
 } from "@chakra-ui/react";
 import {
@@ -104,6 +99,12 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
   const axisTickColor = useColorModeValue("#718096", "#cbd5e0");
   const tooltipBg = useColorModeValue("#fff", "#2d3748");
   const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
+  const sectionBorderColor = useColorModeValue("gray.200", "gray.700");
+  const columnHeaderColor = useColorModeValue("gray.400", "gray.500");
+  const positiveColor = useColorModeValue("green.500", "green.300");
+  const expenseValueColor = useColorModeValue("red.500", "red.400");
+  const incomeTopAccent = useColorModeValue("green.400", "green.400");
+  const expenseTopAccent = useColorModeValue("red.400", "red.400");
 
   // Fetch data
   const { data, isLoading, isError } = useQuery<InsightsData>({
@@ -281,111 +282,96 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
 
       {/* Summary Cards */}
       {data?.summary && data.trend_data && data.trend_data.length > 0 && (
-        <VStack spacing={4} mt={6} width="full">
-          <HStack
-            spacing={4}
+        <HStack
+          spacing={{ base: 3, md: 4 }}
+          mt={6}
+          width="full"
+          flexDirection={{ base: "column", md: "row" }}
+        >
+          {/* Income Summary */}
+          <Box
+            bg={cardBg}
+            p={{ base: 3, md: 4 }}
+            borderRadius="md"
+            boxShadow="sm"
+            border="1px solid"
+            borderColor={sectionBorderColor}
+            borderTopWidth="3px"
+            borderTopColor={incomeTopAccent}
             width="full"
-            flexDirection={{ base: "column", md: "row" }}
           >
-            {/* Income Summary */}
-            <Box
-              bg={cardBg}
-              p={6}
-              borderRadius="lg"
-              width="full"
-              boxShadow="md"
+            <Flex align="center" gap={1.5} mb={1}>
+              <Icon as={TrendingUp} boxSize={3} color={columnHeaderColor} />
+              <Text
+                fontSize="2xs"
+                fontWeight="semibold"
+                textTransform="uppercase"
+                letterSpacing="wider"
+                color={columnHeaderColor}
+              >
+                Income
+              </Text>
+            </Flex>
+            <Text
+              fontSize={{ base: "md", md: "xl" }}
+              fontWeight="bold"
+              color={positiveColor}
+              lineHeight="short"
+              mb={2}
             >
-              <VStack align="stretch" spacing={4}>
-                <HStack justifyContent="space-between">
-                  <Heading size="md" color="teal.500">
-                    Income
-                  </Heading>
-                  <Icon as={TrendingUp} color="teal.500" boxSize={6} />
-                </HStack>
+              {formatNumberAsCurrency(data.summary.income.total, currencySymbol as string)}
+            </Text>
+            <Text fontSize="xs" color={secondaryTextColor}>
+              Avg: {formatNumberAsCurrency(data.summary.income.average, currencySymbol as string)}
+            </Text>
+            <Text fontSize="xs" color={secondaryTextColor}>
+              Highest: {formatNumberAsCurrency(data.summary.income.highest.amount, currencySymbol as string)}{" "}
+              in {formatPeriod(data.summary.income.highest.period)}
+            </Text>
+          </Box>
 
-                <Stat>
-                  <StatLabel color={secondaryTextColor}>Total Income</StatLabel>
-                  <StatNumber color={primaryTextColor}>
-                    {formatNumberAsCurrency(
-                      data.summary.income.total,
-                      currencySymbol as string,
-                    )}
-                  </StatNumber>
-                  <StatHelpText>
-                    <Badge colorScheme="teal" variant="subtle">
-                      Avg:{" "}
-                      {formatNumberAsCurrency(
-                        data.summary.income.average,
-                        currencySymbol as string,
-                      )}
-                    </Badge>
-                  </StatHelpText>
-                </Stat>
-
-                <Box>
-                  <Text fontSize="sm" color={secondaryTextColor}>
-                    Highest:{" "}
-                    {formatNumberAsCurrency(
-                      data.summary.income.highest.amount,
-                      currencySymbol as string,
-                    )}{" "}
-                    in {formatPeriod(data.summary.income.highest.period)}
-                  </Text>
-                </Box>
-              </VStack>
-            </Box>
-
-            {/* Expense Summary */}
-            <Box
-              bg={cardBg}
-              p={6}
-              borderRadius="lg"
-              width="full"
-              boxShadow="md"
+          {/* Expense Summary */}
+          <Box
+            bg={cardBg}
+            p={{ base: 3, md: 4 }}
+            borderRadius="md"
+            boxShadow="sm"
+            border="1px solid"
+            borderColor={sectionBorderColor}
+            borderTopWidth="3px"
+            borderTopColor={expenseTopAccent}
+            width="full"
+          >
+            <Flex align="center" gap={1.5} mb={1}>
+              <Icon as={TrendingDown} boxSize={3} color={columnHeaderColor} />
+              <Text
+                fontSize="2xs"
+                fontWeight="semibold"
+                textTransform="uppercase"
+                letterSpacing="wider"
+                color={columnHeaderColor}
+              >
+                Expenses
+              </Text>
+            </Flex>
+            <Text
+              fontSize={{ base: "md", md: "xl" }}
+              fontWeight="bold"
+              color={expenseValueColor}
+              lineHeight="short"
+              mb={2}
             >
-              <VStack align="stretch" spacing={4}>
-                <HStack justifyContent="space-between">
-                  <Heading size="md" color="red.500">
-                    Expenses
-                  </Heading>
-                  <Icon as={TrendingDown} color="red.500" boxSize={6} />
-                </HStack>
-
-                <Stat>
-                  <StatLabel color={secondaryTextColor}>
-                    Total Expenses
-                  </StatLabel>
-                  <StatNumber color={primaryTextColor}>
-                    {formatNumberAsCurrency(
-                      data.summary.expense.total,
-                      currencySymbol as string,
-                    )}
-                  </StatNumber>
-                  <StatHelpText>
-                    <Badge colorScheme="red" variant="subtle">
-                      Avg:{" "}
-                      {formatNumberAsCurrency(
-                        data.summary.expense.average,
-                        currencySymbol as string,
-                      )}
-                    </Badge>
-                  </StatHelpText>
-                </Stat>
-
-                <Box>
-                  <Text fontSize="sm" color={secondaryTextColor}>
-                    Highest:{" "}
-                    {formatNumberAsCurrency(
-                      data.summary.expense.highest.amount,
-                      currencySymbol as string,
-                    )}{" "}
-                    in {formatPeriod(data.summary.expense.highest.period)}
-                  </Text>
-                </Box>
-              </VStack>
-            </Box>
-          </HStack>
-        </VStack>
+              {formatNumberAsCurrency(data.summary.expense.total, currencySymbol as string)}
+            </Text>
+            <Text fontSize="xs" color={secondaryTextColor}>
+              Avg: {formatNumberAsCurrency(data.summary.expense.average, currencySymbol as string)}
+            </Text>
+            <Text fontSize="xs" color={secondaryTextColor}>
+              Highest: {formatNumberAsCurrency(data.summary.expense.highest.amount, currencySymbol as string)}{" "}
+              in {formatPeriod(data.summary.expense.highest.period)}
+            </Text>
+          </Box>
+        </HStack>
       )}
     </Box>
   );

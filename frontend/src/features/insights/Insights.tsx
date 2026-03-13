@@ -4,7 +4,7 @@ import InsightsMain from "./components/InsightsMain";
 import PageContainer from "@components/shared/PageContainer";
 import PageHeader from "@components/shared/PageHeader";
 import { PieChart } from "lucide-react";
-import { Box, Flex, FormControl, Select, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex, FormControl, Select, Text, useColorModeValue } from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
 import useLedgerStore from "@/components/shared/store";
 import { useQuery } from "@tanstack/react-query";
@@ -138,9 +138,11 @@ const Insights = () => {
     setSearchParams({ visualization: newVisualization });
   };
 
-  const selectBorderColor = useColorModeValue("brand.400", "brand.500");
-  const selectColor = useColorModeValue("brand.700", "brand.200");
-  const selectHoverBorderColor = useColorModeValue("brand.500", "brand.400");
+  const selectBg = useColorModeValue("white", "gray.700");
+  const selectBorderColor = useColorModeValue("gray.200", "gray.600");
+  const selectHoverBorderColor = useColorModeValue("brand.400", "brand.400");
+  const selectColor = useColorModeValue("gray.700", "gray.200");
+  const labelColor = useColorModeValue("gray.400", "gray.500");
 
   const handleLogout = (): void => {
     localStorage.removeItem("access_token");
@@ -156,10 +158,20 @@ const Insights = () => {
         headerContent={
           <Flex
             direction={{ base: "column", lg: "row" }}
-            gap={4}
+            gap={3}
             w="100%"
           >
             <Box w="100%">
+              <Text
+                fontSize="2xs"
+                fontWeight="semibold"
+                textTransform="uppercase"
+                letterSpacing="wider"
+                color={labelColor}
+                mb={1}
+              >
+                Ledger
+              </Text>
               <FormControl>
                 <Select
                   value={selectedLedgerId || ""}
@@ -167,10 +179,10 @@ const Insights = () => {
                   isDisabled={isLoading}
                   size="sm"
                   w="100%"
-                  borderRadius="lg"
+                  borderRadius="md"
+                  bg={selectBg}
                   borderColor={selectBorderColor}
                   color={selectColor}
-                  fontWeight="semibold"
                   focusBorderColor="brand.500"
                   _hover={{ borderColor: selectHoverBorderColor }}
                 >
@@ -185,6 +197,16 @@ const Insights = () => {
             </Box>
 
             <Box w="100%">
+              <Text
+                fontSize="2xs"
+                fontWeight="semibold"
+                textTransform="uppercase"
+                letterSpacing="wider"
+                color={labelColor}
+                mb={1}
+              >
+                Visualization
+              </Text>
               <FormControl>
                 <Select
                   value={selectedVisualization}
@@ -192,10 +214,10 @@ const Insights = () => {
                   size="sm"
                   minW={{ base: "100%", lg: "260px" }}
                   w="100%"
-                  borderRadius="lg"
+                  borderRadius="md"
+                  bg={selectBg}
                   borderColor={selectBorderColor}
                   color={selectColor}
-                  fontWeight="semibold"
                   focusBorderColor="brand.500"
                   _hover={{ borderColor: selectHoverBorderColor }}
                 >

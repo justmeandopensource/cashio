@@ -8,10 +8,6 @@ import {
   useColorModeValue,
   Flex,
   Icon,
-  Stat,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
   Badge,
   Center,
   HStack,
@@ -158,6 +154,12 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
   const axisTickColor = useColorModeValue("#718096", "#cbd5e0");
   const tooltipBg = useColorModeValue("#fff", "#2d3748");
   const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
+  const sectionBorderColor = useColorModeValue("gray.200", "gray.700");
+  const columnHeaderColor = useColorModeValue("gray.400", "gray.500");
+  const positiveColor = useColorModeValue("green.500", "green.300");
+  const expenseValueColor = useColorModeValue("red.500", "red.400");
+  const incomeTopAccent = useColorModeValue("green.400", "green.400");
+  const expenseTopAccent = useColorModeValue("red.400", "red.400");
 
   // Fetch categories
   const { data: categories, isLoading: isCategoriesLoading } = useQuery<
@@ -527,111 +529,74 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
 
       {/* Summary Card */}
       {trendData?.summary && transformedData.length > 0 && (
-        <VStack spacing={4} mt={6} width="full">
-          <Box bg={cardBg} p={6} borderRadius="lg" width="full" boxShadow="md">
-            <VStack align="stretch" spacing={4}>
-              <HStack justifyContent="space-between">
-                <Heading
-                  size="md"
-                  color={
-                    trendData.category_type === "income"
-                      ? "teal.500"
-                      : "red.500"
-                  }
+        <Box
+          bg={cardBg}
+          p={{ base: 3, md: 4 }}
+          borderRadius="md"
+          boxShadow="sm"
+          border="1px solid"
+          borderColor={sectionBorderColor}
+          borderTopWidth="3px"
+          borderTopColor={trendData.category_type === "income" ? incomeTopAccent : expenseTopAccent}
+          width="full"
+          mt={6}
+        >
+          <Flex align="center" gap={1.5} mb={1}>
+            <Icon
+              as={trendData.category_type === "income" ? TrendingUp : TrendingDown}
+              boxSize={3}
+              color={columnHeaderColor}
+            />
+            <Text
+              fontSize="2xs"
+              fontWeight="semibold"
+              textTransform="uppercase"
+              letterSpacing="wider"
+              color={columnHeaderColor}
+            >
+              {trendData.category_name} Summary
+            </Text>
+          </Flex>
+          <Text
+            fontSize={{ base: "md", md: "xl" }}
+            fontWeight="bold"
+            color={trendData.category_type === "income" ? positiveColor : expenseValueColor}
+            lineHeight="short"
+            mb={2}
+          >
+            {formatNumberAsCurrency(trendData.summary.total, currencySymbol as string)}
+          </Text>
+          <HStack spacing={4} flexWrap="wrap" mb={trendData.is_group ? 2 : 0}>
+            <Text fontSize="xs" color={secondaryTextColor}>
+              Avg: {formatNumberAsCurrency(trendData.summary.average, currencySymbol as string)}
+            </Text>
+            <Text fontSize="xs" color={secondaryTextColor}>
+              Highest: {formatNumberAsCurrency(trendData.summary.highest.amount, currencySymbol as string)}{" "}
+              in {formatPeriod(trendData.summary.highest.period)}
+            </Text>
+            <Text fontSize="xs" color={secondaryTextColor}>
+              Subcategories: {uniqueSubcategories.length}
+            </Text>
+          </HStack>
+          {trendData.is_group && (
+            <HStack wrap="wrap" spacing={2}>
+              {uniqueSubcategories.slice(0, 3).map((subcat, index) => (
+                <Badge
+                  key={subcat}
+                  variant="subtle"
+                  colorScheme={index % 2 === 0 ? "blue" : "cyan"}
                 >
-                  {trendData.category_name} Summary
-                </Heading>
-                <Icon
-                  as={
-                    trendData.category_type === "income"
-                      ? TrendingUp
-                      : TrendingDown
-                  }
-                  color={
-                    trendData.category_type === "income"
-                      ? "teal.500"
-                      : "red.500"
-                  }
-                  boxSize={6}
-                />
-              </HStack>
-
-              <HStack
-                spacing={6}
-                justifyContent="space-between"
-                flexDirection={{ base: "column", md: "row" }}
-                align={{ base: "flex-start", md: "center" }}
-              >
-                <Stat>
-                  <StatLabel color={secondaryTextColor}>
-                    Total{" "}
-                    {trendData.category_type === "income"
-                      ? "Income"
-                      : "Expense"}
-                  </StatLabel>
-                  <StatNumber color={primaryTextColor}>
-                    {formatNumberAsCurrency(
-                      trendData.summary.total,
-                      currencySymbol as string,
-                    )}
-                  </StatNumber>
-                  <StatHelpText>
-                    <Badge
-                      colorScheme={
-                        trendData.category_type === "income" ? "teal" : "red"
-                      }
-                      variant="subtle"
-                    >
-                      Avg:{" "}
-                      {formatNumberAsCurrency(
-                        trendData.summary.average,
-                        currencySymbol as string,
-                      )}
-                    </Badge>
-                  </StatHelpText>
-                </Stat>
-
-                <Box>
-                  <Text fontWeight="medium" color={primaryTextColor}>
-                    Subcategories: {uniqueSubcategories.length}
-                  </Text>
-                  <Text fontSize="sm" color={secondaryTextColor} mt={1}>
-                    Highest:{" "}
-                    {formatNumberAsCurrency(
-                      trendData.summary.highest.amount,
-                      currencySymbol as string,
-                    )}{" "}
-                    in {formatPeriod(trendData.summary.highest.period)}
-                  </Text>
-                </Box>
-
-                {trendData.is_group && (
-                  <Box>
-                    <Text fontWeight="medium" color={primaryTextColor}>
-                      Breakdown
-                    </Text>
-                    <HStack mt={1} wrap="wrap" spacing={2}>
-                      {uniqueSubcategories.slice(0, 3).map((subcat, index) => (
-                        <Badge
-                          key={subcat}
-                          variant="subtle"
-                          colorScheme={index % 2 === 0 ? "blue" : "cyan"}
-                        >
-                          {subcat}
-                        </Badge>
-                      ))}
-                      {uniqueSubcategories.length > 3 && (
-                        <Badge variant="subtle" colorScheme="gray">
-                          +{uniqueSubcategories.length - 3} more
-                        </Badge>
-                      )}
-                    </HStack>
-                  </Box>
-                )}
-              </HStack>
-            </VStack>
-          </Box>
-        </VStack>
+                  {subcat}
+                </Badge>
+              ))}
+              {uniqueSubcategories.length > 3 && (
+                <Badge variant="subtle" colorScheme="gray">
+                  +{uniqueSubcategories.length - 3} more
+                </Badge>
+              )}
+            </HStack>
+          )}
+        </Box>
       )}
     </Box>
   );

@@ -9,9 +9,6 @@ import {
   Flex,
   Icon,
   Center,
-  Stat,
-  StatLabel,
-  StatNumber,
   Select,
   FormControl,
 } from "@chakra-ui/react";
@@ -54,6 +51,11 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
   const secondaryTextColor = useColorModeValue("gray.600", "gray.300");
   const tooltipBg = useColorModeValue("#fff", "#2d3748");
   const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
+  const sectionBorderColor = useColorModeValue("gray.200", "gray.700");
+  const columnHeaderColor = useColorModeValue("gray.400", "gray.500");
+  const positiveColor = useColorModeValue("green.500", "green.300");
+  const portfolioTopAccent = useColorModeValue("green.400", "green.400");
+  const countTopAccent = useColorModeValue("blue.400", "blue.400");
 
   // Fetch mutual funds data
   const { data: mutualFunds = [], isLoading: isLoadingFunds } = useQuery<MutualFund[]>({
@@ -267,45 +269,38 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
 
       {/* Summary Stats */}
       {chartData.length > 0 && (
-        <VStack spacing={4} mt={6} width="full">
-          <HStack
-            spacing={4}
-            width="full"
-            flexDirection={{ base: "column", md: "row" }}
+        <HStack spacing={{ base: 3, md: 4 }} mt={6} width="full" flexDirection={{ base: "column", md: "row" }}>
+          <Box
+            bg={cardBg} p={{ base: 3, md: 4 }} borderRadius="md" boxShadow="sm"
+            border="1px solid" borderColor={sectionBorderColor}
+            borderTopWidth="3px" borderTopColor={portfolioTopAccent} width="full"
           >
-            <Box
-              bg={cardBg}
-              p={6}
-              borderRadius="lg"
-              width="full"
-              boxShadow="md"
-            >
-              <Stat>
-                <StatLabel color={secondaryTextColor}>Current Corpus</StatLabel>
-                <StatNumber color={primaryTextColor}>
-                  {formatNumberAsCurrency(currentCorpus, currencySymbol as string)}
-                </StatNumber>
-              </Stat>
-            </Box>
-
-            <Box
-              bg={cardBg}
-              p={6}
-              borderRadius="lg"
-              width="full"
-              boxShadow="md"
-            >
-              <Stat>
-                <StatLabel color={secondaryTextColor}>
-                  {selectedGranularity === "monthly" ? "Months" : "Years"}
-                </StatLabel>
-                <StatNumber color={primaryTextColor}>
-                  {totalDataPoints}
-                </StatNumber>
-              </Stat>
-            </Box>
-          </HStack>
-        </VStack>
+            <Flex align="center" gap={1.5} mb={1}>
+              <Icon as={TrendingUp} boxSize={3} color={columnHeaderColor} />
+              <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={columnHeaderColor}>
+                Current Corpus
+              </Text>
+            </Flex>
+            <Text fontSize={{ base: "md", md: "xl" }} fontWeight="bold" color={positiveColor} lineHeight="short">
+              {formatNumberAsCurrency(currentCorpus, currencySymbol as string)}
+            </Text>
+          </Box>
+          <Box
+            bg={cardBg} p={{ base: 3, md: 4 }} borderRadius="md" boxShadow="sm"
+            border="1px solid" borderColor={sectionBorderColor}
+            borderTopWidth="3px" borderTopColor={countTopAccent} width="full"
+          >
+            <Flex align="center" gap={1.5} mb={1}>
+              <Icon as={Activity} boxSize={3} color={columnHeaderColor} />
+              <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={columnHeaderColor}>
+                {selectedGranularity === "monthly" ? "Months" : "Years"}
+              </Text>
+            </Flex>
+            <Text fontSize={{ base: "md", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short">
+              {totalDataPoints}
+            </Text>
+          </Box>
+        </HStack>
       )}
     </Box>
   );

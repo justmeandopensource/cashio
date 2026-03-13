@@ -128,124 +128,58 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
           onChange={handleTabChange}
         >
           <Box
-            p={{ base: 2, md: 4 }}
+            px={{ base: 2, md: 4 }}
+            pt={{ base: 2, md: 3 }}
+            pb={0}
             borderBottom="1px solid"
             borderColor={tabBorderColor}
           >
-            <Box>
-              <TabList
-                minW={{ base: "auto", md: "auto" }}
-                borderBottom="none"
-                justifyContent={{ base: "space-around", md: "flex-start" }}
-                gap={1}
-              >
-                 <Tab
-                   px={{ base: 4, md: 6 }}
-                   py={4}
-                   fontWeight="medium"
-                   borderRadius="md"
-                   whiteSpace="nowrap"
-                   flex={{ base: 1, md: "none" }}
-                   border="1px solid"
-                   borderColor="transparent"
-                   _selected={{
-                     color: selectedTabColor,
-                     bg: selectedTabBg,
-                     fontWeight: "semibold",
-                     borderColor: selectedTabBorderColor,
-                   }}
-                   color={tabColor}
-                   _hover={{
-                     bg: hoverTabBg,
-                   }}
-                 >
-                  <Flex align="center" justify="center">
-                    <Icon as={CreditCard} mr={{ base: 0, md: 2 }} />
-                    <Text display={{ base: "none", md: "block" }}>Accounts</Text>
-                    {accountsCount > 0 && (
-                      <Badge ml={{ base: 0, md: 2 }} colorScheme="brand" borderRadius="full" px={2} display={{ base: "none", md: "inline-flex" }}>
-                        {accountsCount}
+            <TabList
+              borderBottom="none"
+              justifyContent={{ base: "space-around", md: "flex-start" }}
+              gap={1}
+              mb="-1px"
+            >
+              {[
+                { icon: CreditCard, label: "Accounts", badge: accountsCount > 0 ? accountsCount : null },
+                { icon: AlignLeft, label: "Transactions", badge: null },
+                { icon: Coins, label: "Physical Assets", badge: null },
+                { icon: TrendingUp, label: "Mutual Funds", badge: null },
+              ].map(({ icon, label, badge }) => (
+                <Tab
+                  key={label}
+                  px={{ base: 3, md: 4 }}
+                  py={2}
+                  fontWeight="medium"
+                  fontSize="sm"
+                  borderRadius="sm"
+                  whiteSpace="nowrap"
+                  flex={{ base: 1, md: "none" }}
+                  border="1px solid"
+                  borderColor="transparent"
+                  borderBottomColor="transparent"
+                  _selected={{
+                    color: selectedTabColor,
+                    bg: selectedTabBg,
+                    fontWeight: "semibold",
+                    borderColor: selectedTabBorderColor,
+                    borderBottomColor: "transparent",
+                  }}
+                  color={tabColor}
+                  _hover={{ bg: hoverTabBg }}
+                >
+                  <Flex align="center" justify="center" gap={1.5}>
+                    <Icon as={icon} boxSize={4} />
+                    <Text fontSize="sm" display={{ base: "none", sm: "block" }}>{label}</Text>
+                    {badge !== null && (
+                      <Badge colorScheme="brand" borderRadius="full" px={1.5} fontSize="2xs" display={{ base: "none", sm: "inline-flex" }}>
+                        {badge}
                       </Badge>
                     )}
                   </Flex>
                 </Tab>
-                <Tab
-                  px={{ base: 4, md: 6 }}
-                  py={4}
-                  fontWeight="medium"
-                  borderRadius="md"
-                  whiteSpace="nowrap"
-                  flex={{ base: 1, md: "none" }}
-                  border="1px solid"
-                  borderColor="transparent"
-                  _selected={{
-                    color: selectedTabColor,
-                    bg: selectedTabBg,
-                    fontWeight: "semibold",
-                    borderColor: selectedTabBorderColor,
-                  }}
-                  color={tabColor}
-                  _hover={{
-                    bg: hoverTabBg,
-                  }}
-                >
-                  <Flex align="center" justify="center">
-                    <Icon as={AlignLeft} mr={{ base: 0, md: 2 }} />
-                    <Text display={{ base: "none", md: "block" }}>Transactions</Text>
-                  </Flex>
-                </Tab>
-                <Tab
-                  px={{ base: 4, md: 6 }}
-                  py={4}
-                  fontWeight="medium"
-                  borderRadius="md"
-                  whiteSpace="nowrap"
-                  flex={{ base: 1, md: "none" }}
-                  border="1px solid"
-                  borderColor="transparent"
-                  _selected={{
-                    color: selectedTabColor,
-                    bg: selectedTabBg,
-                    fontWeight: "semibold",
-                    borderColor: selectedTabBorderColor,
-                  }}
-                  color={tabColor}
-                  _hover={{
-                    bg: hoverTabBg,
-                  }}
-                >
-                  <Flex align="center" justify="center">
-                    <Icon as={Coins} mr={{ base: 0, md: 2 }} />
-                    <Text display={{ base: "none", md: "block" }}>Physical Assets</Text>
-                  </Flex>
-                </Tab>
-                <Tab
-                  px={{ base: 4, md: 6 }}
-                  py={4}
-                  fontWeight="medium"
-                  borderRadius="md"
-                  whiteSpace="nowrap"
-                  flex={{ base: 1, md: "none" }}
-                  border="1px solid"
-                  borderColor="transparent"
-                  _selected={{
-                    color: selectedTabColor,
-                    bg: selectedTabBg,
-                    fontWeight: "semibold",
-                    borderColor: selectedTabBorderColor,
-                  }}
-                  color={tabColor}
-                  _hover={{
-                    bg: hoverTabBg,
-                  }}
-                >
-                  <Flex align="center" justify="center">
-                    <Icon as={TrendingUp} mr={{ base: 0, md: 2 }} />
-                    <Text display={{ base: "none", md: "block" }}>Mutual Funds</Text>
-                  </Flex>
-                </Tab>
-              </TabList>
-            </Box>
+              ))}
+            </TabList>
           </Box>
           <TabPanels>
             <TabPanel p={{ base: 2, md: 4 }}>

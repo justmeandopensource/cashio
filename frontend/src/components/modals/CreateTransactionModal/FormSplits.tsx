@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   Box,
   Divider,
@@ -74,6 +75,7 @@ const FormSplits: React.FC<FormSplitsProps> = ({
   const focusBorderColor = useColorModeValue("teal.500", "teal.300");
   const splitCardBg = useColorModeValue("white", "gray.800");
   const splitBorderColor = useColorModeValue("gray.100", "gray.600");
+  const progressTrackBg = useColorModeValue("gray.200", "gray.600");
 
   // Update splits based on the current amount
   const updateSplitsBasedOnAmount = useCallback((): void => {
@@ -206,7 +208,11 @@ const FormSplits: React.FC<FormSplitsProps> = ({
       border="1px solid"
       borderColor={borderColor}
     >
-      <VStack spacing={{ base: 4, sm: 5 }} align="stretch">
+      <VStack
+        spacing={{ base: 4, sm: 5 }}
+        align="stretch"
+        sx={{ "& .chakra-form__required-indicator": { display: "none" } }}
+      >
         <Flex justifyContent="space-between" alignItems="center">
           <Box>
             <Text fontWeight="semibold" fontSize="lg" mb={1}>
@@ -410,80 +416,70 @@ const FormSplits: React.FC<FormSplitsProps> = ({
           Add Split
         </Button>
 
-        {/* Enhanced Summary Section */}
-        <Box
-          bg={cardBg}
-          p={4}
-          borderRadius="md"
-          border="1px solid"
-          borderColor={splitBorderColor}
-        >
-          <VStack spacing={3}>
-            <HStack justifyContent="space-between" w="100%">
-              <Text fontSize="sm" fontWeight="medium" color="gray.700">
-                Total Amount:
-              </Text>
-              <Text fontSize="sm" fontWeight="bold" color="gray.900">
-                {currencySymbol}
-                {roundToTwoDecimals(parseFloat(amount) || 0).toFixed(2)}
-              </Text>
-            </HStack>
+        {/* Allocation Progress */}
+        {(() => {
+          const totalAmount = roundToTwoDecimals(parseFloat(amount) || 0);
+          const allocatedAmount = roundToTwoDecimals(
+            splits.reduce((sum, s) => sum + roundToTwoDecimals(parseFloat(s.amount) || 0), 0),
+          );
+          const remaining = displayRemainingAmount();
+          const isComplete = isEffectivelyEqual(remaining, 0);
+          const isOver = remaining < 0;
+          const progressPct = totalAmount > 0
+            ? Math.min((allocatedAmount / totalAmount) * 100, 100)
+            : 0;
+          const barColor = isOver ? "#FC8181" : isComplete ? "#319795" : "#38B2AC";
+          const summaryBorder = isComplete ? "teal.200" : isOver ? "red.200" : splitBorderColor;
 
-            <HStack justifyContent="space-between" w="100%">
-              <Text fontSize="sm" fontWeight="medium" color="gray.700">
-                Allocated:
-              </Text>
-              <Text fontSize="sm" fontWeight="semibold" color="green.600">
-                {currencySymbol}
-                {roundToTwoDecimals(
-                  splits.reduce(
-                    (sum, split) =>
-                      sum + roundToTwoDecimals(parseFloat(split.amount) || 0),
-                    0,
-                  ),
-                ).toFixed(2)}
-              </Text>
-            </HStack>
+          return (
+            <Box
+              bg={cardBg}
+              p={4}
+              borderRadius="md"
+              border="1px solid"
+              borderColor={summaryBorder}
+              sx={{ transition: "border-color 0.3s" }}
+            >
+              <VStack spacing={2} align="stretch">
+                {/* Labels */}
+                <HStack justifyContent="space-between">
+                  <Text fontSize="xs" fontWeight="semibold" color={inputBorderColor} textTransform="uppercase" letterSpacing="wider">
+                    Allocation
+                  </Text>
+                  <Text fontSize="xs" fontWeight="bold" color={isComplete ? "teal.500" : isOver ? "red.500" : "gray.500"}>
+                    {currencySymbol}{allocatedAmount.toFixed(2)} / {currencySymbol}{totalAmount.toFixed(2)}
+                  </Text>
+                </HStack>
 
-            {!isEffectivelyEqual(calculateRemainingAmount(), 0) && (
-              <HStack justifyContent="space-between" w="100%">
-                <Text fontSize="sm" fontWeight="medium" color="gray.700">
-                  {calculateRemainingAmount() < 0
-                    ? "Over-allocated:"
-                    : "Remaining:"}
-                </Text>
-                <Text
-                  fontSize="sm"
-                  fontWeight="bold"
-                  color={
-                    calculateRemainingAmount() < 0 ? "red.500" : "orange.500"
-                  }
-                >
-                  {currencySymbol}
-                  {Math.abs(
-                    roundToTwoDecimals(calculateRemainingAmount()),
-                  ).toFixed(2)}
-                </Text>
-              </HStack>
-            )}
+                {/* Progress bar */}
+                <Box w="100%" h="10px" bg={progressTrackBg} borderRadius="full" overflow="hidden">
+                  <motion.div
+                    animate={{ width: `${progressPct}%`, backgroundColor: barColor }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    style={{ height: "100%", borderRadius: "9999px" }}
+                  />
+                </Box>
 
-            {isEffectivelyEqual(calculateRemainingAmount(), 0) && (
-              <HStack justifyContent="center" w="100%">
-                <Text
-                  fontSize="sm"
-                  fontWeight="bold"
-                  color="green.500"
-                  bg="green.50"
-                  px={3}
-                  py={1}
-                  borderRadius="full"
-                >
-                  ✓ Perfectly Allocated
-                </Text>
-              </HStack>
-            )}
-          </VStack>
-        </Box>
+                {/* Status */}
+                {isComplete && (
+                  <Text fontSize="xs" fontWeight="bold" color="teal.500" textAlign="center">
+                    ✓ Perfectly Allocated
+                  </Text>
+                )}
+                {!isComplete && !isOver && (
+                  <Text fontSize="xs" color="orange.500" textAlign="right">
+                    {currencySymbol}{remaining.toFixed(2)} remaining
+                  </Text>
+                )}
+                {isOver && (
+                  <Text fontSize="xs" fontWeight="bold" color="red.500" textAlign="right">
+                    {currencySymbol}{Math.abs(remaining).toFixed(2)} over-allocated
+                  </Text>
+                )}
+              </VStack>
+            </Box>
+          );
+        })()}
       </VStack>
     </Box>
   );

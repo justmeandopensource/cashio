@@ -5,9 +5,9 @@ import Layout from "@components/Layout";
 import AccountMain from "@features/account/components/AccountMain";
 import PageContainer from "@components/shared/PageContainer";
 import PageHeader from "@components/shared/PageHeader";
-import { Button, Box, Text, HStack, Badge, Flex, useColorModeValue } from "@chakra-ui/react";
+import { Button, Box, Text, HStack, Badge, useColorModeValue } from "@chakra-ui/react";
 import { lazy, Suspense } from "react";
-import { Building, ShieldAlert, ChevronLeft } from "lucide-react";
+import { Building, ShieldAlert, ChevronLeft, Plus, Repeat } from "lucide-react";
 import { formatNumberAsCurrency } from "@components/shared/utils";
 import config from "@/config";
 import useLedgerStore from "@/components/shared/store";
@@ -222,38 +222,29 @@ const Account: React.FC = () => {
         backIcon={ChevronLeft}
         backOnClick={() => navigate("/ledger")}
         actions={
-          <Flex
-            direction={{ base: "column", md: "row" }}
-            alignItems={{ base: "center", md: "center" }}
-            gap={2}
-            width="100%"
-          >
-            <HStack
-              spacing={2}
-              justifyContent={{ base: "center", md: "flex-start" }}
-              width={{ base: "100%", md: "auto" }}
+          <HStack spacing={2}>
+            <Button
+              leftIcon={<Plus size={14} />}
+              colorScheme="brand"
+              size="sm"
+              borderRadius="md"
+              fontWeight="medium"
+              onClick={() => setIsCreateModalOpen(true)}
             >
-              <Button
-                colorScheme="brand"
-                size="sm"
-                borderRadius="lg"
-                fontWeight="semibold"
-                onClick={() => setIsCreateModalOpen(true)}
-              >
-                Add Transaction
-              </Button>
-              <Button
-                colorScheme="brand"
-                variant="outline"
-                size="sm"
-                borderRadius="lg"
-                fontWeight="semibold"
-                onClick={() => setIsTransferModalOpen(true)}
-              >
-                Transfer Funds
-              </Button>
-            </HStack>
-          </Flex>
+              Add Transaction
+            </Button>
+            <Button
+              leftIcon={<Repeat size={14} />}
+              colorScheme="brand"
+              variant="ghost"
+              size="sm"
+              borderRadius="md"
+              fontWeight="medium"
+              onClick={() => setIsTransferModalOpen(true)}
+            >
+              Transfer Funds
+            </Button>
+          </HStack>
         }
       />
       <Box flex={1} overflowY="auto">
