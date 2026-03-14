@@ -149,7 +149,6 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
   const groupCardBorderColor = useColorModeValue("brand.200", "brand.600");
   const groupTextColor = useColorModeValue("brand.700", "brand.200");
   const tertiaryTextColor = useColorModeValue("tertiaryTextColor", "tertiaryTextColor");
-  const loadingBg = useColorModeValue("gray.50", "primaryBg");
   const pillBorderColor = useColorModeValue("gray.300", "gray.600");
   const pillActiveBg = useColorModeValue("brand.50", "brand.900");
   const pillHoverBg = useColorModeValue("gray.50", "gray.800");
@@ -447,39 +446,38 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
                      </HStack>
                   </Flex>
                   {!account.is_group ? (
-                    <Flex gap={2} align="center" justify="flex-end">
-                      <ChakraLink
+                    <Flex gap={1} align="center" justify="flex-end">
+                      <IconButton
+                        icon={<Plus size={14} />}
+                        size="xs"
+                        variant="ghost"
+                        colorScheme="brand"
+                        aria-label="Add transaction"
                         onClick={(e) => {
                           e.stopPropagation();
                           onAddTransaction(account.account_id, undefined);
                         }}
-                        _hover={{ textDecoration: "none" }}
-                      >
-                        <Icon
-                          as={Plus}
-                          size={16}
-                          color={iconColor}
-                          _hover={{ color: hoverIconColor }}
-                        />
-                      </ChakraLink>
-                      <ChakraLink
+                      />
+                      <IconButton
+                        icon={<Repeat size={14} />}
+                        size="xs"
+                        variant="ghost"
+                        colorScheme="brand"
+                        aria-label="Transfer funds"
                         onClick={(e) => {
                           e.stopPropagation();
                           onTransferFunds(account.account_id);
                         }}
-                        _hover={{ textDecoration: "none" }}
-                      >
-                        <Icon
-                          as={Repeat}
-                          size={16}
-                          color={iconColor}
-                          _hover={{ color: hoverIconColor }}
-                        />
-                      </ChakraLink>
+                      />
                     </Flex>
                   ) : (
-                    <Flex gap={2} align="center">
-                      <ChakraLink
+                    <Flex gap={1} align="center">
+                      <IconButton
+                        icon={<Plus size={14} />}
+                        size="xs"
+                        variant="ghost"
+                        colorScheme="brand"
+                        aria-label="Add sub-account"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleCreateAccountClick(
@@ -487,15 +485,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
                             account.account_id
                           );
                         }}
-                        _hover={{ textDecoration: "none" }}
-                      >
-                        <Icon
-                          as={Plus}
-                          size={16}
-                          color={iconColor}
-                          _hover={{ color: hoverIconColor }}
-                        />
-                      </ChakraLink>
+                      />
                       {hasChildren && (
                         <Icon
                           as={isExpanded ? ChevronUp : ChevronDown}
@@ -557,15 +547,11 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
   );
 
   if (isLoading) {
-    return (
-      <Box bg={loadingBg} p={{ base: 3, md: 4, lg: 6 }} borderRadius="lg">
-        <LoadingState />
-      </Box>
-    );
+    return <LoadingState />;
   }
 
   return (
-    <Box bg={loadingBg} p={{ base: 3, md: 4, lg: 6 }} borderRadius="lg">
+    <Box p={{ base: 2, md: 4 }}>
       {/* Summary bar */}
       <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 3, md: 4 }} mb={{ base: 4, md: 6 }}>
         {/* Total Assets */}

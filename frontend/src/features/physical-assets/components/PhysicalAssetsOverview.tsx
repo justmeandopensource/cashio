@@ -134,7 +134,7 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
                    size={{ base: "md", md: "sm" }}
                    onClick={onCreateAssetType}
                  >
-                   Asset Type
+                   Create Asset Type
                  </Button>
                  <Button
                    leftIcon={<Plus size={16} />}
@@ -143,7 +143,7 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
                    size={{ base: "md", md: "sm" }}
                    onClick={onCreateAsset}
                  >
-                   Physical Asset
+                   Add Physical Asset
                  </Button>
                </Flex>
              </Flex>

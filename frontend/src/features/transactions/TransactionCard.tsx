@@ -21,6 +21,7 @@ import {
   ModalBody,
   ModalCloseButton,
   Button,
+  IconButton,
   useBreakpointValue,
   Link as ChakraLink,
   useColorModeValue,
@@ -136,7 +137,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
   };
 
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
-  const hoverBg = useColorModeValue("secondaryBg", "secondaryBg");
+  const hoverBg = useColorModeValue("tertiaryBg", "gray.600");
   const splitColor = useColorModeValue("split", "split");
   const transferColor = useColorModeValue("transfer", "transfer");
   const assetColor = useColorModeValue("asset", "asset");
@@ -161,7 +162,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
         onClick={toggleExpand}
         cursor="pointer"
         transition="all 0.2s"
-        _hover={{ bg: hoverBg }}
+        sx={{ '@media (hover: hover)': { '&:hover': { bg: hoverBg } } }}
       >
         {/* Main row with essential info */}
         <Flex justify="space-between" align="flex-start">
@@ -404,22 +405,24 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
              <Flex justify="flex-end" mt={3} gap={2}>
                 {!transaction.is_transfer && !transaction.is_asset_transaction && !transaction.is_mf_transaction && (
                   <>
-                    <Button
+                    <IconButton
                       size="md"
                       variant="ghost"
                       colorScheme="blue"
-                      leftIcon={<Edit size={18} />}
+                      icon={<Edit size={18} />}
+                      aria-label="Edit transaction"
                       onClick={(e) => {
                         e.stopPropagation();
                         onEditTransaction(transaction);
                       }}
                       data-testid="transactioncard-edit-icon"
                     />
-                    <Button
+                    <IconButton
                       size="md"
                       variant="ghost"
                       colorScheme="gray"
-                      leftIcon={<Copy size={18} />}
+                      icon={<Copy size={18} />}
+                      aria-label="Copy transaction"
                       onClick={(e) => {
                         e.stopPropagation();
                         onCopyTransaction(transaction);
@@ -429,11 +432,12 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                   </>
                 )}
                 {!transaction.is_asset_transaction && !transaction.is_mf_transaction && (
-                  <Button
+                  <IconButton
                     size="md"
                     variant="ghost"
                     colorScheme="red"
-                    leftIcon={<Trash2 size={18} />}
+                    icon={<Trash2 size={18} />}
+                    aria-label="Delete transaction"
                     onClick={(e) => {
                       e.stopPropagation();
                       onOpen();

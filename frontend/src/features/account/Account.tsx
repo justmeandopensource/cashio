@@ -5,7 +5,7 @@ import Layout from "@components/Layout";
 import AccountMain from "@features/account/components/AccountMain";
 import PageContainer from "@components/shared/PageContainer";
 import PageHeader from "@components/shared/PageHeader";
-import { Button, Box, Text, HStack, Badge, useColorModeValue } from "@chakra-ui/react";
+import { Button, IconButton, Box, Text, HStack, Badge, useColorModeValue } from "@chakra-ui/react";
 import { lazy, Suspense } from "react";
 import { Building, ShieldAlert, ChevronLeft, Plus, Repeat } from "lucide-react";
 import { formatNumberAsCurrency } from "@components/shared/utils";
@@ -230,9 +230,20 @@ const Account: React.FC = () => {
               borderRadius="md"
               fontWeight="medium"
               onClick={() => setIsCreateModalOpen(true)}
+              display={{ base: "none", md: "inline-flex" }}
             >
               Add Transaction
             </Button>
+            <IconButton
+              icon={<Plus size={16} />}
+              aria-label="Add Transaction"
+              colorScheme="brand"
+              variant="solid"
+              size="sm"
+              borderRadius="md"
+              onClick={() => setIsCreateModalOpen(true)}
+              display={{ base: "inline-flex", md: "none" }}
+            />
             <Button
               leftIcon={<Repeat size={14} />}
               colorScheme="brand"
@@ -241,9 +252,20 @@ const Account: React.FC = () => {
               borderRadius="md"
               fontWeight="medium"
               onClick={() => setIsTransferModalOpen(true)}
+              display={{ base: "none", md: "inline-flex" }}
             >
               Transfer Funds
             </Button>
+            <IconButton
+              icon={<Repeat size={16} />}
+              aria-label="Transfer Funds"
+              colorScheme="brand"
+              variant="ghost"
+              size="sm"
+              borderRadius="md"
+              onClick={() => setIsTransferModalOpen(true)}
+              display={{ base: "inline-flex", md: "none" }}
+            />
           </HStack>
         }
       />

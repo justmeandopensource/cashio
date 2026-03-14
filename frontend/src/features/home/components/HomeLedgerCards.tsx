@@ -171,6 +171,7 @@ const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
               transform: "translateY(-2px)",
               boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
             }}
+            _active={{ transform: "scale(0.98)", bg: cardHoverBg }}
             transition="transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease"
           >
             <Flex align="flex-start" gap={4}>

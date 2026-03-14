@@ -218,10 +218,11 @@ const PhysicalAssets: FC = () => {
         <Box p={{ base: 2, md: 4 }}>
             <TabList borderBottom="none" gap={1}>
               <Tab
-                px={{ base: 4, md: 6 }}
-                py={4}
+                px={{ base: 3, md: 4 }}
+                py={2}
                 fontWeight="medium"
-                borderRadius="md"
+                fontSize="sm"
+                borderRadius="sm"
                 whiteSpace="nowrap"
                 color={tabColor}
                 _selected={{
@@ -245,10 +246,11 @@ const PhysicalAssets: FC = () => {
                </Flex>
              </Tab>
              <Tab
-               px={{ base: 4, md: 6 }}
-               py={4}
+               px={{ base: 3, md: 4 }}
+               py={2}
                fontWeight="medium"
-               borderRadius="md"
+               fontSize="sm"
+               borderRadius="sm"
                whiteSpace="nowrap"
                color={tabColor}
                _selected={{

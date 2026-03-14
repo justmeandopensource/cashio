@@ -198,7 +198,7 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
              onClick={() => handleCardToggle(transaction.asset_transaction_id)}
              cursor="pointer"
              transition="all 0.2s"
-             _hover={{ bg: hoverBg }}
+             sx={{ '@media (hover: hover)': { '&:hover': { bg: hoverBg } } }}
           >
             {/* Main row with essential info */}
             <Flex justify="space-between" align="flex-start">
@@ -364,7 +364,7 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
     <Box>
       <VStack spacing={6} align="stretch">
         {/* Header */}
-         <Box mb={6} p={{ base: 4, md: 6 }} bg={headerBg} borderRadius="lg" boxShadow="sm">
+         <Box mb={6} p={{ base: 0, md: 6 }} bg={headerBg} borderRadius="lg" boxShadow="sm">
           <Flex
             direction={{ base: "column", md: "row" }}
             justify="space-between"
@@ -445,10 +445,10 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
         </Box>
 
         {/* Transactions Table/Cards */}
-         <Card bg={cardBg} p={{ base: 3, md: 4, lg: 6 }} borderRadius="lg">
-          {isMobile ? (
-        renderMobileCards()
-      ) : (
+        {isMobile ? (
+          renderMobileCards()
+        ) : (
+          <Card bg={cardBg} p={{ md: 4, lg: 6 }} borderRadius="lg">
         <Box overflowX="auto">
           <Table variant="simple" size="sm" borderColor={tableBorderColor}>
             <Thead>
@@ -587,8 +587,8 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
             </Tbody>
           </Table>
         </Box>
-      )}
-        </Card>
+          </Card>
+        )}
 
       {/* Confirmation Modal */}
       <Modal

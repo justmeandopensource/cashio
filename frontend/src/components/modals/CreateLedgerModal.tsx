@@ -161,7 +161,7 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
           <HStack spacing={3} align="flex-start">
             <Icon as={Plus} boxSize={5} mt="3px" color={modalIconColor} />
 
-            <Box>
+            <Box flex={1}>
               <Box
                 fontSize="lg"
                 fontWeight="bold"
@@ -175,6 +175,21 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
               >
                 Set up your financial tracking
               </Box>
+            </Box>
+
+            {/* Mobile close button */}
+            <Box
+              as="button"
+              display={{ base: "flex", sm: "none" }}
+              alignItems="center"
+              justifyContent="center"
+              onClick={onClose}
+              aria-label="Close"
+              color={modalSubtitleColor}
+              _hover={{ color: modalTitleColor }}
+              p={1}
+            >
+              <Icon as={X} boxSize={5} />
             </Box>
           </HStack>
         </Box>

@@ -198,11 +198,11 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
              <Flex
                direction={{ base: "column", md: "row" }}
                justify="space-between"
-               align={{ base: "start", md: "center" }}
-               mb={4}
-               gap={{ base: 4, md: 0 }}
+               align={{ base: "flex-start", md: "center" }}
+               mb={{ base: 0, md: 4 }}
+               gap={{ base: 3, md: 0 }}
              >
-               <Flex align="center" mb={{ base: 2, md: 0 }}>
+               <Flex align="center">
                  <Icon as={TrendingUp} mr={2} color={iconColor} />
                  <Text
                    fontSize={{ base: "lg", md: "xl" }}
@@ -212,12 +212,27 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                    Mutual Funds Portfolio
                  </Text>
                </Flex>
-               <Flex gap={2} width={{ base: "full", md: "auto" }} direction={{ base: "column", md: "row" }}>
+               {/* Mobile: text links stacked */}
+               <VStack align="flex-start" spacing={2} display={{ base: "flex", md: "none" }}>
+                 <Text fontSize="sm" color="brand.500" cursor="pointer" onClick={onCreateAmc} _hover={{ textDecoration: "underline" }}>
+                   Create a new AMC
+                 </Text>
+                 <Text fontSize="sm" color="brand.500" cursor="pointer" onClick={() => onCreateFund()} _hover={{ textDecoration: "underline" }}>
+                   Create a new Mutual Fund
+                 </Text>
+                 {fundsWithCodes.length > 0 && (
+                   <Text fontSize="sm" color="brand.500" cursor="pointer" onClick={handleOpenBulkNavModal} _hover={{ textDecoration: "underline" }}>
+                     Bulk update Mutual Funds NAV
+                   </Text>
+                 )}
+               </VStack>
+               {/* Desktop: buttons beside title */}
+               <HStack spacing={2} display={{ base: "none", md: "flex" }}>
                  <Button
                    leftIcon={<Building2 size={16} />}
                    colorScheme="brand"
                    variant="outline"
-                   size={{ base: "md", md: "sm" }}
+                   size="sm"
                    onClick={onCreateAmc}
                  >
                    Create AMC
@@ -226,13 +241,8 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                    leftIcon={<PieChart size={16} />}
                    colorScheme="brand"
                    variant={amcs.length === 0 ? "outline" : "solid"}
-                   size={{ base: "md", md: "sm" }}
+                   size="sm"
                    onClick={() => onCreateFund()}
-                   title={
-                     amcs.length === 0
-                       ? "Create an AMC first"
-                       : "Create a new mutual fund"
-                   }
                  >
                    Create Fund
                  </Button>
@@ -241,14 +251,13 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                      leftIcon={<RefreshCw size={16} />}
                      colorScheme="brand"
                      variant="outline"
-                     size={{ base: "md", md: "sm" }}
+                     size="sm"
                      onClick={handleOpenBulkNavModal}
-                     title={`Update NAVs for ${fundsWithCodes.length} funds`}
                    >
                      Update NAVs
                    </Button>
                  )}
-               </Flex>
+               </HStack>
              </Flex>
 
              <SimpleGrid
@@ -472,7 +481,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
               </VStack>
             </Box>
          ) : (
-             <Box bg={overviewBg} p={{ base: 3, md: 4, lg: 6 }} borderRadius="lg">
+             <Box bg={overviewBg} p={{ base: 0, md: 4, lg: 6 }} borderRadius="lg">
                <MutualFundsTable
                  amcs={amcs}
                  mutualFunds={mutualFunds}

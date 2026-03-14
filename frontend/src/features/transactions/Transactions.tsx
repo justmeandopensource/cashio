@@ -314,13 +314,13 @@ const Transactions: React.FC<TransactionsProps> = ({
     deleteMutation.mutate(transactionId);
   };
 
-  const boxBg = useColorModeValue(undefined, "cardDarkBg");
+  const boxBg = undefined;
   const skeletonBg = useColorModeValue("primaryBg", "primaryBg");
   const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
 
   if (shouldFetch && isTransactionsLoading) {
     return (
-      <Box bg={boxBg} p={{ base: 3, lg: 6 }} borderRadius="lg">
+      <Box bg={boxBg} p={{ base: 2, lg: 6 }} borderRadius="lg">
         <Flex justify="space-between" align="center" mb={4}>
           <Flex align="center" gap={2}>
             <SkeletonCircle size="6" />
@@ -353,7 +353,7 @@ const Transactions: React.FC<TransactionsProps> = ({
   }
 
   return (
-    <Box bg={boxBg} p={{ base: 3, lg: 6 }} borderRadius="lg">
+    <Box bg={boxBg} p={{ base: 2, lg: 6 }} borderRadius="lg">
       {!shouldFetch || !transactionsData || transactionsData.length === 0 ? (
         <Box
           textAlign="center"

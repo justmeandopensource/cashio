@@ -30,7 +30,7 @@ const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, heade
   return (
     <Box
       px={{ base: 4, md: 8 }}
-      py={6}
+      py={{ base: 3, md: 6 }}
       position="sticky"
       top={0}
       zIndex={10}
@@ -42,7 +42,7 @@ const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, heade
       <Flex
         justifyContent="space-between"
         align={{ base: "center", md: "center" }}
-        flexDirection={{ base: "column", md: "row" }}
+        flexDirection="row"
         gap={4}
         width="100%"
       >
@@ -59,7 +59,7 @@ const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, heade
             />
           )}
           {icon && (
-            <Icon as={icon} boxSize={{ base: 5, md: 6 }} mt={{ base: "2px", md: "3px" }} color={iconColor} flexShrink={0} />
+            <Icon as={icon} boxSize={{ base: 5, md: 6 }} mt={{ base: "2px", md: "3px" }} color={iconColor} flexShrink={0} display={{ base: "none", md: "block" }} />
           )}
           <Box flex={1}>
             <Heading
@@ -72,15 +72,15 @@ const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, heade
               {title}
             </Heading>
             {subtitle && (
-              <Text fontSize="sm" color={subtitleColor} mt={0.5}>
+              <Text fontSize="sm" color={subtitleColor} mt={0.5} display={{ base: "none", md: "block" }}>
                 {subtitle}
               </Text>
             )}
           </Box>
         </HStack>
-        <HStack justifyContent={{ base: "center", md: "flex-end" }} flexShrink={1} width={{ base: "100%", md: "auto" }}>
+        <HStack justifyContent={{ base: "center", md: "flex-end" }} flexShrink={1}>
           {headerContent}
-          {actions && <Box w="100%">{actions}</Box>}
+          {actions}
         </HStack>
       </Flex>
     </Box>

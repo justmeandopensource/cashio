@@ -23,7 +23,7 @@ const HomeMainHeader: FC<HomeMainHeaderProps> = ({ onCreateLedger }) => {
   return (
     <Box
       px={{ base: 4, md: 8 }}
-      py={6}
+      py={{ base: 3, md: 6 }}
       borderBottom="1px solid"
       borderColor={borderColor}
       boxShadow={headerShadow}
@@ -40,7 +40,7 @@ const HomeMainHeader: FC<HomeMainHeaderProps> = ({ onCreateLedger }) => {
           >
             My Ledgers
           </Heading>
-          <Text fontSize="sm" color={subtitleColor} mt={0.5}>
+          <Text fontSize="sm" color={subtitleColor} mt={0.5} display={{ base: "none", md: "block" }}>
             Select a ledger to get started
           </Text>
         </Box>

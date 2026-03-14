@@ -182,7 +182,7 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
             </TabList>
           </Box>
           <TabPanels>
-            <TabPanel p={{ base: 2, md: 4 }}>
+            <TabPanel p={{ base: 0, md: 4 }}>
               {tabIndex === 0 && (
                 <LedgerMainAccounts
                   accounts={accounts || []}
@@ -192,7 +192,7 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
                 />
               )}
             </TabPanel>
-            <TabPanel p={{ base: 2, md: 4 }}>
+            <TabPanel p={{ base: 0, md: 4 }}>
               {tabIndex === 1 && (
                 <LedgerMainTransactions
                   onAddTransaction={onAddTransaction}
@@ -212,10 +212,10 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
                 />
               )}
             </TabPanel>
-            <TabPanel p={{ base: 2, md: 4 }}>
+            <TabPanel p={{ base: 0, md: 4 }}>
               {tabIndex === 2 && <PhysicalAssets />}
             </TabPanel>
-            <TabPanel p={{ base: 2, md: 4 }}>
+            <TabPanel p={{ base: 0, md: 4 }}>
               {tabIndex === 3 && <MutualFunds onAccountDataChange={refreshAccountsData} filters={mutualFundsFilters} onFiltersChange={setMutualFundsFilters} />}
             </TabPanel>
           </TabPanels>

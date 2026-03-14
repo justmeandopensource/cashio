@@ -19,6 +19,7 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  IconButton,
   useDisclosure,
   Modal,
   ModalOverlay,
@@ -209,7 +210,7 @@ const MfTransactions: FC<MfTransactionsProps> = ({
             onClick={() => handleCardToggle(transaction.mf_transaction_id)}
             cursor="pointer"
             transition="all 0.2s"
-            _hover={{ bg: hoverBg }}
+            sx={{ '@media (hover: hover)': { '&:hover': { bg: hoverBg } } }}
           >
              {/* Main row with essential info */}
              <VStack spacing={3} align="stretch">
@@ -338,11 +339,11 @@ const MfTransactions: FC<MfTransactionsProps> = ({
 
                 {/* Action buttons */}
                 <Flex justify="flex-end" mt={1} gap={2} mb={-1}>
-                  <Button
+                  <IconButton
                     size="sm"
                     variant="ghost"
                     colorScheme="red"
-                    leftIcon={<Trash2 size={16} />}
+                    icon={<Trash2 size={16} />}
                     onClick={(e) => {
                       e.stopPropagation();
                       setTransactionToDelete(transaction);
@@ -369,7 +370,7 @@ const MfTransactions: FC<MfTransactionsProps> = ({
     <Box>
       <VStack spacing={6} align="stretch">
          {/* Header */}
-         <Box mb={6} p={{ base: 4, md: 6 }} bg={headerBg} borderRadius="lg" boxShadow="sm">
+         <Box mb={6} p={{ base: 0, md: 6 }} bg={headerBg} borderRadius="lg" boxShadow="sm">
            <Flex
              direction={{ base: "column", md: "row" }}
              justify="space-between"
@@ -514,14 +515,13 @@ const MfTransactions: FC<MfTransactionsProps> = ({
               </VStack>
             </VStack>
           </Box>
+         ) : isMobile ? (
+           renderMobileCards()
          ) : (
-           /* Transactions Table/Cards */
+           /* Transactions Table */
            <Card bg={cardBg}>
-             <CardBody>
-               {isMobile ? (
-                 renderMobileCards()
-               ) : (
-                 <Box overflowX="auto">
+             <CardBody px={4} py={4}>
+               <Box overflowX="auto">
                     <Table variant="simple" size="sm" borderColor={tableBorderColor}>
                       <Thead>
                         <Tr>
@@ -700,7 +700,6 @@ const MfTransactions: FC<MfTransactionsProps> = ({
                       </Tbody>
                    </Table>
                  </Box>
-               )}
              </CardBody>
            </Card>
          )}
@@ -785,7 +784,6 @@ const MfTransactions: FC<MfTransactionsProps> = ({
                variant="outline"
                mr={3}
                onClick={onDeleteClose}
-               leftIcon={<Icon as={Trash2} size={16} />}
              >
                Cancel
              </Button>
