@@ -481,7 +481,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
               </VStack>
             </Box>
          ) : (
-             <Box bg={overviewBg} p={{ base: 0, md: 4, lg: 6 }} borderRadius="lg">
+             <Box bg={{ base: "transparent", md: overviewBg }} p={{ base: 0, md: 4, lg: 6 }} borderRadius={{ base: "none", md: "lg" }}>
                <MutualFundsTable
                  amcs={amcs}
                  mutualFunds={mutualFunds}

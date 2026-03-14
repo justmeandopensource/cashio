@@ -364,7 +364,7 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
     <Box>
       <VStack spacing={6} align="stretch">
         {/* Header */}
-         <Box mb={6} p={{ base: 0, md: 6 }} bg={headerBg} borderRadius="lg" boxShadow="sm">
+         <Box mb={{ base: 0, md: 6 }} p={{ base: 0, md: 6 }} bg={{ base: "transparent", md: headerBg }} borderRadius={{ base: "none", md: "lg" }} boxShadow={{ base: "none", md: "sm" }}>
           <Flex
             direction={{ base: "column", md: "row" }}
             justify="space-between"
