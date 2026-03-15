@@ -37,6 +37,7 @@ import {
   TrendingUp,
   Coins,
   DollarSign,
+  Check,
 } from "lucide-react";
 import ChakraDatePicker from "@components/shared/ChakraDatePicker";
 import { switchMutualFundUnits } from "../../api";
@@ -90,9 +91,12 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.100", "gray.700");
   const cardBg = useColorModeValue("gray.50", "gray.700");
+  const footerBg = useColorModeValue("gray.50", "gray.900");
   const inputBg = useColorModeValue("white", "gray.700");
   const inputBorderColor = useColorModeValue("gray.200", "gray.600");
   const focusBorderColor = useColorModeValue("teal.500", "teal.300");
+  const helperTextColor = useColorModeValue("gray.500", "gray.400");
+  const addonColor = useColorModeValue("gray.600", "gray.200");
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
@@ -356,12 +360,10 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                       <FormLabel fontWeight="semibold" mb={2}>
                         <HStack spacing={2}>
                           <TrendingUp size={16} />
-                          <Text>
-                            To Fund{" "}
-                            <Text as="span" color="red.500">
-                              *
-                            </Text>
-                          </Text>
+                          <Text>To Fund</Text>
+                          {formData.to_fund_id && (
+                            <Icon as={Check} boxSize={3.5} color="teal.500" />
+                          )}
                         </HStack>
                       </FormLabel>
                          <Select
@@ -410,12 +412,10 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                        <FormLabel fontWeight="semibold" mb={2}>
                          <HStack spacing={2}>
                            <Coins size={16} />
-                           <Text>
-                             Source Units{" "}
-                             <Text as="span" color="red.500">
-                               *
-                             </Text>
-                           </Text>
+                           <Text>Source Units</Text>
+                           {formData.source_units && parseFloat(formData.source_units) > 0 && (
+                             <Icon as={Check} boxSize={3.5} color="teal.500" />
+                           )}
                          </HStack>
                        </FormLabel>
                          <Input
@@ -437,7 +437,7 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                              boxShadow: `0 0 0 1px ${focusBorderColor}`,
                            }}
                          />
-                         <FormHelperText color={useColorModeValue("gray.500", "gray.400")}>Available units: {formatUnits(availableUnits)}</FormHelperText>
+                         <FormHelperText color={helperTextColor}>Available units: {formatUnits(availableUnits)}</FormHelperText>
                        <FormErrorMessage>{errors.source_units}</FormErrorMessage>
                      </FormControl>
 
@@ -445,12 +445,10 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                        <FormLabel fontWeight="semibold" mb={2}>
                          <HStack spacing={2}>
                            <DollarSign size={16} />
-                           <Text>
-                             Source Amount{" "}
-                             <Text as="span" color="red.500">
-                               *
-                             </Text>
-                           </Text>
+                           <Text>Source Amount</Text>
+                           {formData.source_amount && parseFloat(formData.source_amount) > 0 && (
+                             <Icon as={Check} boxSize={3.5} color="teal.500" />
+                           )}
                          </HStack>
                        </FormLabel>
                        <InputGroup size="lg">
@@ -458,7 +456,7 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                            bg={inputBorderColor}
                            borderWidth="2px"
                            borderColor={inputBorderColor}
-                           color={useColorModeValue("gray.600", "gray.200")}
+                           color={addonColor}
                            fontWeight="semibold"
                          >
                            {currencySymbol}
@@ -481,7 +479,7 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                             }}
                           />
                        </InputGroup>
-                        <FormHelperText color={useColorModeValue("gray.500", "gray.400")}>Source NAV: {currencySymbol}{formatAmount(sourceNav)}</FormHelperText>
+                        <FormHelperText color={helperTextColor}>Source NAV: {currencySymbol}{formatAmount(sourceNav)}</FormHelperText>
                        <FormErrorMessage>{errors.source_amount}</FormErrorMessage>
                      </FormControl>
                    </Stack>
@@ -492,12 +490,10 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                        <FormLabel fontWeight="semibold" mb={2}>
                          <HStack spacing={2}>
                            <Coins size={16} />
-                           <Text>
-                             Target Units{" "}
-                             <Text as="span" color="red.500">
-                               *
-                             </Text>
-                           </Text>
+                           <Text>Target Units</Text>
+                           {formData.target_units && parseFloat(formData.target_units) > 0 && (
+                             <Icon as={Check} boxSize={3.5} color="teal.500" />
+                           )}
                          </HStack>
                        </FormLabel>
                         <Input
@@ -518,7 +514,7 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                             boxShadow: `0 0 0 1px ${focusBorderColor}`,
                           }}
                         />
-                         <FormHelperText color={useColorModeValue("gray.500", "gray.400")}>units to purchase</FormHelperText>
+                         <FormHelperText color={helperTextColor}>units to purchase</FormHelperText>
                         <FormErrorMessage>{errors.target_units}</FormErrorMessage>
                      </FormControl>
 
@@ -526,12 +522,10 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                        <FormLabel fontWeight="semibold" mb={2}>
                          <HStack spacing={2}>
                            <DollarSign size={16} />
-                           <Text>
-                             Target Amount{" "}
-                             <Text as="span" color="red.500">
-                               *
-                             </Text>
-                           </Text>
+                           <Text>Target Amount</Text>
+                           {formData.target_amount && parseFloat(formData.target_amount) > 0 && (
+                             <Icon as={Check} boxSize={3.5} color="teal.500" />
+                           )}
                          </HStack>
                        </FormLabel>
                        <InputGroup size="lg">
@@ -539,7 +533,7 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                            bg={inputBorderColor}
                            borderWidth="2px"
                            borderColor={inputBorderColor}
-                           color={useColorModeValue("gray.600", "gray.200")}
+                           color={addonColor}
                            fontWeight="semibold"
                          >
                            {currencySymbol}
@@ -562,7 +556,7 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                             }}
                           />
                        </InputGroup>
-                         <FormHelperText color={useColorModeValue("gray.500", "gray.400")}>Target NAV: {currencySymbol}{formatAmount(targetNav)}</FormHelperText>
+                         <FormHelperText color={helperTextColor}>Target NAV: {currencySymbol}{formatAmount(targetNav)}</FormHelperText>
                         <FormErrorMessage>{errors.target_amount}</FormErrorMessage>
                       </FormControl>
                    </Stack>
@@ -574,6 +568,7 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                          <HStack spacing={2}>
                            <Calendar size={16} />
                            <Text>Transfer Date</Text>
+                           <Icon as={Check} boxSize={3.5} color="teal.500" />
                          </HStack>
                        </FormLabel>
                        <Box
@@ -635,7 +630,7 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                       }}
                       resize="vertical"
                     />
-                    <FormHelperText color={useColorModeValue("gray.500", "gray.400")}>Additional details about this transfer</FormHelperText>
+                    <FormHelperText color={helperTextColor}>Additional details about this transfer</FormHelperText>
                     <FormErrorMessage>{errors.notes}</FormErrorMessage>
                   </FormControl>
 
@@ -692,7 +687,7 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
           display={{ base: "none", sm: "flex" }}
           px={8}
           py={6}
-          bg={cardBg}
+          bg={footerBg}
           borderTop="1px solid"
           borderColor={borderColor}
         >
