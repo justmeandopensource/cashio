@@ -21,7 +21,7 @@ import {
   HStack,
   Icon,
 } from "@chakra-ui/react";
-import { Plus, X, Eye, EyeOff } from "lucide-react";
+import { Plus, X, Eye, EyeOff, Check } from "lucide-react";
 import { toastDefaults } from "../shared/utils";
 
 interface Currency {
@@ -214,9 +214,10 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
               borderColor={borderColor}
             >
               <VStack spacing={5} align="stretch">
-                <FormControl isRequired>
-                  <FormLabel fontWeight="semibold" mb={2}>
+                <FormControl>
+                  <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                     Ledger Name
+                    {newLedgerName && <Icon as={Check} boxSize={3.5} color="teal.500" />}
                   </FormLabel>
                   <Input
                     placeholder="e.g., Personal Finance, Family Budget"
@@ -240,9 +241,10 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
                   </FormHelperText>
                 </FormControl>
 
-                <FormControl isRequired>
-                  <FormLabel fontWeight="semibold" mb={2}>
+                <FormControl>
+                  <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                     Currency
+                    {selectedCurrency && <Icon as={Check} boxSize={3.5} color="teal.500" />}
                   </FormLabel>
                   <Select
                     placeholder="Select currency"
@@ -270,9 +272,10 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
                   </FormHelperText>
                 </FormControl>
 
-                <FormControl isRequired>
-                  <FormLabel fontWeight="semibold" mb={2}>
+                <FormControl>
+                  <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                     Mutual Fund Service
+                    <Icon as={Check} boxSize={3.5} color="teal.500" />
                   </FormLabel>
                   <Select
                     value={navServiceType}

@@ -10,6 +10,9 @@ import {
   FormControl,
   FormLabel,
   Input,
+  InputGroup,
+  InputLeftElement,
+  InputRightElement,
   Textarea,
   Select,
   useColorModeValue,
@@ -23,9 +26,12 @@ import {
   HStack,
   Text,
   Icon,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
 } from "@chakra-ui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { TrendingUp, FileText, Building2, X, CheckCircle } from "lucide-react";
+import { TrendingUp, FileText, Building2, X, CheckCircle, Check, Search, ChevronDown } from "lucide-react";
 import { createMutualFund } from "../../api";
 import { Amc, MutualFundCreate } from "../../types";
 import useLedgerStore from "@/components/shared/store";
@@ -106,6 +112,11 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // AMC searchable dropdown state
+  const [amcSearch, setAmcSearch] = useState<string>("");
+  const [isAmcOpen, setIsAmcOpen] = useState<boolean>(false);
+  const [highlightedAmcIndex, setHighlightedAmcIndex] = useState<number>(-1);
+
   // Modern theme colors
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.100", "gray.700");
@@ -117,6 +128,10 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
   const modalIconColor = useColorModeValue("gray.400", "gray.500");
+  const footerBg = useColorModeValue("gray.50", "gray.900");
+  const helperTextColor = useColorModeValue("gray.500", "gray.400");
+  const highlightColor = useColorModeValue("teal.50", "teal.900");
+  const readOnlyBg = useColorModeValue("gray.100", "gray.600");
 
   const createMutualFundMutation = useMutation({
     mutationFn: (fundData: MutualFundCreate) =>
@@ -157,6 +172,9 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
         notes: "",
       });
       setErrors({});
+      setAmcSearch("");
+      setIsAmcOpen(false);
+      setHighlightedAmcIndex(-1);
     }
   }, [isOpen, preselectedAmcId, amcs]);
 
@@ -207,8 +225,51 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
+  // AMC searchable dropdown computed values
+  const sortedAmcs = [...amcs].sort((a, b) => a.name.localeCompare(b.name));
+  const filteredAmcs = sortedAmcs.filter((amc) =>
+    amc.name.toLowerCase().includes(amcSearch.toLowerCase()),
+  );
+  const selectedAmcOption = amcs.find((a) => a.amc_id.toString() === formData.amc_id);
+
+  const handleAmcKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const total = filteredAmcs.length;
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        if (!isAmcOpen) { setIsAmcOpen(true); setHighlightedAmcIndex(0); }
+        else { setHighlightedAmcIndex((prev) => (total === 0 ? -1 : (prev + 1) % total)); }
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        if (isAmcOpen && total > 0) setHighlightedAmcIndex((prev) => (prev <= 0 ? total - 1 : prev - 1));
+        break;
+      case "Enter":
+        if (isAmcOpen && highlightedAmcIndex >= 0 && highlightedAmcIndex < total) {
+          e.preventDefault();
+          const amc = filteredAmcs[highlightedAmcIndex];
+          handleInputChange("amc_id", amc.amc_id.toString());
+          setAmcSearch("");
+          setIsAmcOpen(false);
+          setHighlightedAmcIndex(-1);
+        }
+        break;
+      case "Escape":
+        setIsAmcOpen(false);
+        setHighlightedAmcIndex(-1);
+        break;
+      case "Tab":
+        setIsAmcOpen(false);
+        setHighlightedAmcIndex(-1);
+        break;
+    }
+  };
+
   const handleClose = () => {
     createMutualFundMutation.reset();
+    setAmcSearch("");
+    setIsAmcOpen(false);
+    setHighlightedAmcIndex(-1);
     onClose();
   };
 
@@ -351,9 +412,9 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
                       <HStack spacing={2}>
                         <TrendingUp size={16} />
                         <Text>Mutual Fund Name</Text>
-                        <Text as="span" color="red.500">
-                          *
-                        </Text>
+                        {formData.name.trim() && (
+                          <Icon as={Check} boxSize={3.5} color="teal.500" />
+                        )}
                       </HStack>
                     </FormLabel>
                     <Input
@@ -490,7 +551,7 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
                       value={selectedAmc?.name || ""}
                       isReadOnly
                       size="lg"
-                      bg={useColorModeValue("gray.100", "gray.600")}
+                      bg={readOnlyBg}
                       borderColor={inputBorderColor}
                       borderWidth="2px"
                       borderRadius="md"
@@ -510,36 +571,120 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
                       <HStack spacing={2}>
                         <Building2 size={16} />
                         <Text>Asset Management Company</Text>
-                        <Text as="span" color="red.500">
-                          *
-                        </Text>
+                        {formData.amc_id && (
+                          <Icon as={Check} boxSize={3.5} color="teal.500" />
+                        )}
                       </HStack>
                     </FormLabel>
-                     <Select
-                       value={formData.amc_id}
-                       onChange={(e) =>
-                         handleInputChange("amc_id", e.target.value)
-                       }
-                       placeholder="Select the AMC"
-                       size="lg"
-                       bg={inputBg}
-                       borderColor={inputBorderColor}
-                       borderWidth="2px"
-                       borderRadius="md"
-                       _hover={{ borderColor: "teal.300" }}
-                       _focus={{
-                         borderColor: focusBorderColor,
-                         boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                       }}
-                     >
-                       {amcs
-                         .sort((a, b) => a.name.localeCompare(b.name))
-                         .map((amc) => (
-                           <option key={amc.amc_id} value={amc.amc_id.toString()}>
-                             {amc.name}
-                           </option>
-                         ))}
-                     </Select>
+                    <Popover
+                      isOpen={isAmcOpen}
+                      onClose={() => { setIsAmcOpen(false); setHighlightedAmcIndex(-1); }}
+                      matchWidth
+                      placement="bottom-start"
+                      autoFocus={false}
+                      returnFocusOnClose={false}
+                    >
+                      <PopoverTrigger>
+                        <InputGroup size="lg">
+                          <InputLeftElement pointerEvents="none" height="100%">
+                            <Icon as={Search} boxSize={4} color={helperTextColor} />
+                          </InputLeftElement>
+                          <Input
+                            value={isAmcOpen ? amcSearch : (selectedAmcOption?.name ?? "")}
+                            onChange={(e) => {
+                              setAmcSearch(e.target.value);
+                              handleInputChange("amc_id", "");
+                              setHighlightedAmcIndex(-1);
+                              setIsAmcOpen(true);
+                            }}
+                            onFocus={() => {
+                              setAmcSearch("");
+                              setHighlightedAmcIndex(-1);
+                              setIsAmcOpen(true);
+                            }}
+                            onKeyDown={handleAmcKeyDown}
+                            placeholder="Search AMC..."
+                            borderWidth="2px"
+                            borderColor={formData.amc_id ? "teal.400" : inputBorderColor}
+                            bg={inputBg}
+                            borderRadius="md"
+                            _hover={{ borderColor: "teal.300" }}
+                            _focus={{
+                              borderColor: focusBorderColor,
+                              boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                            }}
+                            autoComplete="off"
+                          />
+                          <InputRightElement height="100%" pr={1}>
+                            {formData.amc_id ? (
+                              <Icon
+                                as={X}
+                                boxSize={4}
+                                color={helperTextColor}
+                                cursor="pointer"
+                                onClick={() => {
+                                  handleInputChange("amc_id", "");
+                                  setAmcSearch("");
+                                  setIsAmcOpen(false);
+                                  setHighlightedAmcIndex(-1);
+                                }}
+                              />
+                            ) : (
+                              <Icon
+                                as={ChevronDown}
+                                boxSize={4}
+                                color={helperTextColor}
+                                cursor="pointer"
+                                onClick={() => setIsAmcOpen(!isAmcOpen)}
+                              />
+                            )}
+                          </InputRightElement>
+                        </InputGroup>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        p={0}
+                        bg={bgColor}
+                        border="1px solid"
+                        borderColor={borderColor}
+                        borderRadius="md"
+                        boxShadow="lg"
+                        maxH="220px"
+                        overflowY="auto"
+                        _focus={{ outline: "none" }}
+                      >
+                        {filteredAmcs.map((amc, i) => (
+                          <Box
+                            key={amc.amc_id}
+                            px={4} py={3}
+                            cursor="pointer"
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="space-between"
+                            bg={formData.amc_id === amc.amc_id.toString() || i === highlightedAmcIndex ? highlightColor : "transparent"}
+                            _hover={{ bg: highlightColor }}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              handleInputChange("amc_id", amc.amc_id.toString());
+                              setAmcSearch("");
+                              setIsAmcOpen(false);
+                              setHighlightedAmcIndex(-1);
+                            }}
+                          >
+                            <Text fontSize="sm" fontWeight={formData.amc_id === amc.amc_id.toString() ? "semibold" : "normal"}>
+                              {amc.name}
+                            </Text>
+                            {formData.amc_id === amc.amc_id.toString() && (
+                              <Icon as={Check} boxSize={4} color="teal.500" />
+                            )}
+                          </Box>
+                        ))}
+                        {filteredAmcs.length === 0 && (
+                          <Box px={4} py={5} textAlign="center">
+                            <Text fontSize="sm" color={helperTextColor}>No AMCs found</Text>
+                          </Box>
+                        )}
+                      </PopoverContent>
+                    </Popover>
                     <FormErrorMessage>{errors.amc_id}</FormErrorMessage>
                     <FormHelperText>
                       Choose the AMC that manages this mutual fund
@@ -743,7 +888,7 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
           display={{ base: "none", sm: "flex" }}
           px={8}
           py={6}
-          bg={cardBg}
+          bg={footerBg}
           borderTop="1px solid"
           borderColor={borderColor}
         >

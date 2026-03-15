@@ -24,7 +24,7 @@ import {
   Icon,
 } from "@chakra-ui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Building2, FileText, X, CheckCircle } from "lucide-react";
+import { Building2, FileText, X, CheckCircle, Check } from "lucide-react";
 import { createAmc } from "../../api";
 import { AmcCreate } from "../../types";
 import useLedgerStore from "@/components/shared/store";
@@ -66,6 +66,7 @@ const CreateAmcModal: FC<CreateAmcModalProps> = ({
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
   const modalIconColor = useColorModeValue("gray.400", "gray.500");
+  const footerBg = useColorModeValue("gray.50", "gray.900");
 
   const createAmcMutation = useMutation({
     mutationFn: (amcData: AmcCreate) => createAmc(Number(ledgerId), amcData),
@@ -224,9 +225,9 @@ const CreateAmcModal: FC<CreateAmcModalProps> = ({
                       <HStack spacing={2}>
                         <Building2 size={16} />
                         <Text>AMC Name</Text>
-                        <Text as="span" color="red.500">
-                          *
-                        </Text>
+                        {formData.name.trim() && (
+                          <Icon as={Check} boxSize={3.5} color="teal.500" />
+                        )}
                       </HStack>
                     </FormLabel>
                     <Input
@@ -349,7 +350,7 @@ const CreateAmcModal: FC<CreateAmcModalProps> = ({
           display={{ base: "none", sm: "flex" }}
           px={8}
           py={6}
-          bg={cardBg}
+          bg={footerBg}
           borderTop="1px solid"
           borderColor={borderColor}
         >

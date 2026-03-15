@@ -4,6 +4,7 @@ import {
   ModalOverlay,
   ModalContent,
   ModalBody,
+  ModalFooter,
   Button,
   VStack,
   FormControl,
@@ -29,6 +30,7 @@ import {
   Tag,
   Ruler,
   Hash as HashIcon,
+  Check,
 } from "lucide-react";
 import { CreateAssetTypeModalProps, AssetTypeCreate } from "../types";
 import { useCreateAssetType } from "../api";
@@ -66,6 +68,7 @@ const CreateAssetTypeModal: FC<CreateAssetTypeModalProps> = ({
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
   const modalIconColor = useColorModeValue("gray.400", "gray.500");
+  const footerBg = useColorModeValue("gray.50", "gray.900");
 
   const createAssetTypeMutation = useCreateAssetType();
 
@@ -250,9 +253,9 @@ const CreateAssetTypeModal: FC<CreateAssetTypeModalProps> = ({
                     <HStack spacing={2}>
                       <Tag size={16} />
                       <Text>Asset Type Name</Text>
-                      <Text as="span" color="red.500">
-                        *
-                      </Text>
+                      {formData.name.trim() && (
+                        <Icon as={Check} boxSize={3.5} color="teal.500" />
+                      )}
                     </HStack>
                   </FormLabel>
                    <Input
@@ -285,9 +288,9 @@ const CreateAssetTypeModal: FC<CreateAssetTypeModalProps> = ({
                       <HStack spacing={2}>
                         <Ruler size={16} />
                         <Text>Unit Name</Text>
-                        <Text as="span" color="red.500">
-                          *
-                        </Text>
+                        {formData.unit_name.trim() && (
+                          <Icon as={Check} boxSize={3.5} color="teal.500" />
+                        )}
                       </HStack>
                     </FormLabel>
                     <Input
@@ -318,9 +321,9 @@ const CreateAssetTypeModal: FC<CreateAssetTypeModalProps> = ({
                       <HStack spacing={2}>
                         <HashIcon size={16} />
                         <Text>Unit Symbol</Text>
-                        <Text as="span" color="red.500">
-                          *
-                        </Text>
+                        {formData.unit_symbol.trim() && (
+                          <Icon as={Check} boxSize={3.5} color="teal.500" />
+                        )}
                       </HStack>
                     </FormLabel>
                     <Input
@@ -407,42 +410,74 @@ const CreateAssetTypeModal: FC<CreateAssetTypeModalProps> = ({
               </Alert>
             )}
 
-            {/* Action Buttons */}
-            <Stack
-              direction={{ base: "column", md: "row" }}
-              spacing={3}
-              width="full"
-            >
-               <Button
-                 type="submit"
-                 colorScheme="teal"
-                 size="lg"
-                 width={{ base: "full", md: "auto" }}
-                 flex={{ base: "none", md: 1 }}
-                 borderRadius="md"
-                 isLoading={isLoading}
-                 loadingText="Creating Asset Type..."
-                 isDisabled={!isFormValid}
-               >
-                 Create Asset Type
-               </Button>
-
-              <Button
-                variant="ghost"
-                colorScheme="gray"
-                onClick={handleClose}
-                size="lg"
-                width={{ base: "full", md: "auto" }}
-                flex={{ base: "none", md: 1 }}
-                borderRadius="md"
-                isDisabled={isLoading}
-              >
-                Cancel
-              </Button>
-            </Stack>
           </VStack>
           </form>
+
+          {/* Mobile-only action buttons */}
+          <Box display={{ base: "block", sm: "none" }} mt={6}>
+            <Button
+              type="submit"
+              form="create-asset-type-form"
+              colorScheme="teal"
+              size="lg"
+              width="100%"
+              mb={3}
+              borderRadius="md"
+              isLoading={isLoading}
+              loadingText="Creating Asset Type..."
+              isDisabled={!isFormValid}
+            >
+              Create Asset Type
+            </Button>
+            <Button
+              variant="ghost"
+              colorScheme="gray"
+              onClick={handleClose}
+              size="lg"
+              width="100%"
+              borderRadius="md"
+              isDisabled={isLoading}
+            >
+              Cancel
+            </Button>
+          </Box>
         </ModalBody>
+
+        {/* Desktop-only footer */}
+        <ModalFooter
+          display={{ base: "none", sm: "flex" }}
+          px={8}
+          py={6}
+          bg={footerBg}
+          borderTop="1px solid"
+          borderColor={borderColor}
+        >
+          <Button
+            type="submit"
+            form="create-asset-type-form"
+            colorScheme="teal"
+            mr={3}
+            px={8}
+            py={3}
+            borderRadius="md"
+            isLoading={isLoading}
+            loadingText="Creating Asset Type..."
+            isDisabled={!isFormValid}
+          >
+            Create Asset Type
+          </Button>
+          <Button
+            variant="ghost"
+            colorScheme="gray"
+            onClick={handleClose}
+            isDisabled={isLoading}
+            px={6}
+            py={3}
+            borderRadius="md"
+          >
+            Cancel
+          </Button>
+        </ModalFooter>
       </ModalContent>
     </Modal>
   );

@@ -43,6 +43,7 @@ import {
   FileText,
   Building2,
   Coins,
+  Check,
 } from "lucide-react";
 import api from "@/lib/api";
 import ChakraDatePicker from "@components/shared/ChakraDatePicker";
@@ -274,12 +275,10 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
               <FormLabel fontWeight="semibold" mb={2}>
                 <HStack spacing={2}>
                   <TrendingUp size={16} />
-                  <Text>
-                    Quantity to {type}{" "}
-                    <Text as="span" color="red.500">
-                      *
-                    </Text>
-                  </Text>
+                  <Text>Quantity to {type}</Text>
+                  {formData.quantity && parseFloat(formData.quantity) > 0 && (
+                    <Icon as={Check} boxSize={3.5} color="teal.500" />
+                  )}
                 </HStack>
               </FormLabel>
                 <Input
@@ -313,12 +312,10 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
               <FormLabel fontWeight="semibold" mb={2}>
                 <HStack spacing={2}>
                   <DollarSign size={16} />
-                  <Text>
-                    Price per Unit{" "}
-                    <Text as="span" color="red.500">
-                      *
-                    </Text>
-                  </Text>
+                  <Text>Price per Unit</Text>
+                  {formData.price_per_unit && parseFloat(formData.price_per_unit) > 0 && (
+                    <Icon as={Check} boxSize={3.5} color="teal.500" />
+                  )}
                 </HStack>
               </FormLabel>
               <InputGroup size="lg">
@@ -364,12 +361,10 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
               <FormLabel fontWeight="semibold" mb={2}>
                 <HStack spacing={2}>
                   <Building2 size={16} />
-                  <Text>
-                    {type === "buy" ? "Source Account" : "Destination Account"}{" "}
-                    <Text as="span" color="red.500">
-                      *
-                    </Text>
-                  </Text>
+                  <Text>{type === "buy" ? "Source Account" : "Destination Account"}</Text>
+                  {formData.account_id && (
+                    <Icon as={Check} boxSize={3.5} color="teal.500" />
+                  )}
                 </HStack>
               </FormLabel>
               {accountsLoading ? (
@@ -435,12 +430,8 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
                <FormLabel fontWeight="semibold" mb={2}>
                  <HStack spacing={2}>
                    <Calendar size={16} />
-                   <Text>
-                     Date{" "}
-                     <Text as="span" color="red.500">
-                       *
-                     </Text>
-                   </Text>
+                   <Text>Date</Text>
+                   <Icon as={Check} boxSize={3.5} color="teal.500" />
                  </HStack>
                </FormLabel>
                <Box

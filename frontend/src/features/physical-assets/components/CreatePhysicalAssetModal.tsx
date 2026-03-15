@@ -4,6 +4,7 @@ import {
   ModalOverlay,
   ModalContent,
   ModalBody,
+  ModalFooter,
   Button,
   VStack,
   FormControl,
@@ -31,6 +32,7 @@ import {
   FileText,
   Tag,
   Coins,
+  Check,
 } from "lucide-react";
 import { CreatePhysicalAssetModalProps, PhysicalAssetCreate } from "../types";
 import { useCreatePhysicalAsset, useAssetTypes } from "../api";
@@ -77,6 +79,7 @@ const CreatePhysicalAssetModal: FC<CreatePhysicalAssetModalProps> = ({
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
   const modalIconColor = useColorModeValue("gray.400", "gray.500");
+  const footerBg = useColorModeValue("gray.50", "gray.900");
 
   // Fetch available asset types
   const { data: assetTypes, isLoading: assetTypesLoading } = useAssetTypes(
@@ -262,12 +265,10 @@ const CreatePhysicalAssetModal: FC<CreatePhysicalAssetModalProps> = ({
                    <FormLabel fontWeight="semibold" mb={2}>
                      <HStack spacing={2}>
                        <Tag size={16} />
-                       <Text>
-                         Asset Name{" "}
-                         <Text as="span" color="red.500">
-                           *
-                         </Text>
-                       </Text>
+                       <Text>Asset Name</Text>
+                       {formData.name.trim() && (
+                         <Icon as={Check} boxSize={3.5} color="teal.500" />
+                       )}
                      </HStack>
                    </FormLabel>
                     <Input
@@ -299,9 +300,9 @@ const CreatePhysicalAssetModal: FC<CreatePhysicalAssetModalProps> = ({
                      <HStack spacing={2}>
                        <Coins size={16} />
                        <Text>Asset Type</Text>
-                       <Text as="span" color="red.500">
-                         *
-                       </Text>
+                       {formData.asset_type_id && (
+                         <Icon as={Check} boxSize={3.5} color="teal.500" />
+                       )}
                      </HStack>
                    </FormLabel>
                    {assetTypesLoading ? (
@@ -405,42 +406,74 @@ const CreatePhysicalAssetModal: FC<CreatePhysicalAssetModalProps> = ({
               </Alert>
             )}
 
-            {/* Action Buttons */}
-            <Stack
-              direction={{ base: "column", md: "row" }}
-              spacing={3}
-              width="full"
-            >
-               <Button
-                 type="submit"
-                 colorScheme="teal"
-                 size="lg"
-                 width={{ base: "full", md: "auto" }}
-                 flex={{ base: "none", md: 1 }}
-                 borderRadius="md"
-                 isLoading={isLoading}
-                 loadingText="Creating Asset..."
-                 isDisabled={!isFormValid}
-               >
-                 Create Physical Asset
-               </Button>
-
-              <Button
-                variant="ghost"
-                colorScheme="gray"
-                onClick={handleClose}
-                size="lg"
-                width={{ base: "full", md: "auto" }}
-                flex={{ base: "none", md: 1 }}
-                borderRadius="md"
-                isDisabled={isLoading}
-              >
-                Cancel
-              </Button>
-            </Stack>
           </VStack>
           </form>
+
+          {/* Mobile-only action buttons */}
+          <Box display={{ base: "block", sm: "none" }} mt={6}>
+            <Button
+              type="submit"
+              form="create-physical-asset-form"
+              colorScheme="teal"
+              size="lg"
+              width="100%"
+              mb={3}
+              borderRadius="md"
+              isLoading={isLoading}
+              loadingText="Creating Asset..."
+              isDisabled={!isFormValid}
+            >
+              Create Physical Asset
+            </Button>
+            <Button
+              variant="ghost"
+              colorScheme="gray"
+              onClick={handleClose}
+              size="lg"
+              width="100%"
+              borderRadius="md"
+              isDisabled={isLoading}
+            >
+              Cancel
+            </Button>
+          </Box>
         </ModalBody>
+
+        {/* Desktop-only footer */}
+        <ModalFooter
+          display={{ base: "none", sm: "flex" }}
+          px={8}
+          py={6}
+          bg={footerBg}
+          borderTop="1px solid"
+          borderColor={borderColor}
+        >
+          <Button
+            type="submit"
+            form="create-physical-asset-form"
+            colorScheme="teal"
+            mr={3}
+            px={8}
+            py={3}
+            borderRadius="md"
+            isLoading={isLoading}
+            loadingText="Creating Asset..."
+            isDisabled={!isFormValid}
+          >
+            Create Physical Asset
+          </Button>
+          <Button
+            variant="ghost"
+            colorScheme="gray"
+            onClick={handleClose}
+            isDisabled={isLoading}
+            px={6}
+            py={3}
+            borderRadius="md"
+          >
+            Cancel
+          </Button>
+        </ModalFooter>
       </ModalContent>
     </Modal>
   );

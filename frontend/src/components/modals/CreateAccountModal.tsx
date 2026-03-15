@@ -28,7 +28,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import useLedgerStore from "../shared/store";
-import { Plus, X, CheckCircle } from "lucide-react";
+import { Plus, X, CheckCircle, Check } from "lucide-react";
 import { toastDefaults } from "../shared/utils";
 import { AxiosError } from "axios";
 
@@ -278,9 +278,10 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
               border="1px solid"
               borderColor={borderColor}
             >
-              <FormControl isRequired>
-                <FormLabel fontWeight="semibold" mb={2}>
+              <FormControl>
+                <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                   Account Name
+                  {accountName && <Icon as={Check} boxSize={3.5} color="teal.500" />}
                 </FormLabel>
                 <Input
                   placeholder={`e.g., ${accountType === "asset" ? "Cash, Bank Account" : "Credit Card, Mortgage"}`}
