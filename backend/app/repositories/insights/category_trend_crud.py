@@ -172,7 +172,8 @@ def _get_split_transaction_data(
             Account.ledger_id == ledger_id,
             TransactionSplit.category_id.in_(category_ids),
             Transaction.is_split == True,
-            Transaction.is_transfer == False,
+            # is_transfer is intentionally omitted so that fee splits on transfer
+            # transactions (is_transfer=True) are included in category trends.
         )
         .group_by(date_part, Category.category_id, Category.name)
         .order_by(date_part)

@@ -27,7 +27,9 @@ def get_current_month_overview(db: Session, ledger_id: int):
         )
     )
 
-    # Query for split transactions in current month
+    # Query for split transactions in current month.
+    # Note: is_transfer filter is intentionally omitted here so that fee splits
+    # on transfer transactions (is_transfer=True) are included in category breakdowns.
     base_split_query = (
         db.query(TransactionSplit)
         .join(
@@ -38,7 +40,6 @@ def get_current_month_overview(db: Session, ledger_id: int):
             Account.ledger_id == ledger_id,
             Transaction.date >= first_day,
             Transaction.date <= last_day,
-            Transaction.is_transfer == False,
             Transaction.is_split == True,
         )
     )

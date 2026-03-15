@@ -53,7 +53,8 @@ def get_income_expense_trend(
         and_(
             Account.ledger_id == ledger_id,
             Transaction.is_split == True,
-            Transaction.is_transfer == False,
+            # is_transfer is intentionally omitted so that fee splits on transfer
+            # transactions (is_transfer=True) are included in income/expense totals.
         )
     )
 
