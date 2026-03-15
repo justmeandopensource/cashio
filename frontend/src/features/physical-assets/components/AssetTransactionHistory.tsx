@@ -297,7 +297,7 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
                     <Text
                       fontSize="sm"
                       color={notesColor}
-                      bg="gray.50"
+                      bg={hoverBg}
                       p={2}
                       borderRadius="md"
                       whiteSpace="pre-wrap"
