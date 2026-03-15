@@ -46,6 +46,12 @@ interface Ledger {
   currency_symbol: string;
 }
 
+interface Category {
+  category_id: string;
+  name: string;
+  type: string;
+}
+
 interface Account {
   account_id: string;
   name: string;
@@ -113,6 +119,14 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
   const [toAccountSearch, setToAccountSearch] = useState<string>("");
   const [isToAccountOpen, setIsToAccountOpen] = useState<boolean>(false);
   const [highlightedToIndex, setHighlightedToIndex] = useState<number>(-1);
+
+  // Fee state
+  const [feeAmount, setFeeAmount] = useState<string>("");
+  const [feeCategoryId, setFeeCategoryId] = useState<string>("");
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [feeCategorySearch, setFeeCategorySearch] = useState<string>("");
+  const [isFeeCategoryOpen, setIsFeeCategoryOpen] = useState<boolean>(false);
+  const [highlightedFeeCategoryIndex, setHighlightedFeeCategoryIndex] = useState<number>(-1);
 
   // Notes suggestions open state (for keyboard shortcut guard)
   const [isNotesSuggestionsOpen, setIsNotesSuggestionsOpen] = useState<boolean>(false);
@@ -213,6 +227,11 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
     setToAccountSearch("");
     setIsToAccountOpen(false);
     setHighlightedToIndex(-1);
+    setFeeAmount("");
+    setFeeCategoryId("");
+    setFeeCategorySearch("");
+    setIsFeeCategoryOpen(false);
+    setHighlightedFeeCategoryIndex(-1);
     setIsNotesSuggestionsOpen(false);
   }, [accountId]);
 
@@ -248,6 +267,22 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
     }
   }, [ledgerId, toast]);
 
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await api.get<Category[]>("/category/list?ignore_group=true");
+      setCategories(response.data.filter(c => c.type === "expense"));
+    } catch (error) {
+      const axiosError = error as AxiosError<{ detail: string }>;
+      if (axiosError.response?.status !== 401) {
+        toast({
+          description: axiosError.response?.data?.detail || "Failed to fetch categories.",
+          status: "error",
+          ...toastDefaults,
+        });
+      }
+    }
+  }, [toast]);
+
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
@@ -268,6 +303,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
       }
       fetchLedgers();
       fetchAccounts();
+      fetchCategories();
     } else {
       setFromAccountId("");
       setToAccountId("");
@@ -277,7 +313,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
       setDestinationLedgerId("");
       setDestinationAmount("");
     }
-  }, [isOpen, resetForm, fetchLedgers, fetchAccounts, initialData]);
+  }, [isOpen, resetForm, fetchLedgers, fetchAccounts, fetchCategories, initialData]);
 
   const fetchDestinationAccounts = useCallback(
     async (destLedgerId: string) => {
@@ -397,6 +433,51 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
     }
   };
 
+  // Computed fee category
+  const selectedFeeCategory = categories.find(c => c.category_id === feeCategoryId);
+  const filteredFeeCategories = categories.filter(
+    c => c.name.toLowerCase().includes(feeCategorySearch.toLowerCase()),
+  );
+
+  const handleFeeCategoryKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const total = filteredFeeCategories.length;
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        if (!isFeeCategoryOpen) {
+          setIsFeeCategoryOpen(true);
+          setHighlightedFeeCategoryIndex(0);
+        } else {
+          setHighlightedFeeCategoryIndex(prev => total === 0 ? -1 : (prev + 1) % total);
+        }
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        if (isFeeCategoryOpen && total > 0) {
+          setHighlightedFeeCategoryIndex(prev => prev <= 0 ? total - 1 : prev - 1);
+        }
+        break;
+      case "Enter":
+        if (isFeeCategoryOpen && highlightedFeeCategoryIndex >= 0 && highlightedFeeCategoryIndex < total) {
+          e.preventDefault();
+          const cat = filteredFeeCategories[highlightedFeeCategoryIndex];
+          setFeeCategoryId(cat.category_id);
+          setFeeCategorySearch("");
+          setIsFeeCategoryOpen(false);
+          setHighlightedFeeCategoryIndex(-1);
+        }
+        break;
+      case "Escape":
+        setIsFeeCategoryOpen(false);
+        setHighlightedFeeCategoryIndex(-1);
+        break;
+      case "Tab":
+        setIsFeeCategoryOpen(false);
+        setHighlightedFeeCategoryIndex(-1);
+        break;
+    }
+  };
+
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
@@ -407,6 +488,8 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
         source_amount: parseFloat(amount),
         notes: notes || "Fund Transfer",
         destination_amount: destinationAmount ? parseFloat(destinationAmount) : null,
+        fee_amount: feeAmount && parseFloat(feeAmount) > 0 ? parseFloat(feeAmount) : null,
+        fee_category_id: feeCategoryId || null,
       };
 
       await api.post(`/ledger/${ledgerId}/transaction/transfer`, payload);
@@ -462,6 +545,12 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
           setHighlightedToIndex(-1);
           return;
         }
+        if (isFeeCategoryOpen) {
+          e.stopPropagation();
+          setIsFeeCategoryOpen(false);
+          setHighlightedFeeCategoryIndex(-1);
+          return;
+        }
         if (isNotesSuggestionsOpen) {
           return;
         }
@@ -472,7 +561,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
       if (e.key === "Enter") {
         const target = e.target as HTMLElement;
         if (target.tagName === "TEXTAREA") return;
-        if (isFromAccountOpen || isToAccountOpen || isNotesSuggestionsOpen) return;
+        if (isFromAccountOpen || isToAccountOpen || isFeeCategoryOpen || isNotesSuggestionsOpen) return;
         if (isSaveDisabled || isLoading) return;
         e.preventDefault();
         handleSubmitRef.current();
@@ -480,7 +569,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
     };
     document.addEventListener("keydown", onKeyDown, true);
     return () => document.removeEventListener("keydown", onKeyDown, true);
-  }, [isOpen, isFromAccountOpen, isToAccountOpen, isNotesSuggestionsOpen, isSaveDisabled, isLoading, onClose]);
+  }, [isOpen, isFromAccountOpen, isToAccountOpen, isFeeCategoryOpen, isNotesSuggestionsOpen, isSaveDisabled, isLoading, onClose]);
 
   return (
     <Modal
@@ -1144,6 +1233,180 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                     </FormHelperText>
                   </FormControl>
                 )}
+              </VStack>
+            </Box>
+
+            {/* Transfer Fee Card */}
+            <Box
+              bg={cardBg}
+              p={{ base: 4, sm: 6 }}
+              borderRadius="md"
+              border="1px solid"
+              borderColor={borderColor}
+            >
+              <VStack spacing={5} align="stretch">
+                <Text fontWeight="semibold" color={secondaryTextColor} fontSize="sm">
+                  Transfer Fee <Text as="span" fontWeight="normal">(optional)</Text>
+                </Text>
+
+                {/* Fee Amount */}
+                <FormControl>
+                  <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+                    Fee Amount
+                    {feeAmount && parseFloat(feeAmount) > 0 && <Icon as={Check} boxSize={3.5} color="teal.500" />}
+                  </FormLabel>
+                  <InputGroup size="lg">
+                    <InputLeftAddon
+                      bg={inputBorderColor}
+                      borderWidth="2px"
+                      borderColor={inputBorderColor}
+                      color={addonColor}
+                      fontWeight="semibold"
+                    >
+                      {currencySymbol}
+                    </InputLeftAddon>
+                    <Input
+                      type="text"
+                      inputMode="decimal"
+                      value={feeAmount}
+                      onChange={(e) => setFeeAmount(e.target.value)}
+                      onKeyDown={(e) => handleNumericInput(e, feeAmount)}
+                      onPaste={(e) => handleNumericPaste(e, setFeeAmount)}
+                      placeholder="0.00"
+                      borderWidth="2px"
+                      borderColor={feeAmount && parseFloat(feeAmount) > 0 ? "teal.400" : inputBorderColor}
+                      bg={inputBg}
+                      borderRadius="md"
+                      _hover={{ borderColor: "teal.300" }}
+                      _focus={{
+                        borderColor: focusBorderColor,
+                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                      }}
+                    />
+                  </InputGroup>
+                  <FormHelperText mt={2} color={helperTextColor}>
+                    Fee charged by the transfer service (e.g. Wise, Remitly)
+                  </FormHelperText>
+                </FormControl>
+
+                {/* Fee Category */}
+                <FormControl>
+                  <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+                    Fee Category
+                    {feeCategoryId && <Icon as={Check} boxSize={3.5} color="teal.500" />}
+                  </FormLabel>
+                  <Popover
+                    isOpen={isFeeCategoryOpen}
+                    onClose={() => { setIsFeeCategoryOpen(false); setHighlightedFeeCategoryIndex(-1); }}
+                    matchWidth
+                    placement="bottom-start"
+                    autoFocus={false}
+                    returnFocusOnClose={false}
+                  >
+                    <PopoverTrigger>
+                      <InputGroup size="lg">
+                        <InputLeftElement pointerEvents="none" height="100%">
+                          <Icon as={Search} boxSize={4} color={helperTextColor} />
+                        </InputLeftElement>
+                        <Input
+                          value={isFeeCategoryOpen ? feeCategorySearch : (selectedFeeCategory?.name ?? "")}
+                          onChange={(e) => {
+                            setFeeCategorySearch(e.target.value);
+                            setFeeCategoryId("");
+                            setHighlightedFeeCategoryIndex(-1);
+                            setIsFeeCategoryOpen(true);
+                          }}
+                          onFocus={() => {
+                            setFeeCategorySearch("");
+                            setHighlightedFeeCategoryIndex(-1);
+                            setIsFeeCategoryOpen(true);
+                          }}
+                          onKeyDown={handleFeeCategoryKeyDown}
+                          placeholder="Search expense categories..."
+                          borderWidth="2px"
+                          borderColor={feeCategoryId ? "teal.400" : inputBorderColor}
+                          bg={inputBg}
+                          borderRadius="md"
+                          _hover={{ borderColor: "teal.300" }}
+                          _focus={{
+                            borderColor: focusBorderColor,
+                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                          }}
+                          autoComplete="off"
+                        />
+                        <InputRightElement height="100%" pr={1}>
+                          {feeCategoryId ? (
+                            <Icon
+                              as={X}
+                              boxSize={4}
+                              color={helperTextColor}
+                              cursor="pointer"
+                              onClick={() => {
+                                setFeeCategoryId("");
+                                setFeeCategorySearch("");
+                                setIsFeeCategoryOpen(false);
+                                setHighlightedFeeCategoryIndex(-1);
+                              }}
+                            />
+                          ) : (
+                            <Icon
+                              as={ChevronDown}
+                              boxSize={4}
+                              color={helperTextColor}
+                              cursor="pointer"
+                              onClick={() => setIsFeeCategoryOpen(!isFeeCategoryOpen)}
+                            />
+                          )}
+                        </InputRightElement>
+                      </InputGroup>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      p={0}
+                      bg={bgColor}
+                      border="1px solid"
+                      borderColor={borderColor}
+                      borderRadius="md"
+                      boxShadow="lg"
+                      maxH="220px"
+                      overflowY="auto"
+                      _focus={{ outline: "none" }}
+                    >
+                      {filteredFeeCategories.length > 0 ? (
+                        filteredFeeCategories.map((cat, i) => (
+                          <Box
+                            key={cat.category_id}
+                            px={4} py={3}
+                            cursor="pointer"
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="space-between"
+                            bg={feeCategoryId === cat.category_id || i === highlightedFeeCategoryIndex ? highlightColor : "transparent"}
+                            _hover={{ bg: highlightColor }}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setFeeCategoryId(cat.category_id);
+                              setFeeCategorySearch("");
+                              setIsFeeCategoryOpen(false);
+                              setHighlightedFeeCategoryIndex(-1);
+                            }}
+                          >
+                            <Text fontSize="sm" fontWeight={feeCategoryId === cat.category_id ? "semibold" : "normal"}>
+                              {cat.name}
+                            </Text>
+                            {feeCategoryId === cat.category_id && <Icon as={Check} boxSize={4} color="teal.500" />}
+                          </Box>
+                        ))
+                      ) : (
+                        <Box px={4} py={5} textAlign="center">
+                          <Text fontSize="sm" color={helperTextColor}>No categories found</Text>
+                        </Box>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                  <FormHelperText mt={2} color={helperTextColor}>
+                    Expense category for tracking the fee (e.g. Bank Charges)
+                  </FormHelperText>
+                </FormControl>
               </VStack>
             </Box>
 

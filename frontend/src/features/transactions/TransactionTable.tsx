@@ -12,13 +12,11 @@ import {
   Popover,
   PopoverContent,
   PopoverBody,
-  Stack,
   Box,
   Text,
   PopoverTrigger,
   PopoverArrow,
   Flex,
-  PopoverHeader,
   Icon,
   useDisclosure,
   Modal,
@@ -34,8 +32,10 @@ import {
   useBreakpointValue,
   useColorModeValue,
   HStack,
+  VStack,
+  Divider,
 } from "@chakra-ui/react";
-import { CreditCard, Trash2, Edit, Copy } from "lucide-react";
+import { Trash2, Edit, Copy, ArrowDown } from "lucide-react";
 import { splitCurrencyForDisplay } from "../mutual-funds/utils";
 import { Link } from "react-router-dom";
 import { SplitTransactionSkeleton, TransferDetailsSkeleton } from "./Skeletons";
@@ -46,9 +46,18 @@ interface TagItem {
   name: string;
 }
 
+interface FilterMatchedSplit {
+  split_id: string;
+  category_id: string;
+  category_name: string;
+  debit: number;
+  credit: number;
+  notes?: string;
+}
+
 interface SplitTransaction {
   split_id: string;
-  category_name: string;
+  category_name: string | null;
   debit: number;
   notes?: string;
 }
@@ -77,6 +86,7 @@ interface Transaction {
   credit: number;
   debit: number;
   transfer_id?: string;
+  filter_matched_split?: FilterMatchedSplit;
 }
 
 interface TransactionTableProps {
@@ -140,13 +150,6 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   const storeTagBorderColor = useColorModeValue("brand.200", "brand.600");
   const tagBg = useColorModeValue("gray.200", "gray.600");
   const tagColor = useColorModeValue("gray.700", "gray.200");
-  const popoverBg = useColorModeValue("brand.100", "brand.800");
-  const popoverArrowBg = useColorModeValue("brand.100", "brand.800");
-  const popoverHeaderBorderColor = useColorModeValue("gray.100", "gray.700");
-  const popoverHeaderBg = useColorModeValue("gray.50", "gray.700");
-  const popoverItemBorderColor = useColorModeValue("brand.200", "brand.700");
-  const popoverItemHoverBg = useColorModeValue("brand.50", "brand.700");
-  const popoverItemColor = useColorModeValue("brand.900", "brand.100");
   const creditColor = useColorModeValue("brand.500", "brand.300");
   const debitColor = useColorModeValue("red.500", "red.300");
   const editIconColor = useColorModeValue("blue.500", "blue.300");
@@ -156,6 +159,11 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   const deleteIconColor = useColorModeValue("red.500", "red.300");
   const deleteIconHoverColor = useColorModeValue("red.600", "red.400");
   const tertiaryTextColor = useColorModeValue("tertiaryTextColor", "tertiaryTextColor");
+  const transferTooltipBg = useColorModeValue("white", "gray.800");
+  const transferTooltipBorderColor = useColorModeValue("gray.200", "gray.600");
+  const transferTooltipLabelColor = useColorModeValue("gray.400", "gray.500");
+  const transferTooltipAccountColor = useColorModeValue("gray.800", "gray.100");
+  const transferTooltipLedgerColor = useColorModeValue("gray.500", "gray.400");
 
   return (
     <>
@@ -166,7 +174,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
             <Th width="15%">Category</Th>
             {showAccountName && <Th width="12%">Account</Th>}
             <Th>Notes</Th>
-            <Th width="3%">Type</Th>
+            <Th width="6%">Type</Th>
             <Th width="10%" isNumeric>
               Credit
             </Th>
@@ -185,7 +193,11 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                }
                return dateComparison;
              })
-            .map((transaction) => (
+            .map((transaction) => {
+              const displayCredit = transaction.filter_matched_split?.credit ?? transaction.credit;
+              const displayDebit = transaction.filter_matched_split?.debit ?? transaction.debit;
+              const displayCategoryName = transaction.filter_matched_split?.category_name ?? transaction.category_name;
+              return (
             <Tr
               key={transaction.transaction_id}
               _hover={{ bg: hoverBg }}
@@ -196,7 +208,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
               }}
             >
               <Td width="8%"><Text color={tertiaryTextColor}>{formatDate(transaction.date)}</Text></Td>
-              <Td width="15%"><Text color={tertiaryTextColor} isTruncated title={transaction.category_name}>{transaction.category_name}</Text></Td>
+              <Td width="15%"><Text color={tertiaryTextColor} isTruncated title={displayCategoryName}>{displayCategoryName}</Text></Td>
               {showAccountName && (
                 <Td width="12%">
                   {transaction.account_name && transaction.account_id && (
@@ -244,13 +256,14 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                    ))}
                  </Flex>
                </Td>
-               <Td width="3%">
-                 <Flex gap={1} flexWrap="wrap">
-                   {transaction.is_split && (
+               <Td width="6%">
+                 <Flex gap={1} flexWrap="nowrap">
+                   {transaction.is_split && !transaction.is_transfer && (
                      <Popover
-                       onOpen={() =>
-                         fetchSplitTransactions(transaction.transaction_id)
-                       }
+                       trigger="hover"
+                       openDelay={250}
+                       closeDelay={100}
+                       onOpen={() => fetchSplitTransactions(transaction.transaction_id)}
                        strategy="fixed"
                        placement="right"
                        gutter={10}
@@ -259,7 +272,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                          <Badge
                            colorScheme="purple"
                            variant="subtle"
-                           cursor="pointer"
+                           cursor="default"
                            px={1}
                            borderRadius="md"
                            fontSize="0.65em"
@@ -268,78 +281,145 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                            SPLIT
                          </Badge>
                        </PopoverTrigger>
-                    <PopoverContent
-                      bg={popoverBg}
-                      color="white"
-                      minW="400px"
-                      maxW="800px"
-                      width="auto"
-                      overflow="hidden"
-                    >
-                      <PopoverArrow bg={popoverArrowBg} />
-                      <PopoverBody p={0}>
-                        {isSplitLoading ? (
-                          <Flex justify="center" align="center" minH="100px">
-                            <SplitTransactionSkeleton />
-                          </Flex>
-                        ) : (
-                          <Box>
-                            <Flex
-                              bg={popoverHeaderBg}
-                              p={2}
-                              fontWeight="bold"
-                              borderBottom="1px solid"
-                              borderColor={popoverHeaderBorderColor}
-                            >
-                              <Box flex="2" color={popoverItemColor}>
-                                Category
-                              </Box>
-                              <Box flex="1" textAlign="right" color={popoverItemColor}>
-                                Amount
-                              </Box>
-                              <Box flex="3" ml={4} color={popoverItemColor}>
-                                Notes
-                              </Box>
-                            </Flex>
-                            {splitTransactions.map((split) => (
-                              <Flex
-                                key={split.split_id}
-                                p={3}
-                                borderBottomWidth="1px"
-                                borderColor={popoverItemBorderColor}
-                                _hover={{ bg: popoverItemHoverBg }}
-                                align="center"
-                              >
-                                <Box
-                                  flex="2"
-                                  color={popoverItemColor}
-                                  fontWeight="medium"
-                                >
-                                  {split.category_name}
-                                </Box>
-                                 <Box
-                                   flex="1"
-                                   textAlign="right"
-                                   color={popoverItemColor}
+                       <PopoverContent
+                         bg={transferTooltipBg}
+                         borderColor={transferTooltipBorderColor}
+                         borderWidth="1px"
+                         boxShadow="lg"
+                         borderRadius="lg"
+                         width="auto"
+                         minW="260px"
+                         maxW="420px"
+                         _focus={{ outline: "none" }}
+                       >
+                         <PopoverArrow bg={transferTooltipBg} shadowColor={transferTooltipBorderColor} />
+                         <PopoverBody p={0}>
+                           {isSplitLoading ? (
+                             <Flex justify="center" align="center" minH="80px" p={3}>
+                               <SplitTransactionSkeleton />
+                             </Flex>
+                           ) : (
+                             <Box>
+                               <Box px={3} pt={3} pb={2}>
+                                 <Text
+                                   fontSize="10px"
+                                   fontWeight="semibold"
+                                   textTransform="uppercase"
+                                   letterSpacing="wider"
+                                   color={transferTooltipLabelColor}
                                  >
-                                   <HStack spacing={0} align="baseline" justify="flex-end">
-                                     <Text fontWeight="semibold">
-                                       {splitCurrencyForDisplay(split.debit, currencySymbol || "₹").main}
-                                     </Text>
-                                     <Text fontSize="xs" opacity={0.7}>
-                                       {splitCurrencyForDisplay(split.debit, currencySymbol || "₹").decimals}
-                                     </Text>
-                                   </HStack>
-                                 </Box>
-                                <Box flex="3" ml={4} color={popoverItemColor}>
-                                  {split.notes || "-"}
-                                </Box>
-                              </Flex>
-                            ))}
-                          </Box>
-                        )}
-                      </PopoverBody>
-                     </PopoverContent>
+                                   Split Details
+                                 </Text>
+                               </Box>
+                               <Divider borderColor={transferTooltipBorderColor} />
+                               <VStack spacing={0} align="stretch" divider={<Divider borderColor={transferTooltipBorderColor} />}>
+                                 {splitTransactions.map((split) => (
+                                   <Box key={split.split_id} px={3} py={2.5}>
+                                     <Flex justify="space-between" align="baseline" gap={4}>
+                                       <Text fontSize="sm" fontWeight="semibold" color={transferTooltipAccountColor} noOfLines={1}>
+                                         {split.category_name}
+                                       </Text>
+                                       <HStack spacing={0} align="baseline" flexShrink={0}>
+                                         <Text fontSize="sm" fontWeight="semibold" color={transferTooltipAccountColor}>
+                                           {splitCurrencyForDisplay(split.debit, currencySymbol || "₹").main}
+                                         </Text>
+                                         <Text fontSize="xs" color={transferTooltipLedgerColor}>
+                                           {splitCurrencyForDisplay(split.debit, currencySymbol || "₹").decimals}
+                                         </Text>
+                                       </HStack>
+                                     </Flex>
+                                     {split.notes && (
+                                       <Text fontSize="xs" color={transferTooltipLedgerColor} mt={0.5} noOfLines={1}>
+                                         {split.notes}
+                                       </Text>
+                                     )}
+                                   </Box>
+                                 ))}
+                               </VStack>
+                             </Box>
+                           )}
+                         </PopoverBody>
+                       </PopoverContent>
+                     </Popover>
+                   )}
+                   {transaction.is_transfer && transaction.is_split && (
+                     <Popover
+                       trigger="hover"
+                       openDelay={250}
+                       closeDelay={100}
+                       onOpen={() => fetchSplitTransactions(transaction.transaction_id)}
+                       strategy="fixed"
+                       placement="right"
+                       gutter={10}
+                     >
+                       <PopoverTrigger>
+                         <Badge
+                           colorScheme="orange"
+                           variant="subtle"
+                           cursor="default"
+                           px={1}
+                           borderRadius="md"
+                           fontSize="0.65em"
+                         >
+                           FEE
+                         </Badge>
+                       </PopoverTrigger>
+                       <PopoverContent
+                         bg={transferTooltipBg}
+                         borderColor={transferTooltipBorderColor}
+                         borderWidth="1px"
+                         boxShadow="lg"
+                         borderRadius="lg"
+                         width="auto"
+                         minW="220px"
+                         maxW="360px"
+                         _focus={{ outline: "none" }}
+                       >
+                         <PopoverArrow bg={transferTooltipBg} shadowColor={transferTooltipBorderColor} />
+                         <PopoverBody p={0}>
+                           {isSplitLoading ? (
+                             <Flex justify="center" align="center" minH="60px" p={3}>
+                               <SplitTransactionSkeleton />
+                             </Flex>
+                           ) : (
+                             <Box>
+                               <Box px={3} pt={3} pb={2}>
+                                 <Text
+                                   fontSize="10px"
+                                   fontWeight="semibold"
+                                   textTransform="uppercase"
+                                   letterSpacing="wider"
+                                   color={transferTooltipLabelColor}
+                                 >
+                                   Transfer Fee
+                                 </Text>
+                               </Box>
+                               <Divider borderColor={transferTooltipBorderColor} />
+                               <VStack spacing={0} align="stretch" divider={<Divider borderColor={transferTooltipBorderColor} />}>
+                                 {splitTransactions
+                                   .filter(s => s.category_name)
+                                   .map(s => (
+                                     <Box key={s.split_id} px={3} py={2.5}>
+                                       <Flex justify="space-between" align="baseline" gap={4}>
+                                         <Text fontSize="sm" fontWeight="semibold" color={transferTooltipAccountColor} noOfLines={1}>
+                                           {s.category_name}
+                                         </Text>
+                                         <HStack spacing={0} align="baseline" flexShrink={0}>
+                                           <Text fontSize="sm" fontWeight="semibold" color={transferTooltipAccountColor}>
+                                             {splitCurrencyForDisplay(s.debit, currencySymbol || "₹").main}
+                                           </Text>
+                                           <Text fontSize="xs" color={transferTooltipLedgerColor}>
+                                             {splitCurrencyForDisplay(s.debit, currencySymbol || "₹").decimals}
+                                           </Text>
+                                         </HStack>
+                                       </Flex>
+                                     </Box>
+                                   ))}
+                               </VStack>
+                             </Box>
+                           )}
+                         </PopoverBody>
+                       </PopoverContent>
                      </Popover>
                    )}
                     {transaction.is_asset_transaction && (
@@ -366,15 +446,18 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                     )}
                    {transaction.is_transfer && (
                   <Popover
-                    onOpen={() =>
-                      fetchTransferDetails(transaction.transfer_id!)
-                    }
+                    trigger="hover"
+                    openDelay={250}
+                    closeDelay={100}
+                    onOpen={() => fetchTransferDetails(transaction.transfer_id!)}
+                    placement="right"
+                    gutter={10}
                   >
                     <PopoverTrigger>
                       <Badge
                         colorScheme="blue"
                         variant="subtle"
-                        cursor="pointer"
+                        cursor="default"
                         px={1}
                         borderRadius="md"
                         fontSize="0.65em"
@@ -383,91 +466,92 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                         TRANS
                       </Badge>
                     </PopoverTrigger>
-                    <PopoverContent bg={popoverBg} color="white" maxW="300px">
-                      <PopoverArrow bg={popoverArrowBg} />
-                      <PopoverHeader
-                        bg={popoverHeaderBg}
-                        borderTopRadius="md"
-                        py={3}
-                        px={4}
-                        borderBottom="1px solid"
-                        borderColor={popoverHeaderBorderColor}
-                      >
-                        <Flex align="center">
-                          <Icon as={CreditCard} mr={2} color={popoverItemColor} />
-                          <Text fontWeight="bold" color={popoverItemColor}>
-                            {transaction.debit > 0
-                              ? "Funds transferred to"
-                              : "Funds transferred from"}
-                          </Text>
-                        </Flex>
-                      </PopoverHeader>
-                      <PopoverBody>
+                    <PopoverContent
+                      bg={transferTooltipBg}
+                      borderColor={transferTooltipBorderColor}
+                      borderWidth="1px"
+                      boxShadow="lg"
+                      borderRadius="lg"
+                      width="220px"
+                      _focus={{ outline: "none" }}
+                    >
+                      <PopoverArrow bg={transferTooltipBg} shadowColor={transferTooltipBorderColor} />
+                      <PopoverBody p={3}>
                         {isTransferLoading ? (
-                          <Flex justify="center" align="center" minH="100px">
+                          <Flex justify="center" align="center" minH="60px">
                             <TransferDetailsSkeleton />
                           </Flex>
                         ) : transferDetails ? (
-                          <Stack spacing={4} py={2}>
-                            <Box
-                              p={4}
-                              borderWidth="1px"
-                              borderRadius="md"
-                              bg={popoverItemHoverBg}
-                              boxShadow="sm"
-                              textAlign="center"
-                            >
+                          <VStack spacing={2} align="stretch">
+                            <Box>
                               <Text
-                                fontSize="lg"
-                                fontWeight="bold"
-                                color={popoverItemColor}
-                                mb={2}
+                                fontSize="10px"
+                                fontWeight="semibold"
+                                textTransform="uppercase"
+                                letterSpacing="wider"
+                                color={transferTooltipLabelColor}
+                                mb={0.5}
                               >
-                                {transaction.debit > 0
-                                  ? transferDetails.destination_account_name ||
-                                    "N/A"
-                                  : transferDetails.source_account_name ||
-                                    "N/A"}
+                                From
                               </Text>
-                              <Text fontSize="sm" color={popoverItemColor}>
-                                {transaction.debit > 0
-                                  ? transferDetails.destination_ledger_name ||
-                                    "N/A"
-                                  : transferDetails.source_ledger_name || "N/A"}
+                              <Text fontSize="sm" fontWeight="semibold" color={transferTooltipAccountColor} lineHeight="short">
+                                {transferDetails.source_account_name}
+                              </Text>
+                              <Text fontSize="xs" color={transferTooltipLedgerColor}>
+                                {transferDetails.source_ledger_name}
                               </Text>
                             </Box>
-                          </Stack>
-                        ) : (
-                          <Text color={popoverItemColor}>
-                            No transfer details available.
-                          </Text>
-                        )}
+                            <Flex align="center" gap={2}>
+                              <Divider borderColor={transferTooltipBorderColor} />
+                              <Icon as={ArrowDown} boxSize={3} color={transferTooltipLabelColor} flexShrink={0} />
+                              <Divider borderColor={transferTooltipBorderColor} />
+                            </Flex>
+                            <Box>
+                              <Text
+                                fontSize="10px"
+                                fontWeight="semibold"
+                                textTransform="uppercase"
+                                letterSpacing="wider"
+                                color={transferTooltipLabelColor}
+                                mb={0.5}
+                              >
+                                To
+                              </Text>
+                              <Text fontSize="sm" fontWeight="semibold" color={transferTooltipAccountColor} lineHeight="short">
+                                {transferDetails.destination_account_name}
+                              </Text>
+                              <Text fontSize="xs" color={transferTooltipLedgerColor}>
+                                {transferDetails.destination_ledger_name}
+                              </Text>
+                            </Box>
+                          </VStack>
+                        ) : null}
                       </PopoverBody>
-                     </PopoverContent>
-                     </Popover>
+                    </PopoverContent>
+                  </Popover>
                    )}
                  </Flex>
                </Td>
                <Td width="10%" isNumeric>
-                 {transaction.credit !== 0 && (
+                 {displayCredit !== 0 && (
                    <HStack spacing={0} align="baseline" justify="flex-end">
                      <Text color={creditColor} fontWeight="semibold">
-                       {splitCurrencyForDisplay(transaction.credit, currencySymbol || "₹").main}
+                       {splitCurrencyForDisplay(displayCredit, currencySymbol || "₹").main}
                      </Text>
                      <Text fontSize="xs" color={creditColor} opacity={0.7}>
-                       {splitCurrencyForDisplay(transaction.credit, currencySymbol || "₹").decimals}
+                       {splitCurrencyForDisplay(displayCredit, currencySymbol || "₹").decimals}
                      </Text>
                    </HStack>
                  )}
                </Td>
                <Td width="10%" isNumeric>
-                 {transaction.debit !== 0 && (
+                 {displayDebit !== 0 && (
                    <HStack spacing={0} align="baseline" justify="flex-end">
                      <Text color={debitColor} fontWeight="semibold">
-                       {splitCurrencyForDisplay(transaction.debit, currencySymbol || "₹").main}
+                       {splitCurrencyForDisplay(displayDebit, currencySymbol || "₹").main}
                      </Text>
                      <Text fontSize="xs" color={debitColor} opacity={0.7}>
-                       {splitCurrencyForDisplay(transaction.debit, currencySymbol || "₹").decimals}
+                       {splitCurrencyForDisplay(displayDebit, currencySymbol || "₹").decimals}
                      </Text>
                    </HStack>
                  )}
@@ -530,7 +614,8 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                 </Flex>
               </Td>
             </Tr>
-          ))}
+              );
+            })}
         </Tbody>
       </Table>
       {/* Confirmation Modal */}

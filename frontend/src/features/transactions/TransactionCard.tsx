@@ -41,11 +41,20 @@ interface TagItem {
   name: string;
 }
 
-interface SplitTransaction {
+interface FilterMatchedSplit {
   split_id: string;
+  category_id: string;
   category_name: string;
   debit: number;
-  notes?: string; // Added notes field to SplitTransaction
+  credit: number;
+  notes?: string;
+}
+
+interface SplitTransaction {
+  split_id: string;
+  category_name: string | null;
+  debit: number;
+  notes?: string;
 }
 
 interface TransferDetails {
@@ -72,6 +81,7 @@ interface Transaction {
   debit: number;
   tags?: TagItem[];
   transfer_id?: string;
+  filter_matched_split?: FilterMatchedSplit;
 }
 
 interface TransactionCardProps {
@@ -112,12 +122,11 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
   showAccountName = false,
 }) => {
   const { currencySymbol } = useLedgerStore();
-  const amount = formatAmount(
-    transaction.credit,
-    transaction.debit,
-    currencySymbol as string
-  );
-  const amountValue = transaction.credit !== 0 ? transaction.credit : transaction.debit;
+  const displayCredit = transaction.filter_matched_split?.credit ?? transaction.credit;
+  const displayDebit = transaction.filter_matched_split?.debit ?? transaction.debit;
+  const displayCategoryName = transaction.filter_matched_split?.category_name ?? transaction.category_name;
+  const amount = formatAmount(displayCredit, displayDebit, currencySymbol as string);
+  const amountValue = displayCredit !== 0 ? displayCredit : displayDebit;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const modalSize = useBreakpointValue({ base: "full", md: "md" });
@@ -177,7 +186,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               {/* Transaction type indicators */}
               {(transaction.is_split || transaction.is_transfer || transaction.is_asset_transaction || transaction.is_mf_transaction) && (
                 <HStack spacing={1}>
-                  {transaction.is_split && (
+                  {transaction.is_split && !transaction.is_transfer && (
                     <Tooltip label="Split Transaction">
                       <Square size="8px" bg={splitColor} borderRadius="md" />
                     </Tooltip>
@@ -185,6 +194,11 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                   {transaction.is_transfer && (
                     <Tooltip label="Transfer">
                       <Square size="8px" bg={transferColor} borderRadius="md" />
+                    </Tooltip>
+                  )}
+                  {transaction.is_transfer && transaction.is_split && (
+                    <Tooltip label="Transfer Fee">
+                      <Square size="8px" bg="orange.400" borderRadius="md" />
                     </Tooltip>
                   )}
                     {transaction.is_asset_transaction && (
@@ -201,7 +215,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               )}
             </HStack>
 
-            <Text fontWeight="medium">{transaction.category_name}</Text>
+            <Text fontWeight="medium">{displayCategoryName}</Text>
 
             {/* Notes section - visible by default */}
             {transaction.notes && (
@@ -280,8 +294,8 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               </Box>
             )}
 
-            {/* Split transaction details */}
-            {transaction.is_split && (
+            {/* Split transaction details (non-transfer splits only) */}
+            {transaction.is_split && !transaction.is_transfer && (
               <Box mt={3}>
                 <Button
                   size="xs"
@@ -353,6 +367,58 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                           )}
                         </Box>
                       ))}
+                    </Box>
+                  )
+                )}
+              </Box>
+            )}
+
+            {/* Transfer fee details */}
+            {transaction.is_transfer && transaction.is_split && (
+              <Box mt={3}>
+                <Button
+                  size="xs"
+                  leftIcon={<Info size={14} />}
+                  colorScheme="orange"
+                  variant="outline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fetchSplitTransactions(transaction.transaction_id);
+                  }}
+                  mb={2}
+                >
+                  View Fee Details
+                </Button>
+
+                {isSplitLoading ? (
+                  <SplitTransactionSkeleton />
+                ) : (
+                  splitTransactions.filter(s => s.category_name).length > 0 && (
+                    <Box
+                      borderWidth="1px"
+                      borderRadius="md"
+                      p={2}
+                      bg={splitBg}
+                    >
+                      {splitTransactions
+                        .filter(s => s.category_name)
+                        .map((split) => (
+                          <Box key={split.split_id} p={2}>
+                            <Flex justify="space-between">
+                              <Text fontSize="sm" fontWeight="medium">
+                                {split.category_name}
+                              </Text>
+                              <HStack spacing={0} align="baseline">
+                                <Text fontSize="sm" fontWeight="semibold">
+                                  {splitCurrencyForDisplay(split.debit, currencySymbol || "₹").main}
+                                </Text>
+                                <Text fontSize="xs" opacity={0.7}>
+                                  {splitCurrencyForDisplay(split.debit, currencySymbol || "₹").decimals}
+                                </Text>
+                              </HStack>
+                            </Flex>
+                          </Box>
+                        ))}
                     </Box>
                   )
                 )}

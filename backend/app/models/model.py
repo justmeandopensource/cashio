@@ -163,7 +163,7 @@ class TransactionSplit(Base):
     transaction_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("transactions.transaction_id"), nullable=False
     )
-    category_id: Mapped[int] = mapped_column(Integer, ForeignKey("categories.category_id"), nullable=False)
+    category_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("categories.category_id"), nullable=True)
     credit: Mapped[Decimal] = mapped_column(Numeric(15, 2), default=0.00, nullable=False)
     debit: Mapped[Decimal] = mapped_column(Numeric(15, 2), default=0.00, nullable=False)
     notes: Mapped[str | None] = mapped_column(String(500), nullable=True)

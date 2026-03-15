@@ -7,7 +7,7 @@ from app.schemas.tag_schema import Tag, TagCreate
 
 
 class TransactionSplitCreate(BaseModel):
-    category_id: int
+    category_id: Optional[int] = None
     credit: float = 0.00
     debit: float = 0.00
     notes: Optional[str] = None
@@ -16,7 +16,7 @@ class TransactionSplitCreate(BaseModel):
 class TransactionSplit(BaseModel, str_strip_whitespace=True):
     split_id: int
     transaction_id: int
-    category_id: int
+    category_id: Optional[int] = None
     credit: float
     debit: float
     notes: Optional[str]
@@ -27,6 +27,15 @@ class TransactionSplit(BaseModel, str_strip_whitespace=True):
 
 class TransactionSplitResponse(TransactionSplit):
     category_name: Optional[str] = None
+
+
+class MatchedSplitInfo(BaseModel):
+    split_id: int
+    category_id: int
+    category_name: str
+    debit: float
+    credit: float
+    notes: Optional[str] = None
 
 
 class TransactionCreate(BaseModel):
@@ -91,6 +100,7 @@ class Transaction(BaseModel, str_strip_whitespace=True):
     transfer_type: Optional[str]
     created_at: datetime
     tags: Optional[List[Tag]] = None
+    filter_matched_split: Optional[MatchedSplitInfo] = None
 
     class Config:
         from_attributes = True
@@ -112,6 +122,8 @@ class TransferCreate(BaseModel):
     date: datetime
     notes: Optional[str] = None
     tags: Optional[List[TagCreate]] = None
+    fee_amount: Optional[float] = None
+    fee_category_id: Optional[int] = None
 
 
 

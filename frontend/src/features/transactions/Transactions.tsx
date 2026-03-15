@@ -40,15 +40,25 @@ interface Transaction {
   credit: number;
   debit: number;
   transfer_id?: string;
+  filter_matched_split?: FilterMatchedSplit;
 }
 
 interface TransferDetails {
   // Define the structure of transfer details
 }
 
+interface FilterMatchedSplit {
+  split_id: string;
+  category_id: string;
+  category_name: string;
+  debit: number;
+  credit: number;
+  notes?: string;
+}
+
 interface SplitTransaction {
   split_id: string;
-  category_name: string;
+  category_name: string | null;
   debit: number;
   notes?: string;
 }

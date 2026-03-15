@@ -282,22 +282,49 @@ def create_transfer_transaction(db: Session, transfer: TransferCreate, user_id: 
     # Generate a unique transfer_id
     transfer_id = uuid4()
 
+    fee_amount = transfer.fee_amount or 0
+    total_source_debit = transfer.source_amount + fee_amount
+    has_fee = fee_amount > 0
+
+    if has_fee and not transfer.fee_category_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="fee_category_id is required when fee_amount is provided",
+        )
+
     # Create expense transaction on source account
     transferOut = TransactionCreate(
         account_id=transfer.source_account_id,
         category_id=None,
         type="expense",
         credit=0.00,
-        debit=transfer.source_amount,
+        debit=total_source_debit,
         date=transfer.date,
         notes=transfer.notes,
-        is_split=False,
+        is_split=has_fee,
         is_transfer=True,
         transfer_id=str(transfer_id),
         transfer_type="source",
         tags=transfer.tags,
     )
-    create_transaction(db=db, transaction=transferOut)
+    source_tx = create_transaction(db=db, transaction=transferOut)
+
+    if has_fee:
+        db.add(TransactionSplit(
+            transaction_id=source_tx.transaction_id,
+            category_id=None,
+            debit=Decimal(str(transfer.source_amount)),
+            credit=Decimal("0.00"),
+            notes="Transfer amount",
+        ))
+        db.add(TransactionSplit(
+            transaction_id=source_tx.transaction_id,
+            category_id=transfer.fee_category_id,
+            debit=Decimal(str(fee_amount)),
+            credit=Decimal("0.00"),
+            notes="Transfer fee",
+        ))
+        db.commit()
 
     # Create income transaction on destination account
     transferIn = TransactionCreate(
@@ -626,7 +653,15 @@ def get_transactions_for_ledger_id(
     if to_date:
         query = query.filter(Transaction.date <= to_date)
     if category_id:
-        query = query.filter(Transaction.category_id == category_id)
+        split_with_category = (
+            db.query(TransactionSplit.transaction_id)
+            .filter(TransactionSplit.category_id == category_id)
+            .subquery()
+        )
+        query = query.filter(
+            (Transaction.category_id == category_id) |
+            Transaction.transaction_id.in_(split_with_category)
+        )
     if tags:
         if tags_match == "all":
             for tag in tags:
@@ -656,8 +691,53 @@ def get_transactions_for_ledger_id(
 
     transactions = query.order_by(Transaction.date.desc()).offset(offset).limit(limit).all()
 
+    # When filtering by category, find split-matched transactions and attach the matching split
+    split_by_tx: dict = {}
+    if category_id:
+        split_matched_tx_ids = [
+            t.transaction_id for t in transactions
+            if t.category_id != category_id
+        ]
+        if split_matched_tx_ids:
+            matching_splits = (
+                db.query(
+                    TransactionSplit.transaction_id,
+                    TransactionSplit.split_id,
+                    TransactionSplit.category_id,
+                    TransactionSplit.debit,
+                    TransactionSplit.credit,
+                    TransactionSplit.notes,
+                    Category.name.label("category_name"),
+                )
+                .join(Category, TransactionSplit.category_id == Category.category_id)
+                .filter(
+                    TransactionSplit.transaction_id.in_(split_matched_tx_ids),
+                    TransactionSplit.category_id == category_id,
+                )
+                .all()
+            )
+            # Aggregate matching splits per transaction (multiple splits may share the same category)
+            splits_by_tx_raw: dict = {}
+            for row in matching_splits:
+                tx_id = row.transaction_id
+                if tx_id not in splits_by_tx_raw:
+                    splits_by_tx_raw[tx_id] = {
+                        "split_id": row.split_id,
+                        "category_id": row.category_id,
+                        "category_name": row.category_name,
+                        "debit": float(row.debit),
+                        "credit": float(row.credit),
+                        "notes": row.notes,
+                    }
+                else:
+                    splits_by_tx_raw[tx_id]["debit"] += float(row.debit)
+                    splits_by_tx_raw[tx_id]["credit"] += float(row.credit)
+                    splits_by_tx_raw[tx_id]["notes"] = None
+            split_by_tx = splits_by_tx_raw
+
     formatted_transactions = []
     for transaction in transactions:
+        matched_split = split_by_tx.get(transaction.transaction_id)
         formatted_transaction = {
             "transaction_id": transaction.transaction_id,
             "account_id": transaction.account_id,
@@ -681,6 +761,7 @@ def get_transactions_for_ledger_id(
                 {"tag_id": tag.tag_id, "user_id": tag.user_id, "name": tag.name}
                 for tag in transaction.tags
             ],
+            "filter_matched_split": matched_split,
         }
         formatted_transactions.append(formatted_transaction)
 
@@ -712,7 +793,15 @@ def get_transactions_count_for_ledger_id(
     if to_date:
         query = query.filter(Transaction.date <= to_date)
     if category_id:
-        query = query.filter(Transaction.category_id == category_id)
+        split_with_category = (
+            db.query(TransactionSplit.transaction_id)
+            .filter(TransactionSplit.category_id == category_id)
+            .subquery()
+        )
+        query = query.filter(
+            (Transaction.category_id == category_id) |
+            Transaction.transaction_id.in_(split_with_category)
+        )
     if tags:
         if tags_match == "all":
             for tag in tags:
