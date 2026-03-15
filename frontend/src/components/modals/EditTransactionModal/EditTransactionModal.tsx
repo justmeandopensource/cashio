@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -9,22 +9,22 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Select,
+  InputGroup,
+  InputLeftElement,
+  InputRightElement,
   Switch,
   Text,
   VStack,
   HStack,
   useToast,
   Box,
-  Tabs,
-  TabList,
-  Tab,
   useColorModeValue,
-  InputGroup,
-  InputLeftAddon,
   Stack,
   FormHelperText,
   Icon,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
 } from "@chakra-ui/react";
 import api from "@/lib/api";
 import { AxiosError } from "axios";
@@ -35,7 +35,8 @@ import FormStore from "@/components/shared/FormStore";
 import FormLocation from "@/components/shared/FormLocation";
 import FormTags from "@/components/shared/FormTags";
 import useLedgerStore from "@/components/shared/store";
-import { Edit, Check, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { Edit, Check, X, Search, ChevronDown } from "lucide-react";
 import { toastDefaults } from "@/components/shared/utils";
 import {
   handleNumericInput,
@@ -110,6 +111,14 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [initialTransactionState, setInitialTransactionState] =
     useState<InitialTransactionState | null>(null);
+  const [isNotesSuggestionsOpen, setIsNotesSuggestionsOpen] = useState<boolean>(false);
+  const [isStoreSuggestionsOpen, setIsStoreSuggestionsOpen] = useState<boolean>(false);
+  const [isLocationSuggestionsOpen, setIsLocationSuggestionsOpen] = useState<boolean>(false);
+  const [isTagInputActive, setIsTagInputActive] = useState<boolean>(false);
+  const [isSplitDropdownOpen, setIsSplitDropdownOpen] = useState<boolean>(false);
+  const [categorySearch, setCategorySearch] = useState<string>("");
+  const [isCategoryOpen, setIsCategoryOpen] = useState<boolean>(false);
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const toast = useToast();
 
   const { ledgerId, currencySymbol } = useLedgerStore();
@@ -123,10 +132,32 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
   const inputBorderColor = useColorModeValue("gray.200", "gray.600");
   const focusBorderColor = useColorModeValue("teal.500", "teal.300");
   const highlightColor = useColorModeValue("teal.50", "teal.900");
+  const helperTextColor = useColorModeValue("gray.500", "gray.400");
+  const secondaryTextColor = useColorModeValue("gray.600", "gray.300");
+  const buttonColor = useColorModeValue("gray.600", "gray.200");
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
   const modalIconColor = useColorModeValue("gray.400", "gray.500");
+  const heroExpenseBg = useColorModeValue("red.50", "red.900");
+  const heroIncomeBg = useColorModeValue("teal.50", "teal.900");
+  const heroExpenseBorder = useColorModeValue("red.200", "red.800");
+  const heroIncomeBorder = useColorModeValue("teal.200", "teal.800");
+  const heroExpenseColor = useColorModeValue("red.500", "red.300");
+  const heroIncomeColor = useColorModeValue("teal.600", "teal.300");
+  const heroExpensePlaceholder = useColorModeValue("red.300", "red.700");
+  const heroIncomePlaceholder = useColorModeValue("teal.300", "teal.700");
+
+  const selectedCategory = categories.find((c) => String(c.category_id) === String(categoryId));
+  const filteredIncomeCategories = categories.filter(
+    (c) => c.type === "income" && c.name.toLowerCase().includes(categorySearch.toLowerCase()),
+  );
+  const filteredExpenseCategories = categories.filter(
+    (c) => c.type === "expense" && c.name.toLowerCase().includes(categorySearch.toLowerCase()),
+  );
+  const hasFilteredResults =
+    filteredIncomeCategories.length > 0 || filteredExpenseCategories.length > 0;
+  const allFilteredCategories = [...filteredIncomeCategories, ...filteredExpenseCategories];
 
   const fetchSplits = useCallback(
     async (transactionId: string): Promise<Split[]> => {
@@ -183,6 +214,13 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
       setCategoryId(initialCategoryId);
       setAmount(initialAmount);
       setIsSplit(initialIsSplit);
+      setCategorySearch("");
+      setIsCategoryOpen(false);
+      setHighlightedIndex(-1);
+      setIsNotesSuggestionsOpen(false);
+      setIsStoreSuggestionsOpen(false);
+      setIsLocationSuggestionsOpen(false);
+      setIsTagInputActive(false);
 
       if (initialIsSplit) {
         fetchSplits(transaction.transaction_id).then((fetchedSplits) => {
@@ -242,6 +280,45 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
     }
   }, [isOpen, fetchCategories]);
 
+  const handleCategoryKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const total = allFilteredCategories.length;
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        if (!isCategoryOpen) {
+          setIsCategoryOpen(true);
+          setHighlightedIndex(0);
+        } else {
+          setHighlightedIndex((prev) => (total === 0 ? -1 : (prev + 1) % total));
+        }
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        if (isCategoryOpen && total > 0) {
+          setHighlightedIndex((prev) => (prev <= 0 ? total - 1 : prev - 1));
+        }
+        break;
+      case "Enter":
+        if (isCategoryOpen && highlightedIndex >= 0 && highlightedIndex < total) {
+          e.preventDefault();
+          const cat = allFilteredCategories[highlightedIndex];
+          setCategoryId(cat.category_id);
+          setCategorySearch("");
+          setIsCategoryOpen(false);
+          setHighlightedIndex(-1);
+        }
+        break;
+      case "Escape":
+        setIsCategoryOpen(false);
+        setHighlightedIndex(-1);
+        break;
+      case "Tab":
+        setIsCategoryOpen(false);
+        setHighlightedIndex(-1);
+        break;
+    }
+  };
+
   // Handle split transaction toggle
   const handleSplitToggle = (isChecked: boolean) => {
     if (!amount || parseFloat(amount) <= 0) {
@@ -256,10 +333,8 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
     setIsSplit(isChecked);
 
     if (isChecked) {
-      // Initialize with the total amount
       setSplits([{ amount: amount, categoryId: "" }]);
     } else {
-      // Clear splits when toggle is turned off
       setSplits([]);
     }
   };
@@ -276,6 +351,9 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
 
     return roundToTwoDecimals((parseFloat(amount) || 0) - allocatedAmount);
   };
+
+  // Always points to latest handleSubmit — used in keyboard shortcut effect
+  const handleSubmitRef = useRef<() => void>(() => {});
 
   // Handle form submission
   const handleSubmit = async () => {
@@ -302,14 +380,12 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
         return;
       }
 
-      // Check if the total split amount matches the transaction amount
       const totalSplitAmount = splits.reduce(
         (sum, split) => sum + (parseFloat(split.amount) || 0),
         0,
       );
 
       if (Math.abs(totalSplitAmount - (parseFloat(amount) || 0)) > 0.01) {
-        // Allow for small rounding differences
         toast({
           description:
             "The sum of split amounts must equal the total transaction amount.",
@@ -372,10 +448,12 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
     }
   };
 
-  const hasFormChanged = useCallback(() => {
-    if (!initialTransactionState) return false; // Initially disable save button
+  // Update ref on every render so the keyboard effect never goes stale
+  handleSubmitRef.current = handleSubmit;
 
-    // Compare primitive values
+  const hasFormChanged = useCallback(() => {
+    if (!initialTransactionState) return false;
+
     if (
       date.toISOString() !== initialTransactionState.date.toISOString() ||
       type !== initialTransactionState.type ||
@@ -389,7 +467,6 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
       return true;
     }
 
-    // Deep compare splits array
     if (splits.length !== initialTransactionState.splits.length) {
       return true;
     }
@@ -404,7 +481,6 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
       }
     }
 
-    // Deep compare tags array
     if (tags.length !== initialTransactionState.tags.length) {
       return true;
     }
@@ -439,6 +515,38 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
         calculateRemainingAmount() !== 0)) ||
     (!isSplit && !categoryId) ||
     !amount;
+
+  // Keyboard shortcuts: Enter to submit, Escape closes dropdowns before the modal
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (isCategoryOpen) {
+          e.stopPropagation();
+          setIsCategoryOpen(false);
+          setHighlightedIndex(-1);
+          return;
+        }
+        if (isNotesSuggestionsOpen || isStoreSuggestionsOpen || isLocationSuggestionsOpen || isSplitDropdownOpen) {
+          return;
+        }
+        e.stopPropagation();
+        onClose();
+        return;
+      }
+      if (e.key === "Enter") {
+        const target = e.target as HTMLElement;
+        if (target.tagName === "TEXTAREA") return;
+        if (isCategoryOpen || isNotesSuggestionsOpen || isStoreSuggestionsOpen || isLocationSuggestionsOpen || isTagInputActive || isSplitDropdownOpen) return;
+        if (isSaveDisabled || isLoading) return;
+        e.preventDefault();
+        handleSubmitRef.current();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => document.removeEventListener("keydown", onKeyDown, true);
+  }, [isOpen, isCategoryOpen, isNotesSuggestionsOpen, isStoreSuggestionsOpen, isLocationSuggestionsOpen, isTagInputActive, isSplitDropdownOpen, isSaveDisabled, isLoading, onClose]);
 
   return (
     <Modal
@@ -499,56 +607,146 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
           overflowX="hidden"
           justifyContent={{ base: "space-between", sm: "flex-start" }}
         >
-          <VStack spacing={{ base: 5, sm: 6 }} align="stretch" w="100%">
-            {/* Transaction Type Tabs */}
-            <Box>
-              <Tabs
-                isFitted
-                variant="enclosed"
-                colorScheme="teal"
-                mb={4}
-                index={type === "expense" ? 0 : 1}
+          <VStack
+            spacing={{ base: 5, sm: 6 }}
+            align="stretch"
+            w="100%"
+            sx={{ "& .chakra-form__required-indicator": { display: "none" } }}
+          >
+            {/* Transaction Type Toggle */}
+            <Box
+              position="relative"
+              display="flex"
+              bg={cardBg}
+              borderRadius="full"
+              border="2px solid"
+              borderColor={inputBorderColor}
+              p="1"
+              overflow="hidden"
+            >
+              {/* Sliding pill indicator */}
+              <motion.div
+                animate={{
+                  x: type === "income" ? "100%" : "0%",
+                  background: type === "expense" ? "#FC8181" : "#319795",
+                }}
+                transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                style={{
+                  position: "absolute",
+                  top: "4px",
+                  left: "4px",
+                  width: "calc(50% - 4px)",
+                  height: "calc(100% - 8px)",
+                  borderRadius: "9999px",
+                  zIndex: 0,
+                }}
+              />
+              <Button
+                flex={1}
+                variant="unstyled"
+                position="relative"
+                zIndex={1}
+                onClick={() => setType("expense")}
+                color={type === "expense" ? "white" : buttonColor}
+                fontWeight="semibold"
+                fontSize="sm"
+                height="40px"
+                borderRadius="full"
+                transition="color 0.2s"
+                _hover={{}}
+                _active={{}}
               >
-                <TabList
-                  borderRadius="md"
-                  bg={cardBg}
-                  border="2px solid"
-                  borderColor={inputBorderColor}
+                Expense
+              </Button>
+              <Button
+                flex={1}
+                variant="unstyled"
+                position="relative"
+                zIndex={1}
+                onClick={() => setType("income")}
+                color={type === "income" ? "white" : buttonColor}
+                fontWeight="semibold"
+                fontSize="sm"
+                height="40px"
+                borderRadius="full"
+                transition="color 0.2s"
+                _hover={{}}
+                _active={{}}
+              >
+                Income
+              </Button>
+            </Box>
+
+            {/* Hero Amount Section */}
+            <Box
+              bg={type === "expense" ? heroExpenseBg : heroIncomeBg}
+              borderRadius="xl"
+              p={{ base: 5, sm: 7 }}
+              border="2px solid"
+              borderColor={type === "expense" ? heroExpenseBorder : heroIncomeBorder}
+              textAlign="center"
+              sx={{ transition: "background-color 0.2s, border-color 0.2s" }}
+            >
+              <HStack justify="center" spacing={1.5} mb={3}>
+                <Text
+                  fontSize="xs"
+                  fontWeight="semibold"
+                  letterSpacing="wider"
+                  textTransform="uppercase"
+                  color={type === "expense" ? heroExpenseColor : heroIncomeColor}
+                  opacity={0.7}
+                  sx={{ transition: "color 0.2s" }}
                 >
-                   <Tab
-                     _selected={{
-                       bg: "red.400",
-                       color: "white",
-                       borderColor: "red.400",
-                       fontWeight: "semibold",
-                     }}
-                     _hover={{
-                       bg: "red.50",
-                       _selected: { bg: "red.300" }
-                     }}
-                     borderRadius="sm"
-                     onClick={() => setType("expense")}
-                   >
-                     Expense
-                   </Tab>
-                   <Tab
-                     _selected={{
-                       bg: "teal.500",
-                       color: "white",
-                       borderColor: "teal.500",
-                       fontWeight: "semibold",
-                     }}
-                     _hover={{
-                       bg: "teal.50",
-                       _selected: { bg: "teal.400" }
-                     }}
-                     borderRadius="sm"
-                     onClick={() => setType("income")}
-                   >
-                     Income
-                   </Tab>
-                </TabList>
-              </Tabs>
+                  {type === "expense" ? "Expense Amount" : "Income Amount"}
+                </Text>
+                {amount && parseFloat(amount) > 0 && (
+                  <Icon
+                    as={Check}
+                    boxSize={3.5}
+                    color={type === "expense" ? heroExpenseColor : heroIncomeColor}
+                    opacity={0.8}
+                    sx={{ transition: "color 0.2s" }}
+                  />
+                )}
+              </HStack>
+              <Box position="relative" width="100%" display="flex" alignItems="center">
+                <Text
+                  position="absolute"
+                  left={4}
+                  fontSize={{ base: "xl", sm: "2xl" }}
+                  fontWeight="bold"
+                  color={type === "expense" ? heroExpenseColor : heroIncomeColor}
+                  lineHeight="1"
+                  sx={{ transition: "color 0.2s" }}
+                  userSelect="none"
+                  pointerEvents="none"
+                >
+                  {currencySymbol}
+                </Text>
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  onKeyDown={(e) => handleNumericInput(e, amount)}
+                  onPaste={(e) => handleNumericPaste(e, setAmount)}
+                  placeholder="0.00"
+                  fontSize={{ base: "4xl", sm: "5xl" }}
+                  fontWeight="bold"
+                  color={type === "expense" ? heroExpenseColor : heroIncomeColor}
+                  _placeholder={{
+                    color: type === "expense"
+                      ? heroExpensePlaceholder
+                      : heroIncomePlaceholder,
+                  }}
+                  textAlign="center"
+                  variant="unstyled"
+                  autoFocus
+                  width="100%"
+                  sx={{ transition: "color 0.2s" }}
+                  data-testid="edittransactionmodal-amount-input"
+                />
+              </Box>
             </Box>
 
             {/* Basic Info Card */}
@@ -560,86 +758,45 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
               borderColor={borderColor}
             >
               <VStack spacing={5} align="stretch">
-                <Stack direction={{ base: "column", md: "row" }} spacing={4}>
-                  {/* Date Picker */}
-                  <FormControl flex="1" isRequired>
-                    <FormLabel fontWeight="semibold" mb={2}>
-                      Date
-                    </FormLabel>
-                    <Box
-                      sx={{
-                        ".react-datepicker-wrapper": {
-                          width: "100%",
-                        },
-                        ".react-datepicker__input-container input": {
-                          width: "100%",
-                          height: "48px",
-                          borderWidth: "2px",
-                          borderColor: inputBorderColor,
-                          borderRadius: "md",
-                          bg: inputBg,
-                          fontSize: "lg",
-                          _hover: { borderColor: "teal.300" },
-                          _focus: {
-                            borderColor: focusBorderColor,
-                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                          },
-                        },
-                      }}
-                    >
-                      <ChakraDatePicker
-                        selected={date}
-                        onChange={(date: Date | null) => {
-                          if (date) {
-                            setDate(date);
-                          }
-                        }}
-                        shouldCloseOnSelect={true}
-                        data-testid="edittransactionmodal-date-picker"
-                      />
-                    </Box>
-                  </FormControl>
-
-                  {/* Amount Input */}
-                  <FormControl flex="1" isRequired>
-                    <FormLabel fontWeight="semibold" mb={2}>
-                      Amount
-                    </FormLabel>
-                    <InputGroup size="lg">
-                      <InputLeftAddon
-                        bg={inputBorderColor}
-                        borderWidth="2px"
-                        borderColor={inputBorderColor}
-                        color="gray.600"
-                        fontWeight="semibold"
-                      >
-                        {currencySymbol}
-                      </InputLeftAddon>
-                      <Input
-                        type="text"
-                        inputMode="decimal"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        onKeyDown={(e) => handleNumericInput(e, amount)}
-                        onPaste={(e) => handleNumericPaste(e, setAmount)}
-                        placeholder="0.00"
-                        borderWidth="2px"
-                        borderColor={inputBorderColor}
-                        bg={inputBg}
-                        borderRadius="md"
-                        _hover={{ borderColor: "teal.300" }}
-                        _focus={{
+                {/* Date Picker */}
+                <FormControl isRequired>
+                  <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+                    Transaction date
+                    <Icon as={Check} boxSize={3.5} color="teal.500" />
+                  </FormLabel>
+                  <Box
+                    sx={{
+                      ".react-datepicker-wrapper": {
+                        width: "100%",
+                      },
+                      ".react-datepicker__input-container input": {
+                        width: "100%",
+                        height: "48px",
+                        borderWidth: "2px",
+                        borderColor: inputBorderColor,
+                        borderRadius: "md",
+                        bg: inputBg,
+                        fontSize: "lg",
+                        _hover: { borderColor: "teal.300" },
+                        _focus: {
                           borderColor: focusBorderColor,
                           boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                        }}
-                        autoFocus
-                      />
-                    </InputGroup>
-                    <FormHelperText mt={2}>
-                      Update the transaction amount
-                    </FormHelperText>
-                  </FormControl>
-                </Stack>
+                        },
+                      },
+                    }}
+                  >
+                    <ChakraDatePicker
+                      selected={date}
+                      onChange={(date: Date | null) => {
+                        if (date) {
+                          setDate(date);
+                        }
+                      }}
+                      shouldCloseOnSelect={true}
+                      data-testid="edittransactionmodal-date-picker"
+                    />
+                  </Box>
+                </FormControl>
               </VStack>
             </Box>
 
@@ -656,7 +813,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                   <Text fontWeight="semibold" mb={1}>
                     Split Transaction
                   </Text>
-                  <Text fontSize="sm" color="gray.600">
+                  <Text fontSize="sm" color={secondaryTextColor}>
                     Divide this transaction across multiple categories
                   </Text>
                 </Box>
@@ -672,19 +829,21 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
 
             {/* Category or Split Transaction Section */}
             {isSplit ? (
-               <FormSplits
-                 splits={splits}
-                 calculateRemainingAmount={calculateRemainingAmount}
-                 currencySymbol={currencySymbol as string}
-                 amount={amount}
-                 type={type}
-                 categories={categories}
-                 setSplits={setSplits}
-                 borderColor={inputBorderColor}
-                 bgColor={inputBg}
-                 highlightColor={highlightColor}
-                 buttonColorScheme="teal"
-               />
+              <FormSplits
+                splits={splits}
+                calculateRemainingAmount={calculateRemainingAmount}
+                currencySymbol={currencySymbol as string}
+                amount={amount}
+                type={type}
+                categories={categories}
+                setSplits={setSplits}
+                borderColor={inputBorderColor}
+                bgColor={inputBg}
+                highlightColor={highlightColor}
+                buttonColorScheme="teal"
+                ledgerId={ledgerId as string}
+                onDropdownOpenChange={setIsSplitDropdownOpen}
+              />
             ) : (
               /* Category Dropdown Card */
               <Box
@@ -695,60 +854,176 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                 borderColor={borderColor}
               >
                 <FormControl isRequired>
-                  <FormLabel fontWeight="semibold" mb={2}>
+                  <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                     Category
+                    {categoryId && <Icon as={Check} boxSize={3.5} color="teal.500" />}
                   </FormLabel>
-                  <Select
-                    value={categoryId}
-                    onChange={(e) => setCategoryId(e.target.value || "")}
-                    placeholder="Select a category"
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    bg={inputBg}
-                    size="lg"
-                    borderRadius="md"
-                    _hover={{ borderColor: "teal.300" }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                    }}
-                    data-testid="edittransactionmodal-category-dropdown"
+                  <Popover
+                    isOpen={isCategoryOpen}
+                    onClose={() => { setIsCategoryOpen(false); setHighlightedIndex(-1); }}
+                    matchWidth
+                    placement="bottom-start"
+                    autoFocus={false}
+                    returnFocusOnClose={false}
                   >
-                    {/* Group for Income Categories */}
-                    <optgroup label="Income Categories">
-                      {categories
-                        .filter((category) => category.type === "income")
-                        .map((category) => (
-                          <option
-                            key={category.category_id}
-                            value={category.category_id}
+                    <PopoverTrigger>
+                      <InputGroup size="lg">
+                        <InputLeftElement pointerEvents="none" height="100%">
+                          <Icon as={Search} boxSize={4} color={helperTextColor} />
+                        </InputLeftElement>
+                        <Input
+                          value={isCategoryOpen ? categorySearch : (selectedCategory?.name ?? "")}
+                          onChange={(e) => {
+                            setCategorySearch(e.target.value);
+                            setCategoryId("");
+                            setHighlightedIndex(-1);
+                            setIsCategoryOpen(true);
+                          }}
+                          onFocus={() => {
+                            setCategorySearch("");
+                            setHighlightedIndex(-1);
+                            setIsCategoryOpen(true);
+                          }}
+                          onKeyDown={handleCategoryKeyDown}
+                          placeholder="Search categories..."
+                          borderWidth="2px"
+                          borderColor={categoryId ? "teal.400" : inputBorderColor}
+                          bg={inputBg}
+                          borderRadius="md"
+                          _hover={{ borderColor: "teal.300" }}
+                          _focus={{
+                            borderColor: focusBorderColor,
+                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                          }}
+                          autoComplete="off"
+                          data-testid="edittransactionmodal-category-dropdown"
+                        />
+                        <InputRightElement height="100%" pr={1}>
+                          {categoryId ? (
+                            <Icon
+                              as={X}
+                              boxSize={4}
+                              color={helperTextColor}
+                              cursor="pointer"
+                              onClick={() => {
+                                setCategoryId("");
+                                setCategorySearch("");
+                                setIsCategoryOpen(false);
+                                setHighlightedIndex(-1);
+                              }}
+                            />
+                          ) : (
+                            <Icon
+                              as={ChevronDown}
+                              boxSize={4}
+                              color={helperTextColor}
+                              cursor="pointer"
+                              onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                            />
+                          )}
+                        </InputRightElement>
+                      </InputGroup>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      p={0}
+                      bg={bgColor}
+                      border="1px solid"
+                      borderColor={borderColor}
+                      borderRadius="md"
+                      boxShadow="lg"
+                      maxH="220px"
+                      overflowY="auto"
+                      _focus={{ outline: "none" }}
+                    >
+                      {filteredIncomeCategories.length > 0 && (
+                        <>
+                          <Box px={3} py={2} bg={cardBg} borderBottom="1px solid" borderColor={borderColor}>
+                            <Text fontSize="xs" fontWeight="semibold" color={helperTextColor} textTransform="uppercase" letterSpacing="wider">
+                              Income
+                            </Text>
+                          </Box>
+                          {filteredIncomeCategories.map((cat, i) => (
+                            <Box
+                              key={cat.category_id}
+                              px={4} py={3}
+                              cursor="pointer"
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="space-between"
+                              bg={String(categoryId) === String(cat.category_id) || i === highlightedIndex ? highlightColor : "transparent"}
+                              _hover={{ bg: highlightColor }}
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                setCategoryId(cat.category_id);
+                                setCategorySearch("");
+                                setIsCategoryOpen(false);
+                                setHighlightedIndex(-1);
+                              }}
+                            >
+                              <Text fontSize="sm" fontWeight={String(categoryId) === String(cat.category_id) ? "semibold" : "normal"}>
+                                {cat.name}
+                              </Text>
+                              {String(categoryId) === String(cat.category_id) && <Icon as={Check} boxSize={4} color="teal.500" />}
+                            </Box>
+                          ))}
+                        </>
+                      )}
+                      {filteredExpenseCategories.length > 0 && (
+                        <>
+                          <Box
+                            px={3} py={2} bg={cardBg}
+                            borderBottom="1px solid" borderColor={borderColor}
+                            borderTop={filteredIncomeCategories.length > 0 ? "1px solid" : undefined}
+                            borderTopColor={borderColor}
                           >
-                            {category.name}
-                          </option>
-                        ))}
-                    </optgroup>
-                    {/* Group for Expense Categories */}
-                    <optgroup label="Expense Categories">
-                      {categories
-                        .filter((category) => category.type === "expense")
-                        .map((category) => (
-                          <option
-                            key={category.category_id}
-                            value={category.category_id}
-                          >
-                            {category.name}
-                          </option>
-                        ))}
-                    </optgroup>
-                  </Select>
-                  <FormHelperText mt={2}>
+                            <Text fontSize="xs" fontWeight="semibold" color={helperTextColor} textTransform="uppercase" letterSpacing="wider">
+                              Expense
+                            </Text>
+                          </Box>
+                          {filteredExpenseCategories.map((cat, i) => {
+                            const flatIndex = filteredIncomeCategories.length + i;
+                            return (
+                              <Box
+                                key={cat.category_id}
+                                px={4} py={3}
+                                cursor="pointer"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="space-between"
+                                bg={String(categoryId) === String(cat.category_id) || flatIndex === highlightedIndex ? highlightColor : "transparent"}
+                                _hover={{ bg: highlightColor }}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  setCategoryId(cat.category_id);
+                                  setCategorySearch("");
+                                  setIsCategoryOpen(false);
+                                  setHighlightedIndex(-1);
+                                }}
+                              >
+                                <Text fontSize="sm" fontWeight={String(categoryId) === String(cat.category_id) ? "semibold" : "normal"}>
+                                  {cat.name}
+                                </Text>
+                                {String(categoryId) === String(cat.category_id) && <Icon as={Check} boxSize={4} color="teal.500" />}
+                              </Box>
+                            );
+                          })}
+                        </>
+                      )}
+                      {!hasFilteredResults && (
+                        <Box px={4} py={5} textAlign="center">
+                          <Text fontSize="sm" color={helperTextColor}>No categories found</Text>
+                        </Box>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                  <FormHelperText mt={2} color={helperTextColor}>
                     Choose the category for this {type}
                   </FormHelperText>
                 </FormControl>
               </Box>
             )}
 
-            {/* Notes, Store, Location and Tags Card */}
+            {/* Details */}
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
@@ -757,15 +1032,13 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
               borderColor={borderColor}
             >
               <VStack spacing={5} align="stretch">
-                {/* Notes */}
                 <FormNotes
                   ledgerId={ledgerId as string}
                   notes={notes}
                   setNotes={setNotes}
                   borderColor={inputBorderColor}
+                  onDropdownOpenChange={setIsNotesSuggestionsOpen}
                 />
-
-                {/* Store and Location - only for expense transactions */}
                 {type === "expense" && (
                   <Stack direction={{ base: "column", md: "row" }} spacing={4}>
                     <FormStore
@@ -773,22 +1046,23 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                       store={store}
                       setStore={setStore}
                       borderColor={inputBorderColor}
+                      onDropdownOpenChange={setIsStoreSuggestionsOpen}
                     />
                     <FormLocation
                       ledgerId={ledgerId as string}
                       location={location}
                       setLocation={setLocation}
                       borderColor={inputBorderColor}
+                      onDropdownOpenChange={setIsLocationSuggestionsOpen}
                     />
                   </Stack>
                 )}
-
-                {/* Tags Input */}
                 <FormTags
                   tags={tags}
                   setTags={setTags}
                   borderColor={inputBorderColor}
                   buttonColorScheme="teal"
+                  onShouldBlockSubmit={setIsTagInputActive}
                 />
               </VStack>
             </Box>
@@ -863,4 +1137,3 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
 };
 
 export default EditTransactionModal;
-
