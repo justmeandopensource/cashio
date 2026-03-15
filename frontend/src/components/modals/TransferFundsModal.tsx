@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Modal,
@@ -20,11 +20,15 @@ import {
   useColorModeValue,
   InputGroup,
   InputLeftAddon,
-  Stack,
+  InputLeftElement,
+  InputRightElement,
   FormHelperText,
   Icon,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
 } from "@chakra-ui/react";
-import { ArrowRightLeft, Check, X } from "lucide-react";
+import { ArrowRightLeft, Check, X, Search, ChevronDown, AlertTriangle } from "lucide-react";
 import { AxiosError } from "axios";
 import ChakraDatePicker from "@components/shared/ChakraDatePicker";
 import api from "@/lib/api";
@@ -99,40 +103,99 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
   const [destinationAccounts, setDestinationAccounts] = useState<Account[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedAccountBalance, setSelectedAccountBalance] = useState<number>(0);
+
+  // Searchable dropdown state — From Account
+  const [fromAccountSearch, setFromAccountSearch] = useState<string>("");
+  const [isFromAccountOpen, setIsFromAccountOpen] = useState<boolean>(false);
+  const [highlightedFromIndex, setHighlightedFromIndex] = useState<number>(-1);
+
+  // Searchable dropdown state — To Account
+  const [toAccountSearch, setToAccountSearch] = useState<string>("");
+  const [isToAccountOpen, setIsToAccountOpen] = useState<boolean>(false);
+  const [highlightedToIndex, setHighlightedToIndex] = useState<number>(-1);
+
+  // Notes suggestions open state (for keyboard shortcut guard)
+  const [isNotesSuggestionsOpen, setIsNotesSuggestionsOpen] = useState<boolean>(false);
+
   const toast = useToast();
   const queryClient = useQueryClient();
-
   const { ledgerId, currencySymbol } = useLedgerStore();
 
-  function formatCurrency(amount: number) {
+  function formatCurrency(value: number) {
     const locale = currencySymbol === "₹" ? "en-IN" : "en-US";
-    return `${currencySymbol}${Math.abs(amount).toLocaleString(locale, {
+    return `${currencySymbol}${Math.abs(value).toLocaleString(locale, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
   }
 
-  // Modern theme colors - matching CreateTransactionModal
+  // Modern theme colors — matching CreateTransactionModal
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.100", "gray.700");
   const cardBg = useColorModeValue("gray.50", "gray.700");
   const footerBg = useColorModeValue("gray.50", "gray.900");
   const inputBg = useColorModeValue("white", "gray.700");
   const inputBorderColor = useColorModeValue("gray.200", "gray.600");
-   const focusBorderColor = useColorModeValue("teal.500", "teal.300");
-   const highlightColor = useColorModeValue("teal.50", "teal.900");
-   const helperTextColor = useColorModeValue("gray.500", "gray.400");
-   const secondaryTextColor = useColorModeValue("gray.600", "gray.300");
-   const addonColor = useColorModeValue("gray.600", "gray.200");
-   const tealTextColor = useColorModeValue("teal.700", "teal.300");
-   const buttonBorderColor = useColorModeValue("gray.300", "gray.600");
-   const buttonColor = useColorModeValue("gray.600", "gray.200");
-   const buttonHoverBg = useColorModeValue("gray.50", "gray.600");
-   const buttonHoverBorderColor = useColorModeValue("gray.400", "gray.500");
+  const focusBorderColor = useColorModeValue("teal.500", "teal.300");
+  const highlightColor = useColorModeValue("teal.50", "teal.900");
+  const helperTextColor = useColorModeValue("gray.500", "gray.400");
+  const secondaryTextColor = useColorModeValue("gray.600", "gray.300");
+  const addonColor = useColorModeValue("gray.600", "gray.200");
+  const tealTextColor = useColorModeValue("teal.700", "teal.300");
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
   const modalIconColor = useColorModeValue("gray.400", "gray.500");
+
+  // Hero section colors (teal for transfers)
+  const heroTransferBg = useColorModeValue("teal.50", "teal.900");
+  const heroTransferBorder = useColorModeValue("teal.200", "teal.800");
+  const heroTransferColor = useColorModeValue("teal.600", "teal.300");
+  const heroTransferPlaceholder = useColorModeValue("teal.300", "teal.700");
+
+  // Hero warning colors (when amount exceeds available balance)
+  const heroWarningBg = useColorModeValue("red.50", "red.900");
+  const heroWarningBorder = useColorModeValue("red.200", "red.800");
+  const heroWarningColor = useColorModeValue("red.500", "red.300");
+  const heroWarningPlaceholder = useColorModeValue("red.300", "red.700");
+
+  const isOverBalance =
+    !!fromAccountId &&
+    !!amount &&
+    parseFloat(amount) > 0 &&
+    parseFloat(amount) > selectedAccountBalance;
+
+  const heroBg = isOverBalance ? heroWarningBg : heroTransferBg;
+  const heroBorderColor = isOverBalance ? heroWarningBorder : heroTransferBorder;
+  const heroColor = isOverBalance ? heroWarningColor : heroTransferColor;
+  const heroPlaceholder = isOverBalance ? heroWarningPlaceholder : heroTransferPlaceholder;
+
+  // Computed filtered accounts — From
+  const selectedFromAccount = accounts.find(a => a.account_id === fromAccountId);
+  const filteredFromAssetAccounts = accounts.filter(
+    a => a.type === "asset" && a.name.toLowerCase().includes(fromAccountSearch.toLowerCase()),
+  );
+  const filteredFromLiabilityAccounts = accounts.filter(
+    a => a.type === "liability" && a.name.toLowerCase().includes(fromAccountSearch.toLowerCase()),
+  );
+  const allFilteredFromAccounts = [...filteredFromAssetAccounts, ...filteredFromLiabilityAccounts];
+  const hasFilteredFromResults = allFilteredFromAccounts.length > 0;
+
+  // Computed filtered accounts — To (excludes fromAccountId when same ledger)
+  const toAccountsSource = (isDifferentLedger ? destinationAccounts : accounts).filter(
+    a => a.account_id !== fromAccountId,
+  );
+  const selectedToAccount = isDifferentLedger
+    ? destinationAccounts.find(a => a.account_id === toAccountId)
+    : accounts.find(a => a.account_id === toAccountId);
+  const filteredToAssetAccounts = toAccountsSource.filter(
+    a => a.type === "asset" && a.name.toLowerCase().includes(toAccountSearch.toLowerCase()),
+  );
+  const filteredToLiabilityAccounts = toAccountsSource.filter(
+    a => a.type === "liability" && a.name.toLowerCase().includes(toAccountSearch.toLowerCase()),
+  );
+  const allFilteredToAccounts = [...filteredToAssetAccounts, ...filteredToLiabilityAccounts];
+  const hasFilteredToResults = allFilteredToAccounts.length > 0;
 
   const resetForm = useCallback(() => {
     setDate(new Date());
@@ -142,7 +205,15 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
     setNotes("");
     setIsDifferentLedger(false);
     setDestinationLedgerId("");
+    setDestinationCurrencySymbol("");
     setDestinationAmount("");
+    setFromAccountSearch("");
+    setIsFromAccountOpen(false);
+    setHighlightedFromIndex(-1);
+    setToAccountSearch("");
+    setIsToAccountOpen(false);
+    setHighlightedToIndex(-1);
+    setIsNotesSuggestionsOpen(false);
   }, [accountId]);
 
   const fetchLedgers = useCallback(async () => {
@@ -153,8 +224,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
       const axiosError = error as AxiosError<{ detail: string }>;
       if (axiosError.response?.status !== 401) {
         toast({
-          description:
-            axiosError.response?.data?.detail || "Failed to fetch ledgers.",
+          description: axiosError.response?.data?.detail || "Failed to fetch ledgers.",
           status: "error",
           ...toastDefaults,
         });
@@ -164,16 +234,13 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
 
   const fetchAccounts = useCallback(async () => {
     try {
-      const response = await api.get<Account[]>(
-        `/ledger/${ledgerId}/accounts`,
-      );
+      const response = await api.get<Account[]>(`/ledger/${ledgerId}/accounts`);
       setAccounts(response.data.filter(a => !a.is_group));
     } catch (error) {
       const axiosError = error as AxiosError<{ detail: string }>;
       if (axiosError.response?.status !== 401) {
         toast({
-          description:
-            axiosError.response?.data?.detail || "Failed to fetch accounts.",
+          description: axiosError.response?.data?.detail || "Failed to fetch accounts.",
           status: "error",
           ...toastDefaults,
         });
@@ -202,7 +269,6 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
       fetchLedgers();
       fetchAccounts();
     } else {
-      // Clear state when modal is closed
       setFromAccountId("");
       setToAccountId("");
       setAmount("");
@@ -214,18 +280,15 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
   }, [isOpen, resetForm, fetchLedgers, fetchAccounts, initialData]);
 
   const fetchDestinationAccounts = useCallback(
-    async (ledgerId: string) => {
+    async (destLedgerId: string) => {
       try {
-        const response = await api.get<Account[]>(
-          `/ledger/${ledgerId}/accounts`,
-        );
+        const response = await api.get<Account[]>(`/ledger/${destLedgerId}/accounts`);
         setDestinationAccounts(response.data.filter(a => !a.is_group));
       } catch (error) {
         const axiosError = error as AxiosError<{ detail: string }>;
         if (axiosError.response?.status !== 401) {
           toast({
-            description:
-              axiosError.response?.data?.detail || "Failed to fetch accounts.",
+            description: axiosError.response?.data?.detail || "Failed to fetch accounts.",
             status: "error",
             ...toastDefaults,
           });
@@ -253,20 +316,88 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
     }
   }, [fromAccountId, ledgerId]);
 
-  // Filter out the current ledger from the "destination ledger" dropdown
-  const getFilteredLedgers = (ledgers: Ledger[]) => {
-    return ledgers.filter((ledger) => ledger.ledger_id != ledgerId);
+  const getFilteredLedgers = (ledgerList: Ledger[]) =>
+    ledgerList.filter(ledger => ledger.ledger_id != ledgerId);
+
+  const handleFromAccountKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const total = allFilteredFromAccounts.length;
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        if (!isFromAccountOpen) {
+          setIsFromAccountOpen(true);
+          setHighlightedFromIndex(0);
+        } else {
+          setHighlightedFromIndex(prev => total === 0 ? -1 : (prev + 1) % total);
+        }
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        if (isFromAccountOpen && total > 0) {
+          setHighlightedFromIndex(prev => prev <= 0 ? total - 1 : prev - 1);
+        }
+        break;
+      case "Enter":
+        if (isFromAccountOpen && highlightedFromIndex >= 0 && highlightedFromIndex < total) {
+          e.preventDefault();
+          const acc = allFilteredFromAccounts[highlightedFromIndex];
+          setFromAccountId(acc.account_id);
+          setFromAccountSearch("");
+          setIsFromAccountOpen(false);
+          setHighlightedFromIndex(-1);
+        }
+        break;
+      case "Escape":
+        setIsFromAccountOpen(false);
+        setHighlightedFromIndex(-1);
+        break;
+      case "Tab":
+        setIsFromAccountOpen(false);
+        setHighlightedFromIndex(-1);
+        break;
+    }
   };
 
-  // Filter out the current account from the "to account" dropdown
-  const getFilteredAccounts = (accounts: Account[]) => {
-    return accounts.filter((account) => account.account_id != fromAccountId);
+  const handleToAccountKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const total = allFilteredToAccounts.length;
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        if (!isToAccountOpen) {
+          setIsToAccountOpen(true);
+          setHighlightedToIndex(0);
+        } else {
+          setHighlightedToIndex(prev => total === 0 ? -1 : (prev + 1) % total);
+        }
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        if (isToAccountOpen && total > 0) {
+          setHighlightedToIndex(prev => prev <= 0 ? total - 1 : prev - 1);
+        }
+        break;
+      case "Enter":
+        if (isToAccountOpen && highlightedToIndex >= 0 && highlightedToIndex < total) {
+          e.preventDefault();
+          const acc = allFilteredToAccounts[highlightedToIndex];
+          setToAccountId(acc.account_id);
+          setToAccountSearch("");
+          setIsToAccountOpen(false);
+          setHighlightedToIndex(-1);
+        }
+        break;
+      case "Escape":
+        setIsToAccountOpen(false);
+        setHighlightedToIndex(-1);
+        break;
+      case "Tab":
+        setIsToAccountOpen(false);
+        setHighlightedToIndex(-1);
+        break;
+    }
   };
 
-
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setIsLoading(true);
     try {
       const payload = {
@@ -275,14 +406,10 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
         date: date.toISOString(),
         source_amount: parseFloat(amount),
         notes: notes || "Fund Transfer",
-        destination_amount: destinationAmount
-          ? parseFloat(destinationAmount)
-          : null,
+        destination_amount: destinationAmount ? parseFloat(destinationAmount) : null,
       };
 
       await api.post(`/ledger/${ledgerId}/transaction/transfer`, payload);
-
-      // Invalidate accounts queries for both source and destination ledgers
       await queryClient.invalidateQueries({ queryKey: ["accounts"] });
 
       toast({
@@ -306,6 +433,54 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
       setIsLoading(false);
     }
   };
+
+  // Always points to latest handleSubmit — used in keyboard shortcut effect
+  const handleSubmitRef = useRef<() => void>(() => {});
+  handleSubmitRef.current = handleSubmit;
+
+  const isSaveDisabled =
+    !fromAccountId ||
+    !toAccountId ||
+    !amount ||
+    (isDifferentLedger && (!destinationLedgerId || !destinationAmount));
+
+  // Keyboard shortcuts: Enter to submit, Escape closes dropdowns before the modal
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (isFromAccountOpen) {
+          e.stopPropagation();
+          setIsFromAccountOpen(false);
+          setHighlightedFromIndex(-1);
+          return;
+        }
+        if (isToAccountOpen) {
+          e.stopPropagation();
+          setIsToAccountOpen(false);
+          setHighlightedToIndex(-1);
+          return;
+        }
+        if (isNotesSuggestionsOpen) {
+          return;
+        }
+        e.stopPropagation();
+        onClose();
+        return;
+      }
+      if (e.key === "Enter") {
+        const target = e.target as HTMLElement;
+        if (target.tagName === "TEXTAREA") return;
+        if (isFromAccountOpen || isToAccountOpen || isNotesSuggestionsOpen) return;
+        if (isSaveDisabled || isLoading) return;
+        e.preventDefault();
+        handleSubmitRef.current();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => document.removeEventListener("keydown", onKeyDown, true);
+  }, [isOpen, isFromAccountOpen, isToAccountOpen, isNotesSuggestionsOpen, isSaveDisabled, isLoading, onClose]);
 
   return (
     <Modal
@@ -337,192 +512,331 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
         >
           <HStack spacing={3} align="flex-start">
             <Icon as={ArrowRightLeft} boxSize={5} mt="3px" color={modalIconColor} />
-
             <Box>
-              <Box
-                fontSize="lg"
-                fontWeight="bold"
-                color={modalTitleColor}
-              >
+              <Box fontSize="lg" fontWeight="bold" color={modalTitleColor}>
                 Transfer Funds
               </Box>
-              <Box
-                fontSize="sm"
-                color={modalSubtitleColor}
-              >
+              <Box fontSize="sm" color={modalSubtitleColor}>
                 Move money between accounts
               </Box>
             </Box>
           </HStack>
         </Box>
 
-         <ModalBody
-           px={{ base: 4, sm: 8 }}
-           py={{ base: 4, sm: 6 }}
-           flex="1"
-           display="flex"
-           flexDirection="column"
-           overflowY="auto"
-           overflowX="hidden"
-           justifyContent={{ base: "space-between", sm: "flex-start" }}
-         >
-            <form id="transfer-funds-form" onSubmit={handleSubmit}>
-              <VStack spacing={{ base: 5, sm: 6 }} align="stretch" w="100%">
-             {/* From Account Selection (only shown if no accountId) */}
-             {!accountId && (
-               <Box
-                 bg={cardBg}
-                 p={{ base: 4, sm: 6 }}
-                 borderRadius="md"
-                 border="1px solid"
-                 borderColor={borderColor}
-               >
-                 <FormControl isRequired>
-                   <FormLabel fontWeight="semibold" mb={2}>
-                     From Account
-                   </FormLabel>
-                   <Select
-                     value={fromAccountId}
-                     onChange={(e) => setFromAccountId(e.target.value)}
-                     placeholder="Select source account"
-                     borderWidth="2px"
-                     borderColor={inputBorderColor}
-                     bg={inputBg}
-                     size="lg"
-                     borderRadius="md"
-                     _hover={{ borderColor: "teal.300" }}
-                     _focus={{
-                       borderColor: focusBorderColor,
-                       boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                     }}
-                     data-testid="transferfundsmodal-from-account-dropdown"
-                     autoFocus
-                   >
-                     <optgroup label="Asset Accounts">
-                       {accounts
-                         .filter((account) => account.type === "asset")
-                         .map((account) => (
-                           <option
-                             key={account.account_id}
-                             value={account.account_id}
-                           >
-                             {account.name}
-                           </option>
-                         ))}
-                     </optgroup>
-                     <optgroup label="Liability Accounts">
-                       {accounts
-                         .filter((account) => account.type === "liability")
-                         .map((account) => (
-                           <option
-                             key={account.account_id}
-                             value={account.account_id}
-                           >
-                             {account.name}
-                           </option>
-                         ))}
-                     </optgroup>
-                   </Select>
+        <ModalBody
+          px={{ base: 4, sm: 8 }}
+          py={{ base: 4, sm: 6 }}
+          flex="1"
+          display="flex"
+          flexDirection="column"
+          overflowY="auto"
+          overflowX="hidden"
+          justifyContent={{ base: "space-between", sm: "flex-start" }}
+        >
+          <VStack
+            spacing={{ base: 5, sm: 6 }}
+            align="stretch"
+            w="100%"
+            sx={{ "& .chakra-form__required-indicator": { display: "none" } }}
+          >
+            {/* Hero Amount Section */}
+            <Box
+              bg={heroBg}
+              borderRadius="xl"
+              p={{ base: 5, sm: 7 }}
+              border="2px solid"
+              borderColor={heroBorderColor}
+              textAlign="center"
+              sx={{ transition: "background-color 0.2s, border-color 0.2s" }}
+            >
+              <HStack justify="center" spacing={1.5} mb={3}>
+                <Text
+                  fontSize="xs"
+                  fontWeight="semibold"
+                  letterSpacing="wider"
+                  textTransform="uppercase"
+                  color={heroColor}
+                  opacity={0.7}
+                  sx={{ transition: "color 0.2s" }}
+                >
+                  Transfer Amount
+                </Text>
+                {amount && parseFloat(amount) > 0 && !isOverBalance && (
+                  <Icon as={Check} boxSize={3.5} color={heroColor} opacity={0.8} />
+                )}
+                {isOverBalance && (
+                  <Icon as={AlertTriangle} boxSize={3.5} color={heroColor} opacity={0.9} />
+                )}
+              </HStack>
+              <Box position="relative" width="100%" display="flex" alignItems="center">
+                <Text
+                  position="absolute"
+                  left={4}
+                  fontSize={{ base: "xl", sm: "2xl" }}
+                  fontWeight="bold"
+                  color={heroColor}
+                  lineHeight="1"
+                  userSelect="none"
+                  pointerEvents="none"
+                  sx={{ transition: "color 0.2s" }}
+                >
+                  {currencySymbol}
+                </Text>
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  onKeyDown={(e) => handleNumericInput(e, amount)}
+                  onPaste={(e) => handleNumericPaste(e, setAmount)}
+                  placeholder="0.00"
+                  fontSize={{ base: "4xl", sm: "5xl" }}
+                  fontWeight="bold"
+                  color={heroColor}
+                  _placeholder={{ color: heroPlaceholder }}
+                  textAlign="center"
+                  variant="unstyled"
+                  autoFocus
+                  width="100%"
+                  sx={{ transition: "color 0.2s" }}
+                  data-testid="transferfundsmodal-amount-input"
+                />
+              </Box>
+              {fromAccountId && (
+                <HStack justify="center" spacing={1} mt={2}>
+                  {isOverBalance && (
+                    <Icon as={AlertTriangle} boxSize={3} color={heroColor} opacity={0.8} />
+                  )}
+                  <Text
+                    fontSize="xs"
+                    color={heroColor}
+                    opacity={isOverBalance ? 0.9 : 0.6}
+                    fontWeight={isOverBalance ? "semibold" : "normal"}
+                    sx={{ transition: "color 0.2s, opacity 0.2s" }}
+                  >
+                    {isOverBalance
+                      ? `Exceeds available balance of ${formatCurrency(selectedAccountBalance)}`
+                      : `Available: ${formatCurrency(selectedAccountBalance)}`}
+                  </Text>
+                </HStack>
+              )}
+            </Box>
+
+            {/* Basic Info Card: Date + From Account */}
+            <Box
+              bg={cardBg}
+              p={{ base: 4, sm: 6 }}
+              borderRadius="md"
+              border="1px solid"
+              borderColor={borderColor}
+            >
+              <VStack spacing={5} align="stretch">
+                {/* Date Picker */}
+                <FormControl isRequired>
+                  <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+                    Transaction date
+                    <Icon as={Check} boxSize={3.5} color="teal.500" />
+                  </FormLabel>
+                  <Box
+                    sx={{
+                      ".react-datepicker-wrapper": { width: "100%" },
+                      ".react-datepicker__input-container input": {
+                        width: "100%",
+                        height: "48px",
+                        borderWidth: "2px",
+                        borderColor: inputBorderColor,
+                        borderRadius: "md",
+                        bg: inputBg,
+                        fontSize: "lg",
+                        _hover: { borderColor: "teal.300" },
+                        _focus: {
+                          borderColor: focusBorderColor,
+                          boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                        },
+                      },
+                    }}
+                  >
+                    <ChakraDatePicker
+                      selected={date}
+                      onChange={(d: Date | null) => { if (d) setDate(d); }}
+                      shouldCloseOnSelect={true}
+                      data-testid="transferfundsmodal-date-picker"
+                    />
+                  </Box>
+                </FormControl>
+
+                {/* From Account (only shown if no accountId) */}
+                {!accountId && accounts.length > 0 && (
+                  <FormControl isRequired>
+                    <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+                      From Account
+                      {fromAccountId && <Icon as={Check} boxSize={3.5} color="teal.500" />}
+                    </FormLabel>
+                    <Popover
+                      isOpen={isFromAccountOpen}
+                      onClose={() => { setIsFromAccountOpen(false); setHighlightedFromIndex(-1); }}
+                      matchWidth
+                      placement="bottom-start"
+                      autoFocus={false}
+                      returnFocusOnClose={false}
+                    >
+                      <PopoverTrigger>
+                        <InputGroup size="lg">
+                          <InputLeftElement pointerEvents="none" height="100%">
+                            <Icon as={Search} boxSize={4} color={helperTextColor} />
+                          </InputLeftElement>
+                          <Input
+                            value={isFromAccountOpen ? fromAccountSearch : (selectedFromAccount?.name ?? "")}
+                            onChange={(e) => {
+                              setFromAccountSearch(e.target.value);
+                              setFromAccountId("");
+                              setHighlightedFromIndex(-1);
+                              setIsFromAccountOpen(true);
+                            }}
+                            onFocus={() => {
+                              setFromAccountSearch("");
+                              setHighlightedFromIndex(-1);
+                              setIsFromAccountOpen(true);
+                            }}
+                            onKeyDown={handleFromAccountKeyDown}
+                            placeholder="Search accounts..."
+                            borderWidth="2px"
+                            borderColor={fromAccountId ? "teal.400" : inputBorderColor}
+                            bg={inputBg}
+                            borderRadius="md"
+                            _hover={{ borderColor: "teal.300" }}
+                            _focus={{
+                              borderColor: focusBorderColor,
+                              boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                            }}
+                            autoComplete="off"
+                            data-testid="transferfundsmodal-from-account-dropdown"
+                          />
+                          <InputRightElement height="100%" pr={1}>
+                            {fromAccountId ? (
+                              <Icon
+                                as={X}
+                                boxSize={4}
+                                color={helperTextColor}
+                                cursor="pointer"
+                                onClick={() => {
+                                  setFromAccountId("");
+                                  setFromAccountSearch("");
+                                  setIsFromAccountOpen(false);
+                                  setHighlightedFromIndex(-1);
+                                }}
+                              />
+                            ) : (
+                              <Icon
+                                as={ChevronDown}
+                                boxSize={4}
+                                color={helperTextColor}
+                                cursor="pointer"
+                                onClick={() => setIsFromAccountOpen(!isFromAccountOpen)}
+                              />
+                            )}
+                          </InputRightElement>
+                        </InputGroup>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        p={0}
+                        bg={bgColor}
+                        border="1px solid"
+                        borderColor={borderColor}
+                        borderRadius="md"
+                        boxShadow="lg"
+                        maxH="220px"
+                        overflowY="auto"
+                        _focus={{ outline: "none" }}
+                      >
+                        {filteredFromAssetAccounts.length > 0 && (
+                          <>
+                            <Box px={3} py={2} bg={cardBg} borderBottom="1px solid" borderColor={borderColor}>
+                              <Text fontSize="xs" fontWeight="semibold" color={helperTextColor} textTransform="uppercase" letterSpacing="wider">
+                                Asset
+                              </Text>
+                            </Box>
+                            {filteredFromAssetAccounts.map((acc, i) => (
+                              <Box
+                                key={acc.account_id}
+                                px={4} py={3}
+                                cursor="pointer"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="space-between"
+                                bg={fromAccountId === acc.account_id || i === highlightedFromIndex ? highlightColor : "transparent"}
+                                _hover={{ bg: highlightColor }}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  setFromAccountId(acc.account_id);
+                                  setFromAccountSearch("");
+                                  setIsFromAccountOpen(false);
+                                  setHighlightedFromIndex(-1);
+                                }}
+                              >
+                                <Text fontSize="sm" fontWeight={fromAccountId === acc.account_id ? "semibold" : "normal"}>
+                                  {acc.name}
+                                </Text>
+                                {fromAccountId === acc.account_id && <Icon as={Check} boxSize={4} color="teal.500" />}
+                              </Box>
+                            ))}
+                          </>
+                        )}
+                        {filteredFromLiabilityAccounts.length > 0 && (
+                          <>
+                            <Box
+                              px={3} py={2} bg={cardBg}
+                              borderBottom="1px solid" borderColor={borderColor}
+                              borderTop={filteredFromAssetAccounts.length > 0 ? "1px solid" : undefined}
+                              borderTopColor={borderColor}
+                            >
+                              <Text fontSize="xs" fontWeight="semibold" color={helperTextColor} textTransform="uppercase" letterSpacing="wider">
+                                Liability
+                              </Text>
+                            </Box>
+                            {filteredFromLiabilityAccounts.map((acc, i) => {
+                              const flatIndex = filteredFromAssetAccounts.length + i;
+                              return (
+                                <Box
+                                  key={acc.account_id}
+                                  px={4} py={3}
+                                  cursor="pointer"
+                                  display="flex"
+                                  alignItems="center"
+                                  justifyContent="space-between"
+                                  bg={fromAccountId === acc.account_id || flatIndex === highlightedFromIndex ? highlightColor : "transparent"}
+                                  _hover={{ bg: highlightColor }}
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    setFromAccountId(acc.account_id);
+                                    setFromAccountSearch("");
+                                    setIsFromAccountOpen(false);
+                                    setHighlightedFromIndex(-1);
+                                  }}
+                                >
+                                  <Text fontSize="sm" fontWeight={fromAccountId === acc.account_id ? "semibold" : "normal"}>
+                                    {acc.name}
+                                  </Text>
+                                  {fromAccountId === acc.account_id && <Icon as={Check} boxSize={4} color="teal.500" />}
+                                </Box>
+                              );
+                            })}
+                          </>
+                        )}
+                        {!hasFilteredFromResults && (
+                          <Box px={4} py={5} textAlign="center">
+                            <Text fontSize="sm" color={helperTextColor}>No accounts found</Text>
+                          </Box>
+                        )}
+                      </PopoverContent>
+                    </Popover>
                     <FormHelperText mt={2} color={helperTextColor}>
                       Select the account to transfer funds from
                     </FormHelperText>
-                 </FormControl>
-               </Box>
-             )}
-
-             {/* Basic Info Card */}
-             <Box
-               bg={cardBg}
-               p={{ base: 4, sm: 6 }}
-               borderRadius="md"
-               border="1px solid"
-               borderColor={borderColor}
-             >
-               <VStack spacing={5} align="stretch">
-                 <Stack direction={{ base: "column", md: "row" }} spacing={4}>
-                   {/* Date Picker */}
-                   <FormControl flex="1" isRequired>
-                     <FormLabel fontWeight="semibold" mb={2}>
-                       Date
-                     </FormLabel>
-                     <Box
-                       sx={{
-                         ".react-datepicker-wrapper": {
-                           width: "100%",
-                         },
-                         ".react-datepicker__input-container input": {
-                           width: "100%",
-                           height: "48px",
-                           borderWidth: "2px",
-                           borderColor: inputBorderColor,
-                           borderRadius: "md",
-                           bg: inputBg,
-                           fontSize: "lg",
-                           _hover: { borderColor: "teal.300" },
-                           _focus: {
-                             borderColor: focusBorderColor,
-                             boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                           },
-                         },
-                       }}
-                     >
-                       <ChakraDatePicker
-                         selected={date}
-                         onChange={(date: Date | null) => {
-                           if (date) {
-                             setDate(date);
-                           }
-                         }}
-                         shouldCloseOnSelect={true}
-                         data-testid="transferfundsmodal-date-picker"
-                       />
-                     </Box>
-                   </FormControl>
-
-                   {/* Amount Input */}
-                   <FormControl flex="1" isRequired>
-                     <FormLabel fontWeight="semibold" mb={2}>
-                       Amount
-                     </FormLabel>
-                     <InputGroup size="lg">
-                        <InputLeftAddon
-                          bg={inputBorderColor}
-                          borderWidth="2px"
-                          borderColor={inputBorderColor}
-                          color={addonColor}
-                          fontWeight="semibold"
-                        >
-                         {currencySymbol}
-                       </InputLeftAddon>
-                       <Input
-                         type="text"
-                         inputMode="decimal"
-                         value={amount}
-                         onChange={(e) => setAmount(e.target.value)}
-                         onKeyDown={(e) => handleNumericInput(e, amount)}
-                         onPaste={(e) => handleNumericPaste(e, setAmount)}
-                         placeholder="0.00"
-                         borderWidth="2px"
-                         borderColor={inputBorderColor}
-                         bg={inputBg}
-                         borderRadius="md"
-                         _hover={{ borderColor: "teal.300" }}
-                         _focus={{
-                           borderColor: focusBorderColor,
-                           boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                         }}
-                          autoFocus={!!accountId}
-                       />
-                     </InputGroup>
-                      <FormHelperText mt={2} color={helperTextColor}>
-                        {fromAccountId
-                          ? `Available funds: ${formatCurrency(selectedAccountBalance)}`
-                          : "Enter the transfer amount"}
-                      </FormHelperText>
-                   </FormControl>
-                 </Stack>
-               </VStack>
-             </Box>
+                  </FormControl>
+                )}
+              </VStack>
+            </Box>
 
             {/* Different Ledger Toggle Card */}
             <Box
@@ -538,19 +852,29 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                     Transfer to Different Ledger
                   </Text>
                   <Text fontSize="sm" color={secondaryTextColor}>
-                    Transfer amount
+                    Send funds across ledger books
                   </Text>
                 </Box>
                 <Switch
                   colorScheme="teal"
                   size="lg"
                   isChecked={isDifferentLedger}
-                  onChange={(e) => setIsDifferentLedger(e.target.checked)}
+                  onChange={(e) => {
+                    setIsDifferentLedger(e.target.checked);
+                    setToAccountId("");
+                    setToAccountSearch("");
+                    setIsToAccountOpen(false);
+                    setHighlightedToIndex(-1);
+                    if (!e.target.checked) {
+                      setDestinationLedgerId("");
+                      setDestinationAmount("");
+                    }
+                  }}
                 />
               </HStack>
             </Box>
 
-            {/* Destination Section Card */}
+            {/* Destination Card */}
             <Box
               bg={highlightColor}
               p={{ base: 4, sm: 6 }}
@@ -559,33 +883,33 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
               borderColor="teal.200"
             >
               <VStack spacing={5} align="stretch">
-                <Text fontWeight="bold" color={tealTextColor} mb={2}>
-                  Transfer Summary
+                <Text fontWeight="bold" color={tealTextColor}>
+                  Destination
                 </Text>
 
                 {/* Destination Ledger (if different ledger) */}
                 {isDifferentLedger && (
                   <FormControl isRequired>
-                    <FormLabel fontWeight="semibold" mb={2}>
+                    <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                       Destination Ledger
+                      {destinationLedgerId && <Icon as={Check} boxSize={3.5} color="teal.500" />}
                     </FormLabel>
                     <Select
                       value={destinationLedgerId}
                       onChange={(e) => {
                         const selectedLedger = ledgers.find(
-                          (ledger) => ledger.ledger_id == e.target.value,
+                          ledger => ledger.ledger_id == e.target.value,
                         );
                         setDestinationLedgerId(e.target.value);
                         if (selectedLedger) {
-                          setDestinationCurrencySymbol(
-                            selectedLedger.currency_symbol,
-                          );
+                          setDestinationCurrencySymbol(selectedLedger.currency_symbol);
                         }
                         setToAccountId("");
+                        setToAccountSearch("");
                       }}
                       placeholder="Select destination ledger"
                       borderWidth="2px"
-                      borderColor={inputBorderColor}
+                      borderColor={destinationLedgerId ? "teal.400" : inputBorderColor}
                       bg={inputBg}
                       size="lg"
                       borderRadius="md"
@@ -602,81 +926,198 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                         </option>
                       ))}
                     </Select>
-                     <FormHelperText mt={2} color={helperTextColor}>
-                       Choose the destination ledger
-                     </FormHelperText>
+                    <FormHelperText mt={2} color={helperTextColor}>
+                      Choose the destination ledger
+                    </FormHelperText>
                   </FormControl>
                 )}
 
-                {/* To Account Selection */}
+                {/* To Account — searchable Popover */}
                 <FormControl isRequired>
-                  <FormLabel fontWeight="semibold" mb={2}>
+                  <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                     To Account
+                    {toAccountId && <Icon as={Check} boxSize={3.5} color="teal.500" />}
                   </FormLabel>
-                  <Select
-                    value={toAccountId}
-                    onChange={(e) => setToAccountId(e.target.value)}
-                    placeholder="Select destination account"
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    bg={inputBg}
-                    size="lg"
-                    borderRadius="md"
-                    _hover={{ borderColor: "teal.300" }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                    }}
-                    data-testid="transferfundsmodal-to-account-dropdown"
+                  <Popover
+                    isOpen={isToAccountOpen}
+                    onClose={() => { setIsToAccountOpen(false); setHighlightedToIndex(-1); }}
+                    matchWidth
+                    placement="bottom-start"
+                    autoFocus={false}
+                    returnFocusOnClose={false}
                   >
-                    <optgroup label="Asset Accounts">
-                      {getFilteredAccounts(
-                        isDifferentLedger ? destinationAccounts : accounts,
-                      )
-                        .filter((account) => account.type === "asset")
-                        .map((account) => (
-                          <option
-                            key={account.account_id}
-                            value={account.account_id}
+                    <PopoverTrigger>
+                      <InputGroup size="lg">
+                        <InputLeftElement pointerEvents="none" height="100%">
+                          <Icon as={Search} boxSize={4} color={helperTextColor} />
+                        </InputLeftElement>
+                        <Input
+                          value={isToAccountOpen ? toAccountSearch : (selectedToAccount?.name ?? "")}
+                          onChange={(e) => {
+                            setToAccountSearch(e.target.value);
+                            setToAccountId("");
+                            setHighlightedToIndex(-1);
+                            setIsToAccountOpen(true);
+                          }}
+                          onFocus={() => {
+                            setToAccountSearch("");
+                            setHighlightedToIndex(-1);
+                            setIsToAccountOpen(true);
+                          }}
+                          onKeyDown={handleToAccountKeyDown}
+                          placeholder="Search accounts..."
+                          borderWidth="2px"
+                          borderColor={toAccountId ? "teal.400" : inputBorderColor}
+                          bg={inputBg}
+                          borderRadius="md"
+                          _hover={{ borderColor: "teal.300" }}
+                          _focus={{
+                            borderColor: focusBorderColor,
+                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                          }}
+                          autoComplete="off"
+                          data-testid="transferfundsmodal-to-account-dropdown"
+                        />
+                        <InputRightElement height="100%" pr={1}>
+                          {toAccountId ? (
+                            <Icon
+                              as={X}
+                              boxSize={4}
+                              color={helperTextColor}
+                              cursor="pointer"
+                              onClick={() => {
+                                setToAccountId("");
+                                setToAccountSearch("");
+                                setIsToAccountOpen(false);
+                                setHighlightedToIndex(-1);
+                              }}
+                            />
+                          ) : (
+                            <Icon
+                              as={ChevronDown}
+                              boxSize={4}
+                              color={helperTextColor}
+                              cursor="pointer"
+                              onClick={() => setIsToAccountOpen(!isToAccountOpen)}
+                            />
+                          )}
+                        </InputRightElement>
+                      </InputGroup>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      p={0}
+                      bg={bgColor}
+                      border="1px solid"
+                      borderColor={borderColor}
+                      borderRadius="md"
+                      boxShadow="lg"
+                      maxH="220px"
+                      overflowY="auto"
+                      _focus={{ outline: "none" }}
+                    >
+                      {filteredToAssetAccounts.length > 0 && (
+                        <>
+                          <Box px={3} py={2} bg={cardBg} borderBottom="1px solid" borderColor={borderColor}>
+                            <Text fontSize="xs" fontWeight="semibold" color={helperTextColor} textTransform="uppercase" letterSpacing="wider">
+                              Asset
+                            </Text>
+                          </Box>
+                          {filteredToAssetAccounts.map((acc, i) => (
+                            <Box
+                              key={acc.account_id}
+                              px={4} py={3}
+                              cursor="pointer"
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="space-between"
+                              bg={toAccountId === acc.account_id || i === highlightedToIndex ? highlightColor : "transparent"}
+                              _hover={{ bg: highlightColor }}
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                setToAccountId(acc.account_id);
+                                setToAccountSearch("");
+                                setIsToAccountOpen(false);
+                                setHighlightedToIndex(-1);
+                              }}
+                            >
+                              <Text fontSize="sm" fontWeight={toAccountId === acc.account_id ? "semibold" : "normal"}>
+                                {acc.name}
+                              </Text>
+                              {toAccountId === acc.account_id && <Icon as={Check} boxSize={4} color="teal.500" />}
+                            </Box>
+                          ))}
+                        </>
+                      )}
+                      {filteredToLiabilityAccounts.length > 0 && (
+                        <>
+                          <Box
+                            px={3} py={2} bg={cardBg}
+                            borderBottom="1px solid" borderColor={borderColor}
+                            borderTop={filteredToAssetAccounts.length > 0 ? "1px solid" : undefined}
+                            borderTopColor={borderColor}
                           >
-                            {account.name}
-                          </option>
-                        ))}
-                    </optgroup>
-                    <optgroup label="Liability Accounts">
-                      {getFilteredAccounts(
-                        isDifferentLedger ? destinationAccounts : accounts,
-                      )
-                        .filter((account) => account.type === "liability")
-                        .map((account) => (
-                          <option
-                            key={account.account_id}
-                            value={account.account_id}
-                          >
-                            {account.name}
-                          </option>
-                        ))}
-                    </optgroup>
-                  </Select>
-                      <FormHelperText mt={2} color={helperTextColor}>
-                        Select the account to transfer funds to
-                      </FormHelperText>
+                            <Text fontSize="xs" fontWeight="semibold" color={helperTextColor} textTransform="uppercase" letterSpacing="wider">
+                              Liability
+                            </Text>
+                          </Box>
+                          {filteredToLiabilityAccounts.map((acc, i) => {
+                            const flatIndex = filteredToAssetAccounts.length + i;
+                            return (
+                              <Box
+                                key={acc.account_id}
+                                px={4} py={3}
+                                cursor="pointer"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="space-between"
+                                bg={toAccountId === acc.account_id || flatIndex === highlightedToIndex ? highlightColor : "transparent"}
+                                _hover={{ bg: highlightColor }}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  setToAccountId(acc.account_id);
+                                  setToAccountSearch("");
+                                  setIsToAccountOpen(false);
+                                  setHighlightedToIndex(-1);
+                                }}
+                              >
+                                <Text fontSize="sm" fontWeight={toAccountId === acc.account_id ? "semibold" : "normal"}>
+                                  {acc.name}
+                                </Text>
+                                {toAccountId === acc.account_id && <Icon as={Check} boxSize={4} color="teal.500" />}
+                              </Box>
+                            );
+                          })}
+                        </>
+                      )}
+                      {!hasFilteredToResults && (
+                        <Box px={4} py={5} textAlign="center">
+                          <Text fontSize="sm" color={helperTextColor}>No accounts found</Text>
+                        </Box>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                  <FormHelperText mt={2} color={helperTextColor}>
+                    Select the account to transfer funds to
+                  </FormHelperText>
                 </FormControl>
 
                 {/* Destination Amount (if different ledger) */}
                 {isDifferentLedger && (
                   <FormControl isRequired>
-                    <FormLabel fontWeight="semibold" mb={2}>
+                    <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                       Destination Amount
+                      {destinationAmount && parseFloat(destinationAmount) > 0 && (
+                        <Icon as={Check} boxSize={3.5} color="teal.500" />
+                      )}
                     </FormLabel>
                     <InputGroup size="lg">
-                       <InputLeftAddon
-                         bg={inputBorderColor}
-                         borderWidth="2px"
-                         borderColor={inputBorderColor}
-                         color={addonColor}
-                         fontWeight="semibold"
-                       >
+                      <InputLeftAddon
+                        bg={inputBorderColor}
+                        borderWidth="2px"
+                        borderColor={inputBorderColor}
+                        color={addonColor}
+                        fontWeight="semibold"
+                      >
                         {destinationCurrencySymbol || currencySymbol}
                       </InputLeftAddon>
                       <Input
@@ -684,15 +1125,11 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                         inputMode="decimal"
                         value={destinationAmount}
                         onChange={(e) => setDestinationAmount(e.target.value)}
-                        onKeyDown={(e) =>
-                          handleNumericInput(e, destinationAmount)
-                        }
-                        onPaste={(e) =>
-                          handleNumericPaste(e, setDestinationAmount)
-                        }
+                        onKeyDown={(e) => handleNumericInput(e, destinationAmount)}
+                        onPaste={(e) => handleNumericPaste(e, setDestinationAmount)}
                         placeholder="0.00"
                         borderWidth="2px"
-                        borderColor={inputBorderColor}
+                        borderColor={destinationAmount && parseFloat(destinationAmount) > 0 ? "teal.400" : inputBorderColor}
                         bg={inputBg}
                         borderRadius="md"
                         _hover={{ borderColor: "teal.300" }}
@@ -702,9 +1139,9 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                         }}
                       />
                     </InputGroup>
-                     <FormHelperText mt={2} color={helperTextColor}>
-                       Enter the amount to transfer
-                     </FormHelperText>
+                    <FormHelperText mt={2} color={helperTextColor}>
+                      Enter the amount in the destination ledger's currency
+                    </FormHelperText>
                   </FormControl>
                 )}
               </VStack>
@@ -723,16 +1160,15 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                 notes={notes}
                 setNotes={setNotes}
                 borderColor={inputBorderColor}
+                onDropdownOpenChange={setIsNotesSuggestionsOpen}
               />
-             </Box>
-           </VStack>
-           </form>
+            </Box>
+          </VStack>
 
-           {/* Mobile-only action buttons that stay at bottom */}
+          {/* Mobile-only action buttons that stay at bottom */}
           <Box display={{ base: "block", sm: "none" }} mt={6}>
             <Button
-              type="submit"
-              form="transfer-funds-form"
+              onClick={handleSubmit}
               colorScheme="teal"
               size="lg"
               width="100%"
@@ -740,13 +1176,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
               borderRadius="md"
               isLoading={isLoading}
               loadingText="Transferring..."
-              isDisabled={
-                !fromAccountId ||
-                !toAccountId ||
-                !amount ||
-                (isDifferentLedger &&
-                  (!destinationLedgerId || !destinationAmount))
-              }
+              isDisabled={isSaveDisabled}
             >
               Complete Transfer
             </Button>
@@ -773,26 +1203,19 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
           borderTop="1px solid"
           borderColor={borderColor}
         >
-           <Button
-             type="submit"
-             form="transfer-funds-form"
-             colorScheme="teal"
-             mr={3}
-             px={8}
-             py={3}
-             borderRadius="md"
-             isLoading={isLoading}
-             loadingText="Transferring..."
-             isDisabled={
-               !fromAccountId ||
-               !toAccountId ||
-               !amount ||
-               (isDifferentLedger &&
-                 (!destinationLedgerId || !destinationAmount))
-             }
-           >
-             Complete Transfer
-           </Button>
+          <Button
+            colorScheme="teal"
+            mr={3}
+            onClick={handleSubmit}
+            px={8}
+            py={3}
+            borderRadius="md"
+            isLoading={isLoading}
+            loadingText="Transferring..."
+            isDisabled={isSaveDisabled}
+          >
+            Complete Transfer
+          </Button>
           <Button
             variant="ghost"
             colorScheme="gray"
