@@ -18,7 +18,7 @@ import {
   HStack,
 } from "@chakra-ui/react";
 
-import { Home, Bookmark, Menu, PieChart, Wallet, X } from "lucide-react";
+import { Home, Bookmark, Menu, PieChart, TrendingUp, Wallet, X } from "lucide-react";
 
 import { useNavigate, useLocation } from "react-router-dom";
 import UserProfileDisplay from "./shared/UserProfileDisplay";
@@ -99,6 +99,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
 
   const menuItems = [
     { path: "/", label: "Dashboard", icon: Home },
+    { path: "/net-worth", label: "Net Worth", icon: TrendingUp },
     { path: "/insights", label: "Insights", icon: PieChart },
     { path: "/categories", label: "Categories", icon: Bookmark },
   ];
