@@ -5,6 +5,7 @@ frontend/dist
 backend/**/__pycache__
 backend/**/?venv
 # Shared
+certs/
 .DS_Store
 .env
 .python-version

@@ -254,6 +254,16 @@ function read_env_value() {
     echo "${value:-$default}"
 }
 
+function set_local_ssl_env() {
+    local cert="$CASHIO_DIR/certs/cert.pem"
+    local key="$CASHIO_DIR/certs/key.pem"
+    if [[ -f "$cert" && -f "$key" ]]; then
+        export SSL_CERTFILE="$cert"
+        export SSL_KEYFILE="$key"
+        echo "[~] SSL certs found — backend will run over HTTPS"
+    fi
+}
+
 function start_local_backend() {
     echo ""
     echo "=== Starting Local Backend Dev Server ==="
@@ -271,13 +281,18 @@ function start_local_backend() {
     python_cmd=$(require_python)
     echo "[~] Using Python: $python_cmd"
 
+    load_env
+    set_local_ssl_env
+
+    local scheme="http"
+    [[ -n "${SSL_CERTFILE:-}" ]] && scheme="https"
+
     echo "[+] Starting FastAPI dev server (auto-reload enabled)..."
-    echo "[~] Backend:  http://localhost:8000"
-    echo "[~] API docs: http://localhost:8000/docs"
+    echo "[~] Backend:  ${scheme}://localhost:8000"
+    echo "[~] API docs: ${scheme}://localhost:8000/docs"
     echo ""
 
     cd "$CASHIO_DIR/backend"
-    load_env
     exec "$python_cmd" -m app.main
 }
 
@@ -299,15 +314,28 @@ function start_local_frontend() {
         echo "[✓] Dependencies installed"
     fi
 
+    load_env
+    set_local_ssl_env
+
     local api_url
     api_url=$(read_env_value VITE_CASHIO_API_BASE_URL "http://localhost:8000")
     echo "[~] API URL: $api_url"
     echo "[+] Starting Vite dev server (HMR enabled)..."
-    echo "[~] Frontend: http://localhost:5173"
+
+    local frontend_scheme="http"
+    local frontend_port="3000"
+    if [[ -n "${SSL_CERTFILE:-}" ]]; then
+        frontend_scheme="https"
+        frontend_port="443"
+    fi
+    echo "[~] Frontend: ${frontend_scheme}://cashio.test"
     echo ""
 
     cd "$CASHIO_DIR/frontend"
-    exec env VITE_CASHIO_API_BASE_URL="$api_url" npm run dev
+    exec env VITE_CASHIO_API_BASE_URL="$api_url" \
+             SSL_CERTFILE="${SSL_CERTFILE:-}" \
+             SSL_KEYFILE="${SSL_KEYFILE:-}" \
+             npm run dev
 }
 
 function start_local() {
@@ -344,11 +372,16 @@ function start_local() {
     echo "[+] Starting FastAPI dev server in background..."
     cd "$CASHIO_DIR/backend"
     load_env
+    set_local_ssl_env
+
+    local scheme="http"
+    [[ -n "${SSL_CERTFILE:-}" ]] && scheme="https"
+
     "$python_cmd" -m app.main &
     local BACKEND_PID=$!
     echo "[✓] Backend started (PID: $BACKEND_PID)"
-    echo "[~] Backend:  http://localhost:8000"
-    echo "[~] API docs: http://localhost:8000/docs"
+    echo "[~] Backend:  ${scheme}://localhost:8000"
+    echo "[~] API docs: ${scheme}://localhost:8000/docs"
 
     # Trap Ctrl+C / termination to kill both servers
     trap "echo ''; echo '[+] Shutting down local dev servers...'; kill $BACKEND_PID 2>/dev/null || true; echo '[✓] Done'; exit 0" INT TERM
@@ -358,15 +391,20 @@ function start_local() {
 
     local api_url
     api_url=$(read_env_value VITE_CASHIO_API_BASE_URL "http://localhost:8000")
+    local frontend_url="http://cashio.test:3000"
+    [[ -n "${SSL_CERTFILE:-}" ]] && frontend_url="https://cashio.test"
     echo ""
     echo "[+] Starting Vite dev server (foreground)..."
-    echo "[~] Frontend: http://localhost:5173"
+    echo "[~] Frontend: $frontend_url"
     echo "[~] API URL:  $api_url"
     echo "[~] Press Ctrl+C to stop both servers"
     echo ""
 
     cd "$CASHIO_DIR/frontend"
-    env VITE_CASHIO_API_BASE_URL="$api_url" npm run dev
+    env VITE_CASHIO_API_BASE_URL="$api_url" \
+        SSL_CERTFILE="${SSL_CERTFILE:-}" \
+        SSL_KEYFILE="${SSL_KEYFILE:-}" \
+        npm run dev
 
     # Frontend exited normally — clean up backend
     echo ""
