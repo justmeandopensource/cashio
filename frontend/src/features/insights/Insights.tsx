@@ -233,12 +233,19 @@ const Insights = () => {
         }
       />
       <Box flex={1} overflowY="auto">
-        <PageContainer>
+        {selectedLedgerId ? (
+          <PageContainer>
+            <InsightsMain
+              ledgerId={selectedLedgerId}
+              visualization={selectedVisualization}
+            />
+          </PageContainer>
+        ) : (
           <InsightsMain
             ledgerId={selectedLedgerId}
             visualization={selectedVisualization}
           />
-        </PageContainer>
+        )}
       </Box>
     </Layout>
   );

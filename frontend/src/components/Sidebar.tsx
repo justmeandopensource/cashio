@@ -86,7 +86,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
 
   const sidebarBg = useColorModeValue("bodyBg", "bodyBg");
   const borderColor = useColorModeValue("tertiaryBg", "gray.700");
-  const activeBg = useColorModeValue("brand.50", "whiteAlpha.150");
+  const activeBg = useColorModeValue("brand.100", "rgba(116, 207, 202, 0.18)");
   const activeColor = useColorModeValue("brand.700", "brand.200");
   const activeIconColor = useColorModeValue("brand.600", "brand.300");
   const inactiveColor = useColorModeValue("gray.600", "gray.400");

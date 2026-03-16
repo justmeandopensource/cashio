@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
-import { Text, Box, useColorModeValue } from "@chakra-ui/react";
+import { Text, Box, Center, Heading, Icon, useColorModeValue } from "@chakra-ui/react";
+import { BarChart2 } from "lucide-react";
 
 const IncomeExpenseTrend = lazy(() => import("./charts/IncomeExpenseTrend"));
 const CurrentMonthOverview = lazy(() => import("./charts/CurrentMonthOverview"));
@@ -24,20 +25,32 @@ const InsightsMainCharts = ({
 }: InsightsMainChartsProps) => {
   const cardBg = useColorModeValue("white", "gray.700");
   const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
+  const emptyTitleColor = useColorModeValue("gray.700", "gray.200");
+  const emptySubColor = useColorModeValue("gray.500", "gray.400");
+  const emptyIconBg = useColorModeValue("brand.100", "rgba(116, 207, 202, 0.15)");
 
   if (!ledgerId) {
     return (
-      <Box
-        bg={cardBg}
-        p={6}
-        borderRadius="lg"
-        boxShadow="md"
-        textAlign="center"
-      >
-        <Text fontSize="lg" color={tertiaryTextColor}>
-          Select a ledger to view insights
+      <Center flexDirection="column" py={20} px={6} textAlign="center">
+        <Box
+          w="72px"
+          h="72px"
+          borderRadius="2xl"
+          bg={emptyIconBg}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          mb={5}
+        >
+          <Icon as={BarChart2} boxSize={8} color="brand.500" />
+        </Box>
+        <Heading fontSize="xl" fontWeight="bold" color={emptyTitleColor} mb={2}>
+          No ledger selected
+        </Heading>
+        <Text fontSize="sm" color={emptySubColor} maxW="320px">
+          Choose a ledger from the dropdown above to view your insights dashboard.
         </Text>
-      </Box>
+      </Center>
     );
   }
 
