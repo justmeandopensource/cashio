@@ -194,6 +194,40 @@ def bulk_update_mutual_fund_navs(
     return updated_ids
 
 
+def get_mutual_fund_plan_suggestions(
+    db: Session, ledger_id: int, search_text: str
+) -> list[str]:
+    """Get distinct plan suggestions matching the search text."""
+    results = (
+        db.query(MutualFund.plan)
+        .filter(MutualFund.ledger_id == ledger_id)
+        .filter(MutualFund.plan.isnot(None))
+        .filter(MutualFund.plan != "")
+        .filter(MutualFund.plan.ilike(f"%{search_text}%"))
+        .distinct()
+        .limit(10)
+        .all()
+    )
+    return [r[0] for r in results if r[0]]
+
+
+def get_mutual_fund_owner_suggestions(
+    db: Session, ledger_id: int, search_text: str
+) -> list[str]:
+    """Get distinct owner suggestions matching the search text."""
+    results = (
+        db.query(MutualFund.owner)
+        .filter(MutualFund.ledger_id == ledger_id)
+        .filter(MutualFund.owner.isnot(None))
+        .filter(MutualFund.owner != "")
+        .filter(MutualFund.owner.ilike(f"%{search_text}%"))
+        .distinct()
+        .limit(10)
+        .all()
+    )
+    return [r[0] for r in results if r[0]]
+
+
 def delete_mutual_fund(db: Session, mutual_fund_id: int) -> None:
     """Delete a mutual fund if it has zero units."""
     db_fund = db.query(MutualFund).filter(MutualFund.mutual_fund_id == mutual_fund_id).first()

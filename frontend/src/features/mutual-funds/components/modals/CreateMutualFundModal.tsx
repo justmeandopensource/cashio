@@ -35,6 +35,7 @@ import { TrendingUp, FileText, Building2, X, CheckCircle, Check, Search, Chevron
 import { createMutualFund } from "../../api";
 import { Amc, MutualFundCreate } from "../../types";
 import useLedgerStore from "@/components/shared/store";
+import FormMutualFundSuggestionField from "../FormMutualFundSuggestionField";
 
 interface CreateMutualFundModalProps {
   isOpen: boolean;
@@ -444,34 +445,17 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
 
                   {/* Plan and Code side by side */}
                   <HStack spacing={4} align="start">
-                    <FormControl isInvalid={!!errors.plan} flex={1}>
-                      <FormLabel fontWeight="semibold" mb={2}>
-                        <HStack spacing={2}>
-                          <FileText size={16} />
-                          <Text>Plan (Optional)</Text>
-                        </HStack>
-                      </FormLabel>
-                      <Input
-                        value={formData.plan}
-                        onChange={(e) =>
-                          handleInputChange("plan", e.target.value)
-                        }
-                        placeholder="Direct Growth"
-                        maxLength={50}
-                        size="lg"
-                        bg={inputBg}
-                        borderColor={inputBorderColor}
-                        borderWidth="2px"
-                        borderRadius="md"
-                        _hover={{ borderColor: "teal.300" }}
-                        _focus={{
-                          borderColor: focusBorderColor,
-                          boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                        }}
-                      />
-                      <FormErrorMessage>{errors.plan}</FormErrorMessage>
-                      <FormHelperText>Enter the plan type</FormHelperText>
-                    </FormControl>
+                    <FormMutualFundSuggestionField
+                      ledgerId={ledgerId as string}
+                      field="plan"
+                      label="Plan (Optional)"
+                      value={formData.plan}
+                      setValue={(val) => handleInputChange("plan", val)}
+                      placeholder="Direct Growth"
+                      helperText="Enter the plan type"
+                      borderColor={inputBorderColor}
+                      inputBg={inputBg}
+                    />
 
                     <FormControl isInvalid={!!errors.code} flex={1}>
                       <FormLabel fontWeight="semibold" mb={2}>
@@ -504,37 +488,17 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
                   </HStack>
 
                   {/* Owner */}
-                  <FormControl isInvalid={!!errors.owner}>
-                    <FormLabel fontWeight="semibold" mb={2}>
-                      <HStack spacing={2}>
-                        <FileText size={16} />
-                        <Text>Owner (Optional)</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Input
-                      value={formData.owner}
-                      onChange={(e) =>
-                        handleInputChange("owner", e.target.value)
-                      }
-                      placeholder="e.g., John Doe"
-                      maxLength={100}
-                      size="lg"
-                      bg={inputBg}
-                      borderColor={inputBorderColor}
-                      borderWidth="2px"
-                      borderRadius="md"
-                      _hover={{ borderColor: "teal.300" }}
-                      _focus={{
-                        borderColor: focusBorderColor,
-                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                      }}
-                    />
-                    <FormErrorMessage>{errors.owner}</FormErrorMessage>
-                    <FormHelperText>
-                      Enter the owner name to allow same fund names for
-                      different owners
-                    </FormHelperText>
-                  </FormControl>
+                  <FormMutualFundSuggestionField
+                    ledgerId={ledgerId as string}
+                    field="owner"
+                    label="Owner (Optional)"
+                    value={formData.owner}
+                    setValue={(val) => handleInputChange("owner", val)}
+                    placeholder="e.g., John Doe"
+                    helperText="Enter the owner name to allow same fund names for different owners"
+                    borderColor={inputBorderColor}
+                    inputBg={inputBg}
+                  />
 
                   {/* AMC Selection */}
                   <FormControl

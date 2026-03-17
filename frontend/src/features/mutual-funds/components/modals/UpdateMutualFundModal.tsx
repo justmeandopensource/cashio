@@ -26,6 +26,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateMutualFund } from "../../api";
 import { MutualFund, Amc } from "../../types";
 import { Edit, Check, X, TrendingUp, FileText, Building2 } from "lucide-react";
+import FormMutualFundSuggestionField from "../FormMutualFundSuggestionField";
 
 const ASSET_CLASSES = [
   { value: "Debt", label: "Debt" },
@@ -387,32 +388,17 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
             >
               <VStack spacing={5} align="stretch">
                 <HStack spacing={4} align="start">
-                  <FormControl isInvalid={!!errors.plan} flex={1}>
-                    <FormLabel fontWeight="semibold" mb={2}>
-                      <HStack spacing={2}>
-                        <FileText size={16} />
-                        <Text>Plan (Optional)</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Input
-                      value={formData.plan}
-                      onChange={(e) => handleInputChange("plan", e.target.value)}
-                      placeholder="Direct Growth"
-                      maxLength={50}
-                      size="lg"
-                      bg={inputBg}
-                      borderColor={inputBorderColor}
-                      borderWidth="2px"
-                      borderRadius="md"
-                      _hover={{ borderColor: "teal.300" }}
-                      _focus={{
-                        borderColor: focusBorderColor,
-                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                      }}
-                    />
-                    <FormErrorMessage>{errors.plan}</FormErrorMessage>
-                    <FormHelperText>Enter the plan type</FormHelperText>
-                  </FormControl>
+                  <FormMutualFundSuggestionField
+                    ledgerId={fund.ledger_id.toString()}
+                    field="plan"
+                    label="Plan (Optional)"
+                    value={formData.plan}
+                    setValue={(val) => handleInputChange("plan", val)}
+                    placeholder="Direct Growth"
+                    helperText="Enter the plan type"
+                    borderColor={inputBorderColor}
+                    inputBg={inputBg}
+                  />
 
                   <FormControl isInvalid={!!errors.code} flex={1}>
                     <FormLabel fontWeight="semibold" mb={2}>
@@ -452,34 +438,17 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
               border="1px solid"
               borderColor={borderColor}
             >
-              <FormControl isInvalid={!!errors.owner}>
-                <FormLabel fontWeight="semibold" mb={2}>
-                  <HStack spacing={2}>
-                    <FileText size={16} />
-                    <Text>Owner (Optional)</Text>
-                  </HStack>
-                </FormLabel>
-                <Input
-                  value={formData.owner}
-                  onChange={(e) => handleInputChange("owner", e.target.value)}
-                  placeholder="e.g., John Doe"
-                  maxLength={100}
-                  size="lg"
-                  bg={inputBg}
-                  borderColor={inputBorderColor}
-                  borderWidth="2px"
-                  borderRadius="md"
-                  _hover={{ borderColor: "teal.300" }}
-                  _focus={{
-                    borderColor: focusBorderColor,
-                    boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                  }}
-                />
-                <FormErrorMessage>{errors.owner}</FormErrorMessage>
-                <FormHelperText mt={2}>
-                  Enter the owner name to allow same fund names for different owners
-                </FormHelperText>
-              </FormControl>
+              <FormMutualFundSuggestionField
+                ledgerId={fund.ledger_id.toString()}
+                field="owner"
+                label="Owner (Optional)"
+                value={formData.owner}
+                setValue={(val) => handleInputChange("owner", val)}
+                placeholder="e.g., John Doe"
+                helperText="Enter the owner name to allow same fund names for different owners"
+                borderColor={inputBorderColor}
+                inputBg={inputBg}
+              />
             </Box>
 
             {/* Asset Classification Card */}

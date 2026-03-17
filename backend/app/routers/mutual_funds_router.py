@@ -2,7 +2,7 @@ from typing import List, Optional
 from decimal import Decimal
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
@@ -23,6 +23,8 @@ from app.repositories.mutual_fund_crud import (
     update_mutual_fund_nav,
     bulk_update_mutual_fund_navs,
     delete_mutual_fund as delete_mutual_fund_repo,
+    get_mutual_fund_plan_suggestions,
+    get_mutual_fund_owner_suggestions,
 )
 from app.repositories.mf_transaction_crud import (
     create_mf_transaction,
@@ -309,6 +311,45 @@ def delete_mutual_fund(
 
     delete_mutual_fund_repo(db=db, mutual_fund_id=fund_id)
     return {"message": "Mutual fund deleted successfully"}
+
+
+# Mutual Fund Field Suggestion Endpoints
+@mutual_funds_router.get(
+    "/{ledger_id}/mutual-fund/plan/suggestions",
+    response_model=List[str],
+    tags=["mutual-funds"],
+)
+def get_plan_suggestions(
+    ledger_id: int,
+    search_text: str = Query(..., min_length=3, description="Text to search for in mutual fund plans"),
+    user: user_schema.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get plan suggestions for mutual funds in a ledger."""
+    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
+    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
+        raise HTTPException(status_code=404, detail="Ledger not found")
+
+    return get_mutual_fund_plan_suggestions(db=db, ledger_id=ledger_id, search_text=search_text)
+
+
+@mutual_funds_router.get(
+    "/{ledger_id}/mutual-fund/owner/suggestions",
+    response_model=List[str],
+    tags=["mutual-funds"],
+)
+def get_owner_suggestions(
+    ledger_id: int,
+    search_text: str = Query(..., min_length=3, description="Text to search for in mutual fund owners"),
+    user: user_schema.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get owner suggestions for mutual funds in a ledger."""
+    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
+    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
+        raise HTTPException(status_code=404, detail="Ledger not found")
+
+    return get_mutual_fund_owner_suggestions(db=db, ledger_id=ledger_id, search_text=search_text)
 
 
 # MF Transaction Management Endpoints
