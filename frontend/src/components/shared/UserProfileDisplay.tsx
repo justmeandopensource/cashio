@@ -29,6 +29,8 @@ interface UserProfile {
 
 interface UserProfileDisplayProps {
   handleLogout: () => void;
+  isCollapsed?: boolean;
+  onCollapsedClick?: () => void;
 }
 
 const fetchUserProfile = async (): Promise<UserProfile> => {
@@ -46,6 +48,8 @@ const getStoredThemePref = (): "light" | "dark" | "system" => {
 
 const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
   handleLogout,
+  isCollapsed = false,
+  onCollapsedClick,
 }) => {
   const navigate = useNavigate();
   const { setColorMode } = useColorMode();
@@ -61,6 +65,7 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [triggerWidth, setTriggerWidth] = useState(0);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const hoverBg = useColorModeValue("gray.100", "gray.700");
@@ -120,13 +125,17 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
   if (isLoading) {
     return (
       <Box px={2} py={2}>
-        <HStack spacing={3}>
-          <Box width="36px" height="36px" borderRadius="full" bg={themeSegmentBg} flexShrink={0} />
-          <Box flex="1">
-            <Box height="13px" bg={themeSegmentBg} borderRadius="md" mb={1.5} />
-            <Box height="11px" bg={themeSegmentBg} borderRadius="md" width="65%" />
-          </Box>
-        </HStack>
+        {isCollapsed ? (
+          <Box width="36px" height="36px" borderRadius="full" bg={themeSegmentBg} mx="auto" />
+        ) : (
+          <HStack spacing={3}>
+            <Box width="36px" height="36px" borderRadius="full" bg={themeSegmentBg} flexShrink={0} />
+            <Box flex="1">
+              <Box height="13px" bg={themeSegmentBg} borderRadius="md" mb={1.5} />
+              <Box height="11px" bg={themeSegmentBg} borderRadius="md" width="65%" />
+            </Box>
+          </HStack>
+        )}
       </Box>
     );
   }
@@ -148,7 +157,12 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
   }
 
   return (
-    <Popover placement="top" isLazy>
+    <Popover
+      placement="top"
+      isLazy
+      isOpen={isPopoverOpen}
+      onClose={() => setIsPopoverOpen(false)}
+    >
       <PopoverTrigger>
         <Button
           ref={triggerRef}
@@ -163,43 +177,68 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
           _focus={{ outline: "none", boxShadow: "none" }}
           transition="background 0.15s ease"
           width="full"
-          justifyContent="flex-start"
+          justifyContent={isCollapsed ? "center" : "flex-start"}
           sx={{ "&:focus": { outline: "none" } }}
+          onClick={() => {
+            if (isCollapsed) {
+              onCollapsedClick?.();
+              setIsPopoverOpen(true);
+            } else {
+              setIsPopoverOpen((o) => !o);
+            }
+          }}
         >
-          <HStack spacing={2.5} width="full">
-            <Avatar
-              size="sm"
-              name={userProfile.full_name}
-              src=""
-              getInitials={getInitials}
-              bg={avatarBg}
-              borderRadius="full"
-              color="white"
-              fontWeight="bold"
-              fontSize="xs"
-              flexShrink={0}
-            />
-            <Box flex="1" textAlign="left" minWidth="0">
-              <Text
-                fontWeight="semibold"
-                fontSize="sm"
-                color={triggerNameColor}
-                noOfLines={1}
-                lineHeight="1.3"
-              >
-                {userProfile.full_name}
-              </Text>
-              <Text fontSize="xs" color={triggerEmailColor} noOfLines={1} lineHeight="1.3">
-                {userProfile.email}
-              </Text>
-            </Box>
-            <Icon
-              as={ChevronsUpDown}
-              boxSize={3.5}
-              color={triggerEmailColor}
-              flexShrink={0}
-            />
-          </HStack>
+          {isCollapsed ? (
+            <Tooltip label={userProfile.full_name} placement="right" hasArrow openDelay={200}>
+              <Avatar
+                size="sm"
+                name={userProfile.full_name}
+                src=""
+                getInitials={getInitials}
+                bg={avatarBg}
+                borderRadius="full"
+                color="white"
+                fontWeight="bold"
+                fontSize="xs"
+                flexShrink={0}
+              />
+            </Tooltip>
+          ) : (
+            <HStack spacing={2.5} width="full">
+              <Avatar
+                size="sm"
+                name={userProfile.full_name}
+                src=""
+                getInitials={getInitials}
+                bg={avatarBg}
+                borderRadius="full"
+                color="white"
+                fontWeight="bold"
+                fontSize="xs"
+                flexShrink={0}
+              />
+              <Box flex="1" textAlign="left" minWidth="0">
+                <Text
+                  fontWeight="semibold"
+                  fontSize="sm"
+                  color={triggerNameColor}
+                  noOfLines={1}
+                  lineHeight="1.3"
+                >
+                  {userProfile.full_name}
+                </Text>
+                <Text fontSize="xs" color={triggerEmailColor} noOfLines={1} lineHeight="1.3">
+                  {userProfile.email}
+                </Text>
+              </Box>
+              <Icon
+                as={ChevronsUpDown}
+                boxSize={3.5}
+                color={triggerEmailColor}
+                flexShrink={0}
+              />
+            </HStack>
+          )}
         </Button>
       </PopoverTrigger>
 
@@ -209,7 +248,7 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
         boxShadow="0 8px 30px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)"
         borderRadius="xl"
         border="1px solid"
-        width={triggerWidth > 0 ? `${triggerWidth}px` : "240px"}
+        width={triggerWidth > 240 ? `${triggerWidth}px` : "240px"}
         maxWidth="none"
         overflow="hidden"
         autoFocus={false}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Flex,
@@ -16,9 +16,10 @@ import {
   Button,
   Text,
   HStack,
+  Tooltip,
 } from "@chakra-ui/react";
 
-import { Home, Bookmark, Menu, PieChart, Target, TrendingUp, Wallet, X, BookText } from "lucide-react";
+import { Home, Bookmark, Menu, PieChart, Target, TrendingUp, Wallet, X, BookText, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { useNavigate, useLocation } from "react-router-dom";
 import UserProfileDisplay from "./shared/UserProfileDisplay";
@@ -80,6 +81,9 @@ export const MobileHeader: React.FC<{
 
 const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isCollapsed, setIsCollapsed] = useState(
+    () => localStorage.getItem("sidebar-collapsed") === "true"
+  );
   const navigate = useNavigate();
   const location = useLocation();
   const { ledgerId, ledgerName } = useLedgerStore();
@@ -142,14 +146,15 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
   }) => {
     const isActive = isActivePath(path);
 
-    return (
+    const linkEl = (
       <ChakraLink
         display="flex"
         alignItems="center"
-        gap={3}
+        justifyContent={isCollapsed ? "center" : "flex-start"}
+        gap={isCollapsed ? 0 : 3}
         onClick={onClick || (() => navigate(path))}
         py={2.5}
-        px={3}
+        px={isCollapsed ? 0 : 3}
         borderRadius="lg"
         bg={isActive ? activeBg : "transparent"}
         color={isActive ? activeColor : inactiveColor}
@@ -173,9 +178,18 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
           flexShrink={0}
           transition="color 0.15s ease"
         />
-        <Text>{label}</Text>
+        {!isCollapsed && <Text>{label}</Text>}
       </ChakraLink>
     );
+
+    if (isCollapsed) {
+      return (
+        <Tooltip label={label} placement="right" hasArrow openDelay={200}>
+          {linkEl}
+        </Tooltip>
+      );
+    }
+    return linkEl;
   };
 
   const NavSubItem = ({
@@ -191,15 +205,16 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
   }) => {
     const isActive = isActivePath(path);
 
-    return (
+    const linkEl = (
       <ChakraLink
         display="flex"
         alignItems="center"
-        gap={2.5}
+        justifyContent={isCollapsed ? "center" : "flex-start"}
+        gap={isCollapsed ? 0 : 2.5}
         onClick={onClick || (() => navigate(path))}
         py={2}
-        pl={8}
-        pr={3}
+        pl={isCollapsed ? 0 : 8}
+        pr={isCollapsed ? 0 : 3}
         borderRadius="lg"
         bg={isActive ? activeBg : "transparent"}
         color={isActive ? activeColor : inactiveColor}
@@ -223,9 +238,18 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
           flexShrink={0}
           transition="color 0.15s ease"
         />
-        <Text>{label}</Text>
+        {!isCollapsed && <Text>{label}</Text>}
       </ChakraLink>
     );
+
+    if (isCollapsed) {
+      return (
+        <Tooltip label={label} placement="right" hasArrow openDelay={200}>
+          {linkEl}
+        </Tooltip>
+      );
+    }
+    return linkEl;
   };
 
   // Renders the full nav tree; onAfterNavigate is called after any item click (used by mobile to close drawer)
@@ -242,51 +266,89 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
         {ledgerId ? (
           // ── Ledger context section ──────────────────────────────────────
           <Box mt={3}>
-            <Text
-              fontSize="2xs"
-              fontWeight="semibold"
-              textTransform="uppercase"
-              letterSpacing="wider"
-              color={sectionLabelColor}
-              px={3}
-              mb={1}
-            >
-              Current Ledger
-            </Text>
+            {!isCollapsed && (
+              <Text
+                fontSize="2xs"
+                fontWeight="semibold"
+                textTransform="uppercase"
+                letterSpacing="wider"
+                color={sectionLabelColor}
+                px={3}
+                mb={1}
+              >
+                Current Ledger
+              </Text>
+            )}
 
             {/* Ledger name — parent item, navigates to /ledger */}
-            <ChakraLink
-              display="flex"
-              alignItems="center"
-              gap={3}
-              onClick={() => go("/ledger")}
-              py={2.5}
-              px={3}
-              borderRadius="lg"
-              bg={isLedgerItemActive ? activeBg : "transparent"}
-              color={isLedgerItemActive ? activeColor : inactiveColor}
-              fontWeight={isLedgerItemActive ? "semibold" : "medium"}
-              fontSize="sm"
-              _hover={{
-                bg: isLedgerItemActive ? activeBg : hoverBg,
-                color: isLedgerItemActive ? activeColor : hoverColor,
-                textDecoration: "none",
-              }}
-              transition="background 0.15s ease, color 0.15s ease"
-              width="full"
-              textDecoration="none"
-              _focus={{ boxShadow: "none" }}
-              _focusVisible={{ boxShadow: "0 0 0 2px var(--chakra-colors-brand-500)" }}
-            >
-              <Icon
-                as={BookText}
-                boxSize={4}
-                color={isLedgerItemActive ? activeIconColor : inactiveIconColor}
-                flexShrink={0}
-                transition="color 0.15s ease"
-              />
-              <Text noOfLines={1} flex={1}>{ledgerName || "Ledger"}</Text>
-            </ChakraLink>
+            {isCollapsed ? (
+              <Tooltip label={ledgerName || "Ledger"} placement="right" hasArrow openDelay={200}>
+                <ChakraLink
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  onClick={() => go("/ledger")}
+                  py={2.5}
+                  px={0}
+                  borderRadius="lg"
+                  bg={isLedgerItemActive ? activeBg : "transparent"}
+                  color={isLedgerItemActive ? activeColor : inactiveColor}
+                  fontWeight={isLedgerItemActive ? "semibold" : "medium"}
+                  fontSize="sm"
+                  _hover={{
+                    bg: isLedgerItemActive ? activeBg : hoverBg,
+                    color: isLedgerItemActive ? activeColor : hoverColor,
+                    textDecoration: "none",
+                  }}
+                  transition="background 0.15s ease, color 0.15s ease"
+                  width="full"
+                  textDecoration="none"
+                  _focus={{ boxShadow: "none" }}
+                  _focusVisible={{ boxShadow: "0 0 0 2px var(--chakra-colors-brand-500)" }}
+                >
+                  <Icon
+                    as={BookText}
+                    boxSize={4}
+                    color={isLedgerItemActive ? activeIconColor : inactiveIconColor}
+                    flexShrink={0}
+                    transition="color 0.15s ease"
+                  />
+                </ChakraLink>
+              </Tooltip>
+            ) : (
+              <ChakraLink
+                display="flex"
+                alignItems="center"
+                gap={3}
+                onClick={() => go("/ledger")}
+                py={2.5}
+                px={3}
+                borderRadius="lg"
+                bg={isLedgerItemActive ? activeBg : "transparent"}
+                color={isLedgerItemActive ? activeColor : inactiveColor}
+                fontWeight={isLedgerItemActive ? "semibold" : "medium"}
+                fontSize="sm"
+                _hover={{
+                  bg: isLedgerItemActive ? activeBg : hoverBg,
+                  color: isLedgerItemActive ? activeColor : hoverColor,
+                  textDecoration: "none",
+                }}
+                transition="background 0.15s ease, color 0.15s ease"
+                width="full"
+                textDecoration="none"
+                _focus={{ boxShadow: "none" }}
+                _focusVisible={{ boxShadow: "0 0 0 2px var(--chakra-colors-brand-500)" }}
+              >
+                <Icon
+                  as={BookText}
+                  boxSize={4}
+                  color={isLedgerItemActive ? activeIconColor : inactiveIconColor}
+                  flexShrink={0}
+                  transition="color 0.15s ease"
+                />
+                <Text noOfLines={1} flex={1}>{ledgerName || "Ledger"}</Text>
+              </ChakraLink>
+            )}
 
             {/* Sub-items */}
             <NavSubItem
@@ -337,7 +399,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
 
       {/* Desktop Sidebar */}
       <Box
-        w="280px"
+        w={isCollapsed ? "64px" : "280px"}
         bg={sidebarBg}
         borderRight="1px solid"
         borderColor={borderColor}
@@ -348,38 +410,90 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
         top={0}
         left={0}
         overflowY="auto"
+        overflowX="hidden"
         flexShrink={0}
         boxShadow={sidebarShadow}
+        transition="width 0.2s ease"
       >
         {/* Brand Header */}
-        <Box px={4} py={5}>
-          <HStack spacing={3} align="flex-start">
-            <Icon as={Wallet} boxSize={6} mt="3px" color={brandIconColor} flexShrink={0} />
-            <Box>
-              <Heading
-                as="h1"
-                fontSize="xl"
-                fontWeight="bold"
-                letterSpacing="-0.02em"
-                color={brandTitleColor}
-              >
-                Cashio
-              </Heading>
-              <Text fontSize="sm" color={brandSubtitleColor}>
-                Financial Management
-              </Text>
-            </Box>
-          </HStack>
+        <Box
+          px={isCollapsed ? 0 : 4}
+          py={5}
+          display="flex"
+          alignItems="center"
+          justifyContent={isCollapsed ? "center" : "flex-start"}
+        >
+          {isCollapsed ? (
+            <Tooltip label="Cashio" placement="right" hasArrow openDelay={200}>
+              <Icon as={Wallet} boxSize={6} color={brandIconColor} flexShrink={0} />
+            </Tooltip>
+          ) : (
+            <HStack spacing={3} align="flex-start">
+              <Icon as={Wallet} boxSize={6} mt="3px" color={brandIconColor} flexShrink={0} />
+              <Box>
+                <Heading
+                  as="h1"
+                  fontSize="xl"
+                  fontWeight="bold"
+                  letterSpacing="-0.02em"
+                  color={brandTitleColor}
+                >
+                  Cashio
+                </Heading>
+                <Text fontSize="sm" color={brandSubtitleColor}>
+                  Financial Management
+                </Text>
+              </Box>
+            </HStack>
+          )}
         </Box>
 
         {/* Navigation */}
-        <Box flex="1" px={3} py={4}>
+        <Box flex="1" px={isCollapsed ? 2 : 3} py={4}>
           {renderNavItems()}
         </Box>
 
+        {/* Collapse toggle */}
+        <Box
+          px={isCollapsed ? 2 : 3}
+          py={2}
+          display="flex"
+          justifyContent={isCollapsed ? "center" : "flex-end"}
+        >
+          <Tooltip
+            label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            placement="right"
+            hasArrow
+            openDelay={200}
+          >
+            <Button
+              onClick={() => setIsCollapsed((c) => {
+                const next = !c;
+                localStorage.setItem("sidebar-collapsed", String(next));
+                return next;
+              })}
+              variant="ghost"
+              size="sm"
+              borderRadius="md"
+              color={inactiveColor}
+              _hover={{ bg: hoverBg, color: hoverColor }}
+              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <Icon as={isCollapsed ? ChevronRight : ChevronLeft} boxSize={4} />
+            </Button>
+          </Tooltip>
+        </Box>
+
         {/* User Profile at bottom */}
-        <Box px={3} py={3} borderTop="1px solid" borderColor={borderColor}>
-          <UserProfileDisplay handleLogout={handleLogout} />
+        <Box px={isCollapsed ? 2 : 3} py={3} borderTop="1px solid" borderColor={borderColor}>
+          <UserProfileDisplay
+            handleLogout={handleLogout}
+            isCollapsed={isCollapsed}
+            onCollapsedClick={() => {
+              setIsCollapsed(false);
+              localStorage.setItem("sidebar-collapsed", "false");
+            }}
+          />
         </Box>
       </Box>
 
