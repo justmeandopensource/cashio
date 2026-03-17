@@ -106,12 +106,15 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
     return location.pathname.startsWith(path);
   };
 
-  // The ledger section is "active" when on any ledger-scoped page
+  // The ledger section is "expanded" when on any ledger-scoped page (controls sub-item visibility)
   const isLedgerSectionActive =
     location.pathname === "/ledger" ||
     location.pathname === "/net-worth" ||
     location.pathname === "/insights" ||
     location.pathname === "/budget";
+
+  // The ledger parent item is only highlighted when on /ledger itself
+  const isLedgerItemActive = location.pathname === "/ledger";
 
   // Get current page title for mobile header
   const getCurrentPageTitle = () => {
@@ -260,13 +263,13 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
               py={2.5}
               px={3}
               borderRadius="lg"
-              bg={isLedgerSectionActive ? activeBg : "transparent"}
-              color={isLedgerSectionActive ? activeColor : inactiveColor}
-              fontWeight={isLedgerSectionActive ? "semibold" : "medium"}
+              bg={isLedgerItemActive ? activeBg : "transparent"}
+              color={isLedgerItemActive ? activeColor : inactiveColor}
+              fontWeight={isLedgerItemActive ? "semibold" : "medium"}
               fontSize="sm"
               _hover={{
-                bg: isLedgerSectionActive ? activeBg : hoverBg,
-                color: isLedgerSectionActive ? activeColor : hoverColor,
+                bg: isLedgerItemActive ? activeBg : hoverBg,
+                color: isLedgerItemActive ? activeColor : hoverColor,
                 textDecoration: "none",
               }}
               transition="background 0.15s ease, color 0.15s ease"
@@ -278,7 +281,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
               <Icon
                 as={BookText}
                 boxSize={4}
-                color={isLedgerSectionActive ? activeIconColor : inactiveIconColor}
+                color={isLedgerItemActive ? activeIconColor : inactiveIconColor}
                 flexShrink={0}
                 transition="color 0.15s ease"
               />
