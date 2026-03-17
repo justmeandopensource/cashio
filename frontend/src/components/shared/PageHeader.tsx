@@ -26,6 +26,7 @@ const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, heade
   const iconColor = useColorModeValue("gray.400", "gray.500");
   const backIconColor = useColorModeValue("gray.500", "gray.400");
   const headerShadow = useColorModeValue("sm", "0 2px 8px rgba(0,0,0,0.6)");
+  const headerBg = useColorModeValue("white", "gray.800");
 
   return (
     <Box
@@ -36,6 +37,7 @@ const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, heade
       zIndex={10}
       borderBottom="1px solid"
       borderColor={borderColor}
+      bg={headerBg}
       boxShadow={headerShadow}
       sx={{ clipPath: "inset(0 -20px -20px 0)" }}
     >

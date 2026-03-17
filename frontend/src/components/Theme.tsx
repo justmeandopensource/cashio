@@ -47,7 +47,7 @@ const Theme = extendTheme({
         _dark: 'gray.400',
       },
       bodyBg: {
-        default: 'gray.100',
+        default: 'white',
         _dark: 'gray.800',
       },
       primaryBg: {

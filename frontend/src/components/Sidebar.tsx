@@ -84,8 +84,8 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
   const location = useLocation();
   const { ledgerId, ledgerName } = useLedgerStore();
 
-  const sidebarBg = useColorModeValue("bodyBg", "bodyBg");
-  const borderColor = useColorModeValue("tertiaryBg", "gray.700");
+  const sidebarBg = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
   const activeBg = useColorModeValue("brand.100", "rgba(116, 207, 202, 0.18)");
   const activeColor = useColorModeValue("brand.700", "brand.200");
   const activeIconColor = useColorModeValue("brand.600", "brand.300");
@@ -93,13 +93,13 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
   const inactiveIconColor = useColorModeValue("gray.400", "gray.500");
   const hoverBg = useColorModeValue("gray.100", "whiteAlpha.100");
   const hoverColor = useColorModeValue("gray.800", "gray.100");
-  const cardBg = useColorModeValue("bodyBg", "bodyBg");
+  const cardBg = useColorModeValue("white", "gray.800");
   const brandTitleColor = useColorModeValue("gray.900", "gray.50");
   const brandSubtitleColor = useColorModeValue("gray.500", "gray.400");
   const brandIconColor = useColorModeValue("brand.500", "brand.400");
   const sidebarShadow = useColorModeValue("xl", "4px 0 12px rgba(0,0,0,0.6)");
   const sectionLabelColor = useColorModeValue("gray.400", "gray.500");
-  const dividerColor = useColorModeValue("gray.100", "gray.700");
+  const dividerColor = useColorModeValue("gray.200", "gray.700");
 
   const isActivePath = (path: string) => {
     if (path === "/") return location.pathname === "/";

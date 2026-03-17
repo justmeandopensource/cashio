@@ -19,11 +19,16 @@ const HomeMainHeader: FC<HomeMainHeaderProps> = ({ onCreateLedger }) => {
   const titleColor = useColorModeValue("gray.900", "gray.50");
   const subtitleColor = useColorModeValue("gray.500", "gray.400");
   const headerShadow = useColorModeValue("sm", "0 2px 8px rgba(0,0,0,0.6)");
+  const headerBg = useColorModeValue("white", "gray.800");
 
   return (
     <Box
       px={{ base: 4, md: 8 }}
       py={{ base: 3, md: 6 }}
+      bg={headerBg}
+      position="sticky"
+      top={0}
+      zIndex={10}
       borderBottom="1px solid"
       borderColor={borderColor}
       boxShadow={headerShadow}
