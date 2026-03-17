@@ -109,8 +109,21 @@ function show_logs() {
 }
 
 function local_pid_on_port() {
-    # Returns the PID listening on a given port; works on Linux and macOS
-    lsof -ti "TCP:$1" -sTCP:LISTEN 2>/dev/null | head -1
+    # Returns the PID listening on a given port; works on Linux and macOS.
+    # Falls back to ss (Linux) for privileged ports where lsof needs root.
+    local port=$1
+    local pid
+    pid=$(lsof -ti "TCP:${port}" -sTCP:LISTEN 2>/dev/null | head -1)
+    if [[ -z "$pid" ]] && command -v ss &>/dev/null; then
+        pid=$(ss -tlnp "sport = :${port}" 2>/dev/null | awk 'NR>1 && /pid=/{match($0,/pid=([0-9]+)/,a); if(a[1]) print a[1]; exit}')
+    fi
+    echo "$pid"
+}
+
+function local_vite_pid() {
+    # Returns the PID of a running Vite dev server for this project.
+    # Uses process name matching since lsof can't see privileged ports without sudo.
+    pgrep -f "${CASHIO_DIR}/frontend/node_modules/.bin/vite" 2>/dev/null | head -1
 }
 
 function show_status() {
@@ -125,17 +138,38 @@ function show_status() {
         echo "  [!] lsof not found — install it to see local dev server status"
     else
         local backend_pid frontend_pid
+        local cert="$CASHIO_DIR/certs/cert.pem"
+        local ssl_present=false
+        [[ -f "$cert" ]] && ssl_present=true
+
         backend_pid=$(local_pid_on_port 8000)
-        frontend_pid=$(local_pid_on_port 3000)
+        frontend_pid=$(local_vite_pid)
+        # Fall back to port-based detection if pgrep found nothing
+        if [[ -z "$frontend_pid" ]]; then
+            if $ssl_present; then
+                frontend_pid=$(local_pid_on_port 443)
+            else
+                frontend_pid=$(local_pid_on_port 3000)
+            fi
+        fi
+
+        local backend_scheme="http"
+        local frontend_scheme="http"
+        local frontend_port="3000"
+        if $ssl_present; then
+            backend_scheme="https"
+            frontend_scheme="https"
+            frontend_port="443"
+        fi
 
         if [[ -n "$backend_pid" ]]; then
-            echo "  backend   [LOCAL]  pid=$backend_pid  http://localhost:8000  (FastAPI/uvicorn, auto-reload)"
+            echo "  backend   [LOCAL]  pid=$backend_pid  ${backend_scheme}://localhost:8000  (FastAPI/uvicorn, auto-reload)"
         else
             echo "  backend   [not running locally]"
         fi
 
         if [[ -n "$frontend_pid" ]]; then
-            echo "  frontend  [LOCAL]  pid=$frontend_pid  http://localhost:3000  (Vite dev server, HMR)"
+            echo "  frontend  [LOCAL]  pid=$frontend_pid  ${frontend_scheme}://localhost:${frontend_port}  (Vite dev server, HMR)"
         else
             echo "  frontend  [not running locally]"
         fi

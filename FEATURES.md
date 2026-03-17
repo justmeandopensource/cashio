@@ -67,6 +67,17 @@ Cashio is a full-stack personal finance management application supporting multi-
 
 ---
 
+## Budgets
+- Set **monthly or yearly spending limits** per expense category
+- Monthly and yearly budgets shown side by side on a single page
+- **Progress bars** with colour coding: green (< 75%), orange (75–90%), red (≥ 90%)
+- Period summary card showing total budgeted, total spent, and remaining
+- Tracks actual spend from both regular and **split transactions**
+- Create, edit (amount only), and delete budgets
+- Duplicate budget prevention (one budget per category + period)
+
+---
+
 ## Insights & Analytics
 
 10+ built-in visualizations:
@@ -100,3 +111,4 @@ Cashio is a full-stack personal finance management application supporting multi-
 - **Dark mode** — full light/dark theme support
 - **Responsive design** — works on mobile and desktop
 - **Optimistic UI** — instant feedback on deletions with rollback on error
+- **PWA** — installable as a native-like app on desktop and mobile with auto-updating service worker

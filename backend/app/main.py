@@ -21,6 +21,7 @@ from app.routers import (
 from app.routers.physical_assets_router import physical_assets_router
 from app.routers.mutual_funds_router import mutual_funds_router
 from app.routers.net_worth_router import net_worth_router
+from app.routers.budget_router import budget_router
 from app.version import __version__
 
 
@@ -52,6 +53,7 @@ app.include_router(insights_router.insights_router)
 app.include_router(physical_assets_router)
 app.include_router(mutual_funds_router)
 app.include_router(net_worth_router)
+app.include_router(budget_router)
 app.include_router(system_router.system_Router)
 
 if __name__ == "__main__":

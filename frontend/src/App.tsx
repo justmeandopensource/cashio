@@ -12,6 +12,7 @@ const Categories = lazy(() => import("@features/categories/Categories"));
 const Insights = lazy(() => import("./features/insights/Insights"));
 const Profile = lazy(() => import("@features/profile/Profile"));
 const NetWorth = lazy(() => import("@features/net-worth/NetWorth"));
+const Budget = lazy(() => import("@features/budget/Budget"));
 
 const App: React.FC = () => {
   return (
@@ -30,6 +31,7 @@ const App: React.FC = () => {
             <Route path="/categories" element={<Categories />} />
             <Route path="/insights" element={<Insights />} />
             <Route path="/net-worth" element={<NetWorth />} />
+            <Route path="/budget" element={<Budget />} />
             <Route path="/profile" element={<Profile />} />
           </Route>
         </Routes>

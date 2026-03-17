@@ -370,6 +370,30 @@ class MutualFund(Base):
     )
 
 
+class Budget(Base):
+    __tablename__ = "budgets"
+
+    budget_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    ledger_id: Mapped[int] = mapped_column(Integer, ForeignKey("ledgers.ledger_id", ondelete="CASCADE"), nullable=False)
+    category_id: Mapped[int] = mapped_column(Integer, ForeignKey("categories.category_id", ondelete="CASCADE"), nullable=False)
+    period: Mapped[str] = mapped_column(Enum("monthly", "yearly", name="budget_period"), nullable=False)
+    amount: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+
+    user = relationship("User")
+    ledger = relationship("Ledger")
+    category = relationship("Category")
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "ledger_id", "category_id", "period", name="uq_budget_user_ledger_category_period"),
+        Index("idx_budgets_user_id", "user_id"),
+        Index("idx_budgets_ledger_id", "ledger_id"),
+        Index("idx_budgets_category_id", "category_id"),
+    )
+
+
 class MfTransaction(Base):
     __tablename__ = "mf_transactions"
 

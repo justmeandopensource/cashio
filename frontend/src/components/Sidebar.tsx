@@ -18,7 +18,7 @@ import {
   HStack,
 } from "@chakra-ui/react";
 
-import { Home, Bookmark, Menu, PieChart, TrendingUp, Wallet, X, BookText } from "lucide-react";
+import { Home, Bookmark, Menu, PieChart, Target, TrendingUp, Wallet, X, BookText } from "lucide-react";
 
 import { useNavigate, useLocation } from "react-router-dom";
 import UserProfileDisplay from "./shared/UserProfileDisplay";
@@ -110,7 +110,8 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
   const isLedgerSectionActive =
     location.pathname === "/ledger" ||
     location.pathname === "/net-worth" ||
-    location.pathname === "/insights";
+    location.pathname === "/insights" ||
+    location.pathname === "/budget";
 
   // Get current page title for mobile header
   const getCurrentPageTitle = () => {
@@ -118,6 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
     if (location.pathname === "/ledger") return ledgerName || "Ledger";
     if (location.pathname === "/net-worth") return "Net Worth";
     if (location.pathname === "/insights") return "Insights";
+    if (location.pathname === "/budget") return "Budget";
     if (location.pathname === "/categories") return "Categories";
     if (location.pathname === "/profile") return "Profile";
     if (location.pathname.startsWith("/account/")) return "Account";
@@ -296,12 +298,19 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
               icon={PieChart}
               onClick={() => go("/insights")}
             />
+            <NavSubItem
+              path="/budget"
+              label="Budget"
+              icon={Target}
+              onClick={() => go("/budget")}
+            />
           </Box>
         ) : (
           // ── No ledger context — show as global top-level items ──────────
           <>
             <NavItem path="/net-worth" label="Net Worth" icon={TrendingUp} onClick={() => go("/net-worth")} />
             <NavItem path="/insights" label="Insights" icon={PieChart} onClick={() => go("/insights")} />
+            <NavItem path="/budget" label="Budget" icon={Target} onClick={() => go("/budget")} />
           </>
         )}
 
