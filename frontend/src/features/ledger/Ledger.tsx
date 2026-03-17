@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import {
   Button,
-  IconButton,
   useDisclosure,
   Box,
   HStack,
@@ -165,7 +164,7 @@ const Ledger = () => {
         backIcon={ChevronLeft}
         backOnClick={() => navigate("/")}
         actions={
-          <HStack spacing={2}>
+          <HStack spacing={2} w={{ base: "100%", md: "auto" }}>
             <Button
               leftIcon={<Plus size={14} />}
               colorScheme="brand"
@@ -173,42 +172,22 @@ const Ledger = () => {
               borderRadius="md"
               fontWeight="medium"
               onClick={() => handleAddTransaction(undefined)}
-              display={{ base: "none", md: "inline-flex" }}
+              flex={{ base: 1, md: "none" }}
             >
               Add Transaction
             </Button>
-            <IconButton
-              icon={<Plus size={16} />}
-              aria-label="Add Transaction"
-              colorScheme="brand"
-              variant="solid"
-              size="sm"
-              borderRadius="md"
-              onClick={() => handleAddTransaction(undefined)}
-              display={{ base: "inline-flex", md: "none" }}
-            />
             <Button
               leftIcon={<Repeat size={14} />}
               colorScheme="brand"
-              variant="ghost"
+              variant="outline"
               size="sm"
               borderRadius="md"
               fontWeight="medium"
               onClick={() => setIsTransferModalOpen(true)}
-              display={{ base: "none", md: "inline-flex" }}
+              flex={{ base: 1, md: "none" }}
             >
               Transfer Funds
             </Button>
-            <IconButton
-              icon={<Repeat size={16} />}
-              aria-label="Transfer Funds"
-              colorScheme="brand"
-              variant="ghost"
-              size="sm"
-              borderRadius="md"
-              onClick={() => setIsTransferModalOpen(true)}
-              display={{ base: "inline-flex", md: "none" }}
-            />
           </HStack>
         }
       />

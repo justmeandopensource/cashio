@@ -21,7 +21,7 @@ interface Ledger {
 
 const NetWorth: React.FC = () => {
   const navigate = useNavigate();
-  const { ledgerId, currencySymbol, ledgerName, setLedger } = useLedgerStore();
+  const { ledgerId, currencySymbol, setLedger } = useLedgerStore();
   const [selectedLedgerId, setSelectedLedgerId] = useState<string | undefined>(ledgerId);
 
   // Keep local selection in sync when Zustand changes (e.g. user switches ledger elsewhere)
@@ -70,8 +70,6 @@ const NetWorth: React.FC = () => {
     navigate("/login");
   };
 
-  // Derive the display name from the ledger that's currently selected
-  const selectedLedgerName = ledgers?.find((l) => l.ledger_id === selectedLedgerId)?.name ?? ledgerName;
   const selectedCurrencySymbol = ledgers?.find((l) => l.ledger_id === selectedLedgerId)?.currency_symbol ?? currencySymbol ?? "";
 
   return (
@@ -85,7 +83,6 @@ const NetWorth: React.FC = () => {
         onLedgerChange={handleLedgerChange}
         onRefetch={refetch}
         currencySymbol={selectedCurrencySymbol}
-        ledgerName={selectedLedgerName}
       />
     </Layout>
   );
