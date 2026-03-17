@@ -79,10 +79,14 @@ export const MobileHeader: React.FC<{
   );
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ handleLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
+  const handleLogout = () => {
+    localStorage.removeItem("sidebar-collapsed");
+    _handleLogout();
+  };
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isCollapsed, setIsCollapsed] = useState(
-    () => localStorage.getItem("sidebar-collapsed") === "true"
+    () => localStorage.getItem("sidebar-collapsed") !== "false"
   );
   const navigate = useNavigate();
   const location = useLocation();
