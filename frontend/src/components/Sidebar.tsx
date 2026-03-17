@@ -107,7 +107,6 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
   const brandIconColor = useColorModeValue("brand.500", "brand.400");
   const sidebarShadow = useColorModeValue("xl", "4px 0 12px rgba(0,0,0,0.6)");
   const sectionLabelColor = useColorModeValue("gray.400", "gray.500");
-  const dividerColor = useColorModeValue("gray.200", "gray.700");
 
   const isActivePath = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -177,7 +176,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
       >
         <Icon
           as={icon}
-          boxSize={4}
+          boxSize={isCollapsed ? 5 : 4}
           color={isActive ? activeIconColor : inactiveIconColor}
           flexShrink={0}
           transition="color 0.15s ease"
@@ -237,7 +236,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
       >
         <Icon
           as={icon}
-          boxSize={3.5}
+          boxSize={isCollapsed ? 5 : 3.5}
           color={isActive ? activeIconColor : inactiveIconColor}
           flexShrink={0}
           transition="color 0.15s ease"
@@ -312,7 +311,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
                 >
                   <Icon
                     as={BookText}
-                    boxSize={4}
+                    boxSize={5}
                     color={isLedgerItemActive ? activeIconColor : inactiveIconColor}
                     flexShrink={0}
                     transition="color 0.15s ease"
@@ -382,14 +381,6 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
             <NavItem path="/budget" label="Budget" icon={Target} onClick={() => go("/budget")} />
           </>
         )}
-
-        {/* Divider before global utilities */}
-        <Box
-          mt={ledgerId ? 3 : 2}
-          mb={1}
-          borderTop="1px solid"
-          borderColor={dividerColor}
-        />
 
         <NavItem path="/categories" label="Categories" icon={Bookmark} onClick={() => go("/categories")} />
       </VStack>
