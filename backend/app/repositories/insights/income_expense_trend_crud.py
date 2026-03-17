@@ -139,20 +139,20 @@ def get_income_expense_trend(
     # Calculate averages
     months_with_income = sum(1 for i in income_values if i > 0)
     months_with_expense = sum(1 for e in expense_values if e > 0)
-    avg_income = int(total_income / months_with_income) if months_with_income else 0
-    avg_expense = int(total_expense / months_with_expense) if months_with_expense else 0
+    avg_income = round(total_income / months_with_income) if months_with_income else 0
+    avg_expense = round(total_expense / months_with_expense) if months_with_expense else 0
 
     return {
         "trend_data": trend_data,
         "summary": {
             "income": {
-                "total": int(total_income),
-                "highest": {"period": max_income_period, "amount": int(max_income)},
+                "total": round(total_income),
+                "highest": {"period": max_income_period, "amount": round(max_income)},
                 "average": avg_income,
             },
             "expense": {
-                "total": int(total_expense),
-                "highest": {"period": max_expense_period, "amount": int(max_expense)},
+                "total": round(total_expense),
+                "highest": {"period": max_expense_period, "amount": round(max_expense)},
                 "average": avg_expense,
             },
         },

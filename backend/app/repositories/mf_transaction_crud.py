@@ -155,7 +155,7 @@ def create_mf_transaction(
             cost_basis_of_units_sold = Decimal("0")
             if transaction_data.transaction_type == "sell":
                 # For selling all units, use exact total invested to avoid rounding errors
-                if transaction_data.units == fund.total_units:
+                if Decimal(str(transaction_data.units)) == Decimal(str(fund.total_units)):
                     cost_basis_of_units_sold = fund.total_invested_cash
                 else:
                     cost_basis_of_units_sold = Decimal(str(transaction_data.units)) * fund.average_cost_per_unit
@@ -390,24 +390,24 @@ def delete_mf_transaction(db: Session, mf_transaction_id: int) -> None:
         fund.external_cash_invested -= db_transaction.amount_excluding_charges  # type: ignore
     elif db_transaction.transaction_type == "sell":  # type: ignore
         units_change = db_transaction.units
-        amount_change = db_transaction.cost_basis_of_units_sold
+        amount_change = db_transaction.cost_basis_of_units_sold or Decimal("0")
         update_mutual_fund_balances(db, fund.mutual_fund_id, units_change, float(amount_change))  # type: ignore
         if db_transaction.realized_gain:  # type: ignore
             fund.total_realized_gain -= db_transaction.realized_gain  # type: ignore
-        fund.total_invested_cash += db_transaction.cost_basis_of_units_sold  # type: ignore
-        fund.external_cash_invested += db_transaction.cost_basis_of_units_sold  # type: ignore
+        fund.total_invested_cash += amount_change  # type: ignore
+        fund.external_cash_invested += amount_change  # type: ignore
     elif db_transaction.transaction_type == "switch_out":  # type: ignore
         units_change = db_transaction.units
-        amount_change = db_transaction.cost_basis_of_units_sold
+        amount_change = db_transaction.cost_basis_of_units_sold or Decimal("0")
         update_mutual_fund_balances(db, fund.mutual_fund_id, units_change, float(amount_change))  # type: ignore
         if db_transaction.realized_gain:  # type: ignore
             fund.total_realized_gain -= db_transaction.realized_gain  # type: ignore
-        fund.total_invested_cash += db_transaction.cost_basis_of_units_sold  # type: ignore
+        fund.total_invested_cash += amount_change  # type: ignore
     elif db_transaction.transaction_type == "switch_in":  # type: ignore
         units_change = -db_transaction.units
-        amount_change = -(db_transaction.cost_basis_of_units_sold or 0)
+        amount_change = -(db_transaction.cost_basis_of_units_sold or Decimal("0"))
         update_mutual_fund_balances(db, fund.mutual_fund_id, units_change, float(amount_change))  # type: ignore
-        fund.total_invested_cash -= db_transaction.cost_basis_of_units_sold  # type: ignore
+        fund.total_invested_cash -= (db_transaction.cost_basis_of_units_sold or Decimal("0"))  # type: ignore
 
     # For switch transactions, revert NAV to the most recent remaining transaction
     if db_transaction.transaction_type in ["switch_out", "switch_in"]:  # type: ignore[reportGeneralTypeIssues]
@@ -480,16 +480,16 @@ def delete_mf_transaction(db: Session, mf_transaction_id: int) -> None:
             # type: ignore
             if linked_transaction.transaction_type == "switch_out":  # type: ignore[reportGeneralTypeIssues]
                 linked_units_change = linked_transaction.units
-                linked_amount_change = linked_transaction.cost_basis_of_units_sold
+                linked_amount_change = linked_transaction.cost_basis_of_units_sold or Decimal("0")
                 update_mutual_fund_balances(db, linked_fund.mutual_fund_id, linked_units_change, float(linked_amount_change))  # type: ignore
                 if linked_transaction.realized_gain:  # type: ignore
                     linked_fund.total_realized_gain -= linked_transaction.realized_gain  # type: ignore
-                linked_fund.total_invested_cash += linked_transaction.cost_basis_of_units_sold  # type: ignore
+                linked_fund.total_invested_cash += linked_amount_change  # type: ignore
             elif linked_transaction.transaction_type == "switch_in":  # type: ignore
                 linked_units_change = -linked_transaction.units
-                linked_amount_change = -(linked_transaction.cost_basis_of_units_sold or 0)
+                linked_amount_change = -(linked_transaction.cost_basis_of_units_sold or Decimal("0"))
                 update_mutual_fund_balances(db, linked_fund.mutual_fund_id, linked_units_change, float(linked_amount_change))  # type: ignore
-                linked_fund.total_invested_cash -= linked_transaction.cost_basis_of_units_sold  # type: ignore
+                linked_fund.total_invested_cash -= (linked_transaction.cost_basis_of_units_sold or Decimal("0"))  # type: ignore
             
             db.delete(linked_transaction)
 

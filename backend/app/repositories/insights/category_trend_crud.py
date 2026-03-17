@@ -254,7 +254,7 @@ def _calculate_summary(periods_data):
     avg_amount = total_amount / non_zero_periods if non_zero_periods > 0 else 0
 
     return {
-        "total": int(total_amount),
-        "highest": {"period": max_period, "amount": int(max_amount)},
-        "average": int(avg_amount),
+        "total": round(total_amount),
+        "highest": {"period": max_period, "amount": round(max_amount)},
+        "average": round(avg_amount),
     }

@@ -214,7 +214,7 @@ class BulkNavFetchResponse(BaseModel, str_strip_whitespace=True):
 
 class BulkNavUpdateItem(BaseModel, str_strip_whitespace=True):
     mutual_fund_id: int
-    latest_nav: Decimal
+    latest_nav: Decimal = Field(..., gt=0)
     nav_date: str # Assuming date comes as a string from frontend
 
 
