@@ -34,7 +34,7 @@ from app.repositories.mf_transaction_crud import (
     delete_mf_transaction,
 )
 from app.schemas import mutual_funds_schema, user_schema
-from sqlalchemy import func, extract
+from sqlalchemy import func, extract, case, literal
 from app.security.user_security import get_current_user
 from app.services.nav_service import NavService
 from app.services.yahoo_nav_service import YahooNavService
@@ -836,14 +836,22 @@ def get_corpus_growth(
 
     from app.models.model import MfTransaction
 
-    # Build query for buy transactions - group by year and optionally month
+    # Net invested amount: buy adds amount_excluding_charges, sell subtracts cost_basis_of_units_sold
+    # Switches are internal transfers (net zero across funds) and are excluded
+    net_amount = case(
+        (MfTransaction.transaction_type == 'buy', MfTransaction.amount_excluding_charges),
+        (MfTransaction.transaction_type == 'sell', -func.coalesce(MfTransaction.cost_basis_of_units_sold, 0)),
+        else_=literal(0)
+    )
+
+    # Build query for buy and sell transactions - group by year and optionally month
     if granularity == "yearly":
         query = db.query(
             extract('year', MfTransaction.transaction_date).label('year'),
-            func.sum(MfTransaction.amount_excluding_charges).label('total_invested')
+            func.sum(net_amount).label('total_invested')
         ).filter(
             MfTransaction.ledger_id == ledger_id,
-            MfTransaction.transaction_type == 'buy'
+            MfTransaction.transaction_type.in_(['buy', 'sell'])
         )
 
         # Filter by owner if specified
@@ -860,10 +868,10 @@ def get_corpus_growth(
         query = db.query(
             extract('year', MfTransaction.transaction_date).label('year'),
             extract('month', MfTransaction.transaction_date).label('month'),
-            func.sum(MfTransaction.amount_excluding_charges).label('total_invested')
+            func.sum(net_amount).label('total_invested')
         ).filter(
             MfTransaction.ledger_id == ledger_id,
-            MfTransaction.transaction_type == 'buy'
+            MfTransaction.transaction_type.in_(['buy', 'sell'])
         )
 
         # Filter by owner if specified
