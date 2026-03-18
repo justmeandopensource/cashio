@@ -296,12 +296,12 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
                       </Td>
                       <Td><Text fontWeight="medium">{c.fund.name}</Text></Td>
                       <Td><HStack spacing={1}><Text fontSize="sm" color={subTextColor}>{c.fund.code}</Text>{c.fund.price_in_pence && <Badge size="xs" colorScheme="purple">GBX</Badge>}</HStack></Td>
-                      <Td isNumeric><Text fontWeight="semibold" color={subTextColor}>{symbol}{c.currentNav.toFixed(2)}</Text></Td>
+                      <Td isNumeric><Text fontWeight="semibold" color={subTextColor}>{symbol}{c.currentNav.toFixed(4)}</Text></Td>
                       <Td isNumeric>
                         {c.isFetching ? (
                           <Spinner size="xs" color={tealColor} />
                         ) : c.fetchedNav !== null ? (
-                          <Text fontWeight={c.isUpToDate ? "normal" : "semibold"} color={textColor}>{symbol}{c.fetchedNav.toFixed(2)}</Text>
+                          <Text fontWeight={c.isUpToDate ? "normal" : "semibold"} color={textColor}>{symbol}{c.fetchedNav.toFixed(4)}</Text>
                         ) : (
                           <Text color={mutedTextColor}>-</Text>
                         )}
@@ -439,7 +439,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
                             <Box>
                               <Text fontSize="xs" color={mutedTextColor} mb="1px">Current NAV</Text>
                               <Text fontSize="md" fontWeight="semibold" color={subTextColor}>
-                                {symbol}{c.currentNav.toFixed(2)}
+                                {symbol}{c.currentNav.toFixed(4)}
                               </Text>
                             </Box>
 
@@ -470,7 +470,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
                                   fontWeight={c.isUpToDate ? "normal" : "semibold"}
                                   color={textColor}
                                 >
-                                  {symbol}{c.fetchedNav.toFixed(2)}
+                                  {symbol}{c.fetchedNav.toFixed(4)}
                                 </Text>
                               </Box>
                             )}

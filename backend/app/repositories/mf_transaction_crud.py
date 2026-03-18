@@ -90,9 +90,9 @@ def create_mf_transaction(
             transaction_type_financial = "debit" if transaction_data.transaction_type == "buy" else "credit"
             financial_transaction_notes = ""
             if transaction_data.transaction_type == "buy":
-                financial_transaction_notes = f"MF Buy: {fund.name} {transaction_data.units:.3f} units at NAV {nav_per_unit:.2f}"
+                financial_transaction_notes = f"MF Buy: {fund.name} {transaction_data.units:.3f} units at NAV {nav_per_unit:.4f}"
             elif transaction_data.transaction_type == "sell":
-                financial_transaction_notes = f"MF Sell: {fund.name} {transaction_data.units:.3f} units at NAV {nav_per_unit:.2f}"
+                financial_transaction_notes = f"MF Sell: {fund.name} {transaction_data.units:.3f} units at NAV {nav_per_unit:.4f}"
 
             financial_transaction = Transaction(
                 account_id=transaction_data.account_id,
@@ -159,15 +159,17 @@ def create_mf_transaction(
                     cost_basis_of_units_sold = fund.total_invested_cash
                 else:
                     cost_basis_of_units_sold = Decimal(str(transaction_data.units)) * fund.average_cost_per_unit
-                realized_gain = total_amount - cost_basis_of_units_sold
+                realized_gain = amount_excluding_charges - cost_basis_of_units_sold
                 fund.total_realized_gain += realized_gain  # type: ignore
                 fund.total_invested_cash -= cost_basis_of_units_sold  # type: ignore
-                fund.external_cash_invested -= cost_basis_of_units_sold  # type: ignore
+                # Cap external_cash_invested at 0 to handle units that came from switches
+                external_cash_reduction = min(cost_basis_of_units_sold, fund.external_cash_invested)
+                fund.external_cash_invested -= external_cash_reduction  # type: ignore
 
             # Update fund balances
             units_change = Decimal(str(transaction_data.units)) if transaction_data.transaction_type == "buy" else -Decimal(str(transaction_data.units))
             fund_amount_change = amount_excluding_charges if transaction_data.transaction_type == "buy" else -cost_basis_of_units_sold
-            update_mutual_fund_balances(db, fund.mutual_fund_id, units_change, float(fund_amount_change))  # type: ignore
+            update_mutual_fund_balances(db, fund.mutual_fund_id, units_change, fund_amount_change)  # type: ignore
 
             if transaction_data.transaction_type == "buy":
                 fund.total_invested_cash += amount_excluding_charges  # type: ignore
@@ -222,7 +224,7 @@ def create_mf_transaction(
             fund.total_realized_gain += realized_gain  # type: ignore
 
             # Update source fund balances
-            update_mutual_fund_balances(db, fund.mutual_fund_id, -from_units, -float(cost_basis_of_units_sold))  # type: ignore
+            update_mutual_fund_balances(db, fund.mutual_fund_id, -from_units, -cost_basis_of_units_sold)  # type: ignore
 
             fund.total_invested_cash -= cost_basis_of_units_sold  # type: ignore
 
@@ -267,7 +269,7 @@ def create_mf_transaction(
             cost_basis_of_units_sold = Decimal(str(transaction_data.cost_basis_of_units_sold))
 
             # Update target fund balances
-            update_mutual_fund_balances(db, fund.mutual_fund_id, to_units, float(cost_basis_of_units_sold))  # type: ignore
+            update_mutual_fund_balances(db, fund.mutual_fund_id, to_units, cost_basis_of_units_sold)  # type: ignore
 
             fund.total_invested_cash += cost_basis_of_units_sold  # type: ignore
 
@@ -385,28 +387,30 @@ def delete_mf_transaction(db: Session, mf_transaction_id: int) -> None:
     if db_transaction.transaction_type == "buy":  # type: ignore
         units_change = -db_transaction.units
         amount_change = -db_transaction.amount_excluding_charges
-        update_mutual_fund_balances(db, fund.mutual_fund_id, units_change, float(amount_change))  # type: ignore
+        update_mutual_fund_balances(db, fund.mutual_fund_id, units_change, amount_change)  # type: ignore
         fund.total_invested_cash -= db_transaction.amount_excluding_charges  # type: ignore
         fund.external_cash_invested -= db_transaction.amount_excluding_charges  # type: ignore
     elif db_transaction.transaction_type == "sell":  # type: ignore
         units_change = db_transaction.units
         amount_change = db_transaction.cost_basis_of_units_sold or Decimal("0")
-        update_mutual_fund_balances(db, fund.mutual_fund_id, units_change, float(amount_change))  # type: ignore
+        update_mutual_fund_balances(db, fund.mutual_fund_id, units_change, amount_change)  # type: ignore
         if db_transaction.realized_gain:  # type: ignore
             fund.total_realized_gain -= db_transaction.realized_gain  # type: ignore
         fund.total_invested_cash += amount_change  # type: ignore
-        fund.external_cash_invested += amount_change  # type: ignore
+        # Cap reversal so external_cash_invested doesn't exceed total_invested_cash
+        external_cash_reversal = min(amount_change, fund.total_invested_cash - fund.external_cash_invested)
+        fund.external_cash_invested += max(Decimal("0"), external_cash_reversal)  # type: ignore
     elif db_transaction.transaction_type == "switch_out":  # type: ignore
         units_change = db_transaction.units
         amount_change = db_transaction.cost_basis_of_units_sold or Decimal("0")
-        update_mutual_fund_balances(db, fund.mutual_fund_id, units_change, float(amount_change))  # type: ignore
+        update_mutual_fund_balances(db, fund.mutual_fund_id, units_change, amount_change)  # type: ignore
         if db_transaction.realized_gain:  # type: ignore
             fund.total_realized_gain -= db_transaction.realized_gain  # type: ignore
         fund.total_invested_cash += amount_change  # type: ignore
     elif db_transaction.transaction_type == "switch_in":  # type: ignore
         units_change = -db_transaction.units
         amount_change = -(db_transaction.cost_basis_of_units_sold or Decimal("0"))
-        update_mutual_fund_balances(db, fund.mutual_fund_id, units_change, float(amount_change))  # type: ignore
+        update_mutual_fund_balances(db, fund.mutual_fund_id, units_change, amount_change)  # type: ignore
         fund.total_invested_cash -= (db_transaction.cost_basis_of_units_sold or Decimal("0"))  # type: ignore
 
     # For switch transactions, revert NAV to the most recent remaining transaction
@@ -481,14 +485,14 @@ def delete_mf_transaction(db: Session, mf_transaction_id: int) -> None:
             if linked_transaction.transaction_type == "switch_out":  # type: ignore[reportGeneralTypeIssues]
                 linked_units_change = linked_transaction.units
                 linked_amount_change = linked_transaction.cost_basis_of_units_sold or Decimal("0")
-                update_mutual_fund_balances(db, linked_fund.mutual_fund_id, linked_units_change, float(linked_amount_change))  # type: ignore
+                update_mutual_fund_balances(db, linked_fund.mutual_fund_id, linked_units_change, linked_amount_change)  # type: ignore
                 if linked_transaction.realized_gain:  # type: ignore
                     linked_fund.total_realized_gain -= linked_transaction.realized_gain  # type: ignore
                 linked_fund.total_invested_cash += linked_amount_change  # type: ignore
             elif linked_transaction.transaction_type == "switch_in":  # type: ignore
                 linked_units_change = -linked_transaction.units
                 linked_amount_change = -(linked_transaction.cost_basis_of_units_sold or Decimal("0"))
-                update_mutual_fund_balances(db, linked_fund.mutual_fund_id, linked_units_change, float(linked_amount_change))  # type: ignore
+                update_mutual_fund_balances(db, linked_fund.mutual_fund_id, linked_units_change, linked_amount_change)  # type: ignore
                 linked_fund.total_invested_cash -= (linked_transaction.cost_basis_of_units_sold or Decimal("0"))  # type: ignore
             
             db.delete(linked_transaction)

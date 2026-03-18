@@ -4,8 +4,8 @@ import { formatNumberAsCurrency } from "@components/shared/utils";
 // Format NAV to 2 decimal places
 export const formatNav = (nav: number | string): string => {
   const numValue = typeof nav === 'string' ? parseFloat(nav) : nav;
-  if (isNaN(numValue)) return "0.00";
-  return numValue.toFixed(2);
+  if (isNaN(numValue)) return "0.0000";
+  return numValue.toFixed(4);
 };
 
 // Format units to 3 decimal places

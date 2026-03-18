@@ -1,7 +1,10 @@
+import logging
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 from scipy.optimize import newton
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 def calculate_xirr(transactions: List[Dict[str, Any]], current_value: float, current_date: datetime) -> Optional[float]:
@@ -9,7 +12,7 @@ def calculate_xirr(transactions: List[Dict[str, Any]], current_value: float, cur
     Calculate XIRR for a mutual fund.
 
     Args:
-        transactions: List of transaction dicts with 'transaction_date' and 'amount_excluding_charges'
+        transactions: List of transaction dicts with 'transaction_date' and 'total_amount'
         current_value: Current value of holdings
         current_date: Current date
 
@@ -24,9 +27,9 @@ def calculate_xirr(transactions: List[Dict[str, Any]], current_value: float, cur
     dates = []
 
     for tx in transactions:
-        # For buys and switch_ins: negative cash flow
-        # For sells and switch_outs: positive cash flow
-        amount = float(tx['amount_excluding_charges'])
+        # For buys and switch_ins: negative cash flow (total cash outflow including charges)
+        # For sells and switch_outs: positive cash flow (net cash inflow after charges)
+        amount = float(tx['total_amount'])
         if tx['transaction_type'] in ['buy', 'switch_in']:
             cash_flows.append(-amount)
         elif tx['transaction_type'] in ['sell', 'switch_out']:
@@ -59,5 +62,6 @@ def calculate_xirr(transactions: List[Dict[str, Any]], current_value: float, cur
     try:
         xirr = newton(lambda r: npv(r, cash_flows, dates), 0.1, fprime=lambda r: npv_derivative(r, cash_flows, dates))
         return round(xirr * 100, 2)
-    except Exception:
+    except Exception as e:
+        logger.warning("XIRR calculation failed: %s", e)
         return None

@@ -108,7 +108,7 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
     onSuccess: (data) => {
       const result = data.results[0];
       if (result.success && result.nav_value) {
-        setFormData({ nav: result.nav_value.toFixed(2) });
+        setFormData({ nav: result.nav_value.toFixed(4) });
         setErrors({});
       } else {
         toast({

@@ -334,8 +334,8 @@ class MutualFund(Base):
         Numeric(15, 4), default=0, nullable=False
     )  # Average cost per unit
     latest_nav: Mapped[Decimal] = mapped_column(
-        Numeric(15, 2), default=0, nullable=False
-    )  # Latest NAV price (2 decimal places)
+        Numeric(15, 4), default=0, nullable=False
+    )  # Latest NAV price (4 decimal places)
     last_nav_update: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)  # When NAV was last updated
     current_value: Mapped[Decimal] = mapped_column(
         Numeric(15, 2), default=0, nullable=False
@@ -408,7 +408,7 @@ class MfTransaction(Base):
         nullable=False,
     )
     units: Mapped[Decimal] = mapped_column(Numeric(15, 3), nullable=False)
-    nav_per_unit: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
+    nav_per_unit: Mapped[Decimal] = mapped_column(Numeric(15, 4), nullable=False)
     total_amount: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
     amount_excluding_charges: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
     other_charges: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False, default=0)

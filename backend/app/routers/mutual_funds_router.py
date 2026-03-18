@@ -201,7 +201,7 @@ def get_mutual_funds(
             {
                 'transaction_date': tx.transaction_date,
                 'transaction_type': tx.transaction_type,
-                'amount_excluding_charges': float(tx.amount_excluding_charges)
+                'total_amount': float(tx.total_amount)
             }
             for tx in transactions
         ]
