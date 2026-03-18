@@ -19,7 +19,7 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 
-import { Home, Bookmark, Menu, PieChart, Target, TrendingUp, Wallet, X, BookText, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, Bookmark, Menu, PieChart, Target, TrendingUp, Wallet, X, BookText, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 
 import { useNavigate, useLocation } from "react-router-dom";
 import UserProfileDisplay from "./shared/UserProfileDisplay";
@@ -107,6 +107,9 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
   const brandIconColor = useColorModeValue("brand.500", "brand.400");
   const sidebarShadow = useColorModeValue("xl", "4px 0 12px rgba(0,0,0,0.6)");
   const sectionLabelColor = useColorModeValue("gray.400", "gray.500");
+  const logoutColor = useColorModeValue("gray.600", "gray.400");
+  const logoutIconColor = useColorModeValue("gray.400", "gray.500");
+  const logoutHoverBg = useColorModeValue("gray.100", "whiteAlpha.100");
 
   const isActivePath = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -141,23 +144,26 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
     label,
     icon,
     onClick,
+    collapsed,
   }: {
     path: string;
     label: string;
     icon: any;
     onClick?: () => void;
+    collapsed?: boolean;
   }) => {
     const isActive = isActivePath(path);
+    const _collapsed = collapsed ?? isCollapsed;
 
     const linkEl = (
       <ChakraLink
         display="flex"
         alignItems="center"
-        justifyContent={isCollapsed ? "center" : "flex-start"}
-        gap={isCollapsed ? 0 : 3}
+        justifyContent={_collapsed ? "center" : "flex-start"}
+        gap={_collapsed ? 0 : 3}
         onClick={onClick || (() => navigate(path))}
         py={2.5}
-        px={isCollapsed ? 0 : 3}
+        px={_collapsed ? 0 : 3}
         borderRadius="lg"
         bg={isActive ? activeBg : "transparent"}
         color={isActive ? activeColor : inactiveColor}
@@ -176,16 +182,16 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
       >
         <Icon
           as={icon}
-          boxSize={isCollapsed ? 5 : 4}
+          boxSize={_collapsed ? 5 : 4}
           color={isActive ? activeIconColor : inactiveIconColor}
           flexShrink={0}
           transition="color 0.15s ease"
         />
-        {!isCollapsed && <Text>{label}</Text>}
+        {!_collapsed && <Text>{label}</Text>}
       </ChakraLink>
     );
 
-    if (isCollapsed) {
+    if (_collapsed) {
       return (
         <Tooltip label={label} placement="right" hasArrow openDelay={200}>
           {linkEl}
@@ -200,24 +206,27 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
     label,
     icon,
     onClick,
+    collapsed,
   }: {
     path: string;
     label: string;
     icon: any;
     onClick?: () => void;
+    collapsed?: boolean;
   }) => {
     const isActive = isActivePath(path);
+    const _collapsed = collapsed ?? isCollapsed;
 
     const linkEl = (
       <ChakraLink
         display="flex"
         alignItems="center"
-        justifyContent={isCollapsed ? "center" : "flex-start"}
-        gap={isCollapsed ? 0 : 2.5}
+        justifyContent={_collapsed ? "center" : "flex-start"}
+        gap={_collapsed ? 0 : 2.5}
         onClick={onClick || (() => navigate(path))}
         py={2}
-        pl={isCollapsed ? 0 : 8}
-        pr={isCollapsed ? 0 : 3}
+        pl={_collapsed ? 0 : 8}
+        pr={_collapsed ? 0 : 3}
         borderRadius="lg"
         bg={isActive ? activeBg : "transparent"}
         color={isActive ? activeColor : inactiveColor}
@@ -236,16 +245,16 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
       >
         <Icon
           as={icon}
-          boxSize={isCollapsed ? 5 : 3.5}
+          boxSize={_collapsed ? 5 : 3.5}
           color={isActive ? activeIconColor : inactiveIconColor}
           flexShrink={0}
           transition="color 0.15s ease"
         />
-        {!isCollapsed && <Text>{label}</Text>}
+        {!_collapsed && <Text>{label}</Text>}
       </ChakraLink>
     );
 
-    if (isCollapsed) {
+    if (_collapsed) {
       return (
         <Tooltip label={label} placement="right" hasArrow openDelay={200}>
           {linkEl}
@@ -256,20 +265,21 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
   };
 
   // Renders the full nav tree; onAfterNavigate is called after any item click (used by mobile to close drawer)
-  const renderNavItems = (onAfterNavigate?: () => void) => {
+  const renderNavItems = (onAfterNavigate?: () => void, forceExpanded = false) => {
     const go = (path: string) => {
       navigate(path);
       onAfterNavigate?.();
     };
+    const collapsed = forceExpanded ? false : isCollapsed;
 
     return (
       <VStack align="stretch" spacing={1}>
-        <NavItem path="/" label="Dashboard" icon={Home} onClick={() => go("/")} />
+        <NavItem path="/" label="Dashboard" icon={Home} onClick={() => go("/")} collapsed={collapsed} />
 
         {ledgerId ? (
           // ── Ledger context section ──────────────────────────────────────
           <Box mt={3}>
-            {!isCollapsed && (
+            {!collapsed && (
               <Text
                 fontSize="2xs"
                 fontWeight="semibold"
@@ -284,7 +294,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
             )}
 
             {/* Ledger name — parent item, navigates to /ledger */}
-            {isCollapsed ? (
+            {collapsed ? (
               <Tooltip label={ledgerName || "Ledger"} placement="right" hasArrow openDelay={200}>
                 <ChakraLink
                   display="flex"
@@ -359,30 +369,33 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
               label="Net Worth"
               icon={TrendingUp}
               onClick={() => go("/net-worth")}
+              collapsed={collapsed}
             />
             <NavSubItem
               path="/insights"
               label="Insights"
               icon={PieChart}
               onClick={() => go("/insights")}
+              collapsed={collapsed}
             />
             <NavSubItem
               path="/budget"
               label="Budget"
               icon={Target}
               onClick={() => go("/budget")}
+              collapsed={collapsed}
             />
           </Box>
         ) : (
           // ── No ledger context — show as global top-level items ──────────
           <>
-            <NavItem path="/net-worth" label="Net Worth" icon={TrendingUp} onClick={() => go("/net-worth")} />
-            <NavItem path="/insights" label="Insights" icon={PieChart} onClick={() => go("/insights")} />
-            <NavItem path="/budget" label="Budget" icon={Target} onClick={() => go("/budget")} />
+            <NavItem path="/net-worth" label="Net Worth" icon={TrendingUp} onClick={() => go("/net-worth")} collapsed={collapsed} />
+            <NavItem path="/insights" label="Insights" icon={PieChart} onClick={() => go("/insights")} collapsed={collapsed} />
+            <NavItem path="/budget" label="Budget" icon={Target} onClick={() => go("/budget")} collapsed={collapsed} />
           </>
         )}
 
-        <NavItem path="/categories" label="Categories" icon={Bookmark} onClick={() => go("/categories")} />
+        <NavItem path="/categories" label="Categories" icon={Bookmark} onClick={() => go("/categories")} collapsed={collapsed} />
       </VStack>
     );
   };
@@ -479,6 +492,53 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
           </Tooltip>
         </Box>
 
+        {/* Log Out */}
+        <Box px={isCollapsed ? 2 : 3} py={1}>
+          {isCollapsed ? (
+            <Tooltip label="Log Out" placement="right" hasArrow openDelay={200}>
+              <ChakraLink
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                onClick={handleLogout}
+                py={2.5}
+                borderRadius="lg"
+                color={logoutColor}
+                fontWeight="medium"
+                fontSize="sm"
+                _hover={{ bg: logoutHoverBg, textDecoration: "none" }}
+                transition="background 0.15s ease"
+                width="full"
+                textDecoration="none"
+                _focus={{ boxShadow: "none" }}
+              >
+                <Icon as={LogOut} boxSize={5} flexShrink={0} color={logoutIconColor} />
+              </ChakraLink>
+            </Tooltip>
+          ) : (
+            <ChakraLink
+              display="flex"
+              alignItems="center"
+              gap={3}
+              onClick={handleLogout}
+              py={2.5}
+              px={3}
+              borderRadius="lg"
+              color={logoutColor}
+              fontWeight="medium"
+              fontSize="sm"
+              _hover={{ bg: logoutHoverBg, textDecoration: "none" }}
+              transition="background 0.15s ease"
+              width="full"
+              textDecoration="none"
+              _focus={{ boxShadow: "none" }}
+            >
+              <Icon as={LogOut} boxSize={4} flexShrink={0} color={logoutIconColor} />
+              <Text>Log Out</Text>
+            </ChakraLink>
+          )}
+        </Box>
+
         {/* User Profile at bottom */}
         <Box px={isCollapsed ? 2 : 3} py={3} borderTop="1px solid" borderColor={borderColor}>
           <UserProfileDisplay
@@ -545,18 +605,44 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
           <DrawerBody px={0} py={6}>
             <Flex direction="column" justify="space-between" h="full">
               <Box px={6}>
-                {renderNavItems(onClose)}
+                {renderNavItems(onClose, true)}
               </Box>
 
-              {/* User Profile at bottom */}
-              <Box
-                px={6}
-                py={4}
-                borderTop="1px solid"
-                borderColor={borderColor}
-                bg={cardBg}
-              >
-                <UserProfileDisplay handleLogout={handleLogout} />
+              <Box>
+                {/* Log Out */}
+                <Box px={6} py={1}>
+                  <ChakraLink
+                    display="flex"
+                    alignItems="center"
+                    gap={3}
+                    onClick={() => { handleLogout(); onClose(); }}
+                    py={2.5}
+                    px={3}
+                    borderRadius="lg"
+                    color={logoutColor}
+                    fontWeight="medium"
+                    fontSize="sm"
+                    _hover={{ bg: logoutHoverBg, textDecoration: "none" }}
+                    transition="background 0.15s ease"
+                    width="full"
+                    textDecoration="none"
+                    _focus={{ boxShadow: "none" }}
+                  >
+                    <Icon as={LogOut} boxSize={4} flexShrink={0} color={logoutIconColor} />
+                    <Text>Log Out</Text>
+                  </ChakraLink>
+                </Box>
+
+                {/* User Profile at bottom */}
+                <Box
+                  px={6}
+                  py={4}
+                  borderTop="1px solid"
+                  borderColor={borderColor}
+                  bg={cardBg}
+                >
+                  <UserProfileDisplay handleLogout={handleLogout} />
+                </Box>
               </Box>
             </Flex>
           </DrawerBody>

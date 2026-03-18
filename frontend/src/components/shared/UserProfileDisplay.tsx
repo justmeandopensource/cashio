@@ -19,7 +19,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { useNavigate } from "react-router-dom";
-import { LogOut, User, ChevronsUpDown, Sun, Moon, Monitor } from "lucide-react";
+import { User, ChevronsUpDown, Sun, Moon, Monitor } from "lucide-react";
 import { VERSION } from "../../version";
 
 interface UserProfile {
@@ -80,8 +80,6 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
   const themeActiveBg = useColorModeValue("white", "gray.600");
   const themeActiveColor = useColorModeValue("brand.600", "brand.300");
   const themeInactiveColor = useColorModeValue("gray.500", "gray.400");
-  const signOutColor = useColorModeValue("red.600", "red.400");
-  const signOutHoverBg = useColorModeValue("red.50", "rgba(254,178,178,0.08)");
   const triggerHoverBg = useColorModeValue("gray.100", "gray.700");
   const triggerNameColor = useColorModeValue("gray.700", "gray.200");
   const triggerEmailColor = useColorModeValue("gray.500", "gray.400");
@@ -353,25 +351,6 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
           >
             <Icon as={User} boxSize={4} mr={3} color={secondaryTextColor} />
             Profile Settings
-          </ChakraLink>
-
-          {/* Sign out */}
-          <ChakraLink
-            onClick={handleLogout}
-            display="flex"
-            alignItems="center"
-            px={3}
-            py={2.5}
-            borderRadius="lg"
-            color={signOutColor}
-            fontWeight="medium"
-            fontSize="sm"
-            tabIndex={-1}
-            _hover={{ bg: signOutHoverBg, textDecoration: "none" }}
-            transition="background 0.15s"
-          >
-            <Icon as={LogOut} boxSize={4} mr={3} />
-            Sign Out
           </ChakraLink>
         </VStack>
 
