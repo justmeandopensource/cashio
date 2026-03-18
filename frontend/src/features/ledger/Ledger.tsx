@@ -30,14 +30,13 @@ const Ledger = () => {
     description,
     notes,
     navServiceType,
-    apiKey,
     createdAt,
     updatedAt,
     setLedger,
   } = useLedgerStore();
   const queryClient = useQueryClient();
 
-  // Fetch ledger details to ensure store has correct navServiceType and apiKey
+  // Fetch ledger details to ensure store has correct navServiceType
   useQuery({
     queryKey: ["ledger", ledgerId],
     queryFn: async () => {
@@ -52,7 +51,6 @@ const Ledger = () => {
         data.description,
         data.notes,
         data.nav_service_type,
-        data.api_key,
         data.created_at,
         data.updated_at,
       );
@@ -122,7 +120,6 @@ const Ledger = () => {
     description: string;
     notes: string;
     nav_service_type: string;
-    api_key: string;
     created_at: string;
     updated_at: string;
   }) => {
@@ -134,7 +131,6 @@ const Ledger = () => {
         data.description,
         data.notes,
         data.nav_service_type,
-        data.api_key,
         data.created_at,
         data.updated_at,
       );
@@ -209,7 +205,6 @@ const Ledger = () => {
           currentDescription={description || ""}
           currentNotes={notes || ""}
           currentNavServiceType={navServiceType || "india"}
-          currentApiKey={apiKey || ""}
           onUpdateCompleted={handleUpdateCompleted}
         />
       )}

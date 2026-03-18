@@ -13,7 +13,6 @@ import {
   Textarea,
   Select,
   Button,
-  Switch,
   useToast,
   Box,
   VStack,
@@ -28,7 +27,6 @@ import { updateMutualFund } from "../../api";
 import { MutualFund, Amc } from "../../types";
 import { Edit, Check, X, TrendingUp, FileText, Building2 } from "lucide-react";
 import FormMutualFundSuggestionField from "../FormMutualFundSuggestionField";
-import useLedgerStore from "@/components/shared/store";
 
 const ASSET_CLASSES = [
   { value: "Debt", label: "Debt" },
@@ -82,7 +80,6 @@ interface FormData {
   asset_sub_class: string;
   amc_id: string;
   notes: string;
-  price_in_pence: boolean;
 }
 
 const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
@@ -92,7 +89,6 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
   amcs,
   onUpdateCompleted,
 }) => {
-  const { navServiceType } = useLedgerStore();
   const [formData, setFormData] = useState<FormData>({
     name: fund.name,
     plan: fund.plan || "",
@@ -102,7 +98,6 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
     asset_sub_class: fund.asset_sub_class || "",
     amc_id: fund.amc_id.toString(),
     notes: fund.notes || "",
-    price_in_pence: fund.price_in_pence || false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const toast = useToast();
@@ -139,7 +134,6 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
         asset_sub_class: fund.asset_sub_class || "",
         amc_id: fund.amc_id.toString(),
         notes: fund.notes || "",
-        price_in_pence: fund.price_in_pence || false,
       });
       setErrors({});
     }
@@ -155,7 +149,6 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
       asset_sub_class?: string;
       amc_id?: number;
       notes?: string;
-      price_in_pence?: boolean;
     }) => updateMutualFund(fund.ledger_id, fund.mutual_fund_id, updateData),
     onSuccess: () => {
       toast({
@@ -232,7 +225,6 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
       asset_sub_class?: string;
       amc_id?: number;
       notes?: string;
-      price_in_pence?: boolean;
     } = {};
 
     // Add only the fields that have changed
@@ -244,7 +236,6 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
     if (formData.asset_sub_class !== (fund.asset_sub_class || "")) payload.asset_sub_class = formData.asset_sub_class.trim() || undefined;
     if (parseInt(formData.amc_id) !== fund.amc_id) payload.amc_id = parseInt(formData.amc_id);
     if (formData.notes !== (fund.notes || "")) payload.notes = formData.notes.trim() || undefined;
-    if (formData.price_in_pence !== (fund.price_in_pence || false)) payload.price_in_pence = formData.price_in_pence;
 
     // If no fields have changed, show an error toast
     if (Object.keys(payload).length === 0) {
@@ -286,8 +277,7 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
     formData.asset_class !== (fund.asset_class || "") ||
     formData.asset_sub_class !== (fund.asset_sub_class || "") ||
     formData.amc_id !== fund.amc_id.toString() ||
-    formData.notes !== (fund.notes || "") ||
-    formData.price_in_pence !== (fund.price_in_pence || false);
+    formData.notes !== (fund.notes || "");
 
   return (
     <Modal
@@ -438,26 +428,6 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
                   </FormControl>
                 </HStack>
 
-                {/* Price in pence toggle (UK funds only) */}
-                {navServiceType === "uk" && (
-                  <FormControl>
-                    <HStack justify="space-between">
-                      <FormLabel fontWeight="semibold" mb={0}>
-                        <HStack spacing={2}>
-                          <Text>Price quoted in pence (GBX)</Text>
-                        </HStack>
-                      </FormLabel>
-                      <Switch
-                        isChecked={formData.price_in_pence}
-                        onChange={(e) => setFormData(prev => ({ ...prev, price_in_pence: e.target.checked }))}
-                        colorScheme="teal"
-                      />
-                    </HStack>
-                    <FormHelperText>
-                      Enable if this fund's price is quoted in pence. The fetched price will be automatically converted to pounds.
-                    </FormHelperText>
-                  </FormControl>
-                )}
               </VStack>
             </Box>
 

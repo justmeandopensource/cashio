@@ -35,7 +35,6 @@ export interface MutualFund {
   last_nav_update?: string;
   current_value: number | string;
   notes?: string;
-  price_in_pence?: boolean;
   created_at: string;
   updated_at: string;
   total_realized_gain: number | string;
@@ -54,7 +53,6 @@ export interface MutualFundCreate {
   asset_sub_class?: string;
   amc_id: number;
   notes?: string;
-  price_in_pence?: boolean;
 }
 
 export interface MutualFundUpdate {
@@ -66,7 +64,6 @@ export interface MutualFundUpdate {
   asset_sub_class?: string;
   amc_id?: number;
   notes?: string;
-  price_in_pence?: boolean;
 }
 
 export interface MutualFundNavUpdate {

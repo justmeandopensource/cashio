@@ -29,7 +29,6 @@ interface Ledger {
   description?: string;
   notes?: string;
   nav_service_type?: string;
-  api_key?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -64,7 +63,6 @@ const Budget: React.FC = () => {
         selected.description || "",
         selected.notes || "",
         selected.nav_service_type || "",
-        selected.api_key,
         selected.created_at || "",
         selected.updated_at || "",
       );

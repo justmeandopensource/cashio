@@ -11,7 +11,7 @@ interface HomeMainProps {
   isOpen: boolean;
   onClose: () => void;
   // eslint-disable-next-line no-unused-vars
-  handleCreateLedger: (name: string, currency: string, description: string, notes: string, navServiceType: string, apiKey: string) => void;
+  handleCreateLedger: (name: string, currency: string, description: string, notes: string, navServiceType: string) => void;
 }
 
 const HomeMain = ({

@@ -7,8 +7,6 @@ import {
   ModalBody,
   VStack,
   Input,
-  InputGroup,
-  InputRightElement,
   Button,
   useToast,
   FormControl,
@@ -21,7 +19,7 @@ import {
   HStack,
   Icon,
 } from "@chakra-ui/react";
-import { Plus, X, Eye, EyeOff, Check } from "lucide-react";
+import { Plus, X, Check } from "lucide-react";
 import { toastDefaults } from "../shared/utils";
 
 interface Currency {
@@ -50,8 +48,6 @@ interface CreateLedgerModalProps {
     notes: string,
     // eslint-disable-next-line no-unused-vars
     navServiceType: string,
-    // eslint-disable-next-line no-unused-vars
-    apiKey: string,
   ) => void;
 }
 
@@ -65,8 +61,6 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
   const [description, setDescription] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [navServiceType, setNavServiceType] = useState<string>("india");
-  const [apiKey, setApiKey] = useState<string>("");
-  const [showApiKey, setShowApiKey] = useState<boolean>(false);
   const toast = useToast();
 
   // Modern color scheme
@@ -92,15 +86,6 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
       return;
     }
 
-    if (navServiceType === "uk" && !apiKey.trim()) {
-      toast({
-        description: "API key is required for UK mutual fund service.",
-        status: "warning",
-        ...toastDefaults,
-      });
-      return;
-    }
-
     // Call the handleCreateLedger function passed from the parent
     handleCreateLedger(
       newLedgerName,
@@ -108,7 +93,6 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
       description,
       notes,
       navServiceType,
-      apiKey,
     );
 
     // Reset the form fields
@@ -117,7 +101,6 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
     setDescription("");
     setNotes("");
     setNavServiceType("india");
-    setApiKey("");
 
     // Close the modal
     onClose();
@@ -294,53 +277,12 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
                     <option value="india">
                       Indian Mutual Funds (MFAPI.in)
                     </option>
-                    <option value="uk">UK Mutual Funds (Alpha Vantage)</option>
+                    <option value="uk">UK Mutual Funds (Yahoo Finance)</option>
                   </Select>
                   <FormHelperText mt={2}>
                     Select the mutual fund data service for this ledger
                   </FormHelperText>
                 </FormControl>
-
-                 {navServiceType === "uk" && (
-                   <FormControl isRequired>
-                     <FormLabel fontWeight="semibold" mb={2}>
-                       Alpha Vantage API Key
-                     </FormLabel>
-                     <InputGroup size="lg">
-                       <Input
-                         type={showApiKey ? "text" : "password"}
-                         placeholder="Enter your Alpha Vantage API key"
-                         value={apiKey}
-                         onChange={(e) => setApiKey(e.target.value)}
-                         borderWidth="2px"
-                         borderColor={inputBorderColor}
-                         bg={inputBg}
-                         borderRadius="md"
-                         _hover={{ borderColor: "teal.300" }}
-                         _focus={{
-                           borderColor: focusBorderColor,
-                           boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                         }}
-                       />
-                       <InputRightElement height="100%">
-                         <Button
-                           variant="ghost"
-                           onClick={() => setShowApiKey(!showApiKey)}
-                           _hover={{ bg: "transparent" }}
-                           size="sm"
-                           aria-label={
-                             showApiKey ? "Hide API key" : "Show API key"
-                           }
-                         >
-                           <Icon as={showApiKey ? EyeOff : Eye} boxSize={4} />
-                         </Button>
-                       </InputRightElement>
-                     </InputGroup>
-                     <FormHelperText mt={2}>
-                       Required for UK mutual fund data.
-                     </FormHelperText>
-                   </FormControl>
-                 )}
               </VStack>
             </Box>
 

@@ -14,7 +14,6 @@ interface Ledger {
   description: string;
   notes: string;
   nav_service_type: string;
-  api_key?: string;
   created_at: string;
   updated_at: string;
 }
@@ -46,14 +45,12 @@ const Home = () => {
       description,
       notes,
       nav_service_type,
-      api_key,
     }: {
       name: string;
       currency_symbol: string;
       description: string;
       notes: string;
       nav_service_type: string;
-      api_key?: string;
     }) => {
       const response = await api.post("/ledger/create", {
         name,
@@ -61,7 +58,6 @@ const Home = () => {
         description,
         notes,
         nav_service_type,
-        api_key,
       });
       return response.data;
     },
@@ -93,8 +89,7 @@ const Home = () => {
     newLedgerCurrency: string,
     description: string,
     notes: string,
-    navServiceType: string,
-    apiKey: string
+    navServiceType: string
   ) => {
     if (!newLedgerName || !newLedgerCurrency) {
       toast({
@@ -111,7 +106,6 @@ const Home = () => {
       description: description,
       notes: notes,
       nav_service_type: navServiceType,
-      api_key: apiKey,
     });
   };
 

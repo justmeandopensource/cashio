@@ -18,7 +18,6 @@ import {
   useColorModeValue,
   FormHelperText,
   FormErrorMessage,
-  Switch,
   Alert,
   AlertIcon,
   AlertTitle,
@@ -55,7 +54,6 @@ interface FormData {
   asset_sub_class: string;
   amc_id: string;
   notes: string;
-  price_in_pence: boolean;
 }
 
 const ASSET_CLASSES = [
@@ -100,7 +98,7 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
   preselectedAmcId,
 }) => {
   const initialRef = useRef(null);
-  const { ledgerId, navServiceType } = useLedgerStore();
+  const { ledgerId } = useLedgerStore();
   const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState<FormData>({
@@ -112,7 +110,6 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
     asset_sub_class: "",
     amc_id: "",
     notes: "",
-    price_in_pence: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -174,7 +171,6 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
         asset_sub_class: "",
         amc_id: validPreselected ? preselectedAmcId.toString() : "",
         notes: "",
-        price_in_pence: false,
       });
       setErrors({});
       setAmcSearch("");
@@ -303,7 +299,6 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
       asset_sub_class: formData.asset_sub_class.trim() || undefined,
       amc_id: amcId!,
       notes: formData.notes.trim() || undefined,
-      price_in_pence: formData.price_in_pence,
     };
 
     createMutualFundMutation.mutate(fundData);
@@ -491,27 +486,6 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
                       <FormHelperText>Enter a unique code</FormHelperText>
                     </FormControl>
                   </HStack>
-
-                  {/* Price in pence toggle (UK funds only) */}
-                  {navServiceType === "uk" && (
-                    <FormControl>
-                      <HStack justify="space-between">
-                        <FormLabel fontWeight="semibold" mb={0}>
-                          <HStack spacing={2}>
-                            <Text>Price quoted in pence (GBX)</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Switch
-                          isChecked={formData.price_in_pence}
-                          onChange={(e) => setFormData(prev => ({ ...prev, price_in_pence: e.target.checked }))}
-                          colorScheme="teal"
-                        />
-                      </HStack>
-                      <FormHelperText>
-                        Enable if this fund's price is quoted in pence. The fetched price will be automatically converted to pounds.
-                      </FormHelperText>
-                    </FormControl>
-                  )}
 
                   {/* Owner */}
                   <FormMutualFundSuggestionField

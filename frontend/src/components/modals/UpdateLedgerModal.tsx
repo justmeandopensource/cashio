@@ -7,8 +7,6 @@ import {
   ModalBody,
   VStack,
   Input,
-  InputGroup,
-  InputRightElement,
   Button,
   useToast,
   FormControl,
@@ -22,7 +20,7 @@ import {
   Icon,
   Text,
 } from "@chakra-ui/react";
-import { Edit, Check, X, Eye, EyeOff } from "lucide-react";
+import { Edit, Check, X } from "lucide-react";
 import { AxiosError } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
@@ -49,7 +47,6 @@ interface UpdateLedgerModalProps {
   currentDescription: string;
   currentNotes: string;
   currentNavServiceType: string;
-  currentApiKey: string;
   // eslint-disable-next-line no-unused-vars
   onUpdateCompleted: (data: {
     name: string;
@@ -57,7 +54,6 @@ interface UpdateLedgerModalProps {
     description: string;
     notes: string;
     nav_service_type: string;
-    api_key: string;
     created_at: string;
     updated_at: string;
   }) => void;
@@ -69,7 +65,6 @@ interface UpdateLedgerPayload {
   description?: string;
   notes?: string;
   nav_service_type?: string;
-  api_key?: string;
 }
 
 const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
@@ -80,7 +75,6 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
   currentDescription,
   currentNotes,
   currentNavServiceType,
-  currentApiKey,
   onUpdateCompleted,
 }) => {
   const { ledgerId } = useLedgerStore();
@@ -95,8 +89,6 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
   const [navServiceType, setNavServiceType] = useState<string>(
     currentNavServiceType,
   );
-  const [apiKey, setApiKey] = useState<string>(currentApiKey ?? "");
-  const [showApiKey, setShowApiKey] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const toast = useToast();
 
@@ -120,16 +112,14 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
       setDescription(ledgerData.description ?? "");
       setNotes(ledgerData.notes ?? "");
       setNavServiceType(ledgerData.nav_service_type || currentNavServiceType);
-      setApiKey(ledgerData.api_key ?? "");
     } else {
       setLedgerName(currentLedgerName);
       setSelectedCurrency(currentCurrencySymbol);
       setDescription(currentDescription ?? "");
       setNotes(currentNotes ?? "");
       setNavServiceType(currentNavServiceType);
-      setApiKey(currentApiKey ?? "");
     }
-  }, [ledgerData, currentLedgerName, currentCurrencySymbol, currentDescription, currentNotes, currentNavServiceType, currentApiKey]);
+  }, [ledgerData, currentLedgerName, currentCurrencySymbol, currentDescription, currentNotes, currentNavServiceType]);
 
   // Modern color scheme
   const bgColor = useColorModeValue("white", "gray.800");
@@ -154,15 +144,6 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
       return;
     }
 
-    if (navServiceType === "uk" && !apiKey.trim()) {
-      toast({
-        description: "API key is required for UK mutual fund service.",
-        status: "warning",
-        ...toastDefaults,
-      });
-      return;
-    }
-
     const payload: UpdateLedgerPayload = {};
 
     if (ledgerName !== currentLedgerName) {
@@ -179,9 +160,6 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
     }
     if (navServiceType !== currentNavServiceType) {
       payload.nav_service_type = navServiceType;
-    }
-    if (apiKey !== (currentApiKey ?? "")) {
-      payload.api_key = apiKey;
     }
 
     if (Object.keys(payload).length === 0) {
@@ -230,8 +208,7 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
     selectedCurrency !== currentCurrencySymbol ||
     description !== (currentDescription ?? "") ||
     notes !== (currentNotes ?? "") ||
-    navServiceType !== currentNavServiceType ||
-    apiKey !== (currentApiKey ?? "");
+    navServiceType !== currentNavServiceType;
 
   return (
     <Modal
@@ -388,54 +365,12 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
                     <option value="india">
                       Indian Mutual Funds (MFAPI.in)
                     </option>
-                    <option value="uk">UK Mutual Funds (Alpha Vantage)</option>
+                    <option value="uk">UK Mutual Funds (Yahoo Finance)</option>
                   </Select>
                   <FormHelperText mt={2}>
                     Update the mutual fund data service for this ledger
                   </FormHelperText>
                 </FormControl>
-
-                 {navServiceType === "uk" && (
-                   <FormControl isRequired>
-                     <FormLabel fontWeight="semibold" mb={2}>
-                       Alpha Vantage API Key
-                     </FormLabel>
-                     <InputGroup size="lg">
-                       <Input
-                         type={showApiKey ? "text" : "password"}
-                         placeholder="Enter your Alpha Vantage API key"
-                         value={apiKey}
-                         onChange={(e) => setApiKey(e.target.value)}
-                         borderWidth="2px"
-                         borderColor={inputBorderColor}
-                         bg={inputBg}
-                         borderRadius="md"
-                         _hover={{ borderColor: "teal.300" }}
-                         _focus={{
-                           borderColor: focusBorderColor,
-                           boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                         }}
-                         isDisabled={isLoading}
-                       />
-                       <InputRightElement height="100%">
-                         <Button
-                           variant="ghost"
-                           onClick={() => setShowApiKey(!showApiKey)}
-                           _hover={{ bg: "transparent" }}
-                           size="sm"
-                           aria-label={
-                             showApiKey ? "Hide API key" : "Show API key"
-                           }
-                         >
-                           <Icon as={showApiKey ? EyeOff : Eye} boxSize={4} />
-                         </Button>
-                       </InputRightElement>
-                     </InputGroup>
-                     <FormHelperText mt={2}>
-                       Required for UK mutual fund data.
-                     </FormHelperText>
-                   </FormControl>
-                 )}
               </VStack>
             </Box>
 

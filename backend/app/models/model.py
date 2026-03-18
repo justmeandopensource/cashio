@@ -45,7 +45,6 @@ class Ledger(Base):
     currency_symbol: Mapped[str] = mapped_column(String(10), nullable=False)
     notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
     nav_service_type: Mapped[str] = mapped_column(Enum("india", "uk", name="nav_service_type"), default="india", nullable=False)
-    api_key: Mapped[str | None] = mapped_column(String(100), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
 
@@ -352,7 +351,6 @@ class MutualFund(Base):
     asset_class: Mapped[str | None] = mapped_column(String(50), nullable=True)  # Equity, Debt, Hybrid, Others
     asset_sub_class: Mapped[str | None] = mapped_column(String(50), nullable=True)  # Sub-classification within asset class
     notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    price_in_pence: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
 

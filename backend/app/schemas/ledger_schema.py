@@ -9,7 +9,6 @@ class LedgerCreate(BaseModel, str_strip_whitespace=True):
     description: str | None = None
     notes: str | None = None
     nav_service_type: str = "india"
-    api_key: str | None = None
 
 
 class Ledger(LedgerCreate, str_strip_whitespace=True):
@@ -28,4 +27,3 @@ class LedgerUpdate(BaseModel, str_strip_whitespace=True):
     description: str | None = None
     notes: str | None = None
     nav_service_type: str | None = None
-    api_key: str | None = None

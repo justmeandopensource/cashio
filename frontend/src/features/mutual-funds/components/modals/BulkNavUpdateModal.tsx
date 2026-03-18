@@ -68,6 +68,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
   const [isFetching, setIsFetching] = useState(false);
   const stopFetchRef = useRef(false);
   const [fetchedCount, setFetchedCount] = useState(0);
+  const [currentFetchingCode, setCurrentFetchingCode] = useState<string | null>(null);
   const rowRefs = useRef<Map<number, HTMLTableRowElement>>(new Map());
 
   const bgColor = useColorModeValue("white", "gray.800");
@@ -100,30 +101,36 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
       setSelectedFunds(new Set());
       setIsFetching(false);
       setFetchedCount(0);
+      setCurrentFetchingCode(null);
       stopFetchRef.current = false;
       rowRefs.current.clear();
     }
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isFetching) return;
-    const currentFund = mutualFunds[fetchedCount];
+    if (!isFetching || !currentFetchingCode) return;
+    const currentFund = mutualFunds.find((f) => f.code === currentFetchingCode);
     if (!currentFund) return;
     const row = rowRefs.current.get(currentFund.mutual_fund_id);
     row?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [fetchedCount, isFetching]);
+  }, [currentFetchingCode, isFetching]);
 
   const handleBeginFetch = async () => {
     setIsFetching(true);
     stopFetchRef.current = false;
     setFetchedCount(0);
     setResults(new Map());
+    setCurrentFetchingCode(null);
 
-    for (let i = 0; i < mutualFunds.length; i++) {
-      const fund = mutualFunds[i];
+    const sortedFunds = [...mutualFunds].sort((a, b) => a.name.localeCompare(b.name));
+
+    for (let i = 0; i < sortedFunds.length; i++) {
+      const fund = sortedFunds[i];
       if (stopFetchRef.current) {
         break;
       }
+
+      setCurrentFetchingCode(fund.code!);
 
       try {
         const data = await bulkFetchNav(Number(ledgerId), {
@@ -143,6 +150,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
         setFetchedCount((prev) => prev + 1);
       });
     }
+    setCurrentFetchingCode(null);
     setIsFetching(false);
   };
 
@@ -176,7 +184,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
         change,
         changePercent,
         isSelected: selectedFunds.has(fund.mutual_fund_id),
-        isFetching: isFetching && !results.has(fund.code!),
+        isFetching: isFetching && fund.code === currentFetchingCode,
         isUpToDate,
       };
     });
@@ -185,7 +193,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
     const failed = allFundsData.filter((comp) => comp.fetchedResult && !comp.fetchedResult.success);
 
     return { successfulComparisons: successful, failedComparisons: failed, allFunds: allFundsData };
-  }, [mutualFunds, results, selectedFunds, isFetching]);
+  }, [mutualFunds, results, selectedFunds, isFetching, currentFetchingCode]);
 
   const bulkUpdateMutation = useMutation({
     mutationFn: (request: BulkNavUpdateRequest) =>
@@ -295,7 +303,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
                         )}
                       </Td>
                       <Td><Text fontWeight="medium">{c.fund.name}</Text></Td>
-                      <Td><HStack spacing={1}><Text fontSize="sm" color={subTextColor}>{c.fund.code}</Text>{c.fund.price_in_pence && <Badge size="xs" colorScheme="purple">GBX</Badge>}</HStack></Td>
+                      <Td><Text fontSize="sm" color={subTextColor}>{c.fund.code}</Text></Td>
                       <Td isNumeric><Text fontWeight="semibold" color={subTextColor}>{symbol}{c.currentNav.toFixed(4)}</Text></Td>
                       <Td isNumeric>
                         {c.isFetching ? (
@@ -415,7 +423,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
                               {c.fund.name}
                             </Text>
                             <Text fontSize="xs" color={mutedTextColor} mt="2px">
-                              {c.fund.code}{c.fund.price_in_pence && <Badge size="xs" colorScheme="purple" ml={1}>GBX</Badge>}
+                              {c.fund.code}
                             </Text>
                           </Box>
                         </HStack>

@@ -35,7 +35,6 @@ const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
     description: string,
     notes: string,
     navServiceType: string,
-    apiKey: string | undefined,
     createdAt: string,
     updatedAt: string
   ) => {
@@ -46,7 +45,6 @@ const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
       description,
       notes,
       navServiceType,
-      apiKey,
       createdAt,
       updatedAt
     );
@@ -160,7 +158,6 @@ const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
                 ledger.description,
                 ledger.notes,
                 "",
-                undefined,
                 ledger.created_at,
                 ledger.updated_at
               )

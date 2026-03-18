@@ -37,7 +37,7 @@ from app.schemas import mutual_funds_schema, user_schema
 from sqlalchemy import func, extract
 from app.security.user_security import get_current_user
 from app.services.nav_service import NavService
-from app.services.uk_nav_service import UkNavService
+from app.services.yahoo_nav_service import YahooNavService
 from app.utils.xirr_calculator import calculate_xirr
 
 mutual_funds_router = APIRouter(prefix="/ledger")
@@ -674,23 +674,8 @@ async def bulk_fetch_nav(
     try:
         # Choose the appropriate NAV service based on ledger configuration
         if ledger.nav_service_type == "uk":  # type: ignore
-            if not ledger.api_key:  # type: ignore
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="API key is required for UK mutual fund service"
-                )
-            results = await UkNavService.fetch_nav_bulk(ledger.api_key, request.scheme_codes)  # type: ignore
-
-            # Apply pence-to-pounds conversion for funds marked as price_in_pence
-            funds_in_ledger = db.query(MutualFund).filter(
-                MutualFund.ledger_id == ledger_id,
-                MutualFund.code.in_(request.scheme_codes)
-            ).all()
-            pence_codes = {f.code for f in funds_in_ledger if f.price_in_pence}
-
-            for result in results:
-                if result.success and result.nav_value is not None and result.scheme_code in pence_codes:
-                    result.nav_value = round(result.nav_value / 100, 4)
+            # Yahoo Finance auto-detects GBp/GBX and converts to GBP
+            results = await YahooNavService.fetch_nav_bulk(request.scheme_codes)
         else:
             # Default to Indian service
             results = await NavService.fetch_nav_bulk(request.scheme_codes)
