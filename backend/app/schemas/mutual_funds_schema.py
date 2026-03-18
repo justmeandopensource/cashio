@@ -52,6 +52,7 @@ class MutualFundCreate(BaseModel, str_strip_whitespace=True):
     asset_sub_class: Optional[str] = Field(None, max_length=50)
     amc_id: int = Field(..., gt=0)
     notes: Optional[str] = Field(None, max_length=500)
+    price_in_pence: bool = False
 
 
 class MutualFundUpdate(BaseModel, str_strip_whitespace=True):
@@ -63,6 +64,7 @@ class MutualFundUpdate(BaseModel, str_strip_whitespace=True):
     asset_sub_class: Optional[str] = Field(None, max_length=50)
     amc_id: Optional[int] = Field(None, gt=0)
     notes: Optional[str] = Field(None, max_length=500)
+    price_in_pence: Optional[bool] = None
 
 
 class MutualFundNavUpdate(BaseModel, str_strip_whitespace=True):

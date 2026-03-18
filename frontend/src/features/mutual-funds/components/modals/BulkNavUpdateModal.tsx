@@ -28,6 +28,7 @@ import {
   Divider,
   Wrap,
   WrapItem,
+  Badge,
 } from "@chakra-ui/react";
 import {
   RefreshCw,
@@ -151,7 +152,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
   };
 
   const { successfulComparisons, failedComparisons, allFunds } = useMemo(() => {
-    const allFundsData = mutualFunds.map((fund) => {
+    const allFundsData = [...mutualFunds].sort((a, b) => a.name.localeCompare(b.name)).map((fund) => {
       const fetchedResult = results.get(fund.code!) || null;
       const currentNav = Number(fund.latest_nav);
       const fetchedNav = fetchedResult?.nav_value || null;
@@ -294,7 +295,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
                         )}
                       </Td>
                       <Td><Text fontWeight="medium">{c.fund.name}</Text></Td>
-                      <Td><Text fontSize="sm" color={subTextColor}>{c.fund.code}</Text></Td>
+                      <Td><HStack spacing={1}><Text fontSize="sm" color={subTextColor}>{c.fund.code}</Text>{c.fund.price_in_pence && <Badge size="xs" colorScheme="purple">GBX</Badge>}</HStack></Td>
                       <Td isNumeric><Text fontWeight="semibold" color={subTextColor}>{symbol}{c.currentNav.toFixed(2)}</Text></Td>
                       <Td isNumeric>
                         {c.isFetching ? (
@@ -414,7 +415,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
                               {c.fund.name}
                             </Text>
                             <Text fontSize="xs" color={mutedTextColor} mt="2px">
-                              {c.fund.code}
+                              {c.fund.code}{c.fund.price_in_pence && <Badge size="xs" colorScheme="purple" ml={1}>GBX</Badge>}
                             </Text>
                           </Box>
                         </HStack>

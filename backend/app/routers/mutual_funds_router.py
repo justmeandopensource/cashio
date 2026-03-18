@@ -666,6 +666,17 @@ async def bulk_fetch_nav(
                     detail="API key is required for UK mutual fund service"
                 )
             results = await UkNavService.fetch_nav_bulk(ledger.api_key, request.scheme_codes)  # type: ignore
+
+            # Apply pence-to-pounds conversion for funds marked as price_in_pence
+            funds_in_ledger = db.query(MutualFund).filter(
+                MutualFund.ledger_id == ledger_id,
+                MutualFund.code.in_(request.scheme_codes)
+            ).all()
+            pence_codes = {f.code for f in funds_in_ledger if f.price_in_pence}
+
+            for result in results:
+                if result.success and result.nav_value is not None and result.scheme_code in pence_codes:
+                    result.nav_value = round(result.nav_value / 100, 4)
         else:
             # Default to Indian service
             results = await NavService.fetch_nav_bulk(request.scheme_codes)

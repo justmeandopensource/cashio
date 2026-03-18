@@ -352,6 +352,7 @@ class MutualFund(Base):
     asset_class: Mapped[str | None] = mapped_column(String(50), nullable=True)  # Equity, Debt, Hybrid, Others
     asset_sub_class: Mapped[str | None] = mapped_column(String(50), nullable=True)  # Sub-classification within asset class
     notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    price_in_pence: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
 
