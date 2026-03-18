@@ -220,6 +220,22 @@ export const splitPercentageForDisplay = (value: number): { main: string; decima
 };
 
 /**
+ * Calculate Compound Annual Growth Rate (CAGR).
+ * Returns null for holdings under 1 year or invalid inputs.
+ */
+export const calculateCAGR = (
+  currentValue: number,
+  totalInvested: number,
+  holdingPeriodDays: number | null | undefined
+): number | null => {
+  if (!holdingPeriodDays || holdingPeriodDays < 365 || totalInvested <= 0 || currentValue <= 0) {
+    return null;
+  }
+  const years = holdingPeriodDays / 365.25;
+  return (Math.pow(currentValue / totalInvested, 1 / years) - 1) * 100;
+};
+
+/**
  * Calculate highest purchase cost from buy and switch_in transactions
  */
 export const calculateHighestPurchaseCost = (transactions: { transaction_type: string; nav_per_unit: number }[]): number | null => {

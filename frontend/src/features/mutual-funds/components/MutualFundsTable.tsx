@@ -28,6 +28,7 @@ import {
   useBreakpointValue,
   VStack,
   SimpleGrid,
+  Tooltip,
 } from "@chakra-ui/react";
 import {
   ChevronDown,
@@ -52,6 +53,7 @@ import {
   formatNav,
   calculateHighestPurchaseCost,
   calculateLowestPurchaseCost,
+  calculateCAGR,
 } from "../utils";
 
 // Helper function to convert string|number to number
@@ -66,7 +68,7 @@ import UpdateMutualFundModal from "./modals/UpdateMutualFundModal";
 // Expanded Fund Row Component
 /* eslint-disable no-unused-vars */
 interface ExpandedFundRowProps {
-  fund: MutualFund & { amc_name: string; invested: number; unrealized_pnl_percentage: number; xirr_percentage: number };
+  fund: MutualFund & { amc_name: string; invested: number; unrealized_pnl_percentage: number; xirr_percentage: number | null; cagr_percentage: number | null };
   currencySymbol: string | undefined;
   mutedColor: string;
   isExpanded: boolean;
@@ -352,6 +354,7 @@ type SortField =
   | "value"
   | "unrealized_pnl"
   | "unrealized_pnl_percentage"
+  | "cagr_percentage"
   | "xirr_percentage";
 
 type SortDirection = "asc" | "desc";
@@ -468,7 +471,8 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
         current_value: currentValueNum,
         unrealized_pnl: unrealizedPnl,
         unrealized_pnl_percentage: unrealizedPnlPercentage,
-        xirr_percentage: fund.xirr_percentage || 0,
+        xirr_percentage: fund.xirr_percentage ?? null,
+        cagr_percentage: calculateCAGR(currentValueNum, investedNum, fund.holding_period_days),
       };
     });
   }, [mutualFunds, amcs]);
@@ -539,9 +543,13 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
           aValue = a.unrealized_pnl_percentage;
           bValue = b.unrealized_pnl_percentage;
           break;
+        case "cagr_percentage":
+          aValue = a.cagr_percentage ?? -Infinity;
+          bValue = b.cagr_percentage ?? -Infinity;
+          break;
         case "xirr_percentage":
-          aValue = a.xirr_percentage || 0;
-          bValue = b.xirr_percentage || 0;
+          aValue = a.xirr_percentage ?? -Infinity;
+          bValue = b.xirr_percentage ?? -Infinity;
           break;
         default:
           return 0;
@@ -651,12 +659,13 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
       invested: number;
       unrealized_pnl: number;
       unrealized_pnl_percentage: number;
-      xirr_percentage: number;
+      xirr_percentage: number | null;
+      cagr_percentage: number | null;
     },
   ) => {
     return (
       <Tr key={`expanded-${fund.mutual_fund_id}`}>
-        <Td colSpan={10} p={0}>
+        <Td colSpan={11} p={0}>
           <Collapse in={expandedRows.has(fund.mutual_fund_id)} animateOpacity>
             <ExpandedFundRow
               fund={fund}
@@ -808,8 +817,20 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
                 <HStack spacing={0} align="baseline"><StatNumber fontSize="sm" color={realizedPnl >= 0 ? positiveColor : negativeColor}>{splitCurrencyForDisplay(Math.abs(realizedPnl), currencySymbol || "₹").main}</StatNumber><Text fontSize="xs" color={realizedPnl >= 0 ? positiveColor : negativeColor} opacity={0.7}>{splitCurrencyForDisplay(Math.abs(realizedPnl), currencySymbol || "₹").decimals}</Text></HStack>
               </Stat>
               <Stat size="sm">
+                <StatLabel fontSize="2xs" color={mutedColor}>CAGR %</StatLabel>
+                {fund.cagr_percentage != null ? (
+                  <HStack spacing={0} align="baseline"><StatNumber fontSize="sm" color={fund.cagr_percentage >= 0 ? positiveColor : negativeColor}>{splitPercentageForDisplay(fund.cagr_percentage).main}</StatNumber><Text fontSize="xs" color={fund.cagr_percentage >= 0 ? positiveColor : negativeColor} opacity={0.7}>{splitPercentageForDisplay(fund.cagr_percentage).decimals}</Text></HStack>
+                ) : (
+                  <StatNumber fontSize="sm" color={mutedColor}>---</StatNumber>
+                )}
+              </Stat>
+              <Stat size="sm">
                 <StatLabel fontSize="2xs" color={mutedColor}>XIRR %</StatLabel>
-                <HStack spacing={0} align="baseline"><StatNumber fontSize="sm" color={(fund.xirr_percentage || 0) >= 0 ? positiveColor : negativeColor}>{splitPercentageForDisplay(fund.xirr_percentage || 0).main}</StatNumber><Text fontSize="xs" color={(fund.xirr_percentage || 0) >= 0 ? positiveColor : negativeColor} opacity={0.7}>{splitPercentageForDisplay(fund.xirr_percentage || 0).decimals}</Text></HStack>
+                {fund.xirr_percentage != null ? (
+                  <HStack spacing={0} align="baseline"><StatNumber fontSize="sm" color={fund.xirr_percentage >= 0 ? positiveColor : negativeColor}>{splitPercentageForDisplay(fund.xirr_percentage).main}</StatNumber><Text fontSize="xs" color={fund.xirr_percentage >= 0 ? positiveColor : negativeColor} opacity={0.7}>{splitPercentageForDisplay(fund.xirr_percentage).decimals}</Text></HStack>
+                ) : (
+                  <StatNumber fontSize="sm" color={mutedColor}>---</StatNumber>
+                )}
               </Stat>
               <Stat size="sm">
                 <StatLabel fontSize="2xs" color={mutedColor}>NAV Updated</StatLabel>
@@ -995,9 +1016,24 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
                     onClick={() => handleSort("unrealized_pnl_percentage")}
                     whiteSpace="nowrap"
                   >
-                    <Flex align="center" gap={1} justify="flex-end">
-                      P&L % {getSortIcon("unrealized_pnl_percentage")}
-                    </Flex>
+                    <Tooltip label="Absolute return: (Current Value - Invested) / Invested" fontSize="xs">
+                      <Flex align="center" gap={1} justify="flex-end">
+                        Return % {getSortIcon("unrealized_pnl_percentage")}
+                      </Flex>
+                    </Tooltip>
+                  </Th>
+                  <Th
+                    width="6%"
+                    isNumeric
+                    cursor="pointer"
+                    onClick={() => handleSort("cagr_percentage")}
+                    whiteSpace="nowrap"
+                  >
+                    <Tooltip label="Compound Annual Growth Rate. Shown for holdings over 1 year." fontSize="xs">
+                      <Flex align="center" gap={1} justify="flex-end">
+                        CAGR % {getSortIcon("cagr_percentage")}
+                      </Flex>
+                    </Tooltip>
                   </Th>
                   <Th
                     width="6%"
@@ -1006,9 +1042,11 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
                     onClick={() => handleSort("xirr_percentage")}
                     whiteSpace="nowrap"
                   >
-                    <Flex align="center" gap={1} justify="flex-end">
-                      XIRR % {getSortIcon("xirr_percentage")}
-                    </Flex>
+                    <Tooltip label="Annualized return accounting for cash flow timing. Shown for holdings over 1 year." fontSize="xs">
+                      <Flex align="center" gap={1} justify="flex-end">
+                        XIRR % {getSortIcon("xirr_percentage")}
+                      </Flex>
+                    </Tooltip>
                   </Th>
                </Tr>
             </Thead>
@@ -1192,39 +1230,50 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
                        </HStack>
                      </Td>
                      <Td isNumeric>
-                       <HStack spacing={0} align="baseline" justify="flex-end">
-                         <Text
-                           fontSize="sm"
-                           fontWeight="semibold"
-                           color={
-                             (fund.xirr_percentage || 0) >= 0
-                               ? positiveColor
-                               : negativeColor
-                           }
-                         >
-                           {
-                             splitPercentageForDisplay(
-                               fund.xirr_percentage || 0,
-                             ).main
-                           }
-                         </Text>
-                         <Text
-                           fontSize="xs"
-                           fontWeight="semibold"
-                           color={
-                             (fund.xirr_percentage || 0) >= 0
-                               ? positiveColor
-                               : negativeColor
-                           }
-                           opacity={0.7}
-                         >
-                           {
-                             splitPercentageForDisplay(
-                               fund.xirr_percentage || 0,
-                             ).decimals
-                           }
-                         </Text>
-                       </HStack>
+                       {fund.cagr_percentage != null ? (
+                         <HStack spacing={0} align="baseline" justify="flex-end">
+                           <Text
+                             fontSize="sm"
+                             fontWeight="semibold"
+                             color={fund.cagr_percentage >= 0 ? positiveColor : negativeColor}
+                           >
+                             {splitPercentageForDisplay(fund.cagr_percentage).main}
+                           </Text>
+                           <Text
+                             fontSize="xs"
+                             fontWeight="semibold"
+                             color={fund.cagr_percentage >= 0 ? positiveColor : negativeColor}
+                             opacity={0.7}
+                           >
+                             {splitPercentageForDisplay(fund.cagr_percentage).decimals}
+                           </Text>
+                         </HStack>
+                       ) : (
+                         <Text fontSize="sm" color={mutedColor}>---</Text>
+                       )}
+                     </Td>
+                     <Td isNumeric>
+                       {fund.xirr_percentage != null ? (
+                         <HStack spacing={0} align="baseline" justify="flex-end">
+                           <Text
+                             fontSize="sm"
+                             fontWeight="semibold"
+                             color={fund.xirr_percentage >= 0 ? positiveColor : negativeColor}
+                           >
+                             {splitPercentageForDisplay(fund.xirr_percentage).main}
+                           </Text>
+                           <Text
+                             fontSize="xs"
+                             fontWeight="semibold"
+                             color={fund.xirr_percentage >= 0 ? positiveColor : negativeColor}
+                             opacity={0.7}
+                           >
+                             {splitPercentageForDisplay(fund.xirr_percentage).decimals}
+                           </Text>
+                         </HStack>
+                       ) : (
+                         <Text fontSize="sm" color={mutedColor}>---</Text>
+                       )}
                      </Td>
                    </Tr>
                   {renderExpandedRow(fund)}

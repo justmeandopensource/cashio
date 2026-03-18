@@ -85,6 +85,7 @@ class MutualFund(MutualFundCreate, str_strip_whitespace=True):
     total_invested_cash: Decimal
     external_cash_invested: Decimal
     xirr_percentage: Optional[float] = None
+    holding_period_days: Optional[int] = None
 
     # Related data
     amc: Optional[Amc] = None

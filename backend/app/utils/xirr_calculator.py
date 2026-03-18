@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from scipy.optimize import newton
 import numpy as np
 
 
-def calculate_xirr(transactions: List[Dict[str, Any]], current_value: float, current_date: datetime) -> float:
+def calculate_xirr(transactions: List[Dict[str, Any]], current_value: float, current_date: datetime) -> Optional[float]:
     """
     Calculate XIRR for a mutual fund.
 
@@ -14,10 +14,10 @@ def calculate_xirr(transactions: List[Dict[str, Any]], current_value: float, cur
         current_date: Current date
 
     Returns:
-        XIRR as percentage (e.g., 21.11)
+        XIRR as percentage (e.g., 21.11), or None if not computable
     """
     if not transactions:
-        return 0.0
+        return None
 
     # Prepare cash flows
     cash_flows = []
@@ -60,4 +60,4 @@ def calculate_xirr(transactions: List[Dict[str, Any]], current_value: float, cur
         xirr = newton(lambda r: npv(r, cash_flows, dates), 0.1, fprime=lambda r: npv_derivative(r, cash_flows, dates))
         return round(xirr * 100, 2)
     except Exception:
-        return 0.0
+        return None

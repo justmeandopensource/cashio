@@ -193,7 +193,7 @@ def get_mutual_funds(
 
     funds = get_mutual_funds_by_ledger_id(db=db, ledger_id=ledger_id)
 
-    # Calculate XIRR for each fund
+    # Calculate XIRR and holding period for each fund
     current_date = datetime.now()
     for fund in funds:
         transactions = get_mf_transactions_by_fund_id(db=db, mutual_fund_id=fund.mutual_fund_id)
@@ -205,7 +205,21 @@ def get_mutual_funds(
             }
             for tx in transactions
         ]
-        fund.xirr_percentage = calculate_xirr(tx_data, float(fund.current_value), current_date)
+
+        # Compute holding period from earliest transaction
+        if tx_data:
+            earliest_date = min(tx['transaction_date'] for tx in tx_data)
+            holding_period_days = (current_date - earliest_date).days
+            fund.holding_period_days = holding_period_days
+
+            # Only calculate XIRR for holdings >= 365 days
+            if holding_period_days >= 365:
+                fund.xirr_percentage = calculate_xirr(tx_data, float(fund.current_value), current_date)
+            else:
+                fund.xirr_percentage = None
+        else:
+            fund.holding_period_days = None
+            fund.xirr_percentage = None
 
     return funds
 
