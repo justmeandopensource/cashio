@@ -29,7 +29,7 @@ import React from "react";
   Icon,
 } from "@chakra-ui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { TrendingUp, Calculator, Info, RefreshCw, Clock, X, Download } from "lucide-react";
+import { TrendingUp, Calculator, Info, RefreshCw, Clock, Download } from "lucide-react";
 
 import { updateMutualFundNav, bulkFetchNav } from "../../api";
 import { MutualFund } from "../../types";
@@ -77,10 +77,6 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = textColorSecondary;
   const modalIconColor = useColorModeValue("gray.400", "gray.500");
-  const buttonBorderColor = useColorModeValue("gray.300", "gray.600");
-  const buttonHoverBg = useColorModeValue("gray.50", "gray.600");
-  const buttonHoverBorderColor = useColorModeValue("gray.400", "gray.500");
-
   const updateNavMutation = useMutation({
     mutationFn: (navData: { latest_nav: number }) =>
       updateMutualFundNav(Number(ledgerId), fund!.mutual_fund_id, navData),

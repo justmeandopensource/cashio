@@ -25,7 +25,7 @@ import { AxiosError } from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateMutualFund } from "../../api";
 import { MutualFund, Amc } from "../../types";
-import { Edit, Check, X, TrendingUp, FileText, Building2 } from "lucide-react";
+import { Edit, TrendingUp, FileText, Building2 } from "lucide-react";
 import FormMutualFundSuggestionField from "../FormMutualFundSuggestionField";
 
 const ASSET_CLASSES = [

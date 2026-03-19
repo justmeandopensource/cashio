@@ -28,7 +28,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import useLedgerStore from "../shared/store";
-import { Plus, X, CheckCircle, Check } from "lucide-react";
+import { Plus, Check } from "lucide-react";
 import { toastDefaults } from "../shared/utils";
 import { AxiosError } from "axios";
 
@@ -87,9 +87,6 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   const bgInfo = useColorModeValue("blue.50", "blue.900");
   const borderColorInfo = useColorModeValue("blue.200", "blue.700");
   const textColorInfo = useColorModeValue("blue.700", "blue.300");
-  const buttonBorderColor = useColorModeValue("gray.300", "gray.600");
-  const buttonHoverBg = useColorModeValue("gray.50", "gray.600");
-  const buttonHoverBorderColor = useColorModeValue("gray.400", "gray.500");
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = textColorSecondary;

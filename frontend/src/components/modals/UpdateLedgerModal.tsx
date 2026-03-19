@@ -20,7 +20,7 @@ import {
   Icon,
   Text,
 } from "@chakra-ui/react";
-import { Edit, Check, X } from "lucide-react";
+import { Edit } from "lucide-react";
 import { AxiosError } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";

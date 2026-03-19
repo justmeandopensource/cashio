@@ -16,7 +16,7 @@ import {
   Button,
   Divider,
 } from "@chakra-ui/react";
-import { Building2, FileText, Edit, X } from "lucide-react";
+import { Building2, FileText } from "lucide-react";
 import { Amc } from "../../types";
 
 interface AmcDetailsModalProps {

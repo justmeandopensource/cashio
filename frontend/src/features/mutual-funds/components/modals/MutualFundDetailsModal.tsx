@@ -16,7 +16,7 @@ import {
   Icon,
   Button,
 } from "@chakra-ui/react";
-import { TrendingUp, FileText, Edit, X } from "lucide-react";
+import { TrendingUp, FileText } from "lucide-react";
 import { MutualFund } from "../../types";
 
 interface MutualFundDetailsModalProps {

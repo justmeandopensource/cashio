@@ -24,7 +24,7 @@ import {
   Icon,
 } from "@chakra-ui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Building2, FileText, X, CheckCircle, Check } from "lucide-react";
+import { Building2, FileText, Check } from "lucide-react";
 import { createAmc } from "../../api";
 import { AmcCreate } from "../../types";
 import useLedgerStore from "@/components/shared/store";

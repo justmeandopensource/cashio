@@ -156,13 +156,9 @@ class CustomizedTreemapContent extends PureComponent<CustomizedTreemapContentPro
       width = 0,
       height = 0,
       index = 0,
-      name,
-      value,
       color,
       colors,
       strokeColor,
-      textColor,
-      currencySymbol,
     } = this.props;
 
     const fallbackColor = colors[Math.floor((index / (root?.children?.length || 1)) * colors.length)];

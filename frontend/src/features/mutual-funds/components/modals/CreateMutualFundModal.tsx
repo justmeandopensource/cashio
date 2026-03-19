@@ -31,7 +31,7 @@ import {
   PopoverContent,
 } from "@chakra-ui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { TrendingUp, FileText, Building2, X, CheckCircle, Check, Search, ChevronDown } from "lucide-react";
+import { TrendingUp, FileText, Building2, X, Check, Search, ChevronDown } from "lucide-react";
 import { createMutualFund } from "../../api";
 import { Amc, MutualFundCreate } from "../../types";
 import useLedgerStore from "@/components/shared/store";

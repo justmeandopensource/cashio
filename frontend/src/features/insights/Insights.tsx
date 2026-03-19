@@ -124,7 +124,6 @@ const Insights = () => {
         selectedLedger.description || "",
         selectedLedger.notes || "",
         "",
-        undefined,
         selectedLedger.created_at || "",
         selectedLedger.updated_at || "",
       );

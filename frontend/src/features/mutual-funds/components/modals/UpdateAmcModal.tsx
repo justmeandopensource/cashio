@@ -23,7 +23,7 @@ import { AxiosError } from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateAmc } from "../../api";
 import { Amc } from "../../types";
-import { Edit, Check, X } from "lucide-react";
+import { Edit } from "lucide-react";
 import { toastDefaults } from "@/components/shared/utils";
 
 interface UpdateAmcModalProps {

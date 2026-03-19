@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Box,
-  VStack,
   HStack,
   Heading,
   Text,
@@ -124,11 +123,6 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
   const incomeAccentColor = useColorModeValue("teal.400", "teal.300");
   const expenseAccentColor = useColorModeValue("red.400", "red.300");
   const savingsAccentColor = useColorModeValue("blue.400", "blue.300");
-
-  const sectionHoverShadow = useColorModeValue(
-    "0 8px 24px -4px rgba(53,169,163,0.08), 0 4px 12px -2px rgba(0,0,0,0.04)",
-    "0 8px 24px -4px rgba(78,194,188,0.1), 0 4px 12px -2px rgba(0,0,0,0.2)",
-  );
 
   // Fetch data
   const { data, isLoading, isError } = useQuery<InsightsData>({
@@ -292,7 +286,7 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
             }}
           >
             {summaryCards.map(
-              ({ icon, label, value, accentColor, valueColor, avg, highest, subIcon }) => (
+              ({ icon, label, value, accentColor, valueColor, avg, highest }) => (
                 <MotionBox
                   key={label}
                   h="full"

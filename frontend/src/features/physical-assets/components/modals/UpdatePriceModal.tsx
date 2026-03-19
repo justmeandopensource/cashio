@@ -53,7 +53,6 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
   // Modern theme colors
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.100", "gray.700");
-  const cardBg = useColorModeValue("gray.50", "gray.700");
   const inputBg = useColorModeValue("white", "gray.700");
   const inputBorderColor = useColorModeValue("gray.200", "gray.600");
   const focusBorderColor = useColorModeValue("teal.500", "teal.300");
@@ -64,9 +63,6 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = textColorSecondary;
   const modalIconColor = useColorModeValue("gray.400", "gray.500");
-   const buttonBorderColor = useColorModeValue("gray.300", "gray.600");
-   const buttonHoverBg = useColorModeValue("gray.50", "gray.600");
-   const buttonHoverBorderColor = useColorModeValue("gray.400", "gray.500");
    const positiveBg = useColorModeValue("green.50", "green.900");
    const negativeBg = useColorModeValue("red.50", "red.900");
    const positiveBorder = useColorModeValue("green.200", "green.700");

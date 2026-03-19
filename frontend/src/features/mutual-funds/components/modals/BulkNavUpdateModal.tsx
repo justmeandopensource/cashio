@@ -28,7 +28,6 @@ import {
   Divider,
   Wrap,
   WrapItem,
-  Badge,
 } from "@chakra-ui/react";
 import {
   RefreshCw,

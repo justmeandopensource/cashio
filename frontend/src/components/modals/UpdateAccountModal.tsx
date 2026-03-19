@@ -27,7 +27,7 @@ import {
 import { AxiosError } from "axios";
 import api from "@/lib/api";
 import useLedgerStore from "../shared/store";
-import { Edit, Check, X } from "lucide-react";
+import { Edit } from "lucide-react";
 import { toastDefaults } from "../shared/utils";
 
 interface GroupAccount {

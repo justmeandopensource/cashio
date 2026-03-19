@@ -47,7 +47,6 @@ const getStoredThemePref = (): "light" | "dark" | "system" => {
 };
 
 const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
-  handleLogout,
   isCollapsed = false,
   onCollapsedClick,
 }) => {

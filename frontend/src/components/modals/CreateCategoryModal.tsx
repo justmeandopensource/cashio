@@ -24,7 +24,7 @@ import {
 } from "@chakra-ui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { Plus, X, CheckCircle, Check } from "lucide-react";
+import { Plus, Check } from "lucide-react";
 import { toastDefaults } from "../shared/utils";
 import { AxiosError } from "axios";
 
@@ -71,7 +71,6 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
   const focusBorderColor = useColorModeValue("teal.500", "teal.300");
   const textColor = useColorModeValue("gray.600", "gray.300");
   const textColorSecondary = useColorModeValue("gray.500", "gray.400");
-  const textColorTertiary = useColorModeValue("gray.600", "gray.200");
   const textColorError = useColorModeValue("red.700", "red.300");
   const bgError = useColorModeValue("red.50", "red.900");
   const borderColorError = useColorModeValue("red.200", "red.700");
@@ -79,9 +78,6 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
   const bgInfo = useColorModeValue("blue.50", "blue.900");
   const borderColorInfo = useColorModeValue("blue.200", "blue.700");
   const textColorInfo = useColorModeValue("blue.700", "blue.300");
-  const buttonBorderColor = useColorModeValue("gray.300", "gray.600");
-  const buttonHoverBg = useColorModeValue("gray.50", "gray.600");
-  const buttonHoverBorderColor = useColorModeValue("gray.400", "gray.500");
   const modalHeaderBorderColor = borderColor;
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = textColorSecondary;
