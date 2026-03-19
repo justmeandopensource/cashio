@@ -67,9 +67,9 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   const borderColor = useColorModeValue("gray.200", "gray.700");
-  const hoverBg = useColorModeValue("gray.100", "gray.700");
+  const hoverBg = useColorModeValue("gray.50", "gray.700");
   const popoverBg = useColorModeValue("white", "gray.800");
-  const userHeaderBg = useColorModeValue("gray.50", "gray.750");
+  const userHeaderBg = useColorModeValue("gray.50", "rgba(255,255,255,0.03)");
   const primaryTextColor = useColorModeValue("gray.800", "gray.100");
   const secondaryTextColor = useColorModeValue("gray.500", "gray.400");
   const avatarBg = useColorModeValue("brand.500", "brand.600");
@@ -82,6 +82,9 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
   const triggerHoverBg = useColorModeValue("gray.100", "gray.700");
   const triggerNameColor = useColorModeValue("gray.700", "gray.200");
   const triggerEmailColor = useColorModeValue("gray.500", "gray.400");
+  const skeletonBg = useColorModeValue("gray.100", "gray.700");
+  const versionColor = useColorModeValue("gray.400", "gray.500");
+  const menuIconColor = useColorModeValue("gray.400", "gray.500");
 
   useEffect(() => {
     const measureTriggerWidth = () => {
@@ -123,13 +126,13 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
     return (
       <Box px={2} py={2}>
         {isCollapsed ? (
-          <Box width="36px" height="36px" borderRadius="full" bg={themeSegmentBg} mx="auto" />
+          <Box width="36px" height="36px" borderRadius="full" bg={skeletonBg} mx="auto" />
         ) : (
           <HStack spacing={3}>
-            <Box width="36px" height="36px" borderRadius="full" bg={themeSegmentBg} flexShrink={0} />
+            <Box width="36px" height="36px" borderRadius="full" bg={skeletonBg} flexShrink={0} />
             <Box flex="1">
-              <Box height="13px" bg={themeSegmentBg} borderRadius="md" mb={1.5} />
-              <Box height="11px" bg={themeSegmentBg} borderRadius="md" width="65%" />
+              <Box height="13px" bg={skeletonBg} borderRadius="md" mb={1.5} />
+              <Box height="11px" bg={skeletonBg} borderRadius="md" width="65%" />
             </Box>
           </HStack>
         )}
@@ -142,13 +145,13 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
       <Box
         px={2}
         py={2}
-        borderRadius="md"
+        borderRadius="lg"
         border="1px solid"
         borderColor={errorBorderColor}
         color={errorTextColor}
         textAlign="center"
       >
-        <Text fontSize="sm">Error loading profile</Text>
+        <Text fontSize="xs">Error loading profile</Text>
       </Box>
     );
   }
@@ -216,7 +219,7 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
               />
               <Box flex="1" textAlign="left" minWidth="0">
                 <Text
-                  fontWeight="semibold"
+                  fontWeight="600"
                   fontSize="sm"
                   color={triggerNameColor}
                   noOfLines={1}
@@ -233,6 +236,8 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
                 boxSize={3.5}
                 color={triggerEmailColor}
                 flexShrink={0}
+                transition="transform 0.15s ease"
+                transform={isPopoverOpen ? "rotate(180deg)" : "none"}
               />
             </HStack>
           )}
@@ -256,7 +261,7 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
         sx={{ "&:focus": { outline: "none" } }}
       >
         {/* User info header */}
-        <Box px={4} py={4} bg={userHeaderBg} borderBottom="1px solid" borderColor={borderColor}>
+        <Box px={4} py={3.5} bg={userHeaderBg} borderBottom="1px solid" borderColor={borderColor}>
           <HStack spacing={3}>
             <Avatar
               size="md"
@@ -270,11 +275,11 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
               fontSize="sm"
               flexShrink={0}
             />
-            <Box minWidth="0">
-              <Text fontWeight="bold" fontSize="sm" color={primaryTextColor} noOfLines={1}>
+            <Box minWidth="0" flex={1}>
+              <Text fontWeight="700" fontSize="sm" color={primaryTextColor} noOfLines={1}>
                 {userProfile.full_name}
               </Text>
-              <Text fontSize="xs" color={secondaryTextColor} noOfLines={1}>
+              <Text fontSize="xs" color={secondaryTextColor} noOfLines={1} mt={0.5}>
                 {userProfile.email}
               </Text>
             </Box>
@@ -284,7 +289,14 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
         <VStack align="stretch" spacing={0} p={2}>
           {/* Theme toggle */}
           <Box px={2} py={2}>
-            <Text fontSize="xs" fontWeight="semibold" color={secondaryTextColor} mb={2} textTransform="uppercase" letterSpacing="0.06em">
+            <Text
+              fontSize="xs"
+              fontWeight="600"
+              color={secondaryTextColor}
+              mb={2}
+              textTransform="uppercase"
+              letterSpacing="wider"
+            >
               Appearance
             </Text>
             <HStack
@@ -311,7 +323,7 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
                       bg={isActive ? themeActiveBg : "transparent"}
                       color={isActive ? themeActiveColor : themeInactiveColor}
                       boxShadow={isActive ? "sm" : "none"}
-                      fontWeight={isActive ? "semibold" : "normal"}
+                      fontWeight={isActive ? "600" : "normal"}
                       fontSize="xs"
                       transition="all 0.15s ease"
                       onClick={() => {
@@ -335,20 +347,23 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
 
           {/* Profile settings */}
           <ChakraLink
-            onClick={() => navigate("/profile")}
+            onClick={() => {
+              setIsPopoverOpen(false);
+              navigate("/profile");
+            }}
             display="flex"
             alignItems="center"
             px={3}
             py={2.5}
             borderRadius="lg"
             color={primaryTextColor}
-            fontWeight="medium"
+            fontWeight="500"
             fontSize="sm"
             tabIndex={-1}
             _hover={{ bg: hoverBg, textDecoration: "none" }}
             transition="background 0.15s"
           >
-            <Icon as={User} boxSize={4} mr={3} color={secondaryTextColor} />
+            <Icon as={User} boxSize={4} mr={3} color={menuIconColor} />
             Profile Settings
           </ChakraLink>
         </VStack>
@@ -356,13 +371,13 @@ const UserProfileDisplay: React.FC<UserProfileDisplayProps> = ({
         {/* Version footer */}
         <Box
           px={4}
-          py={2.5}
+          py={2}
           borderTop="1px solid"
           borderColor={borderColor}
           bg={userHeaderBg}
         >
-          <Text fontSize="xs" color={secondaryTextColor}>
-            Cashio v{VERSION}
+          <Text fontSize="xs" color={versionColor} fontFamily="mono">
+            v{VERSION}
           </Text>
         </Box>
       </PopoverContent>
