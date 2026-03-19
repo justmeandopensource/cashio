@@ -3,19 +3,22 @@ import {
   Box,
   Center,
   Flex,
-  Heading,
   Icon,
   Text,
   useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { PieChart as PieChartIcon } from "lucide-react";
 import { AssetAllocationItem } from "../types";
 import { splitCurrencyForDisplay } from "@/features/mutual-funds/utils";
 
-// Colours consistent with the breakdown card
-export const ALLOCATION_COLORS = ["#63B3ED", "#B794F4", "#F6AD55"];
+const MotionBox = motion(Box);
+const MotionFlex = motion(Flex);
+
+// High-contrast palette: blue, amber, emerald
+export const ALLOCATION_COLORS = ["#3B82F6", "#F59E0B", "#10B981"];
 
 interface AssetAllocationChartProps {
   allocation: AssetAllocationItem[];
@@ -29,10 +32,11 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
-  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const borderColor = useColorModeValue("gray.100", "gray.600");
   const labelColor = useColorModeValue("gray.400", "gray.500");
   const primaryText = useColorModeValue("gray.800", "gray.100");
   const secondaryText = useColorModeValue("gray.500", "gray.400");
+  const legendHoverBg = useColorModeValue("gray.50", "whiteAlpha.50");
   const sym = currencySymbol || "₹";
 
   const chartData = allocation.map((item) => ({
@@ -43,20 +47,24 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
   const hoveredItem = hoveredIdx !== null ? chartData[hoveredIdx] : null;
 
   return (
-    <Box
+    <MotionBox
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
       bg={cardBg}
       border="1px solid"
       borderColor={borderColor}
-      borderRadius="md"
-      boxShadow="sm"
-      p={{ base: 3, md: 4 }}
+      borderRadius="xl"
+      p={{ base: 4, md: 5 }}
       h="full"
+      position="relative"
+      overflow="hidden"
     >
       {/* Card header */}
       <Flex align="center" gap={1.5} mb={4}>
-        <Icon as={PieChartIcon} boxSize={3} color={labelColor} />
+        <Icon as={PieChartIcon} boxSize={3.5} color={labelColor} />
         <Text
-          fontSize="2xs"
+          fontSize="xs"
           fontWeight="semibold"
           textTransform="uppercase"
           letterSpacing="wider"
@@ -67,8 +75,18 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
       </Flex>
 
       {chartData.length === 0 ? (
-        <Center flexDirection="column" py={10} gap={2}>
-          <Icon as={PieChartIcon} boxSize={7} color={secondaryText} />
+        <Center flexDirection="column" py={10} gap={3}>
+          <Box
+            w="48px"
+            h="48px"
+            borderRadius="xl"
+            bg={useColorModeValue("gray.50", "whiteAlpha.50")}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Icon as={PieChartIcon} boxSize={5} color={secondaryText} />
+          </Box>
           <Text fontSize="sm" color={secondaryText}>
             No allocation data yet.
           </Text>
@@ -77,15 +95,15 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
         <Flex
           direction={{ base: "column", xl: "row" }}
           align="center"
-          gap={4}
+          gap={5}
           h={{ base: "auto", xl: "calc(100% - 40px)" }}
         >
-          {/* Donut */}
+          {/* Donut chart */}
           <Box
             position="relative"
-            w={{ base: "200px", xl: "full" }}
-            h={{ base: "200px", xl: "full" }}
-            minH="180px"
+            w={{ base: "220px", xl: "full" }}
+            h={{ base: "220px", xl: "full" }}
+            minH="200px"
             flex={{ xl: 1 }}
           >
             <ResponsiveContainer width="100%" height="100%">
@@ -94,20 +112,26 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
                   data={chartData}
                   cx="50%"
                   cy="50%"
-                  innerRadius="52%"
-                  outerRadius="78%"
+                  innerRadius="55%"
+                  outerRadius="82%"
                   dataKey="value"
                   labelLine={false}
                   label={false}
                   onMouseEnter={(_, idx) => setHoveredIdx(idx)}
                   onMouseLeave={() => setHoveredIdx(null)}
+                  strokeWidth={0}
+                  cornerRadius={3}
+                  paddingAngle={2}
                 >
                   {chartData.map((_, idx) => (
                     <Cell
                       key={`cell-${idx}`}
                       fill={ALLOCATION_COLORS[idx % ALLOCATION_COLORS.length]}
-                      opacity={hoveredIdx === null || hoveredIdx === idx ? 1 : 0.3}
-                      strokeWidth={hoveredIdx === idx ? 2 : 0.5}
+                      opacity={hoveredIdx === null || hoveredIdx === idx ? 1 : 0.25}
+                      style={{
+                        filter: hoveredIdx === idx ? "brightness(1.1)" : "none",
+                        transition: "opacity 0.2s ease, filter 0.2s ease",
+                      }}
                     />
                   ))}
                 </Pie>
@@ -123,75 +147,105 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
               bottom={0}
               pointerEvents="none"
             >
-              <VStack spacing={0} textAlign="center" px={2}>
-                {hoveredItem ? (
-                  <>
-                    <Text
-                      fontSize="xs"
-                      fontWeight="semibold"
-                      color={primaryText}
-                      lineHeight="short"
-                    >
-                      {hoveredItem.label}
-                    </Text>
-                    <Text fontSize="sm" fontWeight="bold" color={primaryText}>
-                      {splitCurrencyForDisplay(hoveredItem.value, sym).main}
-                      <Text as="span" fontSize="2xs" opacity={0.7}>
-                        {splitCurrencyForDisplay(hoveredItem.value, sym).decimals}
+              <AnimatePresence mode="wait">
+                <MotionFlex
+                  key={hoveredIdx ?? "default"}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.15 }}
+                  direction="column"
+                  align="center"
+                  textAlign="center"
+                  px={3}
+                >
+                  {hoveredItem ? (
+                    <>
+                      <Text
+                        fontSize="xs"
+                        fontWeight="600"
+                        color={ALLOCATION_COLORS[hoveredIdx! % ALLOCATION_COLORS.length]}
+                        lineHeight="short"
+                        mb={0.5}
+                      >
+                        {hoveredItem.label}
                       </Text>
-                    </Text>
-                    <Text fontSize="xs" color={secondaryText}>
-                      {hoveredItem.percentage.toFixed(1)}%
-                    </Text>
-                  </>
-                ) : (
-                  <Text fontSize="xs" color={secondaryText}>
-                    Hover to explore
-                  </Text>
-                )}
-              </VStack>
+                      <Text fontSize="md" fontWeight="800" color={primaryText} lineHeight="1.1">
+                        {splitCurrencyForDisplay(hoveredItem.value, sym).main}
+                        <Text as="span" fontSize="xs" opacity={0.5}>
+                          {splitCurrencyForDisplay(hoveredItem.value, sym).decimals}
+                        </Text>
+                      </Text>
+                      <Text
+                        fontSize="xs"
+                        fontWeight="600"
+                        color={secondaryText}
+                        mt={0.5}
+                      >
+                        {hoveredItem.percentage.toFixed(1)}%
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <Text fontSize="2xs" color={secondaryText} fontWeight="500">
+                        Hover to
+                      </Text>
+                      <Text fontSize="2xs" color={secondaryText} fontWeight="500">
+                        explore
+                      </Text>
+                    </>
+                  )}
+                </MotionFlex>
+              </AnimatePresence>
             </Center>
           </Box>
 
           {/* Legend */}
           <VStack
             align="stretch"
-            spacing={2}
+            spacing={1}
             w={{ base: "full", xl: "auto" }}
-            minW={{ xl: "140px" }}
+            minW={{ xl: "150px" }}
           >
-            {chartData.map((item, idx) => (
-              <Flex
-                key={item.label}
-                align="center"
-                gap={2}
-                onMouseEnter={() => setHoveredIdx(idx)}
-                onMouseLeave={() => setHoveredIdx(null)}
-                cursor="default"
-                opacity={hoveredIdx === null || hoveredIdx === idx ? 1 : 0.4}
-                transition="opacity 0.15s"
-              >
-                <Box
-                  w={2.5}
-                  h={2.5}
-                  borderRadius="full"
-                  bg={ALLOCATION_COLORS[idx % ALLOCATION_COLORS.length]}
-                  flexShrink={0}
-                />
-                <Box flex={1} minW={0}>
-                  <Text fontSize="xs" color={primaryText} fontWeight="medium" isTruncated>
-                    {item.label}
-                  </Text>
-                  <Text fontSize="2xs" color={secondaryText}>
-                    {item.percentage.toFixed(1)}%
-                  </Text>
-                </Box>
-              </Flex>
-            ))}
+            {chartData.map((item, idx) => {
+              const isActive = hoveredIdx === null || hoveredIdx === idx;
+              return (
+                <Flex
+                  key={item.label}
+                  align="center"
+                  gap={2.5}
+                  px={2.5}
+                  py={2}
+                  borderRadius="lg"
+                  onMouseEnter={() => setHoveredIdx(idx)}
+                  onMouseLeave={() => setHoveredIdx(null)}
+                  cursor="default"
+                  opacity={isActive ? 1 : 0.35}
+                  bg={hoveredIdx === idx ? legendHoverBg : "transparent"}
+                  transition="all 0.15s ease"
+                >
+                  <Box
+                    w={2.5}
+                    h={2.5}
+                    borderRadius="sm"
+                    bg={ALLOCATION_COLORS[idx % ALLOCATION_COLORS.length]}
+                    flexShrink={0}
+                  />
+                  <Box flex={1} minW={0}>
+                    <Text fontSize="xs" color={primaryText} fontWeight="600" isTruncated>
+                      {item.label}
+                    </Text>
+                    <Text fontSize="2xs" color={secondaryText} fontWeight="500">
+                      {item.percentage.toFixed(1)}%
+                    </Text>
+                  </Box>
+                </Flex>
+              );
+            })}
           </VStack>
         </Flex>
       )}
-    </Box>
+    </MotionBox>
   );
 };
 

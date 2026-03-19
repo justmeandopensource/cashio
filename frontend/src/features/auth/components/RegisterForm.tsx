@@ -11,9 +11,7 @@ import {
   InputLeftElement,
   VStack,
   Text,
-  Heading,
   FormErrorMessage,
-  ScaleFade,
   useColorModeValue,
   Progress,
   HStack,
@@ -21,7 +19,10 @@ import {
   FormHelperText,
   Flex,
 } from "@chakra-ui/react";
+import { motion } from "framer-motion";
 import { UserPlus, Eye, EyeOff, Mail, Lock, User, AtSign } from "lucide-react";
+
+const MotionBox = motion(Box);
 
 interface RegisterFormProps {
   // eslint-disable-next-line no-unused-vars
@@ -68,35 +69,32 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     password: false,
   });
 
-  // Password strength indicators
   const getPasswordStrength = (pass: string): number => {
     if (!pass) return 0;
-
     let strength = 0;
-    // Length check
     if (pass.length >= 8) strength += 25;
-    // Contains lowercase letters
     if (/[a-z]/.test(pass)) strength += 25;
-    // Contains uppercase letters
     if (/[A-Z]/.test(pass)) strength += 25;
-    // Contains numbers or special chars
     if (/[0-9!@#$%^&*(),.?":{}|<>]/.test(pass)) strength += 25;
-
     return strength;
   };
 
   const passwordStrength = getPasswordStrength(password);
 
-  // Modern color scheme matching CreateLedgerModal
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.100", "gray.700");
-  const cardBg = useColorModeValue("gray.50", "gray.700");
+  const cardBg = useColorModeValue("gray.50", "gray.750");
   const inputBg = useColorModeValue("white", "gray.700");
   const inputBorderColor = useColorModeValue("gray.200", "gray.600");
-  const focusBorderColor = useColorModeValue("teal.500", "teal.300");
-  const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
+  const focusBorderColor = useColorModeValue("brand.500", "brand.400");
+  const tertiaryTextColor = useColorModeValue("gray.500", "gray.400");
+  const titleColor = useColorModeValue("gray.900", "gray.50");
+  const subtitleColor = useColorModeValue("gray.500", "gray.400");
+  const btnGlow = useColorModeValue(
+    "0 0 24px rgba(53,169,163,0.3)",
+    "0 0 24px rgba(78,194,188,0.25)"
+  );
 
-  // Validation errors
   const nameError = touched.full_name && !full_name;
   const usernameError = touched.username && !username;
   const emailError = touched.email && (!email || !/\S+@\S+\.\S+/.test(email));
@@ -104,7 +102,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
 
   const handleSubmit = (event: React.FormEvent): void => {
     event.preventDefault();
-    // Mark all fields as touched to show validation errors
     setTouched({
       full_name: true,
       username: true,
@@ -112,7 +109,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
       password: true,
     });
 
-    // Only submit if there are no errors
     if (
       full_name &&
       username &&
@@ -129,7 +125,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
-  // Get color for password strength indicator
   const getStrengthColor = (strength: number): string => {
     if (strength < 50) return "red.400";
     if (strength < 75) return "orange.400";
@@ -149,11 +144,16 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   };
 
   return (
-    <ScaleFade in={true} initialScale={0.95}>
+    <MotionBox
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      w="100%"
+    >
       <Box
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "xl" }}
-        boxShadow={{ base: "none", sm: "2xl" }}
+        borderRadius={{ base: 0, sm: "2xl" }}
+        boxShadow={{ base: "none", sm: "0 20px 60px -12px rgba(0,0,0,0.12)" }}
         maxW={{ base: "full", sm: "md" }}
         w="full"
         borderWidth={{ base: 0, sm: "1px" }}
@@ -161,68 +161,75 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         overflow="hidden"
         mx={{ base: 0, sm: "auto" }}
         minH={{ base: "100vh", sm: "auto" }}
+        position="relative"
       >
-        {/* Modern gradient header matching CreateLedgerModal - Left Justified */}
+        {/* Gradient accent line */}
         <Box
-          bgGradient="linear(135deg, teal.400, teal.600)"
-          color="white"
-          px={{ base: 4, sm: 8 }}
-          py={{ base: 6, sm: 8 }}
-          position="relative"
-        >
-          <HStack
-            spacing={{ base: 3, sm: 4 }}
-            align="center"
-            justify="flex-start"
-          >
-            <Box
-              p={{ base: 2, sm: 3 }}
-              bg="whiteAlpha.200"
-              borderRadius="md"
-              backdropFilter="blur(10px)"
-            >
-              <Icon as={UserPlus} boxSize={{ base: 5, sm: 6 }} />
-            </Box>
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
 
+        {/* Header */}
+        <MotionBox
+          px={{ base: 6, sm: 8 }}
+          pt={{ base: 8, sm: 10 }}
+          pb={2}
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15, ease: "easeOut" }}
+        >
+          <HStack spacing={3} align="center" mb={2}>
+            <Box
+              p={2.5}
+              bg={useColorModeValue("brand.50", "whiteAlpha.100")}
+              borderRadius="xl"
+            >
+              <Icon as={UserPlus} boxSize={5} color="brand.500" />
+            </Box>
             <Box>
-              <Heading
+              <Text
                 fontSize={{ base: "xl", sm: "2xl" }}
-                fontWeight="bold"
+                fontWeight="800"
+                color={titleColor}
+                letterSpacing="-0.03em"
                 lineHeight="1.2"
               >
                 Join Cashio
-              </Heading>
+              </Text>
               <Text
-                fontSize={{ base: "sm", sm: "md" }}
-                color="whiteAlpha.900"
-                fontWeight="medium"
-                mt={1}
+                fontSize="sm"
+                color={subtitleColor}
+                mt={0.5}
+                letterSpacing="0.01em"
               >
                 Start managing your finances today
               </Text>
             </Box>
           </HStack>
-        </Box>
+        </MotionBox>
 
         {/* Form content */}
-        <Box px={{ base: 4, sm: 8 }} py={{ base: 4, sm: 8 }}>
+        <Box px={{ base: 6, sm: 8 }} py={{ base: 4, sm: 6 }}>
           <VStack
             as="form"
-            spacing={{ base: 5, md: 6 }}
+            spacing={6}
             onSubmit={handleSubmit}
           >
             {/* Personal Information Card */}
-            <Box
+            <MotionBox
               bg={cardBg}
               p={{ base: 5, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
               w="100%"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
             >
               <VStack spacing={5} align="stretch">
                 <FormControl isInvalid={nameError}>
-                  <FormLabel fontWeight="semibold" mb={2}>
+                  <FormLabel fontWeight="bold" mb={2} fontSize="sm">
                     Full Name
                   </FormLabel>
                   <InputGroup>
@@ -245,11 +252,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                       borderWidth="2px"
                       borderColor={inputBorderColor}
                       bg={inputBg}
-                      borderRadius="md"
-                      _hover={!nameError ? { borderColor: "teal.300" } : {}}
+                      borderRadius="lg"
+                      _hover={!nameError ? { borderColor: "brand.300" } : {}}
                       _focus={{
                         borderColor: focusBorderColor,
-                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                        boxShadow: `0 0 0 1px var(--chakra-colors-brand-500)`,
                       }}
                       autoComplete="name"
                     />
@@ -259,14 +266,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                       Full name is required
                     </FormErrorMessage>
                   ) : (
-                    <FormHelperText mt={2}>
+                    <FormHelperText mt={2} fontSize="xs">
                       Your full name for account identification
                     </FormHelperText>
                   )}
                 </FormControl>
 
                 <FormControl isInvalid={usernameError}>
-                  <FormLabel fontWeight="semibold" mb={2}>
+                  <FormLabel fontWeight="bold" mb={2} fontSize="sm">
                     Username
                   </FormLabel>
                   <InputGroup>
@@ -288,11 +295,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                       borderWidth="2px"
                       borderColor={inputBorderColor}
                       bg={inputBg}
-                      borderRadius="md"
-                      _hover={!usernameError ? { borderColor: "teal.300" } : {}}
+                      borderRadius="lg"
+                      _hover={!usernameError ? { borderColor: "brand.300" } : {}}
                       _focus={{
                         borderColor: focusBorderColor,
-                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                        boxShadow: `0 0 0 1px var(--chakra-colors-brand-500)`,
                       }}
                       autoComplete="username"
                     />
@@ -302,26 +309,29 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                       Username is required
                     </FormErrorMessage>
                   ) : (
-                    <FormHelperText mt={2}>
+                    <FormHelperText mt={2} fontSize="xs">
                       Choose a unique username for your account
                     </FormHelperText>
                   )}
                 </FormControl>
               </VStack>
-            </Box>
+            </MotionBox>
 
             {/* Account Credentials Card */}
-            <Box
+            <MotionBox
               bg={cardBg}
               p={{ base: 5, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
               w="100%"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
             >
               <VStack spacing={5} align="stretch">
                 <FormControl isInvalid={emailError}>
-                  <FormLabel fontWeight="semibold" mb={2}>
+                  <FormLabel fontWeight="bold" mb={2} fontSize="sm">
                     Email Address
                   </FormLabel>
                   <InputGroup>
@@ -343,11 +353,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                       borderWidth="2px"
                       borderColor={inputBorderColor}
                       bg={inputBg}
-                      borderRadius="md"
-                      _hover={!emailError ? { borderColor: "teal.300" } : {}}
+                      borderRadius="lg"
+                      _hover={!emailError ? { borderColor: "brand.300" } : {}}
                       _focus={{
                         borderColor: focusBorderColor,
-                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                        boxShadow: `0 0 0 1px var(--chakra-colors-brand-500)`,
                       }}
                       autoComplete="email"
                     />
@@ -357,14 +367,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                       Valid email is required
                     </FormErrorMessage>
                   ) : (
-                    <FormHelperText mt={2}>
+                    <FormHelperText mt={2} fontSize="xs">
                       We&apos;ll use this for account verification and updates
                     </FormHelperText>
                   )}
                 </FormControl>
 
                 <FormControl isInvalid={passwordError}>
-                  <FormLabel fontWeight="semibold" mb={2}>
+                  <FormLabel fontWeight="bold" mb={2} fontSize="sm">
                     Password
                   </FormLabel>
                   <InputGroup size="lg">
@@ -385,11 +395,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                       borderWidth="2px"
                       borderColor={inputBorderColor}
                       bg={inputBg}
-                      borderRadius="md"
-                      _hover={!passwordError ? { borderColor: "teal.300" } : {}}
+                      borderRadius="lg"
+                      _hover={!passwordError ? { borderColor: "brand.300" } : {}}
                       _focus={{
                         borderColor: focusBorderColor,
-                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                        boxShadow: `0 0 0 1px var(--chakra-colors-brand-500)`,
                       }}
                       autoComplete="new-password"
                     />
@@ -413,15 +423,17 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                     <Box mt={3}>
                       <Flex justify="space-between" align="center" mb={2}>
                         <Text
-                          fontSize="sm"
-                          fontWeight="medium"
+                          fontSize="xs"
+                          fontWeight="bold"
                           color={tertiaryTextColor}
+                          textTransform="uppercase"
+                          letterSpacing="wider"
                         >
                           Password strength
                         </Text>
                         <Text
-                          fontSize="sm"
-                          fontWeight="semibold"
+                          fontSize="xs"
+                          fontWeight="bold"
                           color={getStrengthColor(passwordStrength)}
                         >
                           {getStrengthText(passwordStrength)}
@@ -432,7 +444,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                         size="sm"
                         colorScheme={getStrengthColorScheme(passwordStrength)}
                         borderRadius="full"
-                        bg="gray.200"
+                        bg={useColorModeValue("gray.100", "gray.600")}
                       />
                     </Box>
                   )}
@@ -442,64 +454,75 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                       Password must be at least 8 characters
                     </FormErrorMessage>
                   ) : (
-                    <FormHelperText mt={2}>
+                    <FormHelperText mt={2} fontSize="xs">
                       Use mix of letters, numbers, and symbols
                     </FormHelperText>
                   )}
                 </FormControl>
               </VStack>
-            </Box>
+            </MotionBox>
 
-            {/* Action button */}
-            <Button
-              type="submit"
-              size="lg"
-              w="full"
-              colorScheme="teal"
-              loadingText="Creating account"
-              borderRadius="md"
-              boxShadow="md"
-              _hover={{
-                boxShadow: "lg",
-                transform: "translateY(-2px)",
-              }}
-              _active={{
-                boxShadow: "md",
-                transform: "translateY(0)",
-              }}
-              transition="all 0.2s"
-              leftIcon={<Icon as={UserPlus} boxSize={4} />}
-              isDisabled={
-                !full_name ||
-                !username ||
-                !email ||
-                !password ||
-                passwordStrength < 25
-              }
+            <MotionBox
+              w="100%"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.4, ease: "easeOut" }}
             >
-              Create Account
-            </Button>
+              <Button
+                type="submit"
+                size="lg"
+                w="full"
+                colorScheme="brand"
+                loadingText="Creating account"
+                borderRadius="xl"
+                fontWeight="800"
+                letterSpacing="-0.01em"
+                _hover={{
+                  boxShadow: btnGlow,
+                  transform: "translateY(-1px)",
+                }}
+                _active={{
+                  transform: "translateY(0)",
+                }}
+                transition="all 0.2s ease"
+                leftIcon={<Icon as={UserPlus} boxSize={4} />}
+                isDisabled={
+                  !full_name ||
+                  !username ||
+                  !email ||
+                  !password ||
+                  passwordStrength < 25
+                }
+              >
+                Create Account
+              </Button>
+            </MotionBox>
 
-            {/* Footer link */}
-            <Box textAlign="center" py={4}>
+            <MotionBox
+              textAlign="center"
+              py={2}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.5 }}
+            >
               <Text fontSize="sm" color={tertiaryTextColor}>
                 Already have an account?{" "}
                 <RouterLink to="/login">
                   <Text
                     as="span"
-                    color="teal.500"
-                    fontWeight="semibold"
-                    _hover={{ color: "teal.600" }}
+                    color="brand.500"
+                    fontWeight="bold"
+                    _hover={{ color: "brand.600" }}
                   >
                     Log In
                   </Text>
                 </RouterLink>
               </Text>
-            </Box>
+            </MotionBox>
           </VStack>
         </Box>
       </Box>
-    </ScaleFade>
+    </MotionBox>
   );
 };
 

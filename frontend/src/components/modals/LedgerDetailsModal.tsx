@@ -78,7 +78,7 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "md" }}
+        borderRadius={{ base: 0, sm: "xl" }}
         boxShadow="2xl"
         border="1px solid"
         borderColor={borderColor}
@@ -89,6 +89,11 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
         display="flex"
         flexDirection="column"
       >
+        {/* Gradient accent line */}
+        <Box
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
         {/* Flat header */}
         <Box
           px={{ base: 4, sm: 8 }}
@@ -107,13 +112,14 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
               >
                 <Text
                   fontSize="lg"
-                  fontWeight="bold"
+                  fontWeight="800"
+                  letterSpacing="-0.02em"
                   color={modalTitleColor}
                 >
                   {ledgerName}
                 </Text>
                 <Badge
-                  colorScheme="teal"
+                  colorScheme="brand"
                   variant="subtle"
                   fontSize="sm"
                   px={2}
@@ -142,7 +148,7 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -168,7 +174,7 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -220,11 +226,12 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
             <Box display={{ base: "block", sm: "none" }}>
               {onEditLedger && (
                 <Button
-                  colorScheme="teal"
+                  colorScheme="brand"
                   size="lg"
                   width="100%"
                   mb={3}
-                  borderRadius="md"
+                  borderRadius="lg"
+                  fontWeight="bold"
                   onClick={() => {
                     onEditLedger();
                     onClose();
@@ -239,7 +246,7 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
                 onClick={onClose}
                 width="100%"
                 size="lg"
-                borderRadius="md"
+                borderRadius="lg"
               >
                 Cancel
               </Button>
@@ -258,7 +265,7 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
         >
           {onEditLedger && (
             <Button
-              colorScheme="teal"
+              colorScheme="brand"
               mr={3}
               onClick={() => {
                 onEditLedger();
@@ -266,7 +273,8 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
               }}
               px={8}
               py={3}
-              borderRadius="md"
+              borderRadius="lg"
+              fontWeight="bold"
             >
               Edit Ledger
             </Button>
@@ -277,7 +285,7 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
             onClick={onClose}
             px={6}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
           >
             Cancel
           </Button>

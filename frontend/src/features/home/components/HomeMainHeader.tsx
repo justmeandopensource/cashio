@@ -7,60 +7,94 @@ import {
   Text,
   Flex,
 } from "@chakra-ui/react";
+import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { FC } from "react";
+
+const MotionBox = motion(Box);
+const MotionFlex = motion(Flex);
 
 interface HomeMainHeaderProps {
   onCreateLedger: () => void;
 }
 
 const HomeMainHeader: FC<HomeMainHeaderProps> = ({ onCreateLedger }) => {
-  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const borderColor = useColorModeValue("gray.100", "gray.700");
   const titleColor = useColorModeValue("gray.900", "gray.50");
   const subtitleColor = useColorModeValue("gray.500", "gray.400");
-  const headerShadow = useColorModeValue("sm", "0 2px 8px rgba(0,0,0,0.6)");
   const headerBg = useColorModeValue("white", "gray.800");
+  const btnGlow = useColorModeValue(
+    "0 0 20px rgba(53,169,163,0.25)",
+    "0 0 20px rgba(78,194,188,0.2)"
+  );
 
   return (
     <Box
-      px={{ base: 4, md: 8 }}
-      py={{ base: 3, md: 6 }}
-      bg={headerBg}
       position="sticky"
       top={0}
       zIndex={10}
+      bg={headerBg}
       borderBottom="1px solid"
       borderColor={borderColor}
-      boxShadow={headerShadow}
-      sx={{ clipPath: "inset(0 -20px -20px 0)" }}
     >
-      <Flex justify="space-between" align="center">
+      {/* Thin gradient accent line at top */}
+      <Box
+        h="2px"
+        bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+      />
+
+      <MotionFlex
+        justify="space-between"
+        align="center"
+        px={{ base: 5, md: 8 }}
+        py={{ base: 4, md: 6 }}
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
         <Box>
           <Heading
             as="h1"
             fontSize={{ base: "xl", md: "2xl" }}
-            fontWeight="bold"
+            fontWeight="800"
             color={titleColor}
-            letterSpacing="-0.02em"
+            letterSpacing="-0.03em"
           >
             My Ledgers
           </Heading>
-          <Text fontSize="sm" color={subtitleColor} mt={0.5} display={{ base: "none", md: "block" }}>
+          <Text
+            fontSize="sm"
+            color={subtitleColor}
+            mt={1}
+            display={{ base: "none", md: "block" }}
+            letterSpacing="0.01em"
+          >
             Select a ledger to get started
           </Text>
         </Box>
 
-        <Button
-          onClick={onCreateLedger}
-          colorScheme="brand"
-          size="sm"
-          leftIcon={<Icon as={Plus} boxSize={4} />}
-          borderRadius="lg"
-          fontWeight="semibold"
+        <MotionBox
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
         >
-          New Ledger
-        </Button>
-      </Flex>
+          <Button
+            onClick={onCreateLedger}
+            colorScheme="brand"
+            size="sm"
+            leftIcon={<Icon as={Plus} boxSize={4} strokeWidth={2.5} />}
+            borderRadius="lg"
+            fontWeight="bold"
+            letterSpacing="0.01em"
+            px={5}
+            _hover={{
+              boxShadow: btnGlow,
+            }}
+            transition="all 0.2s ease"
+          >
+            New Ledger
+          </Button>
+        </MotionBox>
+      </MotionFlex>
     </Box>
   );
 };

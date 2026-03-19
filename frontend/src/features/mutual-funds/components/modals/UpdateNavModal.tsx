@@ -218,17 +218,22 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "md" }}
+        borderRadius={{ base: 0, sm: "xl" }}
         boxShadow="2xl"
         border="1px solid"
         borderColor={borderColor}
         overflow="hidden"
         mx={{ base: 0, sm: 4 }}
         my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "95vh" }}
+        maxHeight={{ base: "100%", md: "90vh" }}
         display="flex"
         flexDirection="column"
       >
+        {/* Gradient accent line */}
+        <Box
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
         {/* Flat header */}
         <Box
           px={{ base: 4, sm: 8 }}
@@ -240,19 +245,20 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
             <Icon as={RefreshCw} boxSize={5} mt="3px" color={modalIconColor} />
 
             <Box>
-              <Text
+              <Box
                 fontSize="lg"
-                fontWeight="bold"
+                fontWeight="800"
+                letterSpacing="-0.02em"
                 color={modalTitleColor}
               >
                 Update NAV
-              </Text>
-              <Text
+              </Box>
+              <Box
                 fontSize="sm"
                 color={modalSubtitleColor}
               >
                 {fund.name}
-              </Text>
+              </Box>
             </Box>
           </HStack>
         </Box>
@@ -263,7 +269,8 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
           flex="1"
           display="flex"
           flexDirection="column"
-          overflow="auto"
+          overflowY="auto"
+          overflowX="hidden"
           justifyContent={{ base: "space-between", sm: "flex-start" }}
         >
           <VStack spacing={{ base: 5, sm: 6 }} align="stretch" w="100%">
@@ -271,7 +278,7 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -324,7 +331,7 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -348,7 +355,7 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
                          onClick={() => fetchNavMutation.mutate()}
                          isLoading={fetchNavMutation.isPending}
                          loadingText="Fetching..."
-                         colorScheme="teal"
+                         colorScheme="brand"
                        >
                          Fetch NAV
                        </Button>
@@ -501,12 +508,13 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
           {/* Mobile-only action buttons that stay at bottom */}
           <Box display={{ base: "block", sm: "none" }} mt={6}>
             <Button
-              colorScheme="teal"
+              colorScheme="brand"
               onClick={handleSubmit}
               size="lg"
               width="100%"
               mb={3}
-              borderRadius="md"
+              borderRadius="lg"
+              fontWeight="bold"
               isLoading={updateNavMutation.isPending}
               loadingText="Updating NAV..."
               isDisabled={
@@ -523,7 +531,7 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
               onClick={handleClose}
               size="lg"
               width="100%"
-              borderRadius="md"
+              borderRadius="lg"
               isDisabled={updateNavMutation.isPending}
             >
               Cancel
@@ -536,17 +544,18 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
           display={{ base: "none", sm: "flex" }}
           px={8}
           py={6}
-          bg={cardBg}
+          bg={useColorModeValue("gray.50", "gray.900")}
           borderTop="1px solid"
           borderColor={borderColor}
         >
           <Button
-            colorScheme="teal"
+            colorScheme="brand"
             mr={3}
             onClick={handleSubmit}
             px={8}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
+            fontWeight="bold"
             isLoading={updateNavMutation.isPending}
             loadingText="Updating NAV..."
             isDisabled={!formData.nav.trim() || !!errors.nav || areNavsEqual}
@@ -560,7 +569,7 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
             isDisabled={updateNavMutation.isPending}
             px={6}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
           >
             Cancel
           </Button>

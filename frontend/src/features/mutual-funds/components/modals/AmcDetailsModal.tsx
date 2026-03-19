@@ -42,6 +42,7 @@ const AmcDetailsModal: React.FC<AmcDetailsModalProps> = ({
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
   const modalIconColor = useColorModeValue("gray.400", "gray.500");
+  const footerBg = useColorModeValue("gray.50", "gray.900");
 
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return "Not available";
@@ -72,7 +73,7 @@ const AmcDetailsModal: React.FC<AmcDetailsModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "md" }}
+        borderRadius={{ base: 0, sm: "xl" }}
         boxShadow="2xl"
         border="1px solid"
         borderColor={borderColor}
@@ -83,6 +84,11 @@ const AmcDetailsModal: React.FC<AmcDetailsModalProps> = ({
         display="flex"
         flexDirection="column"
       >
+        {/* Gradient accent line */}
+        <Box
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
         {/* Flat header */}
         <Box
           px={{ base: 4, sm: 8 }}
@@ -101,13 +107,14 @@ const AmcDetailsModal: React.FC<AmcDetailsModalProps> = ({
               >
                 <Text
                   fontSize="lg"
-                  fontWeight="bold"
+                  fontWeight="800"
+                  letterSpacing="-0.02em"
                   color={modalTitleColor}
                 >
                   {amc.name}
                 </Text>
                 <Badge
-                  colorScheme="teal"
+                  colorScheme="brand"
                   variant="subtle"
                   fontSize="sm"
                   px={2}
@@ -136,7 +143,8 @@ const AmcDetailsModal: React.FC<AmcDetailsModalProps> = ({
           flex="1"
           display="flex"
           flexDirection="column"
-          overflow="auto"
+          overflowY="auto"
+          overflowX="hidden"
           justifyContent={{ base: "space-between", sm: "flex-start" }}
         >
           <VStack spacing={{ base: 4, sm: 6 }} align="stretch" w="100%">
@@ -144,7 +152,7 @@ const AmcDetailsModal: React.FC<AmcDetailsModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -170,19 +178,22 @@ const AmcDetailsModal: React.FC<AmcDetailsModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
               <VStack spacing={4}>
                 <Flex justify="space-between" align="center" w="full">
-                  <Text
-                    fontSize={{ base: "sm", sm: "md" }}
-                    color={textSecondary}
-                    fontWeight="medium"
-                  >
-                    Created
-                  </Text>
+                  <HStack spacing={2}>
+                    <Box w={2} h={2} bg="green.400" borderRadius="full" />
+                    <Text
+                      fontSize={{ base: "sm", sm: "md" }}
+                      color={textSecondary}
+                      fontWeight="medium"
+                    >
+                      Created
+                    </Text>
+                  </HStack>
                   <Text
                     fontSize={{ base: "sm", sm: "md" }}
                     color={textMuted}
@@ -195,13 +206,16 @@ const AmcDetailsModal: React.FC<AmcDetailsModalProps> = ({
                 <Divider />
 
                 <Flex justify="space-between" align="center" w="full">
-                  <Text
-                    fontSize={{ base: "sm", sm: "md" }}
-                    color={textSecondary}
-                    fontWeight="medium"
-                  >
-                    Last Updated
-                  </Text>
+                  <HStack spacing={2}>
+                    <Box w={2} h={2} bg="blue.400" borderRadius="full" />
+                    <Text
+                      fontSize={{ base: "sm", sm: "md" }}
+                      color={textSecondary}
+                      fontWeight="medium"
+                    >
+                      Last Updated
+                    </Text>
+                  </HStack>
                   <Text
                     fontSize={{ base: "sm", sm: "md" }}
                     color={textMuted}
@@ -218,12 +232,13 @@ const AmcDetailsModal: React.FC<AmcDetailsModalProps> = ({
           <Box display={{ base: "block", sm: "none" }} mt={6}>
             {onEditAmc && (
               <Button
-                colorScheme="teal"
+                colorScheme="brand"
                 size="lg"
                 width="100%"
                 mb={3}
                 onClick={onEditAmc}
-                borderRadius="md"
+                borderRadius="lg"
+                fontWeight="bold"
               >
                 Edit AMC
               </Button>
@@ -234,7 +249,7 @@ const AmcDetailsModal: React.FC<AmcDetailsModalProps> = ({
               onClick={onClose}
               size="lg"
               width="100%"
-              borderRadius="md"
+              borderRadius="lg"
             >
               Cancel
             </Button>
@@ -246,18 +261,19 @@ const AmcDetailsModal: React.FC<AmcDetailsModalProps> = ({
           display={{ base: "none", sm: "flex" }}
           px={8}
           py={6}
-          bg={cardBg}
+          bg={footerBg}
           borderTop="1px solid"
           borderColor={borderColor}
         >
           {onEditAmc && (
             <Button
-              colorScheme="teal"
+              colorScheme="brand"
               mr={3}
               onClick={onEditAmc}
               px={8}
               py={3}
-              borderRadius="md"
+              borderRadius="lg"
+              fontWeight="bold"
             >
               Edit AMC
             </Button>
@@ -268,7 +284,7 @@ const AmcDetailsModal: React.FC<AmcDetailsModalProps> = ({
             onClick={onClose}
             px={6}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
           >
             Cancel
           </Button>

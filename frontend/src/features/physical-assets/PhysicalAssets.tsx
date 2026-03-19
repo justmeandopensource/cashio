@@ -36,20 +36,21 @@ import {
   VStack,
   useBreakpointValue,
 } from "@chakra-ui/react";
+import { motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
 import { usePhysicalAssets, useAssetTypes, useDeleteAssetType, useAllAssetTransactions } from "./api";
 import { toastDefaults } from "@/components/shared/utils";
 import PhysicalAssetsOverview from "./components/PhysicalAssetsOverview";
-import BuySellAssetModal from "./components/BuySellAssetModal";
-import CreateAssetTypeModal from "./components/CreateAssetTypeModal";
-import CreatePhysicalAssetModal from "./components/CreatePhysicalAssetModal";
-import UpdatePriceModal from "./components/UpdatePriceModal";
+import BuySellAssetModal from "./components/modals/BuySellAssetModal";
+import CreateAssetTypeModal from "./components/modals/CreateAssetTypeModal";
+import CreatePhysicalAssetModal from "./components/modals/CreatePhysicalAssetModal";
+import UpdatePriceModal from "./components/modals/UpdatePriceModal";
 import EmptyStateTransactions from "./components/EmptyStateTransactions";
 import AssetTransactionHistory from "./components/AssetTransactionHistory";
 import { PhysicalAsset, AssetType } from "./types";
 
-
+const MotionBox = motion(Box);
 
 const PhysicalAssets: FC = () => {
   const queryClient = useQueryClient();
@@ -74,11 +75,14 @@ const PhysicalAssets: FC = () => {
 
   // Tab colors
   const selectedTabColor = useColorModeValue("brand.700", "brand.200");
-  const selectedTabBg = useColorModeValue("brand.50", "brand.800");
-  const selectedTabBorderColor = useColorModeValue("brand.400", "brand.500");
-  const hoverTabBg = useColorModeValue("brand.100", "brand.700");
-  const tabColor = useColorModeValue("gray.600", "gray.400");
-  const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
+  const selectedTabBg = useColorModeValue("brand.50", "whiteAlpha.100");
+  const selectedTabBorderColor = useColorModeValue("brand.500", "brand.400");
+  const hoverTabBg = useColorModeValue("gray.50", "whiteAlpha.50");
+  const tabColor = useColorModeValue("gray.500", "gray.400");
+  const badgeBg = useColorModeValue("brand.50", "brand.900");
+  const badgeColor = useColorModeValue("brand.600", "brand.200");
+  const modalBg = useColorModeValue("white", "gray.800");
+  const modalBorderColor = useColorModeValue("gray.100", "gray.700");
 
   // Modal states
   const {
@@ -120,8 +124,6 @@ const PhysicalAssets: FC = () => {
   // Delete mutations
   const deleteAssetTypeMutation = useDeleteAssetType();
 
-
-
   const handleBuySell = (assetId: number) => {
     const asset = assets.find((asset) => asset.physical_asset_id === assetId);
     setSelectedAsset(asset);
@@ -133,14 +135,9 @@ const PhysicalAssets: FC = () => {
     onUpdatePriceModalOpen();
   };
 
-
-
-
-
   const confirmDeleteAssetType = async () => {
     if (!selectedAssetType) return;
 
-    // Check if there are any assets using this type
     const assetsUsingType = assets.filter(asset => asset.asset_type_id === selectedAssetType.asset_type_id);
 
     if (assetsUsingType.length > 0) {
@@ -188,7 +185,7 @@ const PhysicalAssets: FC = () => {
 
   const handleViewTransactions = (asset: PhysicalAsset) => {
     setInitialAssetFilter(asset.physical_asset_id.toString());
-    setTabIndex(1); // Switch to transactions tab
+    setTabIndex(1);
   };
 
   const handleTabChange = (index: number) => {
@@ -210,290 +207,307 @@ const PhysicalAssets: FC = () => {
     );
   }
 
-
-
   return (
-    <Box>
-      <Tabs variant="soft-rounded" colorScheme="brand" size={{ base: "md", md: "md" }} index={tabIndex} onChange={handleTabChange}>
+    <MotionBox
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Tabs
+        variant="unstyled"
+        size={{ base: "md", md: "md" }}
+        index={tabIndex}
+        onChange={handleTabChange}
+      >
         <Box p={{ base: 2, md: 4 }}>
-            <TabList borderBottom="none" gap={1}>
-              <Tab
-                px={{ base: 3, md: 4 }}
-                py={2}
-                fontWeight="medium"
-                fontSize="sm"
-                borderRadius="sm"
-                whiteSpace="nowrap"
-                color={tabColor}
-                _selected={{
-                  color: selectedTabColor,
-                  bg: selectedTabBg,
-                  fontWeight: "semibold",
-                  border: "1px solid",
-                  borderColor: selectedTabBorderColor,
-                }}
-                _hover={{
-                  bg: hoverTabBg,
-                }}
-              >
-                <Flex align="center">
-                  <Text>Overview</Text>
-                 {assets.length > 0 && (
-                   <Badge ml={2} colorScheme="brand" borderRadius="full" px={2}>
-                     {assets.length}
-                   </Badge>
-                 )}
-               </Flex>
-             </Tab>
-             <Tab
-               px={{ base: 3, md: 4 }}
-               py={2}
-               fontWeight="medium"
-               fontSize="sm"
-               borderRadius="sm"
-               whiteSpace="nowrap"
-               color={tabColor}
-               _selected={{
-                 color: selectedTabColor,
-                 bg: selectedTabBg,
-                 fontWeight: "semibold",
-                 border: "1px solid",
-                 borderColor: selectedTabBorderColor,
-               }}
-               _hover={{
-                 bg: hoverTabBg,
-               }}
-             >
-               <Flex align="center">
-                 <Text color={tertiaryTextColor}>Transactions</Text>
-               </Flex>
-             </Tab>
+          <TabList borderBottom="none" gap={1}>
+            <Tab
+              px={{ base: 3, md: 4 }}
+              py={2.5}
+              fontWeight="medium"
+              fontSize="sm"
+              whiteSpace="nowrap"
+              borderBottom="2px solid"
+              borderBottomColor="transparent"
+              borderRadius={0}
+              color={tabColor}
+              transition="all 0.2s ease"
+              _selected={{
+                color: selectedTabColor,
+                bg: selectedTabBg,
+                fontWeight: "semibold",
+                borderBottomColor: selectedTabBorderColor,
+              }}
+              _hover={{ bg: hoverTabBg }}
+            >
+              <Flex align="center">
+                <Text>Overview</Text>
+                {assets.length > 0 && (
+                  <Badge
+                    ml={2}
+                    borderRadius="full"
+                    px={2}
+                    bg={badgeBg}
+                    color={badgeColor}
+                    fontWeight="bold"
+                    fontSize="2xs"
+                  >
+                    {assets.length}
+                  </Badge>
+                )}
+              </Flex>
+            </Tab>
+            <Tab
+              px={{ base: 3, md: 4 }}
+              py={2.5}
+              fontWeight="medium"
+              fontSize="sm"
+              whiteSpace="nowrap"
+              borderBottom="2px solid"
+              borderBottomColor="transparent"
+              borderRadius={0}
+              color={tabColor}
+              transition="all 0.2s ease"
+              _selected={{
+                color: selectedTabColor,
+                bg: selectedTabBg,
+                fontWeight: "semibold",
+                borderBottomColor: selectedTabBorderColor,
+              }}
+              _hover={{ bg: hoverTabBg }}
+            >
+              <Flex align="center">
+                <Text>Transactions</Text>
+              </Flex>
+            </Tab>
           </TabList>
         </Box>
 
-          <TabPanels>
-             <TabPanel p={{ base: 2, md: 4 }}>
-               {tabIndex === 0 && (
-                 <PhysicalAssetsOverview
-                   assetTypes={assetTypes}
-                   physicalAssets={assets}
-                   onCreateAssetType={handleCreateAssetType}
-                   onCreateAsset={handleCreateAsset}
-                   onBuySell={handleBuySell}
-                   onUpdatePrice={handleUpdatePrice}
-                      onViewTransactions={handleViewTransactions}
-                   filters={filters}
-                   onFiltersChange={setFilters}
-                 />
-               )}
-               </TabPanel>
+        <TabPanels>
+          <TabPanel p={{ base: 2, md: 4 }}>
+            {tabIndex === 0 && (
+              <PhysicalAssetsOverview
+                assetTypes={assetTypes}
+                physicalAssets={assets}
+                onCreateAssetType={handleCreateAssetType}
+                onCreateAsset={handleCreateAsset}
+                onBuySell={handleBuySell}
+                onUpdatePrice={handleUpdatePrice}
+                onViewTransactions={handleViewTransactions}
+                filters={filters}
+                onFiltersChange={setFilters}
+              />
+            )}
+          </TabPanel>
 
-             {/* Transactions Tab */}
-             <TabPanel p={{ base: 2, md: 4 }}>
-               {tabIndex === 1 && (
-                 assetsLoading ? (
-                   <Box p={8} textAlign="center">
-                     <VStack spacing={4}>
-                       <Spinner size="lg" color={selectedTabColor} />
-                       <Text color={tabColor} fontSize="lg">
-                         Loading transaction history...
-                       </Text>
-                       <Text color={tabColor} fontSize="sm">
-                         This may take a moment for large portfolios
-                       </Text>
-                     </VStack>
-                   </Box>
-                 ) : assets.length === 0 ? (
-                   <EmptyStateTransactions />
-                  ) : (
-                    <AssetTransactionHistory
-                      assetTypes={assetTypes}
-                      physicalAssets={assets}
-                      transactions={transactions}
-                      onDataChange={() => {
-                        // Refresh data if needed
-                        queryClient.invalidateQueries({
-                          queryKey: ["all-asset-transactions", Number(ledgerId)],
-                        });
-                      }}
-                      initialAssetFilter={initialAssetFilter}
-                    />
-                  )
-               )}
-             </TabPanel>
-           </TabPanels>
-         </Tabs>
+          <TabPanel p={{ base: 2, md: 4 }}>
+            {tabIndex === 1 && (
+              assetsLoading ? (
+                <Box p={8} textAlign="center">
+                  <VStack spacing={4}>
+                    <Spinner size="lg" color="brand.500" />
+                    <Text color={tabColor} fontSize="lg">
+                      Loading transaction history...
+                    </Text>
+                  </VStack>
+                </Box>
+              ) : assets.length === 0 ? (
+                <EmptyStateTransactions />
+              ) : (
+                <AssetTransactionHistory
+                  assetTypes={assetTypes}
+                  physicalAssets={assets}
+                  transactions={transactions}
+                  onDataChange={() => {
+                    queryClient.invalidateQueries({
+                      queryKey: ["all-asset-transactions", Number(ledgerId)],
+                    });
+                  }}
+                  initialAssetFilter={initialAssetFilter}
+                />
+              )
+            )}
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
 
-
-
-         {/* Asset Type Warning Dialog */}
-         <Modal
-           isOpen={isAssetTypeWarningOpen}
-           onClose={() => setIsAssetTypeWarningOpen(false)}
-           size={{ base: "full", md: "lg" }}
-         >
-           <ModalOverlay />
-           <ModalContent>
-             <ModalHeader fontSize="lg" fontWeight="bold">
-               Create Asset Type First
-             </ModalHeader>
-
-             <ModalBody>
-               You need to create at least one asset type before you can create a physical asset.
-               Asset types define the kind of physical assets you want to track (e.g., Gold, Silver, etc.).
-             </ModalBody>
-
-             <ModalFooter>
-               <Button
-                 ref={cancelRef}
-                 variant="outline"
-                 onClick={() => setIsAssetTypeWarningOpen(false)}
-                 _hover={{
-                   bg: "gray.50",
-                   borderColor: "gray.300",
-                 }}
-               >
-                 Cancel
-               </Button>
-               <Button
-                 colorScheme="teal"
-                 onClick={() => {
-                   setIsAssetTypeWarningOpen(false);
-                   onCreateAssetTypeModalOpen();
-                 }}
-                 ml={3}
-               >
-                 Create Asset Type
-               </Button>
-             </ModalFooter>
-           </ModalContent>
-         </Modal>
-
-        {/* Delete Asset Type Confirmation Modal */}
-        <Modal
-          isOpen={isDeleteAssetTypeDialogOpen}
-          onClose={() => {
-            setIsDeleteAssetTypeDialogOpen(false);
-            setSelectedAssetType(null);
-          }}
-          size={modalSize}
-          motionPreset="slideInBottom"
+      {/* Asset Type Warning Dialog */}
+      <Modal
+        isOpen={isAssetTypeWarningOpen}
+        onClose={() => setIsAssetTypeWarningOpen(false)}
+        size={{ base: "full", md: "lg" }}
+      >
+        <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <ModalContent
+          bg={modalBg}
+          border="1px solid"
+          borderColor={modalBorderColor}
+          borderRadius={{ base: 0, md: "xl" }}
+          boxShadow="2xl"
         >
-          <ModalOverlay />
-          <ModalContent
-            margin={isMobile ? 0 : "auto"}
-            borderRadius={isMobile ? 0 : "md"}
-          >
-            <ModalHeader>Delete Asset Type</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              Are you sure you want to delete the asset type &ldquo;{selectedAssetType?.name}&rdquo;?
-              This action cannot be undone.
-            </ModalBody>
-            <ModalFooter>
+          <ModalHeader fontSize="lg" fontWeight="800" letterSpacing="-0.02em">
+            Create Asset Type First
+          </ModalHeader>
+
+          <ModalBody>
+            You need to create at least one asset type before you can create a physical asset.
+            Asset types define the kind of physical assets you want to track (e.g., Gold, Silver, etc.).
+          </ModalBody>
+
+          <ModalFooter>
+            <Button
+              ref={cancelRef}
+              variant="outline"
+              onClick={() => setIsAssetTypeWarningOpen(false)}
+              borderRadius="lg"
+            >
+              Cancel
+            </Button>
+            <Button
+              colorScheme="brand"
+              onClick={() => {
+                setIsAssetTypeWarningOpen(false);
+                onCreateAssetTypeModalOpen();
+              }}
+              ml={3}
+              borderRadius="lg"
+              fontWeight="bold"
+            >
+              Create Asset Type
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Delete Asset Type Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteAssetTypeDialogOpen}
+        onClose={() => {
+          setIsDeleteAssetTypeDialogOpen(false);
+          setSelectedAssetType(null);
+        }}
+        size={modalSize}
+        motionPreset="slideInBottom"
+      >
+        <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <ModalContent
+          margin={isMobile ? 0 : "auto"}
+          borderRadius={isMobile ? 0 : "xl"}
+          bg={modalBg}
+          border="1px solid"
+          borderColor={modalBorderColor}
+          boxShadow="2xl"
+        >
+          <ModalHeader fontWeight="800" letterSpacing="-0.02em">Delete Asset Type</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            Are you sure you want to delete the asset type &ldquo;{selectedAssetType?.name}&rdquo;?
+            This action cannot be undone.
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="ghost"
+              mr={3}
+              onClick={() => {
+                setIsDeleteAssetTypeDialogOpen(false);
+                setSelectedAssetType(null);
+              }}
+              borderRadius="lg"
+            >
+              Cancel
+            </Button>
+            <Button
+              colorScheme="red"
+              onClick={confirmDeleteAssetType}
+              isLoading={deleteAssetTypeMutation.isPending}
+              loadingText="Deleting..."
+              borderRadius="lg"
+              fontWeight="bold"
+            >
+              Delete
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Delete Asset Type Error Dialog */}
+      <AlertDialog
+        isOpen={isDeleteAssetTypeErrorOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={() => {
+          setIsDeleteAssetTypeErrorOpen(false);
+          setSelectedAssetType(null);
+        }}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              <AlertIcon as={AlertTriangle} color="red.500" mr={2} />
+              Cannot Delete Asset Type
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              The asset type &ldquo;{selectedAssetType?.name}&rdquo; cannot be deleted because
+              {assets.filter(asset => asset.asset_type_id === selectedAssetType?.asset_type_id).length} physical asset(s) are currently using it.
+              Please delete or reassign all associated assets first.
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
               <Button
-                variant="ghost"
-                mr={3}
                 onClick={() => {
-                  setIsDeleteAssetTypeDialogOpen(false);
+                  setIsDeleteAssetTypeErrorOpen(false);
                   setSelectedAssetType(null);
                 }}
               >
-                Cancel
+                OK
               </Button>
-              <Button
-                colorScheme="red"
-                onClick={confirmDeleteAssetType}
-                isLoading={deleteAssetTypeMutation.isPending}
-                loadingText="Deleting..."
-              >
-                Delete
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
 
-        {/* Delete Asset Type Error Dialog */}
-        <AlertDialog
-          isOpen={isDeleteAssetTypeErrorOpen}
-          leastDestructiveRef={cancelRef}
-          onClose={() => {
-            setIsDeleteAssetTypeErrorOpen(false);
-            setSelectedAssetType(null);
-          }}
-        >
-          <AlertDialogOverlay>
-            <AlertDialogContent>
-              <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                <AlertIcon as={AlertTriangle} color="red.500" mr={2} />
-                Cannot Delete Asset Type
-              </AlertDialogHeader>
+      {/* Modals */}
+      <BuySellAssetModal
+        isOpen={isBuySellModalOpen}
+        onClose={onBuySellModalClose}
+        asset={selectedAsset}
+        onTransactionCompleted={() => {
+          onBuySellModalClose();
+          setSelectedAsset(undefined);
+        }}
+      />
 
-              <AlertDialogBody>
-                The asset type &ldquo;{selectedAssetType?.name}&rdquo; cannot be deleted because
-                {assets.filter(asset => asset.asset_type_id === selectedAssetType?.asset_type_id).length} physical asset(s) are currently using it.
-                Please delete or reassign all associated assets first.
-              </AlertDialogBody>
+      <CreateAssetTypeModal
+        isOpen={isCreateAssetTypeModalOpen}
+        onClose={onCreateAssetTypeModalClose}
+        onAssetTypeCreated={() => {
+          onCreateAssetTypeModalClose();
+          queryClient.invalidateQueries({
+            queryKey: ["asset-types", Number(ledgerId)],
+          });
+        }}
+      />
 
-              <AlertDialogFooter>
-                <Button
-                  onClick={() => {
-                    setIsDeleteAssetTypeErrorOpen(false);
-                    setSelectedAssetType(null);
-                  }}
-                >
-                  OK
-                </Button>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialogOverlay>
-           </AlertDialog>
+      <CreatePhysicalAssetModal
+        isOpen={isCreateAssetModalOpen}
+        onClose={onCreateAssetModalClose}
+        onAssetCreated={() => {
+          onCreateAssetModalClose();
+          setSelectedAssetType(null);
+          queryClient.invalidateQueries({
+            queryKey: ["physical-assets", Number(ledgerId)],
+          });
+        }}
+        assetTypeId={selectedAssetType?.asset_type_id}
+      />
 
-        {/* Modals */}
-        <BuySellAssetModal
-          isOpen={isBuySellModalOpen}
-          onClose={onBuySellModalClose}
-          asset={selectedAsset}
-          onTransactionCompleted={() => {
-            onBuySellModalClose();
-            setSelectedAsset(undefined);
-          }}
-        />
-
-        <CreateAssetTypeModal
-          isOpen={isCreateAssetTypeModalOpen}
-          onClose={onCreateAssetTypeModalClose}
-          onAssetTypeCreated={() => {
-            onCreateAssetTypeModalClose();
-            // Refresh asset types data
-            queryClient.invalidateQueries({
-              queryKey: ["asset-types", Number(ledgerId)],
-            });
-          }}
-        />
-
-        <CreatePhysicalAssetModal
-          isOpen={isCreateAssetModalOpen}
-          onClose={onCreateAssetModalClose}
-          onAssetCreated={() => {
-            onCreateAssetModalClose();
-            setSelectedAssetType(null);
-            // Refresh assets data
-            queryClient.invalidateQueries({
-              queryKey: ["physical-assets", Number(ledgerId)],
-            });
-          }}
-          assetTypeId={selectedAssetType?.asset_type_id}
-        />
-
-        <UpdatePriceModal
-          isOpen={isUpdatePriceModalOpen}
-          onClose={onUpdatePriceModalClose}
-          asset={selectedAsset}
-        />
-
-      </Box>
-    );
-  };
+      <UpdatePriceModal
+        isOpen={isUpdatePriceModalOpen}
+        onClose={onUpdatePriceModalClose}
+        asset={selectedAsset}
+      />
+    </MotionBox>
+  );
+};
 
 export default PhysicalAssets;

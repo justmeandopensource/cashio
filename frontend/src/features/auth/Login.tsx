@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
-import { Flex, useToast, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex, useToast, useColorModeValue } from "@chakra-ui/react";
 import LoginForm from "@features/auth/components/LoginForm";
 import api from "@/lib/api";
 
@@ -23,8 +23,6 @@ const Login: React.FC = () => {
   const usernameInputRef = useRef<HTMLInputElement>(null as any);
 
   useEffect(() => {
-    // On component mount, clear any existing token to ensure a clean login.
-    // This helps prevent the "double login" issue.
     localStorage.removeItem("access_token");
     usernameInputRef.current?.focus();
   }, []);
@@ -37,7 +35,6 @@ const Login: React.FC = () => {
         },
       }),
     onSuccess: (response: AxiosResponse<LoginResponse>) => {
-      // Set the new token and then navigate.
       localStorage.setItem("access_token", response.data.access_token);
       navigate("/");
     },
@@ -68,7 +65,7 @@ const Login: React.FC = () => {
     loginMutation.mutate(formDetails);
   };
 
-  const pageBg = useColorModeValue("primaryBg", "primaryBg");
+  const pageBg = useColorModeValue("gray.50", "gray.900");
 
   return (
     <Flex
@@ -77,7 +74,35 @@ const Login: React.FC = () => {
       minH="100vh"
       bg={pageBg}
       px={0}
+      position="relative"
+      overflow="hidden"
     >
+      {/* Subtle background accent */}
+      <Box
+        position="absolute"
+        top="-20%"
+        right="-10%"
+        w="500px"
+        h="500px"
+        borderRadius="full"
+        bg={useColorModeValue("brand.50", "brand.900")}
+        opacity={0.4}
+        filter="blur(120px)"
+        pointerEvents="none"
+      />
+      <Box
+        position="absolute"
+        bottom="-15%"
+        left="-5%"
+        w="400px"
+        h="400px"
+        borderRadius="full"
+        bg={useColorModeValue("teal.50", "teal.900")}
+        opacity={0.3}
+        filter="blur(100px)"
+        pointerEvents="none"
+      />
+
       <LoginForm
         onSubmit={handleSubmit}
         username={username}

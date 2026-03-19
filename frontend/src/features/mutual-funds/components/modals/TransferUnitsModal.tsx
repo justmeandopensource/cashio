@@ -280,17 +280,22 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "md" }}
+        borderRadius={{ base: 0, sm: "xl" }}
         boxShadow="2xl"
         border="1px solid"
         borderColor={borderColor}
         overflow="hidden"
         mx={{ base: 0, sm: 4 }}
         my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "95vh" }}
+        maxHeight={{ base: "100%", md: "90vh" }}
         display="flex"
         flexDirection="column"
       >
+        {/* Gradient accent line */}
+        <Box
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
         {/* Flat header */}
         <Box
           px={{ base: 4, sm: 8 }}
@@ -302,19 +307,20 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
             <Icon as={ArrowRightLeft} boxSize={5} mt="3px" color={modalIconColor} />
 
             <Box>
-              <Text
+              <Box
                 fontSize="lg"
-                fontWeight="bold"
+                fontWeight="800"
+                letterSpacing="-0.02em"
                 color={modalTitleColor}
               >
                 Transfer Mutual Fund Units
-              </Text>
-              <Text
+              </Box>
+              <Box
                 fontSize="sm"
                 color={modalSubtitleColor}
               >
                  {sourceFund ? `From ${sourceFund.name}` : 'Switch units between funds'}
-              </Text>
+              </Box>
             </Box>
           </HStack>
         </Box>
@@ -350,7 +356,7 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
               <Box
                 bg={cardBg}
                 p={{ base: 4, sm: 6 }}
-                borderRadius="md"
+                borderRadius="xl"
                 border="1px solid"
                 borderColor={borderColor}
               >
@@ -401,7 +407,7 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
               <Box
                 bg={cardBg}
                 p={{ base: 4, sm: 6 }}
-                borderRadius="md"
+                borderRadius="xl"
                 border="1px solid"
                 borderColor={borderColor}
               >
@@ -646,10 +652,11 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                 <Stack direction="row" spacing={3} width="full">
                    <Button
                      type="submit"
-                     colorScheme="teal"
+                     colorScheme="brand"
                      size="lg"
                      flex={1}
-                     borderRadius="md"
+                     borderRadius="lg"
+                     fontWeight="bold"
                      isLoading={transferMutation.isPending}
                      loadingText="Processing Transfer..."
                      isDisabled={
@@ -671,7 +678,7 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                     onClick={handleClose}
                     size="lg"
                     flex={1}
-                    borderRadius="md"
+                    borderRadius="lg"
                     isDisabled={transferMutation.isPending}
                   >
                     Cancel
@@ -694,11 +701,12 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
           <Button
             type="submit"
             form="transfer-units-form"
-            colorScheme="teal"
+            colorScheme="brand"
             mr={3}
             px={8}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
+            fontWeight="bold"
             isLoading={transferMutation.isPending}
             loadingText="Processing Transfer..."
             isDisabled={
@@ -722,7 +730,7 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
             isDisabled={transferMutation.isPending}
             px={6}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
           >
             Cancel
           </Button>

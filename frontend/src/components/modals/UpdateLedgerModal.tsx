@@ -221,7 +221,7 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "md" }}
+        borderRadius={{ base: 0, sm: "xl" }}
         boxShadow="2xl"
         border="1px solid"
         borderColor={borderColor}
@@ -232,6 +232,11 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
         display="flex"
         flexDirection="column"
       >
+        {/* Gradient accent line */}
+        <Box
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
         {/* Flat header */}
         <Box
           px={{ base: 4, sm: 8 }}
@@ -245,7 +250,8 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
             <Box>
               <Box
                 fontSize="lg"
-                fontWeight="bold"
+                fontWeight="800"
+                letterSpacing="-0.02em"
                 color={modalTitleColor}
               >
                 Update Ledger
@@ -280,7 +286,7 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -299,8 +305,8 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
                     borderColor={inputBorderColor}
                     bg={inputBg}
                     size="lg"
-                    borderRadius="md"
-                    _hover={{ borderColor: "teal.300" }}
+                    borderRadius="lg"
+                    _hover={{ borderColor: "brand.300" }}
                     _focus={{
                       borderColor: focusBorderColor,
                       boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -324,8 +330,8 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
                     borderColor={inputBorderColor}
                     bg={inputBg}
                     size="lg"
-                    borderRadius="md"
-                    _hover={{ borderColor: "teal.300" }}
+                    borderRadius="lg"
+                    _hover={{ borderColor: "brand.300" }}
                     _focus={{
                       borderColor: focusBorderColor,
                       boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -354,8 +360,8 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
                     borderColor={inputBorderColor}
                     bg={inputBg}
                     size="lg"
-                    borderRadius="md"
-                    _hover={{ borderColor: "teal.300" }}
+                    borderRadius="lg"
+                    _hover={{ borderColor: "brand.300" }}
                     _focus={{
                       borderColor: focusBorderColor,
                       boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -378,7 +384,7 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -395,8 +401,8 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
                     borderColor={inputBorderColor}
                     bg={inputBg}
                     size="lg"
-                    borderRadius="md"
-                    _hover={{ borderColor: "teal.300" }}
+                    borderRadius="lg"
+                    _hover={{ borderColor: "brand.300" }}
                     _focus={{
                       borderColor: focusBorderColor,
                       boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -420,9 +426,9 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
                     borderColor={inputBorderColor}
                     bg={inputBg}
                     size="lg"
-                    borderRadius="md"
+                    borderRadius="lg"
                     rows={4}
-                    _hover={{ borderColor: "teal.300" }}
+                    _hover={{ borderColor: "brand.300" }}
                     _focus={{
                       borderColor: focusBorderColor,
                       boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -442,11 +448,12 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
           <Box display={{ base: "block", sm: "none" }} mt={6}>
             <Button
               onClick={handleSubmit}
-              colorScheme="teal"
+              colorScheme="brand"
               size="lg"
               width="100%"
               mb={3}
-              borderRadius="md"
+              borderRadius="lg"
+              fontWeight="bold"
               isLoading={isLoading}
               loadingText="Updating..."
               isDisabled={!ledgerName || !selectedCurrency || !hasChanges}
@@ -459,7 +466,7 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
               onClick={onClose}
               width="100%"
               size="lg"
-              borderRadius="md"
+              borderRadius="lg"
               isDisabled={isLoading}
             >
               Cancel
@@ -477,12 +484,13 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
           borderColor={borderColor}
         >
           <Button
-            colorScheme="teal"
+            colorScheme="brand"
             mr={3}
             onClick={handleSubmit}
             px={8}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
+            fontWeight="bold"
             isLoading={isLoading}
             loadingText="Updating..."
             isDisabled={!ledgerName || !selectedCurrency || !hasChanges}
@@ -496,7 +504,7 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
             isDisabled={isLoading}
             px={6}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
           >
             Cancel
           </Button>

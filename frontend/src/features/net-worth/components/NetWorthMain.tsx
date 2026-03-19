@@ -14,6 +14,7 @@ import {
   useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
+import { motion } from "framer-motion";
 import { RefreshCw, TrendingUp, BookOpen } from "lucide-react";
 import PageHeader from "@components/shared/PageHeader";
 import PageContainer from "@components/shared/PageContainer";
@@ -21,6 +22,8 @@ import { NetWorthResponse } from "../types";
 import NetWorthSummary from "./NetWorthSummary";
 import AssetAllocationChart from "./AssetAllocationChart";
 import PortfolioComposition from "./PortfolioComposition";
+
+const MotionCenter = motion(Center);
 
 interface Ledger {
   ledger_id: string;
@@ -56,7 +59,7 @@ const NetWorthMain: React.FC<NetWorthMainProps> = ({
   const labelColor = useColorModeValue("gray.400", "gray.500");
   const emptyTitleColor = useColorModeValue("gray.700", "gray.200");
   const emptySubColor = useColorModeValue("gray.500", "gray.400");
-  const emptyIconBg = useColorModeValue("brand.100", "rgba(116, 207, 202, 0.15)");
+  const emptyIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.1)");
 
   return (
     <>
@@ -102,7 +105,7 @@ const NetWorthMain: React.FC<NetWorthMainProps> = ({
               </FormControl>
             </Box>
 
-            {/* Refresh button — only useful when a ledger is active */}
+            {/* Refresh button */}
             <Button
               size="sm"
               variant="outline"
@@ -124,10 +127,18 @@ const NetWorthMain: React.FC<NetWorthMainProps> = ({
       <Box flex={1} overflowY="auto">
         {!selectedLedgerId ? (
           /* Empty state — no ledger selected */
-          <Center flexDirection="column" py={20} px={6} textAlign="center">
+          <MotionCenter
+            flexDirection="column"
+            py={24}
+            px={6}
+            textAlign="center"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <Box
-              w="72px"
-              h="72px"
+              w="80px"
+              h="80px"
               borderRadius="2xl"
               bg={emptyIconBg}
               display="flex"
@@ -135,24 +146,24 @@ const NetWorthMain: React.FC<NetWorthMainProps> = ({
               justifyContent="center"
               mb={5}
             >
-              <Icon as={BookOpen} boxSize={8} color="brand.500" />
+              <Icon as={BookOpen} boxSize={8} color="brand.400" />
             </Box>
             <Heading fontSize="xl" fontWeight="bold" color={emptyTitleColor} mb={2}>
               No ledger selected
             </Heading>
-            <Text fontSize="sm" color={emptySubColor} maxW="320px">
+            <Text fontSize="sm" color={emptySubColor} maxW="340px" lineHeight="tall">
               Choose a ledger from the dropdown above to view your consolidated net worth dashboard.
             </Text>
-          </Center>
+          </MotionCenter>
         ) : (
           <PageContainer>
             <VStack align="stretch" spacing={{ base: 4, md: 5 }}>
 
               {/* Row 1 — stat cards */}
               {isLoading ? (
-                <SimpleGrid columns={{ base: 1, sm: 3 }} spacing={{ base: 3, md: 4 }}>
+                <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 3, md: 4 }}>
                   {[0, 1, 2].map((i) => (
-                    <Skeleton key={i} height="80px" borderRadius="md" />
+                    <Skeleton key={i} height="110px" borderRadius="xl" />
                   ))}
                 </SimpleGrid>
               ) : data ? (
@@ -167,8 +178,8 @@ const NetWorthMain: React.FC<NetWorthMainProps> = ({
               {/* Row 2 — donut chart + portfolio composition */}
               {isLoading ? (
                 <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={{ base: 4, md: 5 }}>
-                  <Skeleton height="320px" borderRadius="md" />
-                  <Skeleton height="320px" borderRadius="md" />
+                  <Skeleton height="340px" borderRadius="xl" />
+                  <Skeleton height="340px" borderRadius="xl" />
                 </SimpleGrid>
               ) : data ? (
                 <SimpleGrid

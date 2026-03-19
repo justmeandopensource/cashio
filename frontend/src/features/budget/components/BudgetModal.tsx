@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -71,16 +71,18 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
 
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.100", "gray.700");
-  const cardBg = useColorModeValue("gray.50", "gray.700");
+  const cardBg = useColorModeValue("gray.50", "gray.750");
   const footerBg = useColorModeValue("gray.50", "gray.900");
   const inputBg = useColorModeValue("white", "gray.700");
   const inputBorderColor = useColorModeValue("gray.200", "gray.600");
-  const focusBorderColor = useColorModeValue("teal.500", "teal.300");
-  const helperTextColor = useColorModeValue("gray.500", "gray.400");
-  const highlightColor = useColorModeValue("teal.50", "teal.900");
-  const textColorSecondary = useColorModeValue("gray.500", "gray.400");
+  const focusBorderColor = useColorModeValue("brand.500", "brand.300");
+  const helperTextColor = useColorModeValue("gray.400", "gray.500");
+  const highlightColor = useColorModeValue("brand.50", "rgba(53, 169, 163, 0.12)");
+  const textColorSecondary = useColorModeValue("gray.400", "gray.500");
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
-  const modalIconColor = useColorModeValue("gray.400", "gray.500");
+  const modalIconBg = useColorModeValue("brand.50", "rgba(53, 169, 163, 0.12)");
+  const modalIconColor = useColorModeValue("brand.500", "brand.400");
+  const selectedBorderColor = useColorModeValue("brand.400", "brand.400");
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["expenseLeafCategories"],
@@ -257,11 +259,11 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={{ base: "full", sm: "xl" }} motionPreset="slideInBottom">
-      <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
+      <ModalOverlay backdropFilter="blur(8px)" bg="blackAlpha.400" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "md" }}
-        boxShadow="2xl"
+        borderRadius={{ base: 0, sm: "xl" }}
+        boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)"
         border="1px solid"
         borderColor={borderColor}
         overflow="hidden"
@@ -271,17 +273,28 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
         display="flex"
         flexDirection="column"
       >
+        {/* Gradient accent line */}
+        <Box
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
         {/* Header */}
         <Box px={{ base: 4, sm: 8 }} py={5} borderBottom="1px solid" borderColor={borderColor}>
-          <HStack spacing={3} align="flex-start">
-            <Icon as={isCreate ? Plus : Pencil} boxSize={5} mt="3px" color={modalIconColor} />
+          <HStack spacing={3} align="center">
+            <Box
+              p={2}
+              borderRadius="xl"
+              bg={modalIconBg}
+            >
+              <Icon as={isCreate ? Plus : Pencil} boxSize={4} color={modalIconColor} />
+            </Box>
             <Box>
-              <Box fontSize="lg" fontWeight="bold" color={modalTitleColor}>
+              <Text fontSize="lg" fontWeight="bold" color={modalTitleColor} letterSpacing="-0.02em">
                 {isCreate ? "Add Budget" : "Edit Budget"}
-              </Box>
-              <Box fontSize="sm" color={textColorSecondary}>
+              </Text>
+              <Text fontSize="sm" color={textColorSecondary}>
                 {isCreate ? "Set a spending limit for a category" : "Update the spending limit"}
-              </Box>
+              </Text>
             </Box>
           </HStack>
         </Box>
@@ -297,11 +310,11 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
         >
           <VStack spacing={4} align="stretch" w="100%">
             {/* Category */}
-            <Box bg={cardBg} p={{ base: 4, sm: 6 }} borderRadius="md" border="1px solid" borderColor={borderColor}>
+            <Box bg={cardBg} p={{ base: 4, sm: 5 }} borderRadius="xl" border="1px solid" borderColor={borderColor}>
               <FormControl>
-                <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+                <FormLabel fontWeight="semibold" fontSize="sm" mb={2} display="flex" alignItems="center" gap={1.5}>
                   Category
-                  {isCreate && categoryId && <Icon as={Check} boxSize={3.5} color="teal.500" />}
+                  {isCreate && categoryId && <Icon as={Check} boxSize={3.5} color="brand.500" />}
                 </FormLabel>
                 {isCreate ? (
                   <Popover
@@ -333,10 +346,10 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
                           onKeyDown={handleCategoryKeyDown}
                           placeholder="Search categories..."
                           borderWidth="2px"
-                          borderColor={categoryId ? "teal.400" : inputBorderColor}
+                          borderColor={categoryId ? selectedBorderColor : inputBorderColor}
                           bg={inputBg}
-                          borderRadius="md"
-                          _hover={{ borderColor: "teal.300" }}
+                          borderRadius="lg"
+                          _hover={{ borderColor: "brand.300" }}
                           _focus={{ borderColor: focusBorderColor, boxShadow: `0 0 0 1px ${focusBorderColor}` }}
                           autoComplete="off"
                           autoFocus
@@ -372,8 +385,8 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
                       bg={bgColor}
                       border="1px solid"
                       borderColor={borderColor}
-                      borderRadius="md"
-                      boxShadow="lg"
+                      borderRadius="xl"
+                      boxShadow="0 4px 20px rgba(0,0,0,0.08)"
                       maxH="220px"
                       overflowY="auto"
                       _focus={{ outline: "none" }}
@@ -383,13 +396,14 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
                           <Box
                             key={cat.category_id}
                             px={4}
-                            py={3}
+                            py={2.5}
                             cursor="pointer"
                             display="flex"
                             alignItems="center"
                             justifyContent="space-between"
                             bg={String(cat.category_id) === categoryId || i === highlightedIndex ? highlightColor : "transparent"}
                             _hover={{ bg: highlightColor }}
+                            transition="background 0.1s ease"
                             onMouseDown={(e) => {
                               e.preventDefault();
                               setCategoryId(String(cat.category_id));
@@ -403,7 +417,7 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
                               {cat.name}
                             </Text>
                             {String(cat.category_id) === categoryId && (
-                              <Icon as={Check} boxSize={4} color="teal.500" />
+                              <Icon as={Check} boxSize={4} color="brand.500" />
                             )}
                           </Box>
                         ))
@@ -423,9 +437,9 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
             </Box>
 
             {/* Period */}
-            <Box bg={cardBg} p={{ base: 4, sm: 6 }} borderRadius="md" border="1px solid" borderColor={borderColor}>
+            <Box bg={cardBg} p={{ base: 4, sm: 5 }} borderRadius="xl" border="1px solid" borderColor={borderColor}>
               <FormControl>
-                <FormLabel fontWeight="semibold" mb={2}>Period</FormLabel>
+                <FormLabel fontWeight="semibold" fontSize="sm" mb={2}>Period</FormLabel>
                 {isCreate ? (
                   <Select
                     value={selectedPeriod}
@@ -434,8 +448,8 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
                     borderColor={inputBorderColor}
                     bg={inputBg}
                     size="lg"
-                    borderRadius="md"
-                    _hover={{ borderColor: "teal.300" }}
+                    borderRadius="lg"
+                    _hover={{ borderColor: "brand.300" }}
                     _focus={{ borderColor: focusBorderColor, boxShadow: `0 0 0 1px ${focusBorderColor}` }}
                   >
                     <option value="monthly">Monthly</option>
@@ -450,11 +464,11 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
             </Box>
 
             {/* Amount */}
-            <Box bg={cardBg} p={{ base: 4, sm: 6 }} borderRadius="md" border="1px solid" borderColor={borderColor}>
+            <Box bg={cardBg} p={{ base: 4, sm: 5 }} borderRadius="xl" border="1px solid" borderColor={borderColor}>
               <FormControl>
-                <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+                <FormLabel fontWeight="semibold" fontSize="sm" mb={2} display="flex" alignItems="center" gap={1.5}>
                   Limit Amount
-                  {amount && Number(amount) > 0 && <Icon as={Check} boxSize={3.5} color="teal.500" />}
+                  {amount && Number(amount) > 0 && <Icon as={Check} boxSize={3.5} color="brand.500" />}
                 </FormLabel>
                 <NumberInput value={amount} onChange={(val) => setAmount(val)} min={0.01} precision={2}>
                   <NumberInputField
@@ -463,10 +477,10 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
                     borderWidth="2px"
                     borderColor={inputBorderColor}
                     bg={inputBg}
-                    size="lg"
-                    borderRadius="md"
+                    borderRadius="lg"
                     h="3rem"
-                    _hover={{ borderColor: "teal.300" }}
+                    fontSize="md"
+                    _hover={{ borderColor: "brand.300" }}
                     _focus={{ borderColor: focusBorderColor, boxShadow: `0 0 0 1px ${focusBorderColor}` }}
                     autoFocus={mode === "edit"}
                   />
@@ -482,7 +496,7 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
               size="lg"
               width="100%"
               mb={3}
-              borderRadius="md"
+              borderRadius="lg"
               isLoading={isPending}
               loadingText={isCreate ? "Creating..." : "Saving..."}
               onClick={handleSubmit}
@@ -495,7 +509,7 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
               onClick={onClose}
               size="lg"
               width="100%"
-              borderRadius="md"
+              borderRadius="lg"
               isDisabled={isPending}
             >
               Cancel
@@ -507,7 +521,7 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
         <ModalFooter
           display={{ base: "none", sm: "flex" }}
           px={8}
-          py={6}
+          py={5}
           bg={footerBg}
           borderTop="1px solid"
           borderColor={borderColor}
@@ -517,8 +531,7 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
             mr={3}
             onClick={handleSubmit}
             px={8}
-            py={3}
-            borderRadius="md"
+            borderRadius="lg"
             isLoading={isPending}
             loadingText={isCreate ? "Creating..." : "Saving..."}
           >
@@ -530,8 +543,7 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
             onClick={onClose}
             isDisabled={isPending}
             px={6}
-            py={3}
-            borderRadius="md"
+            borderRadius="lg"
           >
             Cancel
           </Button>

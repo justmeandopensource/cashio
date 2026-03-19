@@ -558,7 +558,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "md" }}
+        borderRadius={{ base: 0, sm: "xl" }}
         boxShadow="2xl"
         border="1px solid"
         borderColor={borderColor}
@@ -569,6 +569,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
         display="flex"
         flexDirection="column"
       >
+        <Box h="3px" bgGradient="linear(to-r, brand.400, brand.600, teal.300)" />
         {/* Flat header */}
         <Box
           px={{ base: 4, sm: 8 }}
@@ -582,7 +583,8 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
             <Box>
               <Box
                 fontSize="lg"
-                fontWeight="bold"
+                fontWeight="800"
+                letterSpacing="-0.02em"
                 color={modalTitleColor}
               >
                 Edit Transaction
@@ -753,7 +755,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -774,10 +776,10 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                         height: "48px",
                         borderWidth: "2px",
                         borderColor: inputBorderColor,
-                        borderRadius: "md",
+                        borderRadius: "lg",
                         bg: inputBg,
                         fontSize: "lg",
-                        _hover: { borderColor: "teal.300" },
+                        _hover: { borderColor: "brand.300" },
                         _focus: {
                           borderColor: focusBorderColor,
                           boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -804,7 +806,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -818,7 +820,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                   </Text>
                 </Box>
                 <Switch
-                  colorScheme="teal"
+                  colorScheme="brand"
                   size="lg"
                   isChecked={isSplit}
                   onChange={(e) => handleSplitToggle(e.target.checked)}
@@ -840,7 +842,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                 borderColor={inputBorderColor}
                 bgColor={inputBg}
                 highlightColor={highlightColor}
-                buttonColorScheme="teal"
+                buttonColorScheme="brand"
                 ledgerId={ledgerId as string}
                 onDropdownOpenChange={setIsSplitDropdownOpen}
               />
@@ -849,7 +851,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
               <Box
                 bg={cardBg}
                 p={{ base: 4, sm: 6 }}
-                borderRadius="md"
+                borderRadius="xl"
                 border="1px solid"
                 borderColor={borderColor}
               >
@@ -889,8 +891,8 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                           borderWidth="2px"
                           borderColor={categoryId ? "teal.400" : inputBorderColor}
                           bg={inputBg}
-                          borderRadius="md"
-                          _hover={{ borderColor: "teal.300" }}
+                          borderRadius="lg"
+                          _hover={{ borderColor: "brand.300" }}
                           _focus={{
                             borderColor: focusBorderColor,
                             boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -929,7 +931,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                       bg={bgColor}
                       border="1px solid"
                       borderColor={borderColor}
-                      borderRadius="md"
+                      borderRadius="lg"
                       boxShadow="lg"
                       maxH="220px"
                       overflowY="auto"
@@ -1027,7 +1029,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -1061,7 +1063,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                   tags={tags}
                   setTags={setTags}
                   borderColor={inputBorderColor}
-                  buttonColorScheme="teal"
+                  buttonColorScheme="brand"
                   onShouldBlockSubmit={setIsTagInputActive}
                 />
               </VStack>
@@ -1072,14 +1074,15 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
           <Box display={{ base: "block", sm: "none" }} mt={6}>
             <Button
               onClick={handleSubmit}
-              colorScheme="teal"
+              colorScheme="brand"
               size="lg"
               width="100%"
               mb={3}
-              borderRadius="md"
+              borderRadius="lg"
               isLoading={isLoading}
               loadingText="Saving..."
               isDisabled={isSaveDisabled}
+              fontWeight="bold"
             >
               Save Changes
             </Button>
@@ -1089,7 +1092,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
               onClick={onClose}
               size="lg"
               width="100%"
-              borderRadius="md"
+              borderRadius="lg"
               isDisabled={isLoading}
             >
               Cancel
@@ -1107,15 +1110,16 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
           borderColor={borderColor}
         >
           <Button
-            colorScheme="teal"
+            colorScheme="brand"
             mr={3}
             onClick={handleSubmit}
             px={8}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
             isLoading={isLoading}
             loadingText="Saving..."
             isDisabled={isSaveDisabled}
+            fontWeight="bold"
           >
             Save Changes
           </Button>
@@ -1126,7 +1130,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
             isDisabled={isLoading}
             px={6}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
           >
             Cancel
           </Button>

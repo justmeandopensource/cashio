@@ -10,42 +10,38 @@ import {
   Center,
   Grid,
   GridItem,
-  Collapse,
   Flex,
 } from "@chakra-ui/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ResponsiveContainer, Treemap, Tooltip } from "recharts";
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, TrendingUp, TrendingDown, PieChart, BarChart2, ChevronRight, ChevronDown } from "lucide-react";
+import {
+  Calendar,
+  TrendingUp,
+  TrendingDown,
+  PieChart,
+  BarChart2,
+  ChevronRight,
+  ChevronDown,
+  Wallet,
+} from "lucide-react";
 import config from "@/config";
 import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
 
-// Distinct base colors — one per top-level category.
-// Children get HSL-derived shades of their parent's base color.
+const MotionBox = motion(Box);
+const MotionFlex = motion(Flex);
+
+// --- Color palettes ---
+
 const BASE_COLORS_LIGHT = [
-  "#0d9488", // teal
-  "#2563eb", // blue
-  "#ea580c", // orange
-  "#7c3aed", // violet
-  "#16a34a", // green
-  "#db2777", // pink
-  "#ca8a04", // yellow
-  "#dc2626", // red
-  "#0891b2", // cyan
-  "#9333ea", // purple
+  "#0d9488", "#2563eb", "#ea580c", "#7c3aed", "#16a34a",
+  "#db2777", "#ca8a04", "#dc2626", "#0891b2", "#9333ea",
 ];
 
 const BASE_COLORS_DARK = [
-  "#2dd4bf", // teal-400
-  "#60a5fa", // blue-400
-  "#fb923c", // orange-400
-  "#a78bfa", // violet-400
-  "#4ade80", // green-400
-  "#f472b6", // pink-400
-  "#facc15", // yellow-400
-  "#f87171", // red-400
-  "#22d3ee", // cyan-400
-  "#c084fc", // purple-400
+  "#2dd4bf", "#60a5fa", "#fb923c", "#a78bfa", "#4ade80",
+  "#f472b6", "#facc15", "#f87171", "#22d3ee", "#c084fc",
 ];
 
 // --- Color helpers ---
@@ -108,6 +104,8 @@ function assignColorsToCategories(categories: CategoryData[], baseColors: string
   });
 }
 
+// --- Interfaces ---
+
 interface CategoryData {
   name: string;
   value: number;
@@ -123,132 +121,30 @@ interface CurrentMonthOverviewData {
 }
 
 interface CustomizedTreemapContentProps {
-  root?: {
-    name?: string;
-    value?: number;
-    children?: any[];
-  };
+  root?: { name?: string; value?: number; children?: any[] };
   depth?: number;
   x?: number;
   y?: number;
   width?: number;
   height?: number;
   index?: number;
+  name?: string;
+  value?: number;
   color?: string;
   colors: string[];
   strokeColor: string;
+  textColor: string;
+  currencySymbol: string;
 }
 
-interface NestedCategoryBreakdownProps {
+interface CategoryBarBreakdownProps {
   categories: CategoryData[];
+  total: number;
   type: "income" | "expense";
   currencySymbol: string;
-  primaryTextColor: string;
 }
 
-const NestedCategoryBreakdown: React.FC<NestedCategoryBreakdownProps> = ({
-  categories,
-  type,
-  currencySymbol,
-  primaryTextColor,
-}) => {
-  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
-
-  const topLevelIncomeTextColor = useColorModeValue("teal.700", "teal.400");
-  const topLevelExpenseTextColor = useColorModeValue("red.700", "red.400");
-  const hoverBgIncome = useColorModeValue("teal.100", "teal.800");
-  const hoverBgExpense = useColorModeValue("red.100", "red.800");
-  const headingIncomeColor = useColorModeValue("teal.600", "teal.300");
-  const headingExpenseColor = useColorModeValue("red.600", "red.300");
-  const breakdownBg = useColorModeValue("gray.50", "gray.700");
-
-  const toggleCategory = (categoryName: string) => {
-    setExpandedCategories((prev) =>
-      prev.includes(categoryName)
-        ? prev.filter((name) => name !== categoryName)
-        : [...prev, categoryName],
-    );
-  };
-
-  const renderCategory = (category: CategoryData, level = 0) => {
-    const isExpanded = expandedCategories.includes(category.name);
-    const hasChildren = category.children && category.children.length > 0;
-
-    const categoryTextColor = level === 0 ? (type === "income" ? topLevelIncomeTextColor : topLevelExpenseTextColor) : primaryTextColor;
-
-    return (
-      <Box key={category.name}>
-        <Flex
-          align="center"
-          p={2}
-          borderRadius="md"
-          mb={1}
-          pl={`${level * 15 + 10}px`}
-          cursor={hasChildren ? "pointer" : "default"}
-          onClick={
-            hasChildren ? () => toggleCategory(category.name) : undefined
-          }
-          _hover={{
-            bg: type === "income" ? hoverBgIncome : hoverBgExpense,
-          }}
-        >
-          {hasChildren && (
-            <Icon
-              as={isExpanded ? ChevronDown : ChevronRight}
-              mr={2}
-              color={categoryTextColor}
-            />
-          )}
-          <Box flex={1}>
-            <Text fontWeight="medium" color={categoryTextColor} fontSize="sm">
-              {category.name}
-            </Text>
-          </Box>
-          <Text color={categoryTextColor}>
-            {formatNumberAsCurrency(category.value, currencySymbol)}
-          </Text>
-        </Flex>
-        {hasChildren && isExpanded && (
-          <Collapse in={isExpanded}>
-            <Box pl={`${level * 15 + 25}px`}>
-              {category.children?.map((child) =>
-                renderCategory(child, level + 1),
-              )}
-            </Box>
-          </Collapse>
-        )}
-      </Box>
-    );
-  };
-
-  return (
-    <Box>
-      <Heading
-        size="sm"
-        color={type === "income" ? headingIncomeColor : headingExpenseColor}
-        mb={4}
-        display="flex"
-        alignItems="center"
-      >
-        <Icon
-          as={BarChart2}
-          mr={2}
-          color={type === "income" ? "teal.500" : "red.500"}
-        />
-        {type === "income" ? "Income" : "Expense"} Categories
-      </Heading>
-      <VStack
-        align="stretch"
-        spacing={2}
-        bg={breakdownBg}
-        p={4}
-        borderRadius="lg"
-      >
-        {categories.map((category) => renderCategory(category))}
-      </VStack>
-    </Box>
-  );
-};
+// --- Treemap content with labels ---
 
 class CustomizedTreemapContent extends PureComponent<CustomizedTreemapContentProps> {
   render() {
@@ -260,9 +156,13 @@ class CustomizedTreemapContent extends PureComponent<CustomizedTreemapContentPro
       width = 0,
       height = 0,
       index = 0,
+      name,
+      value,
       color,
       colors,
       strokeColor,
+      textColor,
+      currencySymbol,
     } = this.props;
 
     const fallbackColor = colors[Math.floor((index / (root?.children?.length || 1)) * colors.length)];
@@ -281,53 +181,230 @@ class CustomizedTreemapContent extends PureComponent<CustomizedTreemapContentPro
             strokeWidth: 2 / (depth + 1e-10),
             strokeOpacity: 1 / (depth + 1e-10),
           }}
+          rx={depth === 1 ? 3 : 0}
         />
       </g>
     );
   }
 }
 
-// Main Component
+// --- Category bar breakdown ---
+
+const CategoryBarBreakdown: React.FC<CategoryBarBreakdownProps> = ({
+  categories,
+  total,
+  type,
+  currencySymbol,
+}) => {
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const barTrackBg = useColorModeValue("gray.100", "gray.600");
+  const primaryText = useColorModeValue("gray.700", "gray.200");
+  const secondaryText = useColorModeValue("gray.500", "gray.400");
+  const hoverBg = useColorModeValue("gray.50", "whiteAlpha.50");
+  const childBg = useColorModeValue("gray.50", "gray.700");
+  const headingColor = useColorModeValue(
+    type === "income" ? "green.600" : "red.600",
+    type === "income" ? "green.300" : "red.300",
+  );
+
+  return (
+    <Box>
+      <Flex align="center" gap={2} mb={4}>
+        <Icon
+          as={BarChart2}
+          boxSize={4}
+          color={headingColor}
+        />
+        <Heading size="sm" color={headingColor} letterSpacing="-0.01em">
+          {type === "income" ? "Income" : "Expense"} Categories
+        </Heading>
+      </Flex>
+      <VStack align="stretch" spacing={0}>
+        {categories.map((category, idx) => {
+          const pct = total > 0 ? (category.value / total) * 100 : 0;
+          const hasChildren = category.children && category.children.length > 0;
+          const isExpanded = expanded === category.name;
+
+          return (
+            <Box key={category.name}>
+              <MotionFlex
+                align="center"
+                gap={3}
+                py={2.5}
+                px={3}
+                borderRadius="md"
+                cursor={hasChildren ? "pointer" : "default"}
+                onClick={hasChildren ? () => setExpanded(isExpanded ? null : category.name) : undefined}
+                _hover={{ bg: hoverBg }}
+                style={{ transition: "background 0.15s ease" }}
+                initial={false}
+              >
+                {/* Color dot */}
+                <Box
+                  w="10px"
+                  h="10px"
+                  borderRadius="full"
+                  bg={category.color}
+                  flexShrink={0}
+                />
+
+                {/* Name + bar */}
+                <Box flex={1} minW={0}>
+                  <Flex justify="space-between" align="baseline" mb={1}>
+                    <HStack spacing={1.5}>
+                      <Text
+                        fontSize="sm"
+                        fontWeight="medium"
+                        color={primaryText}
+                        noOfLines={1}
+                      >
+                        {category.name}
+                      </Text>
+                      {hasChildren && (
+                        <Icon
+                          as={isExpanded ? ChevronDown : ChevronRight}
+                          boxSize={3.5}
+                          color={secondaryText}
+                        />
+                      )}
+                    </HStack>
+                    <HStack spacing={2} flexShrink={0}>
+                      <Text fontSize="xs" color={secondaryText}>
+                        {pct.toFixed(1)}%
+                      </Text>
+                      <Text fontSize="sm" fontWeight="semibold" color={primaryText}>
+                        {formatNumberAsCurrency(category.value, currencySymbol)}
+                      </Text>
+                    </HStack>
+                  </Flex>
+                  {/* Proportional bar */}
+                  <Box
+                    h="4px"
+                    borderRadius="full"
+                    bg={barTrackBg}
+                    overflow="hidden"
+                  >
+                    <MotionBox
+                      h="full"
+                      borderRadius="full"
+                      bg={category.color}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.max(pct, 1)}%` }}
+                      transition={{ duration: 0.6, delay: idx * 0.05, ease: "easeOut" }}
+                    />
+                  </Box>
+                </Box>
+              </MotionFlex>
+
+              {/* Children */}
+              <AnimatePresence>
+                {hasChildren && isExpanded && (
+                  <MotionBox
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                    overflow="hidden"
+                  >
+                    <VStack
+                      align="stretch"
+                      spacing={0}
+                      ml={6}
+                      pl={3}
+                      borderLeftWidth="2px"
+                      borderLeftColor={category.color}
+                      bg={childBg}
+                      borderRadius="0 md md 0"
+                      py={1}
+                      my={1}
+                    >
+                      {category.children?.map((child) => {
+                        const childPct = category.value > 0
+                          ? (child.value / category.value) * 100
+                          : 0;
+                        return (
+                          <Flex
+                            key={child.name}
+                            align="center"
+                            gap={3}
+                            py={1.5}
+                            px={3}
+                          >
+                            <Box
+                              w="6px"
+                              h="6px"
+                              borderRadius="full"
+                              bg={child.color}
+                              flexShrink={0}
+                            />
+                            <Text
+                              flex={1}
+                              fontSize="xs"
+                              color={secondaryText}
+                              noOfLines={1}
+                            >
+                              {child.name}
+                            </Text>
+                            <Text fontSize="xs" color={secondaryText}>
+                              {childPct.toFixed(0)}%
+                            </Text>
+                            <Text
+                              fontSize="xs"
+                              fontWeight="medium"
+                              color={primaryText}
+                            >
+                              {formatNumberAsCurrency(child.value, currencySymbol)}
+                            </Text>
+                          </Flex>
+                        );
+                      })}
+                    </VStack>
+                  </MotionBox>
+                )}
+              </AnimatePresence>
+            </Box>
+          );
+        })}
+      </VStack>
+    </Box>
+  );
+};
+
+// --- Main Component ---
+
 const CurrentMonthOverview: React.FC = () => {
-  // Color modes
   const bgColor = useColorModeValue("white", "gray.800");
   const cardBg = useColorModeValue("gray.50", "gray.700");
-  const primaryTextColor = useColorModeValue("gray.800", "gray.400");
-  const secondaryTextColor = useColorModeValue("gray.600", "gray.300");
-  const customToolTipBorderColor = useColorModeValue("gray.200", "gray.600");
-  const treemapStrokeColor = useColorModeValue("#fff", "gray.800");
-  const expenseColor = useColorModeValue("red.500", "red.400");
-  const sectionBorderColor = useColorModeValue("gray.200", "gray.700");
+  const primaryTextColor = useColorModeValue("gray.800", "gray.100");
+  const secondaryTextColor = useColorModeValue("gray.500", "gray.400");
+  const tooltipBorderColor = useColorModeValue("gray.200", "gray.600");
+  const treemapStrokeColor = useColorModeValue("#fff", "#2D3748");
+  const treemapTextColor = useColorModeValue("#fff", "#fff");
+  const sectionBorderColor = useColorModeValue("gray.200", "gray.600");
   const columnHeaderColor = useColorModeValue("gray.400", "gray.500");
   const positiveColor = useColorModeValue("green.500", "green.300");
+  const expenseColor = useColorModeValue("red.500", "red.400");
   const incomeTopAccent = useColorModeValue("green.400", "green.400");
   const expenseTopAccent = useColorModeValue("red.400", "red.400");
+  const savingsPositiveColor = useColorModeValue("brand.600", "brand.300");
+  const savingsNegativeColor = useColorModeValue("orange.500", "orange.300");
+  const savingsTopAccent = useColorModeValue("brand.400", "brand.400");
+  const savingsNegativeTopAccent = useColorModeValue("orange.400", "orange.400");
 
   const baseColors = useColorModeValue(BASE_COLORS_LIGHT, BASE_COLORS_DARK);
-
-  // Currency symbol from global store
   const { ledgerId, currencySymbol } = useLedgerStore();
 
-  // Fetch data
   const { data, isLoading, isError } = useQuery<CurrentMonthOverviewData>({
     queryKey: ["current-month-overview", ledgerId],
     queryFn: async () => {
       if (!ledgerId) return null;
-
       const token = localStorage.getItem("access_token");
       const response = await fetch(
         `${config.apiBaseUrl}/ledger/${ledgerId}/insights/current-month-overview`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch current month overview");
-      }
-
+      if (!response.ok) throw new Error("Failed to fetch current month overview");
       return response.json();
     },
     enabled: !!ledgerId,
@@ -335,15 +412,26 @@ const CurrentMonthOverview: React.FC = () => {
   });
 
   const coloredIncomeData = useMemo(
-    () => assignColorsToCategories(data?.income_categories_breakdown ?? [], baseColors),
-    [data?.income_categories_breakdown, baseColors]
+    () => assignColorsToCategories(
+      [...(data?.income_categories_breakdown ?? [])].sort((a, b) => b.value - a.value),
+      baseColors,
+    ),
+    [data?.income_categories_breakdown, baseColors],
   );
   const coloredExpenseData = useMemo(
-    () => assignColorsToCategories(data?.expense_categories_breakdown ?? [], baseColors),
-    [data?.expense_categories_breakdown, baseColors]
+    () => assignColorsToCategories(
+      [...(data?.expense_categories_breakdown ?? [])].sort((a, b) => b.value - a.value),
+      baseColors,
+    ),
+    [data?.expense_categories_breakdown, baseColors],
   );
 
-  // Render loading state
+  const netSavings = (data?.total_income ?? 0) - (data?.total_expense ?? 0);
+  const savingsRate = data?.total_income && data.total_income > 0
+    ? (netSavings / data.total_income) * 100
+    : 0;
+  const isPositiveSavings = netSavings >= 0;
+
   if (isLoading) {
     return (
       <VStack spacing={4} align="stretch" bg={cardBg} p={6} borderRadius="xl">
@@ -352,7 +440,6 @@ const CurrentMonthOverview: React.FC = () => {
     );
   }
 
-  // Render error state
   if (isError || !data) {
     return (
       <VStack spacing={4} align="center" bg={cardBg} p={6} borderRadius="xl">
@@ -364,135 +451,232 @@ const CurrentMonthOverview: React.FC = () => {
     );
   }
 
-  // Custom tooltip
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      const totalValue = data.root?.value || data.value;
-      const parentName = data.root?.name;
+      const d = payload[0].payload;
+      const totalValue = d.root?.value || d.value;
+      const parentName = d.root?.name;
+      const pct = totalValue > 0 ? ((d.value / totalValue) * 100).toFixed(1) : "0";
       return (
         <Box
           bg={bgColor}
-          p={3}
-          borderRadius="md"
-          boxShadow="md"
+          px={3}
+          py={2.5}
+          borderRadius="lg"
+          boxShadow="lg"
           border="1px solid"
-          borderColor={customToolTipBorderColor}
+          borderColor={tooltipBorderColor}
+          minW="140px"
         >
-          <Text fontWeight="bold" color={primaryTextColor}>
-            {data.name}
+          <Text fontWeight="bold" fontSize="sm" color={primaryTextColor} mb={0.5}>
+            {d.name}
           </Text>
           {parentName && (
-            <Text fontSize="sm" color={secondaryTextColor}>
+            <Text fontSize="xs" color={secondaryTextColor} mb={1}>
               {parentName}
             </Text>
           )}
-          <Text fontWeight="bold" color={secondaryTextColor}>
-            {formatNumberAsCurrency(data.value, currencySymbol as string)}
-          </Text>
-          <Text fontSize="sm" color={secondaryTextColor}>
-            {((data.value / totalValue) * 100).toFixed(1)}%{" "}
-            {parentName
-              ? `of ${parentName} ${formatNumberAsCurrency(totalValue, currencySymbol as string)}`
-              : ""}
-          </Text>
+          <Flex justify="space-between" align="baseline" gap={4}>
+            <Text fontWeight="bold" color={primaryTextColor}>
+              {formatNumberAsCurrency(d.value, currencySymbol as string)}
+            </Text>
+            <Text fontSize="xs" fontWeight="medium" color={secondaryTextColor}>
+              {pct}%
+            </Text>
+          </Flex>
         </Box>
       );
     }
     return null;
   };
 
+  const stagger = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.08 } },
+  };
+  const fadeUp = {
+    hidden: { opacity: 0, y: 12 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+  };
+
   return (
-    <Box bg={bgColor} borderRadius="lg" p={{ base: 4, md: 6 }} boxShadow="lg">
-      <VStack align="flex-start" spacing={1} flex={1}>
-        <Flex alignItems="center" gap={3}>
-          <Icon as={Calendar} w={5} h={5} color={primaryTextColor} />
-          <Heading as="h2" size="md" color={primaryTextColor}>
-            Current Month Overview
-          </Heading>
-        </Flex>
-        <Text color={secondaryTextColor} fontSize="sm" pl="2rem">
-          Your financial snapshot for the current month
-        </Text>
-      </VStack>
-
-      {/* Summary Cards */}
-      <HStack
-        spacing={{ base: 3, md: 4 }}
-        mt={6}
-        mb={{ base: 4, md: 6 }}
-        flexDirection={{ base: "column", md: "row" }}
-      >
-        {/* Income Card */}
-        <Box
-          bg={cardBg}
-          p={{ base: 3, md: 4 }}
-          borderRadius="md"
-          boxShadow="sm"
-          border="1px solid"
-          borderColor={sectionBorderColor}
-          borderTopWidth="3px"
-          borderTopColor={incomeTopAccent}
-          width="full"
-        >
-          <Flex align="center" gap={1.5} mb={1}>
-            <Icon as={TrendingUp} boxSize={3} color={columnHeaderColor} />
-            <Text
-              fontSize="2xs"
-              fontWeight="semibold"
-              textTransform="uppercase"
-              letterSpacing="wider"
-              color={columnHeaderColor}
-            >
-              Income
-            </Text>
+    <MotionBox
+      borderRadius="lg"
+      p={{ base: 0, md: 0 }}
+      variants={stagger}
+      initial="hidden"
+      animate="show"
+    >
+      {/* Header */}
+      <MotionBox variants={fadeUp}>
+        <VStack align="flex-start" spacing={1}>
+          <Flex alignItems="center" gap={3}>
+            <Icon as={Calendar} w={5} h={5} color={primaryTextColor} />
+            <Heading as="h2" size="md" color={primaryTextColor} letterSpacing="-0.02em">
+              Current Month Overview
+            </Heading>
           </Flex>
-          <Text
-            fontSize={{ base: "md", md: "xl" }}
-            fontWeight="bold"
-            color={positiveColor}
-            lineHeight="short"
-          >
-            {formatNumberAsCurrency(data.total_income, currencySymbol as string)}
+          <Text color={secondaryTextColor} fontSize="sm" pl="2rem">
+            Your financial snapshot for the current month
           </Text>
-        </Box>
+        </VStack>
+      </MotionBox>
 
-        {/* Expense Card */}
-        <Box
-          bg={cardBg}
-          p={{ base: 3, md: 4 }}
-          borderRadius="md"
-          boxShadow="sm"
-          border="1px solid"
-          borderColor={sectionBorderColor}
-          borderTopWidth="3px"
-          borderTopColor={expenseTopAccent}
-          width="full"
+      {/* Summary Cards: Income / Expense / Net Savings */}
+      <MotionBox variants={fadeUp}>
+        <Grid
+          templateColumns={{ base: "1fr", md: "1fr 1fr 1fr" }}
+          gap={{ base: 3, md: 4 }}
+          mt={6}
+          mb={{ base: 4, md: 6 }}
         >
-          <Flex align="center" gap={1.5} mb={1}>
-            <Icon as={TrendingDown} boxSize={3} color={columnHeaderColor} />
-            <Text
-              fontSize="2xs"
-              fontWeight="semibold"
-              textTransform="uppercase"
-              letterSpacing="wider"
-              color={columnHeaderColor}
+          {/* Income Card */}
+          <GridItem>
+            <Box
+              bg={cardBg}
+              p={{ base: 3, md: 4 }}
+              borderRadius="xl"
+              border="1px solid"
+              borderColor={sectionBorderColor}
+              overflow="hidden"
+              position="relative"
+              transition="border-color 0.2s ease"
+              _hover={{ borderColor: incomeTopAccent }}
+              height="full"
             >
-              Expenses
-            </Text>
-          </Flex>
-          <Text
-            fontSize={{ base: "md", md: "xl" }}
-            fontWeight="bold"
-            color={expenseColor}
-            lineHeight="short"
-          >
-            {formatNumberAsCurrency(data.total_expense, currencySymbol as string)}
-          </Text>
-        </Box>
-      </HStack>
+              <Box
+                position="absolute"
+                top={0}
+                left={0}
+                right={0}
+                h="2px"
+                bg={incomeTopAccent}
+                opacity={0.7}
+              />
+              <Flex align="center" gap={1.5} mb={1}>
+                <Icon as={TrendingUp} boxSize={3} color={columnHeaderColor} />
+                <Text
+                  fontSize="2xs"
+                  fontWeight="semibold"
+                  textTransform="uppercase"
+                  letterSpacing="wider"
+                  color={columnHeaderColor}
+                >
+                  Income
+                </Text>
+              </Flex>
+              <Text
+                fontSize={{ base: "md", md: "xl" }}
+                fontWeight="bold"
+                color={positiveColor}
+                lineHeight="short"
+              >
+                {formatNumberAsCurrency(data.total_income, currencySymbol as string)}
+              </Text>
+            </Box>
+          </GridItem>
 
-      {/* Treemap Visualizations with Side-by-Side Layout */}
+          {/* Expense Card */}
+          <GridItem>
+            <Box
+              bg={cardBg}
+              p={{ base: 3, md: 4 }}
+              borderRadius="xl"
+              border="1px solid"
+              borderColor={sectionBorderColor}
+              overflow="hidden"
+              position="relative"
+              transition="border-color 0.2s ease"
+              _hover={{ borderColor: expenseTopAccent }}
+              height="full"
+            >
+              <Box
+                position="absolute"
+                top={0}
+                left={0}
+                right={0}
+                h="2px"
+                bg={expenseTopAccent}
+                opacity={0.7}
+              />
+              <Flex align="center" gap={1.5} mb={1}>
+                <Icon as={TrendingDown} boxSize={3} color={columnHeaderColor} />
+                <Text
+                  fontSize="2xs"
+                  fontWeight="semibold"
+                  textTransform="uppercase"
+                  letterSpacing="wider"
+                  color={columnHeaderColor}
+                >
+                  Expenses
+                </Text>
+              </Flex>
+              <Text
+                fontSize={{ base: "md", md: "xl" }}
+                fontWeight="bold"
+                color={expenseColor}
+                lineHeight="short"
+              >
+                {formatNumberAsCurrency(data.total_expense, currencySymbol as string)}
+              </Text>
+            </Box>
+          </GridItem>
+
+          {/* Net Savings Card */}
+          <GridItem>
+            <Box
+              bg={cardBg}
+              p={{ base: 3, md: 4 }}
+              borderRadius="xl"
+              border="1px solid"
+              borderColor={sectionBorderColor}
+              overflow="hidden"
+              position="relative"
+              transition="border-color 0.2s ease"
+              _hover={{ borderColor: isPositiveSavings ? savingsTopAccent : savingsNegativeTopAccent }}
+              height="full"
+            >
+              <Box
+                position="absolute"
+                top={0}
+                left={0}
+                right={0}
+                h="2px"
+                bg={isPositiveSavings ? savingsTopAccent : savingsNegativeTopAccent}
+                opacity={0.7}
+              />
+              <Flex align="center" gap={1.5} mb={1}>
+                <Icon as={Wallet} boxSize={3} color={columnHeaderColor} />
+                <Text
+                  fontSize="2xs"
+                  fontWeight="semibold"
+                  textTransform="uppercase"
+                  letterSpacing="wider"
+                  color={columnHeaderColor}
+                >
+                  Net Savings
+                </Text>
+              </Flex>
+              <Text
+                fontSize={{ base: "md", md: "xl" }}
+                fontWeight="bold"
+                color={isPositiveSavings ? savingsPositiveColor : savingsNegativeColor}
+                lineHeight="short"
+              >
+                {isPositiveSavings ? "+" : ""}
+                {formatNumberAsCurrency(netSavings, currencySymbol as string)}
+              </Text>
+              {data.total_income > 0 && (
+                <Text fontSize="xs" color={secondaryTextColor} mt={0.5}>
+                  {savingsRate.toFixed(1)}% savings rate
+                </Text>
+              )}
+            </Box>
+          </GridItem>
+        </Grid>
+      </MotionBox>
+
+      {/* Treemaps + Category breakdowns */}
       {(coloredIncomeData.length > 0 || coloredExpenseData.length > 0) && (
         <Grid
           templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
@@ -502,7 +686,7 @@ const CurrentMonthOverview: React.FC = () => {
           {/* Income Treemap */}
           {coloredIncomeData.length > 0 && (
             <GridItem>
-              <Box width="full">
+              <MotionBox variants={fadeUp} width="full">
                 <Heading
                   size="sm"
                   color={primaryTextColor}
@@ -513,7 +697,7 @@ const CurrentMonthOverview: React.FC = () => {
                   <Icon as={PieChart} mr={2} color="teal.500" />
                   Income Breakdown
                 </Heading>
-                <Box height="300px" width="full">
+                <Box height="280px" width="full">
                   <ResponsiveContainer width="100%" height="100%">
                     <Treemap
                       data={coloredIncomeData}
@@ -524,6 +708,8 @@ const CurrentMonthOverview: React.FC = () => {
                         <CustomizedTreemapContent
                           colors={baseColors}
                           strokeColor={treemapStrokeColor}
+                          textColor={treemapTextColor}
+                          currencySymbol={currencySymbol as string}
                         />
                       }
                     >
@@ -531,14 +717,14 @@ const CurrentMonthOverview: React.FC = () => {
                     </Treemap>
                   </ResponsiveContainer>
                 </Box>
-              </Box>
+              </MotionBox>
             </GridItem>
           )}
 
           {/* Expense Treemap */}
           {coloredExpenseData.length > 0 && (
             <GridItem>
-              <Box width="full">
+              <MotionBox variants={fadeUp} width="full">
                 <Heading
                   size="sm"
                   color={primaryTextColor}
@@ -546,10 +732,10 @@ const CurrentMonthOverview: React.FC = () => {
                   display="flex"
                   alignItems="center"
                 >
-                   <Icon as={PieChart} mr={2} color={expenseColor} />
+                  <Icon as={PieChart} mr={2} color={expenseColor} />
                   Expense Breakdown
                 </Heading>
-                <Box height="300px" width="full">
+                <Box height="280px" width="full">
                   <ResponsiveContainer width="100%" height="100%">
                     <Treemap
                       data={coloredExpenseData}
@@ -560,6 +746,8 @@ const CurrentMonthOverview: React.FC = () => {
                         <CustomizedTreemapContent
                           colors={baseColors}
                           strokeColor={treemapStrokeColor}
+                          textColor={treemapTextColor}
+                          currencySymbol={currencySymbol as string}
                         />
                       }
                     >
@@ -567,30 +755,35 @@ const CurrentMonthOverview: React.FC = () => {
                     </Treemap>
                   </ResponsiveContainer>
                 </Box>
-              </Box>
+              </MotionBox>
             </GridItem>
           )}
 
-          {/* Nested Category Breakdown Section */}
+          {/* Income Category Bars */}
           {coloredIncomeData.length > 0 && (
             <GridItem>
-               <NestedCategoryBreakdown
-                 categories={coloredIncomeData}
-                 type="income"
-                 currencySymbol={currencySymbol as string}
-                 primaryTextColor={primaryTextColor}
-               />
+              <MotionBox variants={fadeUp}>
+                <CategoryBarBreakdown
+                  categories={coloredIncomeData}
+                  total={data.total_income}
+                  type="income"
+                  currencySymbol={currencySymbol as string}
+                />
+              </MotionBox>
             </GridItem>
           )}
 
+          {/* Expense Category Bars */}
           {coloredExpenseData.length > 0 && (
             <GridItem>
-               <NestedCategoryBreakdown
-                 categories={coloredExpenseData}
-                 type="expense"
-                 currencySymbol={currencySymbol as string}
-                 primaryTextColor={primaryTextColor}
-               />
+              <MotionBox variants={fadeUp}>
+                <CategoryBarBreakdown
+                  categories={coloredExpenseData}
+                  total={data.total_expense}
+                  type="expense"
+                  currencySymbol={currencySymbol as string}
+                />
+              </MotionBox>
             </GridItem>
           )}
         </Grid>
@@ -598,24 +791,24 @@ const CurrentMonthOverview: React.FC = () => {
 
       {/* No Data State */}
       {coloredIncomeData.length === 0 && coloredExpenseData.length === 0 && (
-          <Center
-            height="300px"
-            bg={bgColor}
-            borderRadius="lg"
-            flexDirection="column"
-            textAlign="center"
-            p={6}
-          >
-            <Icon as={BarChart2} boxSize={16} color={secondaryTextColor} mb={4} />
-            <Heading size="md" mb={2} color={secondaryTextColor}>
-              No Financial Data Available
-            </Heading>
-            <Text color={secondaryTextColor} fontSize="sm">
-              Add some transactions to see your current month breakdown
-            </Text>
-          </Center>
-        )}
-    </Box>
+        <Center
+          height="300px"
+          bg={bgColor}
+          borderRadius="lg"
+          flexDirection="column"
+          textAlign="center"
+          p={6}
+        >
+          <Icon as={BarChart2} boxSize={16} color={secondaryTextColor} mb={4} />
+          <Heading size="md" mb={2} color={secondaryTextColor}>
+            No Financial Data Available
+          </Heading>
+          <Text color={secondaryTextColor} fontSize="sm">
+            Add some transactions to see your current month breakdown
+          </Text>
+        </Center>
+      )}
+    </MotionBox>
   );
 };
 

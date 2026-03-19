@@ -23,11 +23,15 @@ import {
   Spinner,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { motion } from "framer-motion";
 import { Link as RouterLink } from "react-router-dom";
 import { Plus, Repeat, Eye, EyeOff, Building, ShieldAlert, ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
 import CreateAccountModal from "@components/modals/CreateAccountModal";
 import useLedgerStore from "@/components/shared/store";
 import { splitCurrencyForDisplay } from "../../mutual-funds/utils";
+
+const MotionBox = motion(Box);
+const MotionSimpleGrid = motion(SimpleGrid);
 
 interface Account {
   account_id: string;
@@ -144,9 +148,8 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
   const hoverIconColor = useColorModeValue("brand.600", "brand.400");
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
   const cardBorderColor = useColorModeValue("gray.200", "gray.600");
-  const sectionBorderColor = useColorModeValue("gray.200", "gray.700");
+  const sectionBorderColor = useColorModeValue("gray.100", "gray.700");
   const groupCardBg = useColorModeValue("teal.50", "teal.900");
-  const groupCardBorderColor = useColorModeValue("brand.200", "brand.600");
   const groupTextColor = useColorModeValue("brand.700", "brand.200");
   const tertiaryTextColor = useColorModeValue("tertiaryTextColor", "tertiaryTextColor");
   const pillBorderColor = useColorModeValue("gray.300", "gray.600");
@@ -156,10 +159,16 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
   const groupAccentColor = useColorModeValue("brand.400", "brand.500");
   const guideLineColor = useColorModeValue("brand.100", "whiteAlpha.200");
   const columnHeaderColor = useColorModeValue("gray.400", "gray.500");
-  const assetTopAccent = useColorModeValue("teal.400", "teal.400");
-  const liabilityTopAccent = useColorModeValue("orange.400", "orange.400");
-  const netWorthPositiveAccent = useColorModeValue("green.400", "green.400");
-  const netWorthNegativeAccent = useColorModeValue("red.400", "red.400");
+  const sectionHoverShadow = useColorModeValue(
+    "0 8px 24px -4px rgba(53,169,163,0.08), 0 4px 12px -2px rgba(0,0,0,0.04)",
+    "0 8px 24px -4px rgba(78,194,188,0.1), 0 4px 12px -2px rgba(0,0,0,0.2)"
+  );
+
+  // Summary card accent colors
+  const assetAccentColor = useColorModeValue("teal.400", "teal.300");
+  const liabilityAccentColor = useColorModeValue("orange.400", "orange.300");
+  const netWorthPositiveAccentColor = useColorModeValue("green.400", "green.300");
+  const netWorthNegativeAccentColor = useColorModeValue("red.400", "red.300");
 
   // Summary totals — root-level accounts only (groups aggregate their children)
   const totalAssets = assetAccounts
@@ -217,6 +226,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
               _hover={{ bg: hoverBg }}
               position="relative"
               sx={trSx}
+              transition="background 0.15s ease"
             >
               <Td pl={`${level * 24 + 8}px`} position="relative">
                 {account.is_group && (
@@ -251,6 +261,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
                       color={tertiaryTextColor}
                       fontSize="sm"
                       _hover={{ color: "brand.500" }}
+                      transition="color 0.15s ease"
                     >
                       {account.name}
                     </Text>
@@ -297,6 +308,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
                         size={16}
                         color={iconColor}
                         _hover={{ color: hoverIconColor }}
+                        transition="color 0.15s ease"
                       />
                     </ChakraLink>
                   )}
@@ -316,6 +328,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
                           size={16}
                           color={iconColor}
                           _hover={{ color: hoverIconColor }}
+                          transition="color 0.15s ease"
                         />
                       </ChakraLink>
                       <ChakraLink
@@ -327,6 +340,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
                           size={16}
                           color={iconColor}
                           _hover={{ color: hoverIconColor }}
+                          transition="color 0.15s ease"
                         />
                       </ChakraLink>
                     </Flex>
@@ -396,6 +410,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
               size="sm"
               boxShadow="sm"
               _hover={{ boxShadow: "md" }}
+              transition="box-shadow 0.2s ease"
             >
               <CardHeader
                 py={2}
@@ -521,11 +536,11 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
     buttonText: string;
     onClick: () => void;
   }> = ({ title, message, buttonText, onClick }) => (
-    <Box textAlign="center" py={6} px={4}>
-      <Text fontSize="lg" fontWeight="medium" mb={2}>
+    <Box textAlign="center" py={8} px={4}>
+      <Text fontSize="lg" fontWeight="semibold" mb={2} letterSpacing="-0.01em">
         {title}
       </Text>
-      <Text color="secondaryTextColor" mb={4} fontSize="sm">
+      <Text color="secondaryTextColor" mb={5} fontSize="sm">
         {message}
       </Text>
       <Button
@@ -533,6 +548,8 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
         onClick={onClick}
         size="sm"
         colorScheme="brand"
+        borderRadius="lg"
+        fontWeight="bold"
       >
         {buttonText}
       </Button>
@@ -550,380 +567,381 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
     return <LoadingState />;
   }
 
+  const summaryCards = [
+    {
+      icon: Building,
+      label: "Assets",
+      value: totalAssets,
+      accentColor: assetAccentColor,
+      colorFn: () => totalAssets >= 0 ? positiveColor : negativeColor,
+    },
+    {
+      icon: ShieldAlert,
+      label: "Liabilities",
+      value: totalLiabilities,
+      accentColor: liabilityAccentColor,
+      colorFn: () => getBalanceColor(totalLiabilities, "liability", false),
+    },
+    {
+      icon: TrendingUp,
+      label: "Net Worth",
+      value: netWorth,
+      accentColor: netWorth >= 0 ? netWorthPositiveAccentColor : netWorthNegativeAccentColor,
+      colorFn: () => netWorth >= 0 ? positiveColor : negativeColor,
+    },
+  ];
+
   return (
     <Box p={{ base: 2, md: 4 }}>
       {/* Summary bar */}
-      <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 3, md: 4 }} mb={{ base: 4, md: 6 }}>
-        {/* Total Assets */}
-        <Box
-          bg={cardBg}
-          p={{ base: 3, md: 4 }}
-          borderRadius="md"
-          boxShadow="sm"
-          border="1px solid"
-          borderColor={sectionBorderColor}
-          borderTopWidth="3px"
-          borderTopColor={assetTopAccent}
-        >
-          <Flex align="center" gap={1.5} mb={1}>
-            <Icon as={Building} boxSize={3} color={columnHeaderColor} />
-            <Text
-              fontSize="2xs"
-              fontWeight="semibold"
-              textTransform="uppercase"
-              letterSpacing="wider"
-              color={columnHeaderColor}
+      <MotionSimpleGrid
+        columns={{ base: 1, md: 3 }}
+        spacing={{ base: 3, md: 4 }}
+        mb={{ base: 4, md: 6 }}
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.08 } },
+        }}
+      >
+        {summaryCards.map(({ icon, label, value, accentColor, colorFn }) => (
+          <MotionBox
+            key={label}
+            variants={{
+              hidden: { opacity: 0, y: 10 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
+            }}
+          >
+            <Box
+              bg={cardBg}
+              p={{ base: 3, md: 4 }}
+              borderRadius="xl"
+              border="1px solid"
+              borderColor={sectionBorderColor}
+              overflow="hidden"
+              position="relative"
+              transition="border-color 0.2s ease"
+              _hover={{ borderColor: accentColor }}
             >
-              Assets
-            </Text>
-          </Flex>
-          <HStack spacing={0} align="baseline">
-            <Text
-              fontSize={{ base: "md", md: "xl" }}
-              fontWeight="bold"
-              color={totalAssets >= 0 ? positiveColor : negativeColor}
-              lineHeight="short"
-            >
-              {splitCurrencyForDisplay(totalAssets, currencySymbol || "₹").main}
-            </Text>
-            <Text
-              fontSize="xs"
-              color={totalAssets >= 0 ? positiveColor : negativeColor}
-              opacity={0.7}
-            >
-              {splitCurrencyForDisplay(totalAssets, currencySymbol || "₹").decimals}
-            </Text>
-          </HStack>
-        </Box>
+              {/* Accent line at top */}
+              <Box
+                position="absolute"
+                top={0}
+                left={0}
+                right={0}
+                h="2px"
+                bg={accentColor}
+                opacity={0.7}
+              />
 
-        {/* Total Liabilities */}
-        <Box
-          bg={cardBg}
-          p={{ base: 3, md: 4 }}
-          borderRadius="md"
-          boxShadow="sm"
-          border="1px solid"
-          borderColor={sectionBorderColor}
-          borderTopWidth="3px"
-          borderTopColor={liabilityTopAccent}
-        >
-          <Flex align="center" gap={1.5} mb={1}>
-            <Icon as={ShieldAlert} boxSize={3} color={columnHeaderColor} />
-            <Text
-              fontSize="2xs"
-              fontWeight="semibold"
-              textTransform="uppercase"
-              letterSpacing="wider"
-              color={columnHeaderColor}
-            >
-              Liabilities
-            </Text>
-          </Flex>
-          <HStack spacing={0} align="baseline">
-            <Text
-              fontSize={{ base: "md", md: "xl" }}
-              fontWeight="bold"
-              color={getBalanceColor(totalLiabilities, "liability", false)}
-              lineHeight="short"
-            >
-              {splitCurrencyForDisplay(totalLiabilities, currencySymbol || "₹").main}
-            </Text>
-            <Text
-              fontSize="xs"
-              color={getBalanceColor(totalLiabilities, "liability", false)}
-              opacity={0.7}
-            >
-              {splitCurrencyForDisplay(totalLiabilities, currencySymbol || "₹").decimals}
-            </Text>
-          </HStack>
-        </Box>
-
-        {/* Net Worth */}
-        <Box
-          bg={cardBg}
-          p={{ base: 3, md: 4 }}
-          borderRadius="md"
-          boxShadow="sm"
-          border="1px solid"
-          borderColor={sectionBorderColor}
-          borderTopWidth="3px"
-          borderTopColor={netWorth >= 0 ? netWorthPositiveAccent : netWorthNegativeAccent}
-        >
-          <Flex align="center" gap={1.5} mb={1}>
-            <Icon as={TrendingUp} boxSize={3} color={columnHeaderColor} />
-            <Text
-              fontSize="2xs"
-              fontWeight="semibold"
-              textTransform="uppercase"
-              letterSpacing="wider"
-              color={columnHeaderColor}
-            >
-              Net Worth
-            </Text>
-          </Flex>
-          <HStack spacing={0} align="baseline">
-            <Text
-              fontSize={{ base: "md", md: "xl" }}
-              fontWeight="bold"
-              color={netWorth >= 0 ? positiveColor : negativeColor}
-              lineHeight="short"
-            >
-              {splitCurrencyForDisplay(netWorth, currencySymbol || "₹").main}
-            </Text>
-            <Text
-              fontSize="xs"
-              color={netWorth >= 0 ? positiveColor : negativeColor}
-              opacity={0.7}
-            >
-              {splitCurrencyForDisplay(netWorth, currencySymbol || "₹").decimals}
-            </Text>
-          </HStack>
-        </Box>
-      </SimpleGrid>
+              <Flex align="center" gap={1.5} mb={2}>
+                <Flex
+                  w={5}
+                  h={5}
+                  borderRadius="md"
+                  bg={accentColor}
+                  opacity={0.12}
+                  position="absolute"
+                />
+                <Flex
+                  w={5}
+                  h={5}
+                  borderRadius="md"
+                  align="center"
+                  justify="center"
+                >
+                  <Icon as={icon} boxSize={3} color={accentColor} />
+                </Flex>
+                <Text
+                  fontSize="2xs"
+                  fontWeight="semibold"
+                  textTransform="uppercase"
+                  letterSpacing="wider"
+                  color={columnHeaderColor}
+                >
+                  {label}
+                </Text>
+              </Flex>
+              <HStack spacing={0} align="baseline">
+                <Text
+                  fontSize={{ base: "lg", md: "xl" }}
+                  fontWeight="bold"
+                  color={colorFn()}
+                  lineHeight="short"
+                  letterSpacing="-0.01em"
+                >
+                  {splitCurrencyForDisplay(value, currencySymbol || "₹").main}
+                </Text>
+                <Text
+                  fontSize="xs"
+                  color={colorFn()}
+                  opacity={0.6}
+                >
+                  {splitCurrencyForDisplay(value, currencySymbol || "₹").decimals}
+                </Text>
+              </HStack>
+            </Box>
+          </MotionBox>
+        ))}
+      </MotionSimpleGrid>
 
       {/* Assets & Liabilities detail */}
       <SimpleGrid
         columns={{ base: 1, md: 1, lg: 2 }}
         spacing={{ base: 4, md: 6 }}
       >
-        <Box
-          bg={cardBg}
-          p={{ base: 3, md: 4 }}
-          borderRadius="md"
-          boxShadow="md"
-          border="1px solid"
-          borderColor={sectionBorderColor}
-          transition="box-shadow 0.2s"
-          _hover={{ boxShadow: "lg" }}
+        {/* Assets Section */}
+        <MotionBox
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
         >
-          <Flex
-            justifyContent="space-between"
-            alignItems="center"
-            mb={4}
-            flexWrap={{ base: "wrap", sm: "nowrap" }}
+          <Box
+            bg={cardBg}
+            p={{ base: 3, md: 4 }}
+            borderRadius="xl"
+            border="1px solid"
+            borderColor={sectionBorderColor}
+            transition="box-shadow 0.25s ease"
+            _hover={{ boxShadow: sectionHoverShadow }}
           >
-            <Flex align="center" gap={2}>
-              <Icon as={Building} size={20} color={iconColor} />
-              <Heading size="md" color={groupColor} mb={{ base: 1, sm: 0 }}>
-                Assets
-              </Heading>
-            </Flex>
-            <Flex align="center" gap={2}>
-              <Flex
-                as="button"
-                onClick={() => setShowZeroBalanceAssets(!showZeroBalanceAssets)}
-                align="center"
-                gap={1.5}
-                px={3}
-                py={1}
-                borderRadius="full"
-                border="1px solid"
-                borderColor={showZeroBalanceAssets ? "brand.300" : pillBorderColor}
-                bg={showZeroBalanceAssets ? pillActiveBg : "transparent"}
-                color={showZeroBalanceAssets ? "brand.500" : pillTextColor}
-                fontSize="xs"
-                fontWeight="medium"
-                cursor="pointer"
-                transition="all 0.2s"
-                _hover={{ borderColor: "brand.400", bg: pillHoverBg }}
-              >
-                <Icon as={showZeroBalanceAssets ? EyeOff : Eye} boxSize={3} />
-                {showZeroBalanceAssets ? "Hide zeros" : "Show zeros"}
+            <Flex
+              justifyContent="space-between"
+              alignItems="center"
+              mb={4}
+              flexWrap={{ base: "wrap", sm: "nowrap" }}
+            >
+              <Flex align="center" gap={2}>
+                <Icon as={Building} size={20} color={iconColor} />
+                <Heading size="md" color={groupColor} mb={{ base: 1, sm: 0 }} letterSpacing="-0.02em">
+                  Assets
+                </Heading>
               </Flex>
-              <IconButton
-                icon={<Plus />}
-                size="sm"
-                colorScheme="brand"
-                variant="ghost"
-                aria-label="Add Asset Account"
-                data-testid="ledgermainaccounts-add-asset-account-plus-icon"
+              <Flex align="center" gap={2}>
+                <Flex
+                  as="button"
+                  onClick={() => setShowZeroBalanceAssets(!showZeroBalanceAssets)}
+                  align="center"
+                  gap={1.5}
+                  px={3}
+                  py={1}
+                  borderRadius="full"
+                  border="1px solid"
+                  borderColor={showZeroBalanceAssets ? "brand.300" : pillBorderColor}
+                  bg={showZeroBalanceAssets ? pillActiveBg : "transparent"}
+                  color={showZeroBalanceAssets ? "brand.500" : pillTextColor}
+                  fontSize="xs"
+                  fontWeight="medium"
+                  cursor="pointer"
+                  transition="all 0.2s"
+                  _hover={{ borderColor: "brand.400", bg: pillHoverBg }}
+                >
+                  <Icon as={showZeroBalanceAssets ? EyeOff : Eye} boxSize={3} />
+                  {showZeroBalanceAssets ? "Hide zeros" : "Show zeros"}
+                </Flex>
+                <IconButton
+                  icon={<Plus />}
+                  size="sm"
+                  colorScheme="brand"
+                  variant="ghost"
+                  aria-label="Add Asset Account"
+                  data-testid="ledgermainaccounts-add-asset-account-plus-icon"
+                  onClick={() => handleCreateAccountClick("asset")}
+                />
+              </Flex>
+            </Flex>
+            {assetAccounts.length === 0 ? (
+              <EmptyState
+                title="No Asset Accounts"
+                message="You don't have any asset accounts yet."
+                buttonText="Create Asset Account"
                 onClick={() => handleCreateAccountClick("asset")}
               />
-            </Flex>
-          </Flex>
-          {assetAccounts.length === 0 ? (
-            <EmptyState
-              title="No Asset Accounts"
-              message="You don't have any asset accounts yet."
-              buttonText="Create Asset Account"
-              onClick={() => handleCreateAccountClick("asset")}
-            />
-          ) : (
-            <>
-              <Box display={{ base: "none", xl: "block" }}>
-                <Table
-                  variant="simple"
-                  size="sm"
-                  data-testid="ledgermainaccounts-asset-accounts-table"
-                >
-                  <Thead>
-                    <Tr>
-                      <Th
-                        color={columnHeaderColor}
-                        fontSize="2xs"
-                        fontWeight="semibold"
-                        textTransform="uppercase"
-                        letterSpacing="wider"
-                        pb={2}
-                        borderBottomColor={sectionBorderColor}
-                      >
-                        Account
-                      </Th>
-                      <Th
-                        color={columnHeaderColor}
-                        fontSize="2xs"
-                        fontWeight="semibold"
-                        textTransform="uppercase"
-                        letterSpacing="wider"
-                        pb={2}
-                        isNumeric
-                        borderBottomColor={sectionBorderColor}
-                      >
-                        Balance
-                      </Th>
-                      <Th pb={2} borderBottomColor={sectionBorderColor} />
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {renderAccountsTable(
-                      assetAccounts,
-                      null,
-                      0,
-                      showZeroBalanceAssets
-                    )}
-                  </Tbody>
-                </Table>
-              </Box>
-              <Box display={{ base: "block", xl: "none" }}>
-                {renderAccountsAccordion(
-                  assetAccounts,
-                  null,
-                  0,
-                  showZeroBalanceAssets
-                )}
-              </Box>
-            </>
-          )}
-        </Box>
-        <Box
-          bg={cardBg}
-          p={{ base: 3, md: 4 }}
-          borderRadius="md"
-          boxShadow="md"
-          border="1px solid"
-          borderColor={sectionBorderColor}
-          transition="box-shadow 0.2s"
-          _hover={{ boxShadow: "lg" }}
+            ) : (
+              <>
+                <Box display={{ base: "none", xl: "block" }}>
+                  <Table
+                    variant="simple"
+                    size="sm"
+                    data-testid="ledgermainaccounts-asset-accounts-table"
+                  >
+                    <Thead>
+                      <Tr>
+                        <Th
+                          color={columnHeaderColor}
+                          fontSize="2xs"
+                          fontWeight="semibold"
+                          textTransform="uppercase"
+                          letterSpacing="wider"
+                          pb={2}
+                          borderBottomColor={sectionBorderColor}
+                        >
+                          Account
+                        </Th>
+                        <Th
+                          color={columnHeaderColor}
+                          fontSize="2xs"
+                          fontWeight="semibold"
+                          textTransform="uppercase"
+                          letterSpacing="wider"
+                          pb={2}
+                          isNumeric
+                          borderBottomColor={sectionBorderColor}
+                        >
+                          Balance
+                        </Th>
+                        <Th pb={2} borderBottomColor={sectionBorderColor} />
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {renderAccountsTable(
+                        assetAccounts,
+                        null,
+                        0,
+                        showZeroBalanceAssets
+                      )}
+                    </Tbody>
+                  </Table>
+                </Box>
+                <Box display={{ base: "block", xl: "none" }}>
+                  {renderAccountsAccordion(
+                    assetAccounts,
+                    null,
+                    0,
+                    showZeroBalanceAssets
+                  )}
+                </Box>
+              </>
+            )}
+          </Box>
+        </MotionBox>
+
+        {/* Liabilities Section */}
+        <MotionBox
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
         >
-          <Flex
-            justifyContent="space-between"
-            alignItems="center"
-            mb={4}
-            flexWrap={{ base: "wrap", sm: "nowrap" }}
+          <Box
+            bg={cardBg}
+            p={{ base: 3, md: 4 }}
+            borderRadius="xl"
+            border="1px solid"
+            borderColor={sectionBorderColor}
+            transition="box-shadow 0.25s ease"
+            _hover={{ boxShadow: sectionHoverShadow }}
           >
-            <Flex align="center" gap={2}>
-              <Icon as={ShieldAlert} size={20} color={iconColor} />
-              <Heading size="md" color={groupColor} mb={{ base: 1, sm: 0 }}>
-                Liabilities
-              </Heading>
-            </Flex>
-            <Flex align="center" gap={2}>
-              <Flex
-                as="button"
-                onClick={() => setShowZeroBalanceLiabilities(!showZeroBalanceLiabilities)}
-                align="center"
-                gap={1.5}
-                px={3}
-                py={1}
-                borderRadius="full"
-                border="1px solid"
-                borderColor={showZeroBalanceLiabilities ? "brand.300" : pillBorderColor}
-                bg={showZeroBalanceLiabilities ? pillActiveBg : "transparent"}
-                color={showZeroBalanceLiabilities ? "brand.500" : pillTextColor}
-                fontSize="xs"
-                fontWeight="medium"
-                cursor="pointer"
-                transition="all 0.2s"
-                _hover={{ borderColor: "brand.400", bg: pillHoverBg }}
-              >
-                <Icon as={showZeroBalanceLiabilities ? EyeOff : Eye} boxSize={3} />
-                {showZeroBalanceLiabilities ? "Hide zeros" : "Show zeros"}
+            <Flex
+              justifyContent="space-between"
+              alignItems="center"
+              mb={4}
+              flexWrap={{ base: "wrap", sm: "nowrap" }}
+            >
+              <Flex align="center" gap={2}>
+                <Icon as={ShieldAlert} size={20} color={iconColor} />
+                <Heading size="md" color={groupColor} mb={{ base: 1, sm: 0 }} letterSpacing="-0.02em">
+                  Liabilities
+                </Heading>
               </Flex>
-              <IconButton
-                icon={<Plus />}
-                size="sm"
-                colorScheme="brand"
-                variant="ghost"
-                aria-label="Add Liability Account"
-                data-testid="ledgermainaccounts-add-liability-account-plus-icon"
+              <Flex align="center" gap={2}>
+                <Flex
+                  as="button"
+                  onClick={() => setShowZeroBalanceLiabilities(!showZeroBalanceLiabilities)}
+                  align="center"
+                  gap={1.5}
+                  px={3}
+                  py={1}
+                  borderRadius="full"
+                  border="1px solid"
+                  borderColor={showZeroBalanceLiabilities ? "brand.300" : pillBorderColor}
+                  bg={showZeroBalanceLiabilities ? pillActiveBg : "transparent"}
+                  color={showZeroBalanceLiabilities ? "brand.500" : pillTextColor}
+                  fontSize="xs"
+                  fontWeight="medium"
+                  cursor="pointer"
+                  transition="all 0.2s"
+                  _hover={{ borderColor: "brand.400", bg: pillHoverBg }}
+                >
+                  <Icon as={showZeroBalanceLiabilities ? EyeOff : Eye} boxSize={3} />
+                  {showZeroBalanceLiabilities ? "Hide zeros" : "Show zeros"}
+                </Flex>
+                <IconButton
+                  icon={<Plus />}
+                  size="sm"
+                  colorScheme="brand"
+                  variant="ghost"
+                  aria-label="Add Liability Account"
+                  data-testid="ledgermainaccounts-add-liability-account-plus-icon"
+                  onClick={() => handleCreateAccountClick("liability")}
+                />
+              </Flex>
+            </Flex>
+            {liabilityAccounts.length === 0 ? (
+              <EmptyState
+                title="No Liability Accounts"
+                message="You don't have any liability accounts yet."
+                buttonText="Create Liability Account"
                 onClick={() => handleCreateAccountClick("liability")}
               />
-            </Flex>
-          </Flex>
-          {liabilityAccounts.length === 0 ? (
-            <EmptyState
-              title="No Liability Accounts"
-              message="You don't have any liability accounts yet."
-              buttonText="Create Liability Account"
-              onClick={() => handleCreateAccountClick("liability")}
-            />
-          ) : (
-            <>
-              <Box display={{ base: "none", xl: "block" }}>
-                <Table
-                  variant="simple"
-                  size="sm"
-                  data-testid="ledgermainaccounts-liability-accounts-table"
-                >
-                  <Thead>
-                    <Tr>
-                      <Th
-                        color={columnHeaderColor}
-                        fontSize="2xs"
-                        fontWeight="semibold"
-                        textTransform="uppercase"
-                        letterSpacing="wider"
-                        pb={2}
-                        borderBottomColor={sectionBorderColor}
-                      >
-                        Account
-                      </Th>
-                      <Th
-                        color={columnHeaderColor}
-                        fontSize="2xs"
-                        fontWeight="semibold"
-                        textTransform="uppercase"
-                        letterSpacing="wider"
-                        pb={2}
-                        isNumeric
-                        borderBottomColor={sectionBorderColor}
-                      >
-                        Balance
-                      </Th>
-                      <Th pb={2} borderBottomColor={sectionBorderColor} />
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {renderAccountsTable(
-                      liabilityAccounts,
-                      null,
-                      0,
-                      showZeroBalanceLiabilities
-                    )}
-                  </Tbody>
-                </Table>
-              </Box>
-              <Box display={{ base: "block", xl: "none" }}>
-                {renderAccountsAccordion(
-                  liabilityAccounts,
-                  null,
-                  0,
-                  showZeroBalanceLiabilities
-                )}
-              </Box>
-            </>
-          )}
-        </Box>
+            ) : (
+              <>
+                <Box display={{ base: "none", xl: "block" }}>
+                  <Table
+                    variant="simple"
+                    size="sm"
+                    data-testid="ledgermainaccounts-liability-accounts-table"
+                  >
+                    <Thead>
+                      <Tr>
+                        <Th
+                          color={columnHeaderColor}
+                          fontSize="2xs"
+                          fontWeight="semibold"
+                          textTransform="uppercase"
+                          letterSpacing="wider"
+                          pb={2}
+                          borderBottomColor={sectionBorderColor}
+                        >
+                          Account
+                        </Th>
+                        <Th
+                          color={columnHeaderColor}
+                          fontSize="2xs"
+                          fontWeight="semibold"
+                          textTransform="uppercase"
+                          letterSpacing="wider"
+                          pb={2}
+                          isNumeric
+                          borderBottomColor={sectionBorderColor}
+                        >
+                          Balance
+                        </Th>
+                        <Th pb={2} borderBottomColor={sectionBorderColor} />
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {renderAccountsTable(
+                        liabilityAccounts,
+                        null,
+                        0,
+                        showZeroBalanceLiabilities
+                      )}
+                    </Tbody>
+                  </Table>
+                </Box>
+                <Box display={{ base: "block", xl: "none" }}>
+                  {renderAccountsAccordion(
+                    liabilityAccounts,
+                    null,
+                    0,
+                    showZeroBalanceLiabilities
+                  )}
+                </Box>
+              </>
+            )}
+          </Box>
+        </MotionBox>
       </SimpleGrid>
       <CreateAccountModal
         isOpen={isOpen}

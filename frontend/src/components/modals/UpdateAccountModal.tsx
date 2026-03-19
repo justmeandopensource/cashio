@@ -218,7 +218,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "md" }}
+        borderRadius={{ base: 0, sm: "xl" }}
         boxShadow="2xl"
         border="1px solid"
         borderColor={borderColor}
@@ -229,6 +229,11 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
         display="flex"
         flexDirection="column"
       >
+        {/* Gradient accent line */}
+        <Box
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
         {/* Flat header */}
         <Box
           px={{ base: 4, sm: 8 }}
@@ -242,7 +247,8 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
             <Box>
               <Box
                 fontSize="lg"
-                fontWeight="bold"
+                fontWeight="800"
+                letterSpacing="-0.02em"
                 color={modalTitleColor}
               >
                 Update {account.type === "asset" ? "Asset" : "Liability"}{" "}
@@ -273,7 +279,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -294,8 +300,8 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
                   borderColor={inputBorderColor}
                   bg={inputBg}
                   size="lg"
-                  borderRadius="md"
-                  _hover={{ borderColor: "teal.300" }}
+                  borderRadius="lg"
+                  _hover={{ borderColor: "brand.300" }}
                   _focus={{
                     borderColor: focusBorderColor,
                     boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -312,7 +318,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -338,8 +344,8 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
                     borderWidth="2px"
                     borderColor={inputBorderColor}
                     bg={inputBg}
-                    borderRadius="md"
-                    _hover={{ borderColor: "teal.300" }}
+                    borderRadius="lg"
+                    _hover={{ borderColor: "brand.300" }}
                     _focus={{
                       borderColor: focusBorderColor,
                       boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -356,7 +362,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -392,8 +398,8 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
                       borderColor={inputBorderColor}
                       bg={inputBg}
                       size="lg"
-                      borderRadius="md"
-                      _hover={{ borderColor: "teal.300" }}
+                      borderRadius="lg"
+                      _hover={{ borderColor: "brand.300" }}
                       _focus={{
                         borderColor: focusBorderColor,
                         boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -437,7 +443,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -454,8 +460,8 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
                     borderColor={inputBorderColor}
                     bg={inputBg}
                     size="lg"
-                    borderRadius="md"
-                    _hover={{ borderColor: "teal.300" }}
+                    borderRadius="lg"
+                    _hover={{ borderColor: "brand.300" }}
                     _focus={{
                       borderColor: focusBorderColor,
                       boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -479,9 +485,9 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
                     borderColor={inputBorderColor}
                     bg={inputBg}
                     size="lg"
-                    borderRadius="md"
+                    borderRadius="lg"
                     rows={4}
-                    _hover={{ borderColor: "teal.300" }}
+                    _hover={{ borderColor: "brand.300" }}
                     _focus={{
                       borderColor: focusBorderColor,
                       boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -500,11 +506,12 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
           <Box display={{ base: "block", sm: "none" }} mt={6}>
             <Button
               onClick={handleSubmit}
-              colorScheme="teal"
+              colorScheme="brand"
               size="lg"
               width="100%"
               mb={3}
-              borderRadius="md"
+              borderRadius="lg"
+              fontWeight="bold"
               isLoading={isLoading}
               loadingText="Updating..."
                isDisabled={
@@ -524,7 +531,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
               onClick={onClose}
               size="lg"
               width="100%"
-              borderRadius="md"
+              borderRadius="lg"
               isDisabled={isLoading}
             >
               Cancel
@@ -542,12 +549,13 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
           borderColor={borderColor}
         >
           <Button
-            colorScheme="teal"
+            colorScheme="brand"
             mr={3}
             onClick={handleSubmit}
             px={8}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
+            fontWeight="bold"
             isLoading={isLoading}
             loadingText="Updating..."
              isDisabled={
@@ -568,7 +576,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
             isDisabled={isLoading}
             px={6}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
           >
             Cancel
           </Button>

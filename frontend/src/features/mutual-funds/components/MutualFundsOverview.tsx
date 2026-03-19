@@ -11,6 +11,8 @@ import {
   useColorModeValue,
   useToast,
 } from "@chakra-ui/react";
+import { keyframes } from "@emotion/react";
+import { motion } from "framer-motion";
 import {
   TrendingUp,
   PieChart,
@@ -19,6 +21,7 @@ import {
   Wallet,
   BadgeCheck,
   Activity,
+  BookOpen,
 } from "lucide-react";
 import { Amc, MutualFund } from "../types";
 import {
@@ -30,6 +33,14 @@ import useLedgerStore from "../../../components/shared/store";
 import MutualFundsTable from "./MutualFundsTable";
 import BulkNavUpdateModal from "./modals/BulkNavUpdateModal";
 import PortfolioChangeModal from "./modals/PortfolioChangeModal";
+
+const MotionBox = motion(Box);
+const MotionSimpleGrid = motion(SimpleGrid);
+
+const floatKeyframes = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+`;
 
 /* eslint-disable no-unused-vars */
 interface MutualFundsOverviewProps {
@@ -78,13 +89,20 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
   const [oldStats, setOldStats] = useState<{totalValue: number, totalUnrealizedPnL: number} | null>(null);
   const [portfolioChanges, setPortfolioChanges] = useState<{totalValueChange: number, totalValueChangePercent: number} | null>(null);
   const toast = useToast();
-  const emptyStateBg = useColorModeValue("secondaryBg", "cardDarkBg");
-  const emptyStateTextColor = useColorModeValue("secondaryTextColor", "secondaryTextColor");
-  const primaryTextColor = useColorModeValue("gray.800", "gray.400");
-  const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
 
-   const iconColor = useColorModeValue("brand.500", "brand.300");
-  const textColor = primaryTextColor;
+  const emptyIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.12)");
+  const emptyTitleColor = useColorModeValue("gray.800", "gray.100");
+  const emptySubColor = useColorModeValue("gray.500", "gray.400");
+  const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
+  const iconColor = useColorModeValue("brand.500", "brand.300");
+  const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
+  const cardBorderColor = useColorModeValue("gray.100", "gray.700");
+  const labelIconColor = useColorModeValue("gray.400", "gray.500");
+  const overviewBg = useColorModeValue("primaryBg", "cardDarkBg");
+  const btnGlow = useColorModeValue(
+    "0 0 20px rgba(53,169,163,0.25)",
+    "0 0 20px rgba(78,194,188,0.2)"
+  );
 
   const toNumber = (value: number | string): number =>
     typeof value === "string" ? parseFloat(value) : value;
@@ -150,7 +168,6 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
       });
       return;
     }
-    // Capture current stats before opening modal
     setOldStats({
       totalValue: totalCurrentValue,
       totalUnrealizedPnL: totalUnrealizedPnL,
@@ -173,315 +190,385 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
   const realizedGainColor = useColorModeValue("green.500", "green.300");
   const unrealizedPnlColor = useColorModeValue("red.500", "red.300");
   const totalFundsColor = useColorModeValue("blue.600", "blue.400");
-  const emptyStateBorderColor = useColorModeValue("tertiaryBg", "tertiaryBg");
-  const emptyStateIconColor = useColorModeValue("tertiaryTextColor", "tertiaryTextColor");
-  const overviewBg = useColorModeValue("primaryBg", "cardDarkBg");
-  const investedTopAccent = "blue.400";
-  const valueTopAccent = "teal.400";
-  const gainPositiveAccent = "green.400";
-  const gainNegativeAccent = "red.400";
-  const realizedTopAccent = totalRealizedGain >= 0 ? gainPositiveAccent : gainNegativeAccent;
-  const unrealizedTopAccent = totalUnrealizedPnL >= 0 ? gainPositiveAccent : gainNegativeAccent;
-  const fundsTopAccent = "purple.400";
-  const cardBorderColor = useColorModeValue("gray.200", "gray.700");
-  const labelIconColor = useColorModeValue("gray.400", "gray.500");
-  const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
+  const emptyStateTextColor = useColorModeValue("secondaryTextColor", "secondaryTextColor");
   const pnlPositiveBadgeBg = useColorModeValue("green.50", "green.900");
   const pnlNegativeBadgeBg = useColorModeValue("red.50", "red.900");
   const pnlBadgeBg = totalUnrealizedPnL >= 0 ? pnlPositiveBadgeBg : pnlNegativeBadgeBg;
+
+  // Accent colors for summary cards
+  const investedAccentColor = useColorModeValue("blue.400", "blue.300");
+  const valueAccentColor = useColorModeValue("teal.400", "teal.300");
+  const realizedAccentColor = useColorModeValue(
+    totalRealizedGain >= 0 ? "green.400" : "red.400",
+    totalRealizedGain >= 0 ? "green.300" : "red.300"
+  );
+  const unrealizedAccentColor = useColorModeValue(
+    totalUnrealizedPnL >= 0 ? "green.400" : "red.400",
+    totalUnrealizedPnL >= 0 ? "green.300" : "red.300"
+  );
+  const fundsAccentColor = useColorModeValue("purple.400", "purple.300");
+
+  const summaryCards = [
+    {
+      icon: Wallet,
+      label: "Total Invested",
+      accentColor: investedAccentColor,
+      valueMain: splitCurrencyForDisplay(totalInvested, currencySymbol || "₹").main,
+      valueDecimals: splitCurrencyForDisplay(totalInvested, currencySymbol || "₹").decimals,
+      color: tertiaryTextColor,
+    },
+    {
+      icon: TrendingUp,
+      label: "Total Value",
+      accentColor: valueAccentColor,
+      valueMain: splitCurrencyForDisplay(totalCurrentValue, currencySymbol || "₹").main,
+      valueDecimals: splitCurrencyForDisplay(totalCurrentValue, currencySymbol || "₹").decimals,
+      color: totalValueColor,
+    },
+    {
+      icon: BadgeCheck,
+      label: "Total Realized Gain",
+      accentColor: realizedAccentColor,
+      valueMain: (totalRealizedGain >= 0 ? "+" : "−") + splitCurrencyForDisplay(Math.abs(totalRealizedGain), currencySymbol || "₹").main,
+      valueDecimals: splitCurrencyForDisplay(Math.abs(totalRealizedGain), currencySymbol || "₹").decimals,
+      color: totalRealizedGain >= 0 ? realizedGainColor : unrealizedPnlColor,
+    },
+    {
+      icon: Activity,
+      label: "Total Unrealized P&L",
+      accentColor: unrealizedAccentColor,
+      valueMain: (totalUnrealizedPnL >= 0 ? "+" : "−") + splitCurrencyForDisplay(Math.abs(totalUnrealizedPnL), currencySymbol || "₹").main,
+      valueDecimals: splitCurrencyForDisplay(Math.abs(totalUnrealizedPnL), currencySymbol || "₹").decimals,
+      color: totalUnrealizedPnL >= 0 ? realizedGainColor : unrealizedPnlColor,
+      extra: (
+        <Flex
+          mt={1}
+          display="inline-flex"
+          align="baseline"
+          gap={0}
+          px={2}
+          py={0.5}
+          borderRadius="full"
+          bg={pnlBadgeBg}
+        >
+          <Text
+            fontSize="2xs"
+            fontWeight="bold"
+            color={totalUnrealizedPnL >= 0 ? realizedGainColor : unrealizedPnlColor}
+          >
+            {splitPercentageForDisplay(totalPnLPercentage).main}
+          </Text>
+          <Text
+            fontSize="2xs"
+            color={totalUnrealizedPnL >= 0 ? realizedGainColor : unrealizedPnlColor}
+            opacity={0.8}
+          >
+            {splitPercentageForDisplay(totalPnLPercentage).decimals}
+          </Text>
+        </Flex>
+      ),
+    },
+    {
+      icon: PieChart,
+      label: "Total Funds",
+      accentColor: fundsAccentColor,
+      valueMain: String(filteredMutualFunds.filter(fund => toNumber(fund.total_units) > 0).length),
+      valueDecimals: "",
+      color: totalFundsColor,
+      extra: (
+        <Text fontSize="xs" color={emptyStateTextColor}>
+          Across {amcs.length} AMC{amcs.length !== 1 ? "s" : ""}
+        </Text>
+      ),
+    },
+  ];
 
   return (
     <Box>
       <VStack spacing={6} align="stretch">
          {amcs.length > 0 && (
            <>
-             <Flex
-               direction={{ base: "column", md: "row" }}
-               justify="space-between"
-               align={{ base: "flex-start", md: "center" }}
-               mb={{ base: 0, md: 4 }}
-               gap={{ base: 3, md: 0 }}
+             <MotionBox
+               initial={{ opacity: 0, y: -8 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.35, ease: "easeOut" }}
              >
-               <Flex align="center">
-                 <Icon as={TrendingUp} mr={2} color={iconColor} />
-                 <Text
-                   fontSize={{ base: "lg", md: "xl" }}
-                   fontWeight="semibold"
-                   color={tertiaryTextColor}
-                 >
-                   Mutual Funds Portfolio
-                 </Text>
-               </Flex>
-               {/* Mobile: text links stacked */}
-               <VStack align="flex-start" spacing={2} display={{ base: "flex", md: "none" }}>
-                 <Text fontSize="sm" color="brand.500" cursor="pointer" onClick={onCreateAmc} _hover={{ textDecoration: "underline" }}>
-                   Create a new AMC
-                 </Text>
-                 <Text fontSize="sm" color="brand.500" cursor="pointer" onClick={() => onCreateFund()} _hover={{ textDecoration: "underline" }}>
-                   Create a new Mutual Fund
-                 </Text>
-                 {fundsWithCodes.length > 0 && (
-                   <Text fontSize="sm" color="brand.500" cursor="pointer" onClick={handleOpenBulkNavModal} _hover={{ textDecoration: "underline" }}>
-                     Bulk update Mutual Funds NAV
+               <Flex
+                 direction={{ base: "column", md: "row" }}
+                 justify="space-between"
+                 align={{ base: "flex-start", md: "center" }}
+                 mb={{ base: 0, md: 4 }}
+                 gap={{ base: 3, md: 0 }}
+               >
+                 <Flex align="center">
+                   <Icon as={TrendingUp} mr={2} color={iconColor} />
+                   <Text
+                     fontSize={{ base: "lg", md: "xl" }}
+                     fontWeight="800"
+                     color={tertiaryTextColor}
+                     letterSpacing="-0.02em"
+                   >
+                     Mutual Funds Portfolio
                    </Text>
-                 )}
-               </VStack>
-               {/* Desktop: buttons beside title */}
-               <HStack spacing={2} display={{ base: "none", md: "flex" }}>
-                 <Button
-                   leftIcon={<Building2 size={16} />}
-                   colorScheme="brand"
-                   variant="outline"
-                   size="sm"
-                   onClick={onCreateAmc}
-                 >
-                   Create AMC
-                 </Button>
-                 <Button
-                   leftIcon={<PieChart size={16} />}
-                   colorScheme="brand"
-                   variant={amcs.length === 0 ? "outline" : "solid"}
-                   size="sm"
-                   onClick={() => onCreateFund()}
-                 >
-                   Create Fund
-                 </Button>
-                 {fundsWithCodes.length > 0 && (
+                 </Flex>
+                 {/* Mobile: text links stacked */}
+                 <VStack align="flex-start" spacing={2} display={{ base: "flex", md: "none" }}>
+                   <Text fontSize="sm" color="brand.500" cursor="pointer" onClick={onCreateAmc} _hover={{ textDecoration: "underline" }}>
+                     Create a new AMC
+                   </Text>
+                   <Text fontSize="sm" color="brand.500" cursor="pointer" onClick={() => onCreateFund()} _hover={{ textDecoration: "underline" }}>
+                     Create a new Mutual Fund
+                   </Text>
+                   {fundsWithCodes.length > 0 && (
+                     <Text fontSize="sm" color="brand.500" cursor="pointer" onClick={handleOpenBulkNavModal} _hover={{ textDecoration: "underline" }}>
+                       Bulk update Mutual Funds NAV
+                     </Text>
+                   )}
+                 </VStack>
+                 {/* Desktop: buttons beside title */}
+                 <HStack spacing={2} display={{ base: "none", md: "flex" }}>
                    <Button
-                     leftIcon={<RefreshCw size={16} />}
+                     leftIcon={<Building2 size={16} />}
                      colorScheme="brand"
                      variant="outline"
                      size="sm"
-                     onClick={handleOpenBulkNavModal}
-                   >
-                     Update NAVs
-                   </Button>
-                 )}
-               </HStack>
-             </Flex>
-
-             <SimpleGrid
-               columns={{ base: 2, sm: 3, lg: 5 }}
-               spacing={{ base: 4, md: 6 }}
-             >
-               <Box p={4} borderRadius="md" boxShadow="sm" bg={cardBg} border="1px solid" borderColor={cardBorderColor} transition="box-shadow 0.2s" _hover={{ boxShadow: "md" }} borderTopWidth="3px" borderTopColor={investedTopAccent}>
-                 <Flex align="center" gap={1.5} mb={1}>
-                   <Icon as={Wallet} boxSize={3} color={labelIconColor} />
-                   <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={labelIconColor}>
-                     Total Invested
-                   </Text>
-                 </Flex>
-                 <HStack spacing={0} align="baseline">
-                   <Text
-                     fontSize={{ base: "md", md: "xl" }}
-                     fontWeight="semibold"
-                     color={tertiaryTextColor}
-                     lineHeight="short"
-                   >
-                     {splitCurrencyForDisplay(totalInvested, currencySymbol || "₹").main}
-                   </Text>
-                   <Text
-                     fontSize="xs"
-                     fontWeight="semibold"
-                     color={tertiaryTextColor}
-                     opacity={0.7}
-                   >
-                     {splitCurrencyForDisplay(totalInvested, currencySymbol || "₹").decimals}
-                   </Text>
-                 </HStack>
-               </Box>
-
-               <Box p={4} borderRadius="md" boxShadow="sm" bg={cardBg} border="1px solid" borderColor={cardBorderColor} transition="box-shadow 0.2s" _hover={{ boxShadow: "md" }} borderTopWidth="3px" borderTopColor={valueTopAccent}>
-                 <Flex align="center" gap={1.5} mb={1}>
-                   <Icon as={TrendingUp} boxSize={3} color={labelIconColor} />
-                   <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={labelIconColor}>
-                     Total Value
-                   </Text>
-                 </Flex>
-                 <HStack spacing={0} align="baseline">
-                   <Text
-                     fontSize={{ base: "md", md: "xl" }}
-                     fontWeight="semibold"
-                     color={totalValueColor}
-                     lineHeight="short"
-                   >
-                     {splitCurrencyForDisplay(totalCurrentValue, currencySymbol || "₹").main}
-                   </Text>
-                   <Text
-                     fontSize="xs"
-                     fontWeight="semibold"
-                     color={totalValueColor}
-                     opacity={0.7}
-                   >
-                     {splitCurrencyForDisplay(totalCurrentValue, currencySymbol || "₹").decimals}
-                   </Text>
-                 </HStack>
-               </Box>
-
-               <Box p={4} borderRadius="md" boxShadow="sm" bg={cardBg} border="1px solid" borderColor={cardBorderColor} transition="box-shadow 0.2s" _hover={{ boxShadow: "md" }} borderTopWidth="3px" borderTopColor={realizedTopAccent}>
-                 <Flex align="center" gap={1.5} mb={1}>
-                   <Icon as={BadgeCheck} boxSize={3} color={labelIconColor} />
-                   <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={labelIconColor}>
-                     Total Realized Gain
-                   </Text>
-                 </Flex>
-                 <HStack spacing={0} align="baseline">
-                   <Text
-                     fontSize={{ base: "md", md: "xl" }}
-                     fontWeight="semibold"
-                     color={totalRealizedGain >= 0 ? realizedGainColor : unrealizedPnlColor}
-                     lineHeight="short"
-                   >
-                     {(totalRealizedGain >= 0 ? "+" : "−") + splitCurrencyForDisplay(Math.abs(totalRealizedGain), currencySymbol || "₹").main}
-                   </Text>
-                   <Text
-                     fontSize="xs"
-                     fontWeight="semibold"
-                     color={totalRealizedGain >= 0 ? realizedGainColor : unrealizedPnlColor}
-                     opacity={0.7}
-                   >
-                     {
-                       splitCurrencyForDisplay(Math.abs(totalRealizedGain), currencySymbol || "₹")
-                         .decimals
-                     }
-                   </Text>
-                 </HStack>
-               </Box>
-
-               <Box p={4} borderRadius="md" boxShadow="sm" bg={cardBg} border="1px solid" borderColor={cardBorderColor} transition="box-shadow 0.2s" _hover={{ boxShadow: "md" }} borderTopWidth="3px" borderTopColor={unrealizedTopAccent}>
-                 <Flex align="center" gap={1.5} mb={1}>
-                   <Icon as={Activity} boxSize={3} color={labelIconColor} />
-                   <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={labelIconColor}>
-                     Total Unrealized P&L
-                   </Text>
-                 </Flex>
-                 <VStack align="start" spacing={0}>
-                   <HStack spacing={0} align="baseline">
-                     <Text
-                       fontSize={{ base: "md", md: "xl" }}
-                       fontWeight="semibold"
-                       color={totalUnrealizedPnL >= 0 ? realizedGainColor : unrealizedPnlColor}
-                       lineHeight="short"
-                     >
-                       {(totalUnrealizedPnL >= 0 ? "+" : "−") + splitCurrencyForDisplay(Math.abs(totalUnrealizedPnL), currencySymbol || "₹").main}
-                     </Text>
-                     <Text
-                       fontSize="xs"
-                       fontWeight="semibold"
-                       color={totalUnrealizedPnL >= 0 ? realizedGainColor : unrealizedPnlColor}
-                       opacity={0.7}
-                     >
-                       {
-                         splitCurrencyForDisplay(
-                           Math.abs(totalUnrealizedPnL),
-                           currencySymbol || "₹"
-                         ).decimals
-                       }
-                     </Text>
-                   </HStack>
-                    <Flex
-                     mt={1}
-                     display="inline-flex"
-                     align="baseline"
-                     gap={0}
-                     px={2}
-                     py={0.5}
-                     borderRadius="full"
-                     bg={pnlBadgeBg}
-                   >
-                     <Text
-                       fontSize="2xs"
-                       fontWeight="semibold"
-                       color={totalUnrealizedPnL >= 0 ? realizedGainColor : unrealizedPnlColor}
-                     >
-                       {splitPercentageForDisplay(totalPnLPercentage).main}
-                     </Text>
-                     <Text
-                       fontSize="2xs"
-                       color={totalUnrealizedPnL >= 0 ? realizedGainColor : unrealizedPnlColor}
-                       opacity={0.8}
-                     >
-                       {splitPercentageForDisplay(totalPnLPercentage).decimals}
-                     </Text>
-                   </Flex>
-                 </VStack>
-               </Box>
-
-               <Box p={4} borderRadius="md" boxShadow="sm" bg={cardBg} border="1px solid" borderColor={cardBorderColor} transition="box-shadow 0.2s" _hover={{ boxShadow: "md" }} borderTopWidth="3px" borderTopColor={fundsTopAccent}>
-                 <Flex align="center" gap={1.5} mb={1}>
-                   <Icon as={PieChart} boxSize={3} color={labelIconColor} />
-                   <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={labelIconColor}>
-                     Total Funds
-                   </Text>
-                 </Flex>
-                 <VStack align="start" spacing={0}>
-                   <Text
-                     fontSize={{ base: "md", md: "xl" }}
+                     onClick={onCreateAmc}
+                     borderRadius="lg"
                      fontWeight="bold"
-                     color={totalFundsColor}
-                     lineHeight="short"
                    >
-                     {filteredMutualFunds.filter(fund => toNumber(fund.total_units) > 0).length}
-                   </Text>
-                   <Text fontSize="xs" color={emptyStateTextColor}>
-                     Across {amcs.length} AMC{amcs.length !== 1 ? "s" : ""}
-                   </Text>
-                 </VStack>
-               </Box>
-             </SimpleGrid>
+                     Create AMC
+                   </Button>
+                   <Button
+                     leftIcon={<PieChart size={16} />}
+                     colorScheme="brand"
+                     variant={amcs.length === 0 ? "outline" : "solid"}
+                     size="sm"
+                     onClick={() => onCreateFund()}
+                     borderRadius="lg"
+                     fontWeight="bold"
+                     _hover={{ boxShadow: btnGlow }}
+                     transition="all 0.2s ease"
+                   >
+                     Create Fund
+                   </Button>
+                   {fundsWithCodes.length > 0 && (
+                     <Button
+                       leftIcon={<RefreshCw size={16} />}
+                       colorScheme="brand"
+                       variant="outline"
+                       size="sm"
+                       onClick={handleOpenBulkNavModal}
+                       borderRadius="lg"
+                       fontWeight="bold"
+                     >
+                       Update NAVs
+                     </Button>
+                   )}
+                 </HStack>
+               </Flex>
+             </MotionBox>
+
+             <MotionSimpleGrid
+               columns={{ base: 2, sm: 3, lg: 5 }}
+               spacing={{ base: 3, md: 4 }}
+               initial="hidden"
+               animate="visible"
+               variants={{
+                 hidden: {},
+                 visible: { transition: { staggerChildren: 0.06 } },
+               }}
+             >
+               {summaryCards.map(({ icon, label, accentColor, valueMain, valueDecimals, color, extra }) => (
+                 <MotionBox
+                   key={label}
+                   variants={{
+                     hidden: { opacity: 0, y: 10 },
+                     visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+                   }}
+                   h="100%"
+                 >
+                   <Box
+                     p={4}
+                     borderRadius="xl"
+                     bg={cardBg}
+                     border="1px solid"
+                     borderColor={cardBorderColor}
+                     overflow="hidden"
+                     position="relative"
+                     transition="border-color 0.2s ease"
+                     _hover={{ borderColor: accentColor }}
+                     h="100%"
+                   >
+                     {/* Accent line at top */}
+                     <Box
+                       position="absolute"
+                       top={0}
+                       left={0}
+                       right={0}
+                       h="2px"
+                       bg={accentColor}
+                       opacity={0.7}
+                     />
+
+                     <Flex align="center" gap={1.5} mb={2}>
+                       <Flex
+                         w={5}
+                         h={5}
+                         borderRadius="md"
+                         bg={accentColor}
+                         opacity={0.12}
+                         position="absolute"
+                       />
+                       <Flex
+                         w={5}
+                         h={5}
+                         borderRadius="md"
+                         align="center"
+                         justify="center"
+                       >
+                         <Icon as={icon} boxSize={3} color={accentColor} />
+                       </Flex>
+                       <Text
+                         fontSize="2xs"
+                         fontWeight="semibold"
+                         textTransform="uppercase"
+                         letterSpacing="wider"
+                         color={labelIconColor}
+                       >
+                         {label}
+                       </Text>
+                     </Flex>
+                     <VStack align="start" spacing={0}>
+                       <HStack spacing={0} align="baseline">
+                         <Text
+                           fontSize={{ base: "lg", md: "xl" }}
+                           fontWeight="bold"
+                           color={color}
+                           lineHeight="short"
+                           letterSpacing="-0.01em"
+                         >
+                           {valueMain}
+                         </Text>
+                         {valueDecimals && (
+                           <Text
+                             fontSize="xs"
+                             color={color}
+                             opacity={0.6}
+                           >
+                             {valueDecimals}
+                           </Text>
+                         )}
+                       </HStack>
+                       {extra}
+                     </VStack>
+                   </Box>
+                 </MotionBox>
+               ))}
+             </MotionSimpleGrid>
            </>
          )}
 
           {amcs.length === 0 ? (
-            <Box
-              p={12}
+            <MotionBox
               textAlign="center"
-              bg={emptyStateBg}
-              borderRadius="lg"
-              border="2px dashed"
-              borderColor={emptyStateBorderColor}
+              py={16}
+              px={6}
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
             >
-              <VStack spacing={4}>
-                <Icon as={TrendingUp} boxSize={16} color={emptyStateIconColor} />
-                <VStack spacing={2}>
-                  <Text fontSize="xl" fontWeight="semibold" color={textColor}>
-                    No AMCs Created Yet
-                  </Text>
-                  <Text fontSize="md" color={emptyStateTextColor} maxW="400px">
-                    Create your first Asset Management Company to start tracking mutual fund investments
-                  </Text>
-                </VStack>
-                <Button colorScheme="brand" onClick={onCreateAmc} size="lg">
+              <Box
+                w="80px"
+                h="80px"
+                borderRadius="2xl"
+                bg={emptyIconBg}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                mb={6}
+                css={{ animation: `${floatKeyframes} 3s ease-in-out infinite` }}
+              >
+                <Icon as={TrendingUp} boxSize={9} color="brand.500" strokeWidth={1.5} />
+              </Box>
+              <Text fontSize="xl" fontWeight="800" color={emptyTitleColor} mb={2} letterSpacing="-0.02em">
+                No AMCs Created Yet
+              </Text>
+              <Text fontSize="sm" color={emptySubColor} maxW="360px" mb={8} lineHeight="1.6">
+                Create your first Asset Management Company to start tracking mutual fund investments
+              </Text>
+              <MotionBox whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                <Button
+                  colorScheme="brand"
+                  onClick={onCreateAmc}
+                  size="lg"
+                  borderRadius="xl"
+                  fontWeight="bold"
+                  px={8}
+                  _hover={{ boxShadow: btnGlow }}
+                  transition="all 0.2s ease"
+                >
                   Create Your First AMC
                 </Button>
-              </VStack>
-            </Box>
+              </MotionBox>
+            </MotionBox>
           ) : mutualFunds.length === 0 ? (
-            <Box
-              p={12}
+            <MotionBox
               textAlign="center"
-              bg={emptyStateBg}
-              borderRadius="lg"
-              border="2px dashed"
-              borderColor={emptyStateBorderColor}
+              py={16}
+              px={6}
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
             >
-              <VStack spacing={4}>
-                <Icon as={TrendingUp} boxSize={16} color={emptyStateIconColor} />
-                <VStack spacing={2}>
-                  <Text fontSize="xl" fontWeight="semibold" color={textColor}>
-                    No Mutual Funds Yet
-                  </Text>
-                  <Text fontSize="md" color={emptyStateTextColor} maxW="400px">
-                    Create your first mutual fund to start tracking your portfolio
-                  </Text>
-                </VStack>
-                <Button colorScheme="brand" onClick={() => onCreateFund()} size="lg">
+              <Box
+                w="80px"
+                h="80px"
+                borderRadius="2xl"
+                bg={emptyIconBg}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                mb={6}
+                css={{ animation: `${floatKeyframes} 3s ease-in-out infinite` }}
+              >
+                <Icon as={BookOpen} boxSize={9} color="brand.500" strokeWidth={1.5} />
+              </Box>
+              <Text fontSize="xl" fontWeight="800" color={emptyTitleColor} mb={2} letterSpacing="-0.02em">
+                No Mutual Funds Yet
+              </Text>
+              <Text fontSize="sm" color={emptySubColor} maxW="360px" mb={8} lineHeight="1.6">
+                Create your first mutual fund to start tracking your portfolio
+              </Text>
+              <MotionBox whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                <Button
+                  colorScheme="brand"
+                  onClick={() => onCreateFund()}
+                  size="lg"
+                  borderRadius="xl"
+                  fontWeight="bold"
+                  px={8}
+                  _hover={{ boxShadow: btnGlow }}
+                  transition="all 0.2s ease"
+                >
                   Create Your First Fund
                 </Button>
-              </VStack>
-            </Box>
+              </MotionBox>
+            </MotionBox>
          ) : (
-             <Box bg={{ base: "transparent", md: overviewBg }} p={{ base: 0, md: 4, lg: 6 }} borderRadius={{ base: "none", md: "lg" }}>
+             <MotionBox
+               initial={{ opacity: 0, y: 8 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.35, delay: 0.15, ease: "easeOut" }}
+               bg={{ base: "transparent", md: overviewBg }}
+               p={{ base: 0, md: 4, lg: 6 }}
+               borderRadius={{ base: "none", md: "xl" }}
+             >
                <MutualFundsTable
                  amcs={amcs}
                  mutualFunds={mutualFunds}
@@ -493,7 +580,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                  filters={filters}
                  onFiltersChange={onFiltersChange}
                />
-             </Box>
+             </MotionBox>
          )}
       </VStack>
       <BulkNavUpdateModal

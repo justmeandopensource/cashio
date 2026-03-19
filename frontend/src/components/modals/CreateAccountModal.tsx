@@ -220,7 +220,7 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "md" }}
+        borderRadius={{ base: 0, sm: "xl" }}
         boxShadow="2xl"
         border="1px solid"
         borderColor={borderColor}
@@ -231,6 +231,11 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
         display="flex"
         flexDirection="column"
       >
+        {/* Gradient accent line */}
+        <Box
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
         {/* Flat header */}
         <Box
           px={{ base: 4, sm: 8 }}
@@ -244,7 +249,8 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
             <Box>
               <Box
                 fontSize="lg"
-                fontWeight="bold"
+                fontWeight="800"
+                letterSpacing="-0.02em"
                 color={modalTitleColor}
               >
                 Create {accountType === "asset" ? "Asset" : "Liability"} Account
@@ -274,7 +280,7 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -292,8 +298,8 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
                   borderColor={inputBorderColor}
                   bg={inputBg}
                   size="lg"
-                  borderRadius="md"
-                  _hover={{ borderColor: "teal.300" }}
+                  borderRadius="lg"
+                  _hover={{ borderColor: "brand.300" }}
                   _focus={{
                     borderColor: focusBorderColor,
                     boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -310,7 +316,7 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -330,7 +336,7 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
                     <Checkbox
                       isChecked={isGroupAccount}
                       onChange={(e) => setIsGroupAccount(e.target.checked)}
-                      colorScheme="teal"
+                      colorScheme="brand"
                       size="lg"
                     />
                   </HStack>
@@ -360,8 +366,8 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
                         borderWidth="2px"
                         borderColor={inputBorderColor}
                         bg={inputBg}
-                        borderRadius="md"
-                        _hover={{ borderColor: "teal.300" }}
+                        borderRadius="lg"
+                        _hover={{ borderColor: "brand.300" }}
                         _focus={{
                           borderColor: focusBorderColor,
                           boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -381,7 +387,7 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
               <Box
                 bg={cardBg}
                 p={{ base: 4, sm: 6 }}
-                borderRadius="md"
+                borderRadius="xl"
                 border="1px solid"
                 borderColor={borderColor}
               >
@@ -434,8 +440,8 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
                           borderColor={inputBorderColor}
                           bg={inputBg}
                           size="lg"
-                          borderRadius="md"
-                          _hover={{ borderColor: "teal.300" }}
+                          borderRadius="lg"
+                          _hover={{ borderColor: "brand.300" }}
                           _focus={{
                             borderColor: focusBorderColor,
                             boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -486,7 +492,7 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
              <Box
                bg={cardBg}
                p={{ base: 4, sm: 6 }}
-               borderRadius="md"
+               borderRadius="xl"
                border="1px solid"
                borderColor={borderColor}
              >
@@ -503,8 +509,8 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
                      borderColor={inputBorderColor}
                      bg={inputBg}
                      size="lg"
-                     borderRadius="md"
-                     _hover={{ borderColor: "teal.300" }}
+                     borderRadius="lg"
+                     _hover={{ borderColor: "brand.300" }}
                      _focus={{
                        borderColor: focusBorderColor,
                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -528,9 +534,9 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
                      borderColor={inputBorderColor}
                      bg={inputBg}
                      size="lg"
-                     borderRadius="md"
+                     borderRadius="lg"
                      rows={4}
-                     _hover={{ borderColor: "teal.300" }}
+                     _hover={{ borderColor: "brand.300" }}
                      _focus={{
                        borderColor: focusBorderColor,
                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -549,11 +555,12 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
           <Box display={{ base: "block", sm: "none" }} mt={6}>
             <Button
               onClick={handleSubmit}
-              colorScheme="teal"
+              colorScheme="brand"
               size="lg"
               width="100%"
               mb={3}
-              borderRadius="md"
+              borderRadius="lg"
+              fontWeight="bold"
               isLoading={createAccountMutation.isPending}
               isDisabled={!accountName || isGroupAccountsError}
               loadingText="Creating..."
@@ -566,7 +573,7 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
               onClick={onClose}
               size="lg"
               width="100%"
-              borderRadius="md"
+              borderRadius="lg"
               isDisabled={createAccountMutation.isPending}
             >
               Cancel
@@ -584,12 +591,13 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
           borderColor={borderColor}
         >
           <Button
-            colorScheme="teal"
+            colorScheme="brand"
             mr={3}
             onClick={handleSubmit}
             px={8}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
+            fontWeight="bold"
             isLoading={createAccountMutation.isPending}
             isDisabled={!accountName || isGroupAccountsError}
             loadingText="Creating..."
@@ -603,7 +611,7 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
             isDisabled={createAccountMutation.isPending}
             px={6}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
           >
             Cancel
           </Button>

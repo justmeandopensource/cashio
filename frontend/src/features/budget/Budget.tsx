@@ -79,9 +79,12 @@ const Budget: React.FC = () => {
   const selectBorderColor = useColorModeValue("gray.200", "gray.600");
   const selectColor = useColorModeValue("gray.700", "gray.200");
   const labelColor = useColorModeValue("gray.400", "gray.500");
-  const columnBorderColor = useColorModeValue("gray.200", "gray.700");
+  const columnBorderColor = useColorModeValue("gray.100", "gray.700");
   const columnHeaderBg = useColorModeValue("gray.50", "gray.800");
   const periodTitleColor = useColorModeValue("gray.700", "gray.200");
+  const periodIconColor = useColorModeValue("brand.500", "brand.400");
+  const emptyColor = useColorModeValue("gray.400", "gray.500");
+  const emptyIconColor = useColorModeValue("gray.200", "gray.600");
 
   const activeCurrencySymbol =
     currencySymbol ||
@@ -117,7 +120,7 @@ const Budget: React.FC = () => {
                 onChange={handleLedgerChange}
                 isDisabled={isLoadingLedgers}
                 size="sm"
-                borderRadius="md"
+                borderRadius="lg"
                 bg={selectBg}
                 borderColor={selectBorderColor}
                 color={selectColor}
@@ -143,7 +146,7 @@ const Budget: React.FC = () => {
                 leftIcon={<Icon as={Plus} boxSize={4} />}
                 colorScheme="teal"
                 size="sm"
-                borderRadius="md"
+                borderRadius="lg"
                 onClick={() => openModalForPeriod("monthly")}
               >
                 Add Budget
@@ -167,18 +170,18 @@ const Budget: React.FC = () => {
                 <Flex
                   align="center"
                   px={5}
-                  py={4}
+                  py={3.5}
                   bg={columnHeaderBg}
                   borderBottom="1px solid"
                   borderColor={columnBorderColor}
-                  gap={2}
+                  gap={2.5}
                 >
-                  <Icon as={Calendar} boxSize={4} color="brand.500" />
-                  <Text fontWeight="bold" fontSize="md" color={periodTitleColor}>
+                  <Icon as={Calendar} boxSize={4} color={periodIconColor} />
+                  <Text fontWeight="bold" fontSize="sm" color={periodTitleColor} letterSpacing="-0.01em">
                     Monthly
                   </Text>
                 </Flex>
-                <Box p={4}>
+                <Box p={{ base: 3, md: 4 }}>
                   <BudgetList
                     ledgerId={selectedLedgerId}
                     period="monthly"
@@ -197,18 +200,18 @@ const Budget: React.FC = () => {
                 <Flex
                   align="center"
                   px={5}
-                  py={4}
+                  py={3.5}
                   bg={columnHeaderBg}
                   borderBottom="1px solid"
                   borderColor={columnBorderColor}
-                  gap={2}
+                  gap={2.5}
                 >
-                  <Icon as={CalendarDays} boxSize={4} color="brand.500" />
-                  <Text fontWeight="bold" fontSize="md" color={periodTitleColor}>
+                  <Icon as={CalendarDays} boxSize={4} color={periodIconColor} />
+                  <Text fontWeight="bold" fontSize="sm" color={periodTitleColor} letterSpacing="-0.01em">
                     Yearly
                   </Text>
                 </Flex>
-                <Box p={4}>
+                <Box p={{ base: 3, md: 4 }}>
                   <BudgetList
                     ledgerId={selectedLedgerId}
                     period="yearly"
@@ -219,11 +222,12 @@ const Budget: React.FC = () => {
             </SimpleGrid>
           </PageContainer>
         ) : (
-          <Box p={8} textAlign="center">
-            <Text color="gray.500" fontSize="sm">
+          <Flex direction="column" align="center" justify="center" py={16} gap={3}>
+            <Icon as={Target} boxSize={10} color={emptyIconColor} strokeWidth={1.5} />
+            <Text color={emptyColor} fontSize="sm">
               Select a ledger to manage budgets.
             </Text>
-          </Box>
+          </Flex>
         )}
       </Box>
 

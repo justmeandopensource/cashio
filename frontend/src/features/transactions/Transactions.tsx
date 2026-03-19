@@ -12,10 +12,11 @@ import {
   Icon,
   Skeleton,
   SkeletonText,
-  SkeletonCircle,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { Plus, ChevronLeft, ChevronRight, Filter, AlignLeft } from "lucide-react";
+import { keyframes } from "@emotion/react";
+import { motion } from "framer-motion";
+import { Plus, ChevronLeft, ChevronRight, Filter, AlignLeft, BookOpen } from "lucide-react";
 
 import api from "@/lib/api";
 import TransactionCard from "./TransactionCard";
@@ -25,6 +26,13 @@ import { AxiosError } from "axios";
 import useLedgerStore from "@/components/shared/store";
 import { toastDefaults } from "@/components/shared/utils";
 const EditTransactionModal = lazy(() => import("@components/modals/EditTransactionModal/EditTransactionModal"));
+
+const MotionBox = motion(Box);
+
+const floatKeyframes = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+`;
 
 interface Transaction {
   transaction_id: string;
@@ -326,27 +334,51 @@ const Transactions: React.FC<TransactionsProps> = ({
 
   const boxBg = undefined;
   const skeletonBg = useColorModeValue("primaryBg", "primaryBg");
+  const skeletonBorder = useColorModeValue("gray.100", "gray.700");
   const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
+  const emptyIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.12)");
+  const emptyTitleColor = useColorModeValue("gray.800", "gray.100");
+  const emptySubColor = useColorModeValue("gray.500", "gray.400");
+  const paginationBg = useColorModeValue("white", "gray.700");
+  const paginationBorder = useColorModeValue("gray.100", "gray.600");
+  const paginationTextColor = useColorModeValue("gray.600", "gray.300");
+  const btnGlow = useColorModeValue(
+    "0 0 20px rgba(53,169,163,0.25)",
+    "0 0 20px rgba(78,194,188,0.2)"
+  );
 
   if (shouldFetch && isTransactionsLoading) {
     return (
       <Box bg={boxBg} p={{ base: 2, lg: 6 }} borderRadius="lg">
         <Flex justify="space-between" align="center" mb={4}>
           <Flex align="center" gap={2}>
-            <SkeletonCircle size="6" />
-            <Skeleton height="6" width="32" />
+            <Skeleton height="6" width="6" borderRadius="md" />
+            <Skeleton height="6" width="32" borderRadius="md" />
           </Flex>
-          <Skeleton height="8" width="24" />
+          <Skeleton height="8" width="24" borderRadius="lg" />
         </Flex>
         <VStack spacing={3} align="stretch">
           {Array.from({ length: 5 }).map((_, index) => (
-            <Box key={index} bg={skeletonBg} p={4} borderRadius="md" boxShadow="sm">
-              <Flex justify="space-between" align="center" mb={2}>
-                <Skeleton height="4" width="20" />
-                <Skeleton height="5" width="16" />
-              </Flex>
-              <SkeletonText noOfLines={2} spacing="2" />
-            </Box>
+            <MotionBox
+              key={index}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, delay: index * 0.05 }}
+            >
+              <Box
+                bg={skeletonBg}
+                p={4}
+                borderRadius="xl"
+                border="1px solid"
+                borderColor={skeletonBorder}
+              >
+                <Flex justify="space-between" align="center" mb={2}>
+                  <Skeleton height="4" width="20" borderRadius="md" />
+                  <Skeleton height="5" width="16" borderRadius="md" />
+                </Flex>
+                <SkeletonText noOfLines={2} spacing="2" />
+              </Box>
+            </MotionBox>
           ))}
         </VStack>
       </Box>
@@ -365,48 +397,82 @@ const Transactions: React.FC<TransactionsProps> = ({
   return (
     <Box bg={boxBg} p={{ base: 2, lg: 6 }} borderRadius="lg">
       {!shouldFetch || !transactionsData || transactionsData.length === 0 ? (
-        <Box
+        <MotionBox
           textAlign="center"
-          py={{ base: 6, lg: 10 }}
+          py={{ base: 8, lg: 14 }}
           px={{ base: 3, lg: 6 }}
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <Text fontSize="xl" fontWeight="bold" mb={2}>
+          <Box
+            w="72px"
+            h="72px"
+            borderRadius="2xl"
+            bg={emptyIconBg}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            mb={5}
+            css={{ animation: `${floatKeyframes} 3s ease-in-out infinite` }}
+          >
+            <Icon as={hasActiveFilters ? Filter : BookOpen} boxSize={8} color="brand.500" strokeWidth={1.5} />
+          </Box>
+
+          <Text fontSize="xl" fontWeight="800" mb={2} color={emptyTitleColor} letterSpacing="-0.02em">
             {hasActiveFilters
               ? "No Matching Transactions"
               : "No Transactions Found"}
           </Text>
-          <Text color="secondaryTextColor" mb={6}>
+          <Text color={emptySubColor} mb={8} fontSize="sm" maxW="320px" lineHeight="1.6">
             {hasActiveFilters
               ? "No transactions match your filter criteria."
               : "You do not have any transactions for this account yet."}
           </Text>
 
-          {/* Show different actions based on whether filters are active */}
-          {hasActiveFilters ? (
-            <Button
-              leftIcon={<Filter />}
-              colorScheme="brand"
-              onClick={handleResetFilters}
-              mr={3}
-            >
-              Reset Filters
-            </Button>
-          ) : (
-            <Button
-              leftIcon={<Plus />}
-              colorScheme="brand"
-              onClick={onAddTransaction}
-            >
-              Add Transaction
-            </Button>
-          )}
-        </Box>
+          <MotionBox whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+            {hasActiveFilters ? (
+              <Button
+                leftIcon={<Filter size={16} />}
+                colorScheme="brand"
+                onClick={handleResetFilters}
+                borderRadius="lg"
+                fontWeight="bold"
+                px={6}
+                _hover={{ boxShadow: btnGlow }}
+                transition="all 0.2s ease"
+              >
+                Reset Filters
+              </Button>
+            ) : (
+              <Button
+                leftIcon={<Plus size={16} />}
+                colorScheme="brand"
+                onClick={onAddTransaction}
+                borderRadius="lg"
+                fontWeight="bold"
+                px={6}
+                _hover={{ boxShadow: btnGlow }}
+                transition="all 0.2s ease"
+              >
+                Add Transaction
+              </Button>
+            )}
+          </MotionBox>
+        </MotionBox>
       ) : (
-        <>
+        <MotionBox
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
           <Flex justify="space-between" align="center" mb={4}>
             <Flex align="center" gap={2}>
               <Icon as={AlignLeft} size={24} color="secondaryTextColor" />
-              <Text fontSize={{ base: "lg", lg: "xl" }} fontWeight="bold" color={tertiaryTextColor}>
+              <Text fontSize={{ base: "lg", lg: "xl" }} fontWeight="800" color={tertiaryTextColor} letterSpacing="-0.02em">
                 Transactions
               </Text>
             </Flex>
@@ -438,63 +504,91 @@ const Transactions: React.FC<TransactionsProps> = ({
 
            <Box display={{ base: "block", lg: "none" }}>
              <VStack spacing={1} align="stretch">
-               {transactionsData.map((transaction) => (
-                 <TransactionCard
+               {transactionsData.map((transaction, index) => (
+                 <MotionBox
                    key={transaction.transaction_id}
-                   transaction={transaction}
-                   isExpanded={
-                     expandedTransaction === transaction.transaction_id
-                   }
-                   toggleExpand={(e) =>
-                     toggleExpand(transaction.transaction_id, e)
-                   }
-                   fetchSplitTransactions={() =>
-                     fetchSplitTransactions(transaction.transaction_id)
-                   }
-                   splitTransactions={splitTransactions}
-                   fetchTransferDetails={() =>
-                     transaction.transfer_id
-                       ? fetchTransferDetails(transaction.transfer_id)
-                       : undefined
-                   }
-                   transferDetails={transferDetails || undefined}
-                   isSplitLoading={isSplitLoading}
-                   isTransferLoading={isTransferLoading}
-                   onDeleteTransaction={handleDeleteTransaction}
-                   onEditTransaction={handleEditTransaction}
-                   onCopyTransaction={onCopyTransaction}
-                   showAccountName={!accountId}
-                 />
+                   initial={{ opacity: 0, y: 8 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ duration: 0.25, delay: Math.min(index * 0.03, 0.3) }}
+                 >
+                   <TransactionCard
+                     transaction={transaction}
+                     isExpanded={
+                       expandedTransaction === transaction.transaction_id
+                     }
+                     toggleExpand={(e) =>
+                       toggleExpand(transaction.transaction_id, e)
+                     }
+                     fetchSplitTransactions={() =>
+                       fetchSplitTransactions(transaction.transaction_id)
+                     }
+                     splitTransactions={splitTransactions}
+                     fetchTransferDetails={() =>
+                       transaction.transfer_id
+                         ? fetchTransferDetails(transaction.transfer_id)
+                         : undefined
+                     }
+                     transferDetails={transferDetails || undefined}
+                     isSplitLoading={isSplitLoading}
+                     isTransferLoading={isTransferLoading}
+                     onDeleteTransaction={handleDeleteTransaction}
+                     onEditTransaction={handleEditTransaction}
+                     onCopyTransaction={onCopyTransaction}
+                     showAccountName={!accountId}
+                   />
+                 </MotionBox>
                ))}
              </VStack>
            </Box>
 
           {pagination.total_pages > 1 && (
-            <Flex justifyContent="center" mt={6} alignItems="center">
-              <IconButton
-                icon={<ChevronLeft />}
-                isDisabled={pagination.current_page === 1}
-                onClick={() => handlePageChange(pagination.current_page - 1)}
-                variant="ghost"
-                size={{ base: "sm", lg: "md" }}
-                aria-label="Previous page"
-                data-testid="transactions-prev-page-icon"
-              />
-              <Text mx={4} fontSize={{ base: "sm", lg: "md" }}>
-                {pagination.current_page} / {pagination.total_pages}
-              </Text>
-              <IconButton
-                icon={<ChevronRight />}
-                isDisabled={pagination.current_page === pagination.total_pages}
-                onClick={() => handlePageChange(pagination.current_page + 1)}
-                variant="ghost"
-                size={{ base: "sm", lg: "md" }}
-                aria-label="Next page"
-                data-testid="transactions-next-page-icon"
-              />
+            <Flex
+              justifyContent="center"
+              mt={6}
+              alignItems="center"
+            >
+              <Flex
+                align="center"
+                bg={paginationBg}
+                border="1px solid"
+                borderColor={paginationBorder}
+                borderRadius="xl"
+                px={2}
+                py={1}
+              >
+                <IconButton
+                  icon={<ChevronLeft size={16} />}
+                  isDisabled={pagination.current_page === 1}
+                  onClick={() => handlePageChange(pagination.current_page - 1)}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Previous page"
+                  data-testid="transactions-prev-page-icon"
+                  borderRadius="lg"
+                />
+                <Text
+                  mx={4}
+                  fontSize="sm"
+                  fontWeight="semibold"
+                  color={paginationTextColor}
+                  letterSpacing="0.02em"
+                >
+                  {pagination.current_page} / {pagination.total_pages}
+                </Text>
+                <IconButton
+                  icon={<ChevronRight size={16} />}
+                  isDisabled={pagination.current_page === pagination.total_pages}
+                  onClick={() => handlePageChange(pagination.current_page + 1)}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Next page"
+                  data-testid="transactions-next-page-icon"
+                  borderRadius="lg"
+                />
+              </Flex>
             </Flex>
           )}
-        </>
+        </MotionBox>
       )}
       {isEditModalOpen && selectedTransaction && (
         <Suspense fallback={<div>Loading...</div>}>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { Flex, useToast, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex, useToast, useColorModeValue } from "@chakra-ui/react";
 import RegisterForm from "@features/auth/components/RegisterForm";
 import api from "@/lib/api";
 
@@ -77,7 +77,7 @@ const Register: React.FC = () => {
     registerMutation.mutate(formDetails);
   };
 
-  const pageBg = useColorModeValue("primaryBg", "primaryBg");
+  const pageBg = useColorModeValue("gray.50", "gray.900");
 
   return (
     <Flex
@@ -86,7 +86,35 @@ const Register: React.FC = () => {
       minH="100vh"
       bg={pageBg}
       px={0}
+      position="relative"
+      overflow="hidden"
     >
+      {/* Subtle background accent */}
+      <Box
+        position="absolute"
+        top="-20%"
+        right="-10%"
+        w="500px"
+        h="500px"
+        borderRadius="full"
+        bg={useColorModeValue("brand.50", "brand.900")}
+        opacity={0.4}
+        filter="blur(120px)"
+        pointerEvents="none"
+      />
+      <Box
+        position="absolute"
+        bottom="-15%"
+        left="-5%"
+        w="400px"
+        h="400px"
+        borderRadius="full"
+        bg={useColorModeValue("teal.50", "teal.900")}
+        opacity={0.3}
+        filter="blur(100px)"
+        pointerEvents="none"
+      />
+
       <RegisterForm
         onSubmit={handleSubmit}
         full_name={full_name}

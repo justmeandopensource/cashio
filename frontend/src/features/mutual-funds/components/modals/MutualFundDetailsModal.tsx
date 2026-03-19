@@ -42,6 +42,7 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
   const modalIconColor = useColorModeValue("gray.400", "gray.500");
+  const footerBg = useColorModeValue("gray.50", "gray.900");
 
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return "Not available";
@@ -70,7 +71,7 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "md" }}
+        borderRadius={{ base: 0, sm: "xl" }}
         boxShadow="2xl"
         border="1px solid"
         borderColor={borderColor}
@@ -81,6 +82,11 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
         display="flex"
         flexDirection="column"
       >
+        {/* Gradient accent line */}
+        <Box
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
         {/* Flat header */}
         <Box
           px={{ base: 4, sm: 8 }}
@@ -99,13 +105,14 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
               >
                 <Text
                   fontSize="lg"
-                  fontWeight="bold"
+                  fontWeight="800"
+                  letterSpacing="-0.02em"
                   color={modalTitleColor}
                 >
                   {fund.name}
                 </Text>
                 <Badge
-                  colorScheme="teal"
+                  colorScheme="brand"
                   variant="subtle"
                   fontSize="sm"
                   px={2}
@@ -130,7 +137,8 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
           flex="1"
           display="flex"
           flexDirection="column"
-          overflow="auto"
+          overflowY="auto"
+          overflowX="hidden"
           justifyContent={{ base: "space-between", sm: "flex-start" }}
         >
           <VStack spacing={{ base: 4, sm: 6 }} align="stretch" w="100%">
@@ -140,20 +148,23 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
               <VStack spacing={4}>
                 {fund.owner && (
                   <Flex justify="space-between" align="center" w="full">
-                    <Text
-                      fontSize={{ base: "sm", sm: "md" }}
-                      color={textSecondary}
-                      fontWeight="medium"
-                    >
-                      Owner
-                    </Text>
+                    <HStack spacing={2}>
+                      <Box w={2} h={2} bg="purple.400" borderRadius="full" />
+                      <Text
+                        fontSize={{ base: "sm", sm: "md" }}
+                        color={textSecondary}
+                        fontWeight="medium"
+                      >
+                        Owner
+                      </Text>
+                    </HStack>
                     <Text
                       fontSize={{ base: "sm", sm: "md" }}
                       color={textMuted}
@@ -167,13 +178,16 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
                 {fund.owner && <Divider />}
 
                 <Flex justify="space-between" align="center" w="full">
-                  <Text
-                    fontSize={{ base: "sm", sm: "md" }}
-                    color={textSecondary}
-                    fontWeight="medium"
-                  >
-                    Asset Class
-                  </Text>
+                  <HStack spacing={2}>
+                    <Box w={2} h={2} bg="blue.400" borderRadius="full" />
+                    <Text
+                      fontSize={{ base: "sm", sm: "md" }}
+                      color={textSecondary}
+                      fontWeight="medium"
+                    >
+                      Asset Class
+                    </Text>
+                  </HStack>
                   <Text
                     fontSize={{ base: "sm", sm: "md" }}
                     color={textMuted}
@@ -187,13 +201,16 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
                   <>
                     <Divider />
                     <Flex justify="space-between" align="center" w="full">
-                      <Text
-                        fontSize={{ base: "sm", sm: "md" }}
-                        color={textSecondary}
-                        fontWeight="medium"
-                      >
-                        Asset Sub-Class
-                      </Text>
+                      <HStack spacing={2}>
+                        <Box w={2} h={2} bg="teal.400" borderRadius="full" />
+                        <Text
+                          fontSize={{ base: "sm", sm: "md" }}
+                          color={textSecondary}
+                          fontWeight="medium"
+                        >
+                          Asset Sub-Class
+                        </Text>
+                      </HStack>
                       <Text
                         fontSize={{ base: "sm", sm: "md" }}
                         color={textMuted}
@@ -209,13 +226,16 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
                   <>
                     <Divider />
                     <Flex justify="space-between" align="center" w="full">
-                      <Text
-                        fontSize={{ base: "sm", sm: "md" }}
-                        color={textSecondary}
-                        fontWeight="medium"
-                      >
-                        Scheme Code
-                      </Text>
+                      <HStack spacing={2}>
+                        <Box w={2} h={2} bg="orange.400" borderRadius="full" />
+                        <Text
+                          fontSize={{ base: "sm", sm: "md" }}
+                          color={textSecondary}
+                          fontWeight="medium"
+                        >
+                          Scheme Code
+                        </Text>
+                      </HStack>
                       <Text
                         fontSize={{ base: "sm", sm: "md" }}
                         color={textMuted}
@@ -231,13 +251,16 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
                   <>
                     <Divider />
                     <Flex justify="space-between" align="center" w="full">
-                      <Text
-                        fontSize={{ base: "sm", sm: "md" }}
-                        color={textSecondary}
-                        fontWeight="medium"
-                      >
-                        Plan
-                      </Text>
+                      <HStack spacing={2}>
+                        <Box w={2} h={2} bg="cyan.400" borderRadius="full" />
+                        <Text
+                          fontSize={{ base: "sm", sm: "md" }}
+                          color={textSecondary}
+                          fontWeight="medium"
+                        >
+                          Plan
+                        </Text>
+                      </HStack>
                       <Text
                         fontSize={{ base: "sm", sm: "md" }}
                         color={textMuted}
@@ -255,7 +278,7 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -281,19 +304,22 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
               <VStack spacing={4}>
                 <Flex justify="space-between" align="center" w="full">
-                  <Text
-                    fontSize={{ base: "sm", sm: "md" }}
-                    color={textSecondary}
-                    fontWeight="medium"
-                  >
-                    Created
-                  </Text>
+                  <HStack spacing={2}>
+                    <Box w={2} h={2} bg="green.400" borderRadius="full" />
+                    <Text
+                      fontSize={{ base: "sm", sm: "md" }}
+                      color={textSecondary}
+                      fontWeight="medium"
+                    >
+                      Created
+                    </Text>
+                  </HStack>
                   <Text
                     fontSize={{ base: "sm", sm: "md" }}
                     color={textMuted}
@@ -306,13 +332,16 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
                 <Divider />
 
                 <Flex justify="space-between" align="center" w="full">
-                  <Text
-                    fontSize={{ base: "sm", sm: "md" }}
-                    color={textSecondary}
-                    fontWeight="medium"
-                  >
-                    Last Updated
-                  </Text>
+                  <HStack spacing={2}>
+                    <Box w={2} h={2} bg="blue.400" borderRadius="full" />
+                    <Text
+                      fontSize={{ base: "sm", sm: "md" }}
+                      color={textSecondary}
+                      fontWeight="medium"
+                    >
+                      Last Updated
+                    </Text>
+                  </HStack>
                   <Text
                     fontSize={{ base: "sm", sm: "md" }}
                     color={textMuted}
@@ -326,13 +355,16 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
                   <>
                     <Divider />
                     <Flex justify="space-between" align="center" w="full">
-                      <Text
-                        fontSize={{ base: "sm", sm: "md" }}
-                        color={textSecondary}
-                        fontWeight="medium"
-                      >
-                        NAV Last Updated
-                      </Text>
+                      <HStack spacing={2}>
+                        <Box w={2} h={2} bg="purple.400" borderRadius="full" />
+                        <Text
+                          fontSize={{ base: "sm", sm: "md" }}
+                          color={textSecondary}
+                          fontWeight="medium"
+                        >
+                          NAV Last Updated
+                        </Text>
+                      </HStack>
                       <Text
                         fontSize={{ base: "sm", sm: "md" }}
                         color={textMuted}
@@ -352,12 +384,13 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
           <Box display={{ base: "block", sm: "none" }} mt={6}>
             {onEditFund && (
               <Button
-                colorScheme="teal"
+                colorScheme="brand"
                 size="lg"
                 width="100%"
                 mb={3}
                 onClick={onEditFund}
-                borderRadius="md"
+                borderRadius="lg"
+                fontWeight="bold"
               >
                 Edit Mutual Fund
               </Button>
@@ -368,7 +401,7 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
               onClick={onClose}
               size="lg"
               width="100%"
-              borderRadius="md"
+              borderRadius="lg"
             >
               Cancel
             </Button>
@@ -380,18 +413,19 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
           display={{ base: "none", sm: "flex" }}
           px={8}
           py={6}
-          bg={cardBg}
+          bg={footerBg}
           borderTop="1px solid"
           borderColor={borderColor}
         >
           {onEditFund && (
             <Button
-              colorScheme="teal"
+              colorScheme="brand"
               mr={3}
               onClick={onEditFund}
               px={8}
               py={3}
-              borderRadius="md"
+              borderRadius="lg"
+              fontWeight="bold"
             >
               Edit Mutual Fund
             </Button>
@@ -402,7 +436,7 @@ const MutualFundDetailsModal: React.FC<MutualFundDetailsModalProps> = ({
             onClick={onClose}
             px={6}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
           >
             Cancel
           </Button>

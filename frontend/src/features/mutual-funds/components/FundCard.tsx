@@ -8,7 +8,6 @@ import {
   Card,
   CardBody,
   Collapse,
-  Divider,
   SimpleGrid,
   Stat,
   StatLabel,
@@ -52,13 +51,18 @@ const FundCard: FC<FundCardProps> = ({
 }) => {
   const { currencySymbol } = useLedgerStore();
   const cardBg = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-  const mutedColor = useColorModeValue("gray.600", "gray.400");
+  const borderColor = useColorModeValue("gray.100", "gray.700");
+  const expandedBorder = useColorModeValue("brand.200", "brand.600");
+  const mutedColor = useColorModeValue("gray.500", "gray.400");
+  const nameColor = useColorModeValue("gray.800", "gray.100");
+  const statColor = useColorModeValue("gray.600", "gray.300");
+  const expandedSectionBorder = useColorModeValue("gray.100", "gray.600");
+  const expandedBg = useColorModeValue("gray.50", "gray.750");
 
   const { unrealizedPnl, realizedPnl } = calculateFundPnL(fund);
   const totalUnits = Number(fund.total_units);
-  const averageCost = Number(fund.average_cost_per_unit);
   const totalInvestedCash = Number(fund.total_invested_cash);
+  const averageCost = Number(fund.average_cost_per_unit);
   const costBasis = totalInvestedCash || (totalUnits * averageCost);
   const invested = totalInvestedCash || (totalUnits * averageCost);
   const unrealizedPercentage =
@@ -71,7 +75,6 @@ const FundCard: FC<FundCardProps> = ({
   const lowestPurchaseCost = isExpanded ? calculateLowestPurchaseCost(transactionsForCost) : null;
 
   const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Prevent expansion if clicking on interactive elements
     if ((e.target as HTMLElement).closest("button")) {
       return;
     }
@@ -81,23 +84,25 @@ const FundCard: FC<FundCardProps> = ({
   return (
     <Card
       bg={cardBg}
-      borderColor={borderColor}
+      borderColor={isExpanded ? expandedBorder : borderColor}
       borderWidth={1}
       size="sm"
       cursor="pointer"
       onClick={handleCardClick}
-      shadow="sm"
-      _hover={{ shadow: "md", borderColor: "teal.300" }}
-      transition="all 0.2s"
+      borderRadius="xl"
+      overflow="hidden"
+      _hover={{ borderColor: isExpanded ? expandedBorder : useColorModeValue("gray.200", "gray.600") }}
+      transition="all 0.2s ease"
     >
       <CardBody>
         <HStack justify="space-between" align="start" mb={3}>
           <VStack align="start" spacing={1} flex={1}>
             <Text
               fontSize="md"
-              fontWeight="semibold"
-              color="gray.700"
+              fontWeight="bold"
+              color={nameColor}
               noOfLines={1}
+              letterSpacing="-0.01em"
             >
               {fund.name}
             </Text>
@@ -105,52 +110,48 @@ const FundCard: FC<FundCardProps> = ({
               <Text
                 fontSize="sm"
                 color={mutedColor}
-                opacity={0.8}
                 noOfLines={1}
               >
                 {fund.plan}
               </Text>
             )}
-            <HStack spacing={{ base: 4, md: 6 }} color={mutedColor} align="start">
+            <HStack spacing={{ base: 4, md: 6 }} color={mutedColor} align="start" mt={1}>
               <VStack align="start" spacing={0}>
-                <Text fontSize="sm" color={mutedColor}>
+                <Text fontSize="xs" color={mutedColor} fontWeight="bold" textTransform="uppercase" letterSpacing="wider">
                   Units
                 </Text>
                 <HStack spacing={0} align="baseline">
-                  <Text fontSize="md">
+                  <Text fontSize="md" color={statColor} fontWeight="semibold">
                     {formatUnits(fund.total_units).split(".")[0]}.
                   </Text>
-                  <Text fontSize="sm" opacity={0.7}>
+                  <Text fontSize="sm" color={statColor} opacity={0.6}>
                     {formatUnits(fund.total_units).split(".")[1]}
                   </Text>
                 </HStack>
               </VStack>
               <VStack align="start" spacing={0}>
-                <Text fontSize="sm" color={mutedColor}>
+                <Text fontSize="xs" color={mutedColor} fontWeight="bold" textTransform="uppercase" letterSpacing="wider">
                   Invested
                 </Text>
                 <HStack spacing={0} align="baseline">
-                  <Text fontSize="md">
+                  <Text fontSize="md" color={statColor} fontWeight="semibold">
                     {splitCurrencyForDisplay(invested, currencySymbol || "₹").main}
                   </Text>
-                  <Text fontSize="sm" opacity={0.7}>
+                  <Text fontSize="sm" color={statColor} opacity={0.6}>
                     {splitCurrencyForDisplay(invested, currencySymbol || "₹").decimals}
                   </Text>
                 </HStack>
               </VStack>
               <VStack align="start" spacing={0}>
-                <Text fontSize="sm" color={mutedColor}>
+                <Text fontSize="xs" color={mutedColor} fontWeight="bold" textTransform="uppercase" letterSpacing="wider">
                   Value
                 </Text>
                  <HStack spacing={0} align="baseline">
-                   <Text fontSize="md">
+                   <Text fontSize="md" color={statColor} fontWeight="semibold">
                      {splitCurrencyForDisplay(Number(fund.current_value), currencySymbol || "₹").main}
                    </Text>
-                   <Text fontSize="sm" opacity={0.7}>
-                     {
-                       splitCurrencyForDisplay(Number(fund.current_value), currencySymbol || "₹")
-                         .decimals
-                     }
+                   <Text fontSize="sm" color={statColor} opacity={0.6}>
+                     {splitCurrencyForDisplay(Number(fund.current_value), currencySymbol || "₹").decimals}
                    </Text>
                  </HStack>
               </VStack>
@@ -159,12 +160,12 @@ const FundCard: FC<FundCardProps> = ({
            <Badge
              colorScheme={unrealizedPnl >= 0 ? "green" : "red"}
              size="sm"
-             fontWeight="medium"
+             fontWeight="bold"
              px={2}
              py={0.5}
-             borderRadius="md"
+             borderRadius="lg"
            >
-             <Text fontSize="sm" fontWeight="semibold">
+             <Text fontSize="sm" fontWeight="bold">
                {splitPercentageForDisplay(unrealizedPercentage).main}
                <Text as="span" fontSize="xs" opacity={0.7}>
                  {splitPercentageForDisplay(unrealizedPercentage).decimals}
@@ -174,132 +175,119 @@ const FundCard: FC<FundCardProps> = ({
         </HStack>
 
           <Collapse in={isExpanded} animateOpacity>
-            <Box pt={2}>
-              <Divider mb={3} />
+            <Box pt={3}>
+              <Box borderTop="1px solid" borderColor={expandedSectionBorder} pt={3} mb={3} />
               <SimpleGrid columns={{ base: 2, md: 3 }} spacing={4} mb={3}>
                 <Stat size="sm">
-                  <StatLabel fontSize="xs" color={mutedColor}>
+                  <StatLabel fontSize="xs" color={mutedColor} fontWeight="bold" textTransform="uppercase" letterSpacing="wider">
                     NAV
                   </StatLabel>
-                   <StatNumber fontSize="sm" color="gray.600">
+                   <StatNumber fontSize="sm" color={statColor} fontWeight="semibold">
                      {currencySymbol || "₹"}{formatNav(Number(fund.latest_nav))}
                    </StatNumber>
                 </Stat>
                 <Stat size="sm">
-                  <StatLabel fontSize="xs" color={mutedColor}>
+                  <StatLabel fontSize="xs" color={mutedColor} fontWeight="bold" textTransform="uppercase" letterSpacing="wider">
                     Realized P&L
                   </StatLabel>
                   <HStack spacing={0} align="baseline">
                     <StatNumber
                       fontSize="sm"
                       color={realizedPnl >= 0 ? "green.500" : "red.500"}
+                      fontWeight="semibold"
                     >
                        {splitCurrencyForDisplay(Math.abs(realizedPnl), currencySymbol || "₹").main}
                     </StatNumber>
                     <Text
                       fontSize="xs"
                       color={realizedPnl >= 0 ? "green.500" : "red.500"}
-                      opacity={0.7}
+                      opacity={0.6}
                     >
-                      {
-                        splitCurrencyForDisplay(Math.abs(realizedPnl), currencySymbol || "₹")
-                          .decimals
-                      }
+                      {splitCurrencyForDisplay(Math.abs(realizedPnl), currencySymbol || "₹").decimals}
                     </Text>
                   </HStack>
                 </Stat>
                 <Stat size="sm">
-                  <StatLabel fontSize="xs" color={mutedColor}>
+                  <StatLabel fontSize="xs" color={mutedColor} fontWeight="bold" textTransform="uppercase" letterSpacing="wider">
                     Unrealized P&L
                   </StatLabel>
                   <HStack spacing={0} align="baseline">
                     <StatNumber
                       fontSize="sm"
                       color={unrealizedPnl >= 0 ? "green.500" : "red.500"}
+                      fontWeight="semibold"
                     >
-                       {
-                         splitCurrencyForDisplay(Math.abs(unrealizedPnl), currencySymbol || "₹")
-                           .main
-                       }
+                       {splitCurrencyForDisplay(Math.abs(unrealizedPnl), currencySymbol || "₹").main}
                     </StatNumber>
                     <Text
                       fontSize="xs"
                       color={unrealizedPnl >= 0 ? "green.500" : "red.500"}
-                      opacity={0.7}
+                      opacity={0.6}
                     >
-                      {
-                        splitCurrencyForDisplay(Math.abs(unrealizedPnl), currencySymbol || "₹")
-                          .decimals
-                      }
+                      {splitCurrencyForDisplay(Math.abs(unrealizedPnl), currencySymbol || "₹").decimals}
                     </Text>
                   </HStack>
                 </Stat>
               </SimpleGrid>
-              <SimpleGrid columns={{ base: 2, md: 3 }} spacing={4} mb={3}>
-                <Stat size="sm">
-                  <StatLabel fontSize="xs" color={mutedColor}>
-                    Avg. Cost
-                  </StatLabel>
-                  <HStack spacing={0} align="baseline">
-                      <StatNumber fontSize="sm" color="gray.600">
-                        {
-                          splitCurrencyForDisplay(Number(fund.average_cost_per_unit), currencySymbol || "₹")
-                            .main
-                        }
-                      </StatNumber>
-                      <Text fontSize="xs" color="gray.600" opacity={0.7}>
-                        {
-                          splitCurrencyForDisplay(Number(fund.average_cost_per_unit), currencySymbol || "₹")
-                            .decimals
-                        }
-                      </Text>
-                  </HStack>
-                </Stat>
-                 <Stat size="sm">
-                   <StatLabel fontSize="xs" color={mutedColor}>
-                     Lowest Cost
-                   </StatLabel>
-                   <HStack spacing={0} align="baseline">
-                     <StatNumber fontSize="sm" color="gray.600">
-                        {isLoadingTransactions
-                          ? "Loading..."
-                          : lowestPurchaseCost !== null
-                          ? splitCurrencyForDisplay(lowestPurchaseCost, currencySymbol || "₹").main
-                          : "--"}
-                      </StatNumber>
-                      <Text fontSize="xs" color="gray.600" opacity={0.7}>
-                        {isLoadingTransactions
-                          ? ""
-                          : lowestPurchaseCost !== null
-                          ? splitCurrencyForDisplay(lowestPurchaseCost, currencySymbol || "₹").decimals
-                          : ""}
-                     </Text>
-                   </HStack>
-                 </Stat>
-                 <Stat size="sm">
-                   <StatLabel fontSize="xs" color={mutedColor}>
-                     Highest Cost
-                   </StatLabel>
-                   <HStack spacing={0} align="baseline">
-                     <StatNumber fontSize="sm" color="gray.600">
-                        {isLoadingTransactions
-                          ? "Loading..."
-                          : highestPurchaseCost !== null
-                          ? splitCurrencyForDisplay(highestPurchaseCost, currencySymbol || "₹").main
-                          : "--"}
-                      </StatNumber>
-                      <Text fontSize="xs" color="gray.600" opacity={0.7}>
-                        {isLoadingTransactions
-                          ? ""
-                          : highestPurchaseCost !== null
-                          ? splitCurrencyForDisplay(highestPurchaseCost, currencySymbol || "₹").decimals
-                          : ""}
-                     </Text>
-                   </HStack>
-                 </Stat>
-              </SimpleGrid>
-
-             <Divider mb={3} />
+              <Box bg={expandedBg} borderRadius="lg" p={3} mb={3}>
+                <SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
+                  <Stat size="sm">
+                    <StatLabel fontSize="xs" color={mutedColor} fontWeight="bold" textTransform="uppercase" letterSpacing="wider">
+                      Avg. Cost
+                    </StatLabel>
+                    <HStack spacing={0} align="baseline">
+                        <StatNumber fontSize="sm" color={statColor} fontWeight="semibold">
+                          {splitCurrencyForDisplay(Number(fund.average_cost_per_unit), currencySymbol || "₹").main}
+                        </StatNumber>
+                        <Text fontSize="xs" color={statColor} opacity={0.6}>
+                          {splitCurrencyForDisplay(Number(fund.average_cost_per_unit), currencySymbol || "₹").decimals}
+                        </Text>
+                    </HStack>
+                  </Stat>
+                   <Stat size="sm">
+                     <StatLabel fontSize="xs" color={mutedColor} fontWeight="bold" textTransform="uppercase" letterSpacing="wider">
+                       Lowest Cost
+                     </StatLabel>
+                     <HStack spacing={0} align="baseline">
+                       <StatNumber fontSize="sm" color={statColor} fontWeight="semibold">
+                          {isLoadingTransactions
+                            ? "..."
+                            : lowestPurchaseCost !== null
+                            ? splitCurrencyForDisplay(lowestPurchaseCost, currencySymbol || "₹").main
+                            : "--"}
+                        </StatNumber>
+                        <Text fontSize="xs" color={statColor} opacity={0.6}>
+                          {isLoadingTransactions
+                            ? ""
+                            : lowestPurchaseCost !== null
+                            ? splitCurrencyForDisplay(lowestPurchaseCost, currencySymbol || "₹").decimals
+                            : ""}
+                       </Text>
+                     </HStack>
+                   </Stat>
+                   <Stat size="sm">
+                     <StatLabel fontSize="xs" color={mutedColor} fontWeight="bold" textTransform="uppercase" letterSpacing="wider">
+                       Highest Cost
+                     </StatLabel>
+                     <HStack spacing={0} align="baseline">
+                       <StatNumber fontSize="sm" color={statColor} fontWeight="semibold">
+                          {isLoadingTransactions
+                            ? "..."
+                            : highestPurchaseCost !== null
+                            ? splitCurrencyForDisplay(highestPurchaseCost, currencySymbol || "₹").main
+                            : "--"}
+                        </StatNumber>
+                        <Text fontSize="xs" color={statColor} opacity={0.6}>
+                          {isLoadingTransactions
+                            ? ""
+                            : highestPurchaseCost !== null
+                            ? splitCurrencyForDisplay(highestPurchaseCost, currencySymbol || "₹").decimals
+                            : ""}
+                       </Text>
+                     </HStack>
+                   </Stat>
+                </SimpleGrid>
+              </Box>
 
               <SimpleGrid columns={{ base: 2, md: 4 }} spacing={2} w="full">
                 <Button
@@ -310,8 +298,10 @@ const FundCard: FC<FundCardProps> = ({
                     e.stopPropagation();
                     onTradeUnits(fund.mutual_fund_id);
                   }}
-                  sx={{ fontSize: "xs" }}
+                  fontSize="xs"
+                  fontWeight="bold"
                   w="full"
+                  borderRadius="lg"
                 >
                   Buy/Sell
                 </Button>
@@ -323,9 +313,11 @@ const FundCard: FC<FundCardProps> = ({
                     e.stopPropagation();
                     onTransferUnits(fund.mutual_fund_id);
                   }}
-                  sx={{ fontSize: "xs" }}
-                   isDisabled={totalUnits <= 0}
+                  fontSize="xs"
+                  fontWeight="bold"
+                  isDisabled={totalUnits <= 0}
                   w="full"
+                  borderRadius="lg"
                 >
                   Transfer
                 </Button>
@@ -337,8 +329,10 @@ const FundCard: FC<FundCardProps> = ({
                     e.stopPropagation();
                     onUpdateNav(fund);
                   }}
-                  sx={{ fontSize: "xs" }}
+                  fontSize="xs"
+                  fontWeight="bold"
                   w="full"
+                  borderRadius="lg"
                 >
                   Update NAV
                 </Button>
@@ -350,9 +344,11 @@ const FundCard: FC<FundCardProps> = ({
                     e.stopPropagation();
                     onCloseFund(fund.mutual_fund_id);
                   }}
-                   isDisabled={totalUnits > 0}
-                  sx={{ fontSize: "xs" }}
+                  isDisabled={totalUnits > 0}
+                  fontSize="xs"
+                  fontWeight="bold"
                   w="full"
+                  borderRadius="lg"
                 >
                   Close Fund
                 </Button>

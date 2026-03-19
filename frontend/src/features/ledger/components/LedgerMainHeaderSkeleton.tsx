@@ -2,67 +2,52 @@ import {
   Box,
   Flex,
   Skeleton,
-  IconButton,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { ArrowBackIcon } from "@chakra-ui/icons";
 import { FC } from "react";
 
 const LedgerMainHeaderSkeleton: FC = () => {
-  const bgColor = useColorModeValue("white", "gray.700");
+  const bgColor = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.100", "gray.700");
 
   return (
     <Box
       bg={bgColor}
-      p={{ base: 4, md: 5, lg: 6 }}
-      borderRadius="lg"
-      boxShadow="md"
-      mb={8}
+      borderBottom="1px solid"
+      borderColor={borderColor}
     >
+      {/* Gradient accent line placeholder */}
+      <Box h="2px" bg={useColorModeValue("gray.100", "gray.700")} />
+
       <Flex
+        px={{ base: 5, md: 8 }}
+        py={{ base: 3, md: 6 }}
         justifyContent="space-between"
-        alignItems="flex-start"
-        flexDirection={{ base: "column", md: "column", lg: "row" }}
-        gap={{ base: 4, md: 4, lg: 0 }}
+        alignItems={{ base: "flex-start", md: "center" }}
+        flexDirection={{ base: "column", md: "row" }}
+        gap={{ base: 3, md: 4 }}
       >
         {/* Left Section: Back Icon and Ledger Name */}
         <Flex alignItems="center" gap={3}>
-          {/* Back to Home Icon */}
-          <IconButton
-            aria-label="Back to Home"
-            icon={<ArrowBackIcon boxSize={6} />}
-            variant="ghost"
-            color="teal.500"
-            size="lg"
-            isDisabled={true}
-            opacity={0.7}
-            _hover={{ bg: "teal.50" }}
-          />
-
-          {/* Ledger Name Skeleton */}
+          <Skeleton w="20px" h="20px" borderRadius="md" />
           <Flex alignItems="center" gap={2}>
-            <Skeleton height="36px" width="180px" />
-            <Skeleton height="24px" width="24px" borderRadius="md" />
+            <Skeleton height="28px" width="160px" borderRadius="md" />
           </Flex>
         </Flex>
 
-        {/* Right Section: Add Transaction and Transfer Funds Buttons Skeletons */}
+        {/* Right Section: Action Buttons */}
         <Flex
-          gap={3}
-          flexDirection={{ base: "column", md: "column", lg: "row" }}
-          w={{ base: "100%", md: "100%", lg: "auto" }}
+          gap={2}
+          w={{ base: "100%", md: "auto" }}
         >
-          {/* Button to Add a New Transaction Skeleton */}
           <Skeleton
-            height="40px"
-            width={{ base: "100%", lg: "150px" }}
+            height="32px"
+            width={{ base: "50%", md: "140px" }}
             borderRadius="md"
           />
-
-          {/* Button to Transfer Funds Skeleton */}
           <Skeleton
-            height="40px"
-            width={{ base: "100%", lg: "150px" }}
+            height="32px"
+            width={{ base: "50%", md: "140px" }}
             borderRadius="md"
           />
         </Flex>

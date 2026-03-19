@@ -47,10 +47,10 @@ import {
 } from "lucide-react";
 import api from "@/lib/api";
 import ChakraDatePicker from "@components/shared/ChakraDatePicker";
-import { BuySellAssetModalProps, AssetTransactionCreate } from "../types";
-import { useBuyAsset, useSellAsset } from "../api";
+import { BuySellAssetModalProps, AssetTransactionCreate } from "../../types";
+import { useBuyAsset, useSellAsset } from "../../api";
 import useLedgerStore from "@/components/shared/store";
-import { formatCurrencyWithSymbol } from "../utils";
+import { formatCurrencyWithSymbol } from "../../utils";
 
 interface Account {
   account_id: number;
@@ -265,7 +265,7 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
       <Box
         bg={cardBg}
         p={{ base: 4, sm: 6 }}
-        borderRadius="md"
+        borderRadius="xl"
         border="1px solid"
         borderColor={borderColor}
       >
@@ -510,7 +510,8 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
         >
           <AlertIcon />
           <Box>
-            <AlertTitle fontWeight="bold">Transaction Failed!</AlertTitle>
+            <AlertTitle fontWeight="800"
+                  letterSpacing="-0.02em">Transaction Failed!</AlertTitle>
             <AlertDescription>
               {(buyAssetMutation.error as any)?.response?.data?.detail ||
                 (sellAssetMutation.error as any)?.response?.data?.detail ||
@@ -524,10 +525,11 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
       <Stack direction="row" spacing={3} width="full">
           <Button
             onClick={() => handleTransaction(type)}
-            colorScheme={type === "buy" ? "teal" : "red"}
+            colorScheme={type === "buy" ? "brand" : "red"}
             size="lg"
             flex={1}
-            borderRadius="md"
+            borderRadius="lg"
+            fontWeight="bold"
             isLoading={isLoading}
             loadingText={`Processing ${type === "buy" ? "Purchase" : "Sale"}...`}
             isDisabled={
@@ -547,7 +549,7 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
           onClick={handleClose}
           size="lg"
           flex={1}
-          borderRadius="md"
+          borderRadius="lg"
           isDisabled={isLoading}
         >
           Cancel
@@ -566,17 +568,22 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "md" }}
+        borderRadius={{ base: 0, sm: "xl" }}
         boxShadow="2xl"
         border="1px solid"
         borderColor={borderColor}
         overflow="hidden"
         mx={{ base: 0, sm: 4 }}
         my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "95vh" }}
+        maxHeight={{ base: "100%", md: "90vh" }}
         display="flex"
         flexDirection="column"
       >
+        {/* Gradient accent line */}
+        <Box
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
         {/* Flat header */}
         <Box
           px={{ base: 4, sm: 8 }}
@@ -597,7 +604,7 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
                   {asset.name}
                 </Text>
                 <Badge
-                  colorScheme="teal"
+                  colorScheme="brand"
                   variant="subtle"
                   fontSize="sm"
                   borderRadius="full"
@@ -621,7 +628,8 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
            px={{ base: 4, sm: 8 }}
            py={{ base: 4, sm: 6 }}
            flex="1"
-           overflow="auto"
+           overflowY="auto"
+          overflowX="hidden"
           >
              <Box
                onKeyDown={(e) => {
@@ -636,7 +644,7 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
                variant="enclosed"
                index={tabIndex}
                onChange={setTabIndex}
-               colorScheme="teal"
+               colorScheme="brand"
              >
             <TabList
               borderRadius="md"

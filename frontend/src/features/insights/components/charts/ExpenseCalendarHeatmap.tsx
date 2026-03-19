@@ -11,17 +11,19 @@ import {
   Icon,
   Center,
   Select,
-  FormControl,
   Tooltip,
   useColorMode,
 } from "@chakra-ui/react";
+import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, TrendingUp } from "lucide-react";
+import { Calendar, TrendingUp, ChevronDown } from "lucide-react";
 import CalendarHeatmap from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
 import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
 import config from "@/config";
+
+const MotionBox = motion(Box);
 
 interface ExpenseCalendarData {
   date: string;
@@ -48,11 +50,9 @@ const ExpenseCalendarHeatmap: React.FC<ExpenseCalendarHeatmapProps> = ({ ledgerI
     if (value && value.date) {
       const date = new Date(value.date);
 
-      // Set from_date to start of day
       const fromDate = new Date(date);
       fromDate.setHours(0, 0, 0, 0);
 
-      // Set to_date to end of day
       const toDate = new Date(date);
       toDate.setHours(23, 59, 59, 999);
 
@@ -63,19 +63,24 @@ const ExpenseCalendarHeatmap: React.FC<ExpenseCalendarHeatmapProps> = ({ ledgerI
     }
   };
 
-  const bgColor = useColorModeValue("white", "gray.800");
-  const cardBg = useColorModeValue("gray.50", "gray.700");
-  const primaryTextColor = useColorModeValue("gray.800", "gray.400");
+  // Color modes
+  const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
+  const sectionBorderColor = useColorModeValue("gray.100", "gray.700");
+  const primaryTextColor = useColorModeValue("gray.800", "gray.100");
   const secondaryTextColor = useColorModeValue("gray.600", "gray.300");
-   const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
-   const legendColor0 = useColorModeValue("#eeeeee", "gray.700");
-   const legendColor1 = useColorModeValue("#B2F5EA", "teal.900");
-   const legendColor2 = useColorModeValue("#81E6D9", "teal.800");
-   const legendColor3 = useColorModeValue("#4FD1C5", "teal.700");
-   const legendColor4 = useColorModeValue("#38B2AC", "teal.600");
-   const legendColor5 = useColorModeValue("#2C7A7B", "teal.500");
-   const legendColor6 = useColorModeValue("#234E52", "teal.400");
-   const legendColor7 = useColorModeValue("#1D4044", "teal.300");
+  const tertiaryTextColor = useColorModeValue("gray.500", "gray.400");
+  const iconColor = useColorModeValue("brand.500", "brand.300");
+  const selectBg = useColorModeValue("gray.50", "gray.700");
+  const columnHeaderColor = useColorModeValue("gray.400", "gray.500");
+
+  const legendColor0 = useColorModeValue("#eeeeee", "var(--chakra-colors-gray-700)");
+  const legendColor1 = useColorModeValue("#B2F5EA", "var(--chakra-colors-teal-900)");
+  const legendColor2 = useColorModeValue("#81E6D9", "var(--chakra-colors-teal-800)");
+  const legendColor3 = useColorModeValue("#4FD1C5", "var(--chakra-colors-teal-700)");
+  const legendColor4 = useColorModeValue("#38B2AC", "var(--chakra-colors-teal-600)");
+  const legendColor5 = useColorModeValue("#2C7A7B", "var(--chakra-colors-teal-500)");
+  const legendColor6 = useColorModeValue("#234E52", "var(--chakra-colors-teal-400)");
+  const legendColor7 = useColorModeValue("#1D4044", "var(--chakra-colors-teal-300)");
 
   // Generate year options (current year and previous 4 years)
   const yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - i);
@@ -103,10 +108,8 @@ const ExpenseCalendarHeatmap: React.FC<ExpenseCalendarHeatmapProps> = ({ ledgerI
       return response.json();
     },
     enabled: !!ledgerId,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
-
-
 
   // Transform data for the heatmap
   const heatmapValues = data?.expenses.map((expense) => ({
@@ -127,157 +130,185 @@ const ExpenseCalendarHeatmap: React.FC<ExpenseCalendarHeatmapProps> = ({ ledgerI
     if (amount < 200) return colorMode === "dark" ? "color-dark-4" : "color-github-4";
     if (amount < 500) return colorMode === "dark" ? "color-dark-5" : "color-github-5";
     if (amount < 1000) return colorMode === "dark" ? "color-dark-6" : "color-github-6";
-    return colorMode === "dark" ? "color-dark-7" : "color-github-7"; // $1000+
+    return colorMode === "dark" ? "color-dark-7" : "color-github-7";
   };
 
-
+  const legendItems = [
+    { color: legendColor0, label: `${currencySymbol}0` },
+    { color: legendColor1, label: `${currencySymbol}1-9` },
+    { color: legendColor2, label: `${currencySymbol}10-49` },
+    { color: legendColor3, label: `${currencySymbol}50-99` },
+    { color: legendColor4, label: `${currencySymbol}100-199` },
+    { color: legendColor5, label: `${currencySymbol}200-499` },
+    { color: legendColor6, label: `${currencySymbol}500-999` },
+    { color: legendColor7, label: `${currencySymbol}1000+` },
+  ];
 
   if (isLoading) {
     return (
-      <VStack spacing={4} align="stretch" bg={cardBg} p={6} borderRadius="lg">
+      <Box
+        bg={cardBg}
+        p={{ base: 4, md: 6 }}
+        borderRadius="xl"
+        border="1px solid"
+        borderColor={sectionBorderColor}
+      >
         <Text color={secondaryTextColor}>Loading expense calendar data...</Text>
-      </VStack>
+      </Box>
     );
   }
 
   if (isError) {
     return (
-      <VStack spacing={4} align="center" bg={cardBg} p={6} borderRadius="lg">
+      <Box
+        bg={cardBg}
+        p={{ base: 4, md: 6 }}
+        borderRadius="xl"
+        border="1px solid"
+        borderColor={sectionBorderColor}
+        textAlign="center"
+      >
         <Icon as={TrendingUp} color="red.500" boxSize={6} mb={4} />
         <Text color="red.500" fontWeight="bold" fontSize="lg">
           Unable to load expense calendar data
         </Text>
-      </VStack>
+      </Box>
     );
   }
 
   return (
-    <Box bg={bgColor} borderRadius="lg" p={{ base: 4, md: 6 }} boxShadow="lg">
-      <VStack spacing={4} align="stretch">
-        <Flex justifyContent="space-between" alignItems="center" direction={{ base: "column", md: "row" }} gap={4}>
-          <VStack align="start" spacing={1} flex={1}>
-            <Flex alignItems="center" gap={3}>
-              <Icon as={Calendar} w={5} h={5} color={primaryTextColor} />
-              <Heading as="h2" size="md" color={primaryTextColor}>
-                Expense Calendar
-              </Heading>
-            </Flex>
-            <Text color={secondaryTextColor} fontSize="sm" pl="2rem">
-              Daily expense heatmap for {selectedYear}
-            </Text>
-          </VStack>
-          <FormControl maxW={{ base: "full", md: "150px" }}>
-            <Select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              size="sm"
-              bg={cardBg}
+    <MotionBox
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
+      <Box borderRadius="xl" p={{ base: 0, md: 0 }}>
+        {/* Header */}
+        <Flex
+          justifyContent="space-between"
+          alignItems="center"
+          flexDirection={{ base: "column", md: "row" }}
+          gap={{ base: 3, md: 0 }}
+          mb={{ base: 4, md: 5 }}
+        >
+          <Flex align="center" gap={2}>
+            <Icon as={Calendar} boxSize={4} color={iconColor} />
+            <Heading
+              as="h2"
+              size="md"
+              color={primaryTextColor}
+              letterSpacing="-0.02em"
             >
-              {yearOptions.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </Select>
-          </FormControl>
-        </Flex>
-      </VStack>
-
-       <Box width="full" mb={12} mt={12}>
-        {heatmapValues.length > 0 ? (
-          <Center>
-            <Box className="react-calendar-heatmap" w="full">
-               <CalendarHeatmap
-                 onClick={handleCellClick}
-                 startDate={new Date(selectedYear, 0, 1)}
-                 endDate={new Date(selectedYear, 11, 31)}
-                 values={heatmapValues}
-                 classForValue={getClassForValue}
-                 showWeekdayLabels={false}
-                 showMonthLabels={true}
-                 gutterSize={2}
-                  transformDayElement={(rect: any, value) => {
-                  const dateStr = value?.date instanceof Date
-                    ? new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).format(value.date)
-                    : value?.date;
-                   if (!value || value.count === 0) {
-                     // @ts-ignore
-                     return rect;
-                   }
-
-                  const tooltipLabel = (
-                    <VStack spacing={0} align="center">
-                      <Text fontWeight="bold" fontSize="md">{formatNumberAsCurrency(value.count, currencySymbol as string)}</Text>
-                      <Text fontSize="sm">{dateStr}</Text>
-                    </VStack>
-                  );
-
-                  return (
-                    <Tooltip label={tooltipLabel} placement="top" hasArrow>
-                      {rect}
-                    </Tooltip>
-                  );
-                }}
-              />
-            </Box>
-          </Center>
-        ) : (
-          <Center height="full" bg={bgColor} borderRadius="lg" flexDirection="column" textAlign="center" p={6}>
-             <Icon as={Calendar} boxSize={6} color={tertiaryTextColor} mb={4} />
-            <Heading size="md" mb={2} color={secondaryTextColor}>
-              No Expense Data Available
+              Expense Calendar
             </Heading>
-            <Text color={secondaryTextColor} fontSize="sm">
-              No expense transactions found for {selectedYear}.
-            </Text>
-          </Center>
-        )}
+          </Flex>
+
+          <Select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            maxW={{ base: "full", md: "150px" }}
+            icon={<ChevronDown />}
+            variant="filled"
+            bg={selectBg}
+            size="sm"
+            borderRadius="lg"
+            fontWeight="medium"
+            fontSize="sm"
+          >
+            {yearOptions.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </Select>
+        </Flex>
+
+        {/* Heatmap */}
+        <Box width="full" mb={6} mt={4}>
+          {heatmapValues.length > 0 ? (
+            <Center>
+              <Box className="react-calendar-heatmap" w="full">
+                <CalendarHeatmap
+                  onClick={handleCellClick}
+                  startDate={new Date(selectedYear, 0, 1)}
+                  endDate={new Date(selectedYear, 11, 31)}
+                  values={heatmapValues}
+                  classForValue={getClassForValue}
+                  showWeekdayLabels={false}
+                  showMonthLabels={true}
+                  gutterSize={2}
+                  transformDayElement={(rect: any, value) => {
+                    const dateStr = value?.date instanceof Date
+                      ? new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric" }).format(value.date)
+                      : value?.date;
+                    if (!value || value.count === 0) {
+                      // @ts-ignore
+                      return rect;
+                    }
+
+                    const tooltipLabel = (
+                      <VStack spacing={0} align="center">
+                        <Text fontWeight="bold" fontSize="md">
+                          {formatNumberAsCurrency(value.count, currencySymbol as string)}
+                        </Text>
+                        <Text fontSize="sm">{dateStr}</Text>
+                      </VStack>
+                    );
+
+                    return (
+                      <Tooltip label={tooltipLabel} placement="top" hasArrow>
+                        {rect}
+                      </Tooltip>
+                    );
+                  }}
+                />
+              </Box>
+            </Center>
+          ) : (
+            <Center
+              height="200px"
+              borderRadius="lg"
+              flexDirection="column"
+              textAlign="center"
+              p={6}
+            >
+              <Icon as={Calendar} boxSize={6} color={tertiaryTextColor} mb={4} />
+              <Heading size="md" mb={2} color={secondaryTextColor}>
+                No Expense Data Available
+              </Heading>
+              <Text color={secondaryTextColor} fontSize="sm">
+                No expense transactions found for {selectedYear}.
+              </Text>
+            </Center>
+          )}
+        </Box>
+
+        {/* Legend */}
+        <Box>
+          <Text
+            fontSize="2xs"
+            fontWeight="semibold"
+            textTransform="uppercase"
+            letterSpacing="wider"
+            color={columnHeaderColor}
+            mb={2}
+          >
+            Legend
+          </Text>
+          <HStack spacing={3} wrap="wrap">
+            {legendItems.map(({ color, label }) => (
+              <HStack spacing={1.5} key={label}>
+                <Box w={2.5} h={2.5} bg={color} borderRadius="sm" />
+                <Text fontSize="2xs" color={tertiaryTextColor} fontWeight="500">
+                  {label}
+                </Text>
+              </HStack>
+            ))}
+          </HStack>
+        </Box>
       </Box>
 
-
-
-      {/* Legend */}
-      <Box mb={6}>
-        <Text fontSize="sm" fontWeight="bold" color={primaryTextColor} mb={3}>
-          Legend
-        </Text>
-        <HStack spacing={4} wrap="wrap">
-          <HStack spacing={2}>
-            <Box w={3} h={3} bg={legendColor0} borderRadius="sm" />
-            <Text fontSize="xs" color={secondaryTextColor}>{`${currencySymbol}0`}</Text>
-          </HStack>
-          <HStack spacing={2}>
-            <Box w={3} h={3} bg={legendColor1} borderRadius="sm" />
-            <Text fontSize="xs" color={secondaryTextColor}>{`${currencySymbol}1-9`}</Text>
-          </HStack>
-          <HStack spacing={2}>
-            <Box w={3} h={3} bg={legendColor2} borderRadius="sm" />
-            <Text fontSize="xs" color={secondaryTextColor}>{`${currencySymbol}10-49`}</Text>
-          </HStack>
-          <HStack spacing={2}>
-            <Box w={3} h={3} bg={legendColor3} borderRadius="sm" />
-            <Text fontSize="xs" color={secondaryTextColor}>{`${currencySymbol}50-99`}</Text>
-          </HStack>
-          <HStack spacing={2}>
-            <Box w={3} h={3} bg={legendColor4} borderRadius="sm" />
-            <Text fontSize="xs" color={secondaryTextColor}>{`${currencySymbol}100-199`}</Text>
-          </HStack>
-          <HStack spacing={2}>
-            <Box w={3} h={3} bg={legendColor5} borderRadius="sm" />
-            <Text fontSize="xs" color={secondaryTextColor}>{`${currencySymbol}200-499`}</Text>
-          </HStack>
-          <HStack spacing={2}>
-            <Box w={3} h={3} bg={legendColor6} borderRadius="sm" />
-            <Text fontSize="xs" color={secondaryTextColor}>{`${currencySymbol}500-999`}</Text>
-          </HStack>
-          <HStack spacing={2}>
-            <Box w={3} h={3} bg={legendColor7} borderRadius="sm" />
-            <Text fontSize="xs" color={secondaryTextColor}>{`${currencySymbol}1000+`}</Text>
-          </HStack>
-        </HStack>
-      </Box>
-
-      {/* Custom CSS for additional heatmap colors */}
+      {/* Custom CSS for heatmap colors */}
       <style dangerouslySetInnerHTML={{
         __html: `
           .react-calendar-heatmap .color-github-1 { fill: #B2F5EA; }
@@ -297,14 +328,13 @@ const ExpenseCalendarHeatmap: React.FC<ExpenseCalendarHeatmapProps> = ({ ledgerI
           .react-calendar-heatmap .color-dark-6 { fill: var(--chakra-colors-teal-400); }
           .react-calendar-heatmap .color-dark-7 { fill: var(--chakra-colors-teal-300); }
 
-           .react-calendar-heatmap text.weekday-label,
-           .react-calendar-heatmap text.month-label {
-             font-size: 8px;
-           }
-        `
+          .react-calendar-heatmap text.weekday-label,
+          .react-calendar-heatmap text.month-label {
+            font-size: 8px;
+          }
+        `,
       }} />
-
-    </Box>
+    </MotionBox>
   );
 };
 

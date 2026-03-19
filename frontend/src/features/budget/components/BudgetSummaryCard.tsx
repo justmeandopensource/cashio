@@ -4,9 +4,12 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { motion } from "framer-motion";
 import React from "react";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
-import BudgetProgressBar from "./BudgetProgressBar";
+import BudgetProgressBar, { getBudgetStatusColor } from "./BudgetProgressBar";
+
+const MotionBox = motion(Box);
 
 interface BudgetSummaryCardProps {
   periodLabel: string;
@@ -21,56 +24,88 @@ const BudgetSummaryCard: React.FC<BudgetSummaryCardProps> = ({
   totalSpent,
   currencySymbol,
 }) => {
-  const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-  const labelColor = useColorModeValue("gray.500", "gray.400");
+  const cardBg = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.100", "gray.700");
+  const labelColor = useColorModeValue("gray.400", "gray.500");
   const valueColor = useColorModeValue("gray.900", "gray.50");
+  const remaining = Number(totalBudgeted) - Number(totalSpent);
+  const remainingColor = getBudgetStatusColor(totalSpent, totalBudgeted);
+  const accentGradient = useColorModeValue(
+    "linear(to-r, brand.400, brand.500)",
+    "linear(to-r, brand.300, brand.400)"
+  );
 
   return (
-    <Box
+    <MotionBox
       bg={cardBg}
       border="1px solid"
       borderColor={borderColor}
-      borderRadius="lg"
-      p={{ base: 4, md: 6 }}
+      borderRadius="xl"
+      overflow="hidden"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
     >
-      <Text fontSize="sm" fontWeight="semibold" color={labelColor} mb={4}>
-        {periodLabel} Overview
-      </Text>
+      {/* Top accent */}
+      <Box h="2px" bgGradient={accentGradient} />
 
-      <Flex gap={6} mb={4} wrap="wrap">
-        <Box>
-          <Text fontSize="xs" color={labelColor} mb={1}>
-            Budgeted
-          </Text>
-          <Text fontSize="xl" fontWeight="bold" color={valueColor}>
-            {formatNumberAsCurrency(totalBudgeted, currencySymbol)}
-          </Text>
-        </Box>
-        <Box>
-          <Text fontSize="xs" color={labelColor} mb={1}>
-            Spent
-          </Text>
-          <Text fontSize="xl" fontWeight="bold" color={valueColor}>
-            {formatNumberAsCurrency(totalSpent, currencySymbol)}
-          </Text>
-        </Box>
-        <Box>
-          <Text fontSize="xs" color={labelColor} mb={1}>
-            Remaining
-          </Text>
-          <Text
-            fontSize="xl"
-            fontWeight="bold"
-            color={totalBudgeted - totalSpent < 0 ? "red.400" : "green.400"}
-          >
-            {formatNumberAsCurrency(totalBudgeted - totalSpent, currencySymbol)}
-          </Text>
-        </Box>
-      </Flex>
+      <Box p={{ base: 4, md: 5 }}>
+        <Text
+          fontSize="xs"
+          fontWeight="bold"
+          color={labelColor}
+          textTransform="uppercase"
+          letterSpacing="0.06em"
+          mb={4}
+        >
+          {periodLabel} Overview
+        </Text>
 
-      <BudgetProgressBar spent={totalSpent} limit={totalBudgeted} showLabels />
-    </Box>
+        <Flex gap={{ base: 4, md: 8 }} mb={4} wrap="wrap">
+          <Box minW="0">
+            <Text fontSize="xs" color={labelColor} mb={0.5} letterSpacing="0.02em">
+              Budgeted
+            </Text>
+            <Text
+              fontSize={{ base: "lg", md: "xl" }}
+              fontWeight="bold"
+              color={valueColor}
+              letterSpacing="-0.02em"
+            >
+              {formatNumberAsCurrency(totalBudgeted, currencySymbol)}
+            </Text>
+          </Box>
+          <Box minW="0">
+            <Text fontSize="xs" color={labelColor} mb={0.5} letterSpacing="0.02em">
+              Spent
+            </Text>
+            <Text
+              fontSize={{ base: "lg", md: "xl" }}
+              fontWeight="bold"
+              color={valueColor}
+              letterSpacing="-0.02em"
+            >
+              {formatNumberAsCurrency(totalSpent, currencySymbol)}
+            </Text>
+          </Box>
+          <Box minW="0">
+            <Text fontSize="xs" color={labelColor} mb={0.5} letterSpacing="0.02em">
+              Remaining
+            </Text>
+            <Text
+              fontSize={{ base: "lg", md: "xl" }}
+              fontWeight="bold"
+              color={remainingColor}
+              letterSpacing="-0.02em"
+            >
+              {formatNumberAsCurrency(remaining, currencySymbol)}
+            </Text>
+          </Box>
+        </Flex>
+
+        <BudgetProgressBar spent={totalSpent} limit={totalBudgeted} showLabels size="md" />
+      </Box>
+    </MotionBox>
   );
 };
 

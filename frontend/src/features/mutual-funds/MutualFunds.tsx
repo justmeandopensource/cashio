@@ -24,6 +24,7 @@ import {
   useToast,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { motion } from "framer-motion";
 import useLedgerStore from "@/components/shared/store";
 
 // Import components
@@ -45,7 +46,7 @@ import { getAmcs, getMutualFunds, getAllMfTransactions, deleteMutualFund } from 
 import { MutualFund } from "./types";
 import { toastDefaults } from "@/components/shared/utils";
 
-
+const MotionBox = motion(Box);
 
 /* eslint-disable no-unused-vars */
 interface MutualFundsProps {
@@ -128,21 +129,21 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
     queryKey: ["amcs", ledgerId],
     queryFn: () => getAmcs(Number(ledgerId)),
     enabled: !!ledgerId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: mutualFunds = [], isLoading: isLoadingMutualFunds, refetch: refetchFunds } = useQuery({
     queryKey: ["mutual-funds", ledgerId],
     queryFn: () => getMutualFunds(Number(ledgerId)),
     enabled: !!ledgerId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
    const { data: transactions = [], isLoading: isLoadingTransactions, refetch: refetchTransactions } = useQuery({
      queryKey: ["mf-transactions", ledgerId],
      queryFn: () => getAllMfTransactions(Number(ledgerId)),
      enabled: !!ledgerId && subTabIndex === 1,
-     staleTime: 5 * 60 * 1000, // 5 minutes
+     staleTime: 5 * 60 * 1000,
    });
 
   const isLoading = isLoadingAmcs || isLoadingMutualFunds || isLoadingTransactions;
@@ -186,9 +187,7 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
     refetchAmcs();
     refetchFunds();
     refetchTransactions();
-    // Invalidate all transaction queries since MF transactions affect regular ledger transactions
     queryClient.invalidateQueries({ queryKey: ["transactions", ledgerId] });
-    // Also refresh account data if callback is provided
     if (onAccountDataChange) {
       onAccountDataChange();
     }
@@ -204,7 +203,7 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
 
   const handleViewTransactions = (fundId: number) => {
     setSelectedFundFilter(fundId.toString());
-    setSubTabIndex(1); // Switch to Transactions tab
+    setSubTabIndex(1);
   };
 
   const deleteFundMutation = useMutation({
@@ -240,77 +239,93 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
   };
 
   const selectedTabColor = useColorModeValue("brand.700", "brand.200");
-  const selectedTabBg = useColorModeValue("brand.50", "brand.800");
-  const selectedTabBorderColor = useColorModeValue("brand.400", "brand.500");
-  const hoverTabBg = useColorModeValue("brand.100", "brand.700");
-  const tabColor = useColorModeValue("gray.600", "gray.400");
+  const selectedTabBg = useColorModeValue("brand.50", "whiteAlpha.100");
+  const selectedTabBorderColor = useColorModeValue("brand.500", "brand.400");
+  const hoverTabBg = useColorModeValue("gray.50", "whiteAlpha.50");
+  const tabColor = useColorModeValue("gray.500", "gray.400");
+  const badgeBg = useColorModeValue("brand.50", "brand.900");
+  const badgeColor = useColorModeValue("brand.600", "brand.200");
+  const modalBg = useColorModeValue("white", "gray.800");
+  const modalBorderColor = useColorModeValue("gray.100", "gray.700");
 
   if (!ledgerId) {
     return <Box>No ledger selected</Box>;
   }
 
   return (
-    <Box>
+    <MotionBox
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <Tabs
-        variant="soft-rounded"
-        colorScheme="brand"
+        variant="unstyled"
         size={{ base: "md", md: "md" }}
         index={subTabIndex}
         onChange={handleSubTabChange}
       >
         <Box p={{ base: 2, md: 4 }}>
-           <TabList borderBottom="none" gap={1}>
-                            <Tab
-                            px={{ base: 3, md: 4 }}
-                            py={2}
-                            fontWeight="medium"
-                            fontSize="sm"
-                            borderRadius="sm"
-                            whiteSpace="nowrap"
-                            color={tabColor}
-                            _selected={{
-                              color: selectedTabColor,
-                              bg: selectedTabBg,
-                              fontWeight: "semibold",
-                              border: "1px solid",
-                              borderColor: selectedTabBorderColor,
-                            }}
-                            _hover={{
-                              bg: hoverTabBg,
-                            }}
-                          >
-                            <Flex align="center">
-                              <Text>Overview</Text>
-                             {mutualFunds.length > 0 && (
-                               <Badge ml={2} colorScheme="brand" borderRadius="full" px={2}>
-                                 {mutualFunds.length}
-                               </Badge>
-                             )}
-                           </Flex>
-                         </Tab>
-                          <Tab
-                            px={{ base: 3, md: 4 }}
-                            py={2}
-                            fontWeight="medium"
-                            fontSize="sm"
-                            borderRadius="sm"
-                            whiteSpace="nowrap"
-                            color={tabColor}
-                            _selected={{
-                              color: selectedTabColor,
-                              bg: selectedTabBg,
-                              fontWeight: "semibold",
-                              border: "1px solid",
-                              borderColor: selectedTabBorderColor,
-                            }}
-                            _hover={{
-                              bg: hoverTabBg,
-                            }}
-                          >
-                            <Flex align="center">
-                              <Text>Transactions</Text>
-                            </Flex>
-                          </Tab>          </TabList>
+          <TabList borderBottom="none" gap={1}>
+            <Tab
+              px={{ base: 3, md: 4 }}
+              py={2.5}
+              fontWeight="medium"
+              fontSize="sm"
+              whiteSpace="nowrap"
+              borderBottom="2px solid"
+              borderBottomColor="transparent"
+              borderRadius={0}
+              color={tabColor}
+              transition="all 0.2s ease"
+              _selected={{
+                color: selectedTabColor,
+                bg: selectedTabBg,
+                fontWeight: "semibold",
+                borderBottomColor: selectedTabBorderColor,
+              }}
+              _hover={{ bg: hoverTabBg }}
+            >
+              <Flex align="center">
+                <Text>Overview</Text>
+                {mutualFunds.length > 0 && (
+                  <Badge
+                    ml={2}
+                    borderRadius="full"
+                    px={2}
+                    bg={badgeBg}
+                    color={badgeColor}
+                    fontWeight="bold"
+                    fontSize="2xs"
+                  >
+                    {mutualFunds.length}
+                  </Badge>
+                )}
+              </Flex>
+            </Tab>
+            <Tab
+              px={{ base: 3, md: 4 }}
+              py={2.5}
+              fontWeight="medium"
+              fontSize="sm"
+              whiteSpace="nowrap"
+              borderBottom="2px solid"
+              borderBottomColor="transparent"
+              borderRadius={0}
+              color={tabColor}
+              transition="all 0.2s ease"
+              _selected={{
+                color: selectedTabColor,
+                bg: selectedTabBg,
+                fontWeight: "semibold",
+                borderBottomColor: selectedTabBorderColor,
+              }}
+              _hover={{ bg: hoverTabBg }}
+            >
+              <Flex align="center">
+                <Text>Transactions</Text>
+              </Flex>
+            </Tab>
+          </TabList>
         </Box>
 
          <TabPanels>
@@ -318,7 +333,7 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
              {subTabIndex === 0 &&
                (isLoading ? (
                  <Box display="flex" justifyContent="center" py={10}>
-                   <Spinner size="xl" color={selectedTabColor} />
+                   <Spinner size="xl" color="brand.500" />
                  </Box>
                ) : (
                      <MutualFundsOverview
@@ -340,7 +355,7 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
              {subTabIndex === 1 && (
                isLoading ? (
                  <Box display="flex" justifyContent="center" py={10}>
-                   <Spinner size="xl" />
+                   <Spinner size="xl" color="brand.500" />
                  </Box>
                ) : (
                   <MfTransactions
@@ -406,12 +421,16 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
         size={modalSize}
         motionPreset="slideInBottom"
       >
-        <ModalOverlay />
+        <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
         <ModalContent
           margin={isMobile ? 0 : "auto"}
-          borderRadius={isMobile ? 0 : "md"}
+          borderRadius={isMobile ? 0 : "xl"}
+          bg={modalBg}
+          border="1px solid"
+          borderColor={modalBorderColor}
+          boxShadow="2xl"
         >
-          <ModalHeader>Close Mutual Fund</ModalHeader>
+          <ModalHeader fontWeight="800" letterSpacing="-0.02em">Close Mutual Fund</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             Are you sure you want to close &quot;{fundToDelete?.name}&quot;?
@@ -419,7 +438,7 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
             This action cannot be undone.
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onDeleteFundModalClose}>
+            <Button variant="ghost" mr={3} onClick={onDeleteFundModalClose} borderRadius="lg">
               Cancel
             </Button>
             <Button
@@ -428,6 +447,8 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
               isLoading={deleteFundMutation.isPending}
               loadingText="Closing..."
               leftIcon={<Trash2 size={16} />}
+              borderRadius="lg"
+              fontWeight="bold"
             >
               Close Fund
             </Button>
@@ -441,9 +462,15 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
         onClose={() => setIsAmcWarningOpen(false)}
         size={{ base: "full", md: "lg" }}
       >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader fontSize="lg" fontWeight="bold" display="flex" alignItems="center" gap={2}>
+        <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <ModalContent
+          bg={modalBg}
+          border="1px solid"
+          borderColor={modalBorderColor}
+          borderRadius={{ base: 0, md: "xl" }}
+          boxShadow="2xl"
+        >
+          <ModalHeader fontSize="lg" fontWeight="800" display="flex" alignItems="center" gap={2} letterSpacing="-0.02em">
             <Building2 size={20} />
             Create AMC First
           </ModalHeader>
@@ -460,6 +487,7 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
               variant="outline"
               onClick={() => setIsAmcWarningOpen(false)}
               mr={3}
+              borderRadius="lg"
             >
               Cancel
             </Button>
@@ -470,6 +498,8 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
                 onCreateAmcModalOpen();
               }}
               leftIcon={<Building2 size={16} />}
+              borderRadius="lg"
+              fontWeight="bold"
             >
               Create AMC
             </Button>
@@ -478,7 +508,7 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
       </Modal>
 
 
-    </Box>
+    </MotionBox>
   );
 };
 

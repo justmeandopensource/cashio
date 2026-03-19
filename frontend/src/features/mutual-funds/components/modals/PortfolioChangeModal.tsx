@@ -73,7 +73,7 @@ const PortfolioChangeModal: FC<PortfolioChangeModalProps> = ({
           <HStack spacing={3} align="flex-start">
             <Icon as={CheckCircle} boxSize={5} mt="3px" color={modalIconColor} />
             <Box>
-              <Text fontSize="lg" fontWeight="bold" color={modalTitleColor}>
+              <Text fontSize="lg" fontWeight="800" letterSpacing="-0.02em" color={modalTitleColor}>
                 Portfolio Updated Successfully
               </Text>
               <Text fontSize="sm" color={modalSubtitleColor}>
@@ -148,7 +148,7 @@ const PortfolioChangeModal: FC<PortfolioChangeModalProps> = ({
           borderTop="1px solid"
           borderColor={borderColor}
         >
-          <Button colorScheme="teal" onClick={onClose} w="full">
+          <Button colorScheme="brand" onClick={onClose} w="full">
             Got it
           </Button>
         </ModalFooter>

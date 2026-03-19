@@ -581,7 +581,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "md" }}
+        borderRadius={{ base: 0, sm: "xl" }}
         boxShadow="2xl"
         border="1px solid"
         borderColor={borderColor}
@@ -592,6 +592,11 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
         display="flex"
         flexDirection="column"
       >
+        {/* Gradient accent line */}
+        <Box
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
         {/* Flat header */}
         <Box
           px={{ base: 4, sm: 8 }}
@@ -602,7 +607,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
           <HStack spacing={3} align="flex-start">
             <Icon as={ArrowRightLeft} boxSize={5} mt="3px" color={modalIconColor} />
             <Box>
-              <Box fontSize="lg" fontWeight="bold" color={modalTitleColor}>
+              <Box fontSize="lg" fontWeight="800" letterSpacing="-0.02em" color={modalTitleColor}>
                 Transfer Funds
               </Box>
               <Box fontSize="sm" color={modalSubtitleColor}>
@@ -715,7 +720,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -734,10 +739,10 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                         height: "48px",
                         borderWidth: "2px",
                         borderColor: inputBorderColor,
-                        borderRadius: "md",
+                        borderRadius: "lg",
                         bg: inputBg,
                         fontSize: "lg",
-                        _hover: { borderColor: "teal.300" },
+                        _hover: { borderColor: "brand.300" },
                         _focus: {
                           borderColor: focusBorderColor,
                           boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -792,8 +797,8 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                             borderWidth="2px"
                             borderColor={fromAccountId ? "teal.400" : inputBorderColor}
                             bg={inputBg}
-                            borderRadius="md"
-                            _hover={{ borderColor: "teal.300" }}
+                            borderRadius="lg"
+                            _hover={{ borderColor: "brand.300" }}
                             _focus={{
                               borderColor: focusBorderColor,
                               boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -931,7 +936,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -945,7 +950,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                   </Text>
                 </Box>
                 <Switch
-                  colorScheme="teal"
+                  colorScheme="brand"
                   size="lg"
                   isChecked={isDifferentLedger}
                   onChange={(e) => {
@@ -967,7 +972,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
             <Box
               bg={highlightColor}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="2px solid"
               borderColor="teal.200"
             >
@@ -1001,8 +1006,8 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                       borderColor={destinationLedgerId ? "teal.400" : inputBorderColor}
                       bg={inputBg}
                       size="lg"
-                      borderRadius="md"
-                      _hover={{ borderColor: "teal.300" }}
+                      borderRadius="lg"
+                      _hover={{ borderColor: "brand.300" }}
                       _focus={{
                         borderColor: focusBorderColor,
                         boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -1058,8 +1063,8 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                           borderWidth="2px"
                           borderColor={toAccountId ? "teal.400" : inputBorderColor}
                           bg={inputBg}
-                          borderRadius="md"
-                          _hover={{ borderColor: "teal.300" }}
+                          borderRadius="lg"
+                          _hover={{ borderColor: "brand.300" }}
                           _focus={{
                             borderColor: focusBorderColor,
                             boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -1220,8 +1225,8 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                         borderWidth="2px"
                         borderColor={destinationAmount && parseFloat(destinationAmount) > 0 ? "teal.400" : inputBorderColor}
                         bg={inputBg}
-                        borderRadius="md"
-                        _hover={{ borderColor: "teal.300" }}
+                        borderRadius="lg"
+                        _hover={{ borderColor: "brand.300" }}
                         _focus={{
                           borderColor: focusBorderColor,
                           boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -1240,7 +1245,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -1276,8 +1281,8 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                       borderWidth="2px"
                       borderColor={feeAmount && parseFloat(feeAmount) > 0 ? "teal.400" : inputBorderColor}
                       bg={inputBg}
-                      borderRadius="md"
-                      _hover={{ borderColor: "teal.300" }}
+                      borderRadius="lg"
+                      _hover={{ borderColor: "brand.300" }}
                       _focus={{
                         borderColor: focusBorderColor,
                         boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -1326,8 +1331,8 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                           borderWidth="2px"
                           borderColor={feeCategoryId ? "teal.400" : inputBorderColor}
                           bg={inputBg}
-                          borderRadius="md"
-                          _hover={{ borderColor: "teal.300" }}
+                          borderRadius="lg"
+                          _hover={{ borderColor: "brand.300" }}
                           _focus={{
                             borderColor: focusBorderColor,
                             boxShadow: `0 0 0 1px ${focusBorderColor}`,
@@ -1414,7 +1419,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -1432,11 +1437,12 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
           <Box display={{ base: "block", sm: "none" }} mt={6}>
             <Button
               onClick={handleSubmit}
-              colorScheme="teal"
+              colorScheme="brand"
               size="lg"
               width="100%"
               mb={3}
-              borderRadius="md"
+              borderRadius="lg"
+              fontWeight="bold"
               isLoading={isLoading}
               loadingText="Transferring..."
               isDisabled={isSaveDisabled}
@@ -1449,7 +1455,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
               onClick={onClose}
               size="lg"
               width="100%"
-              borderRadius="md"
+              borderRadius="lg"
               isDisabled={isLoading}
             >
               Cancel
@@ -1467,12 +1473,13 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
           borderColor={borderColor}
         >
           <Button
-            colorScheme="teal"
+            colorScheme="brand"
             mr={3}
             onClick={handleSubmit}
             px={8}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
+            fontWeight="bold"
             isLoading={isLoading}
             loadingText="Transferring..."
             isDisabled={isSaveDisabled}
@@ -1486,7 +1493,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
             isDisabled={isLoading}
             px={6}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
           >
             Cancel
           </Button>

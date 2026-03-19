@@ -27,11 +27,11 @@ import {
   AlertDescription,
 } from "@chakra-ui/react";
 import { TrendingUp, Clock, Info, RefreshCw } from "lucide-react";
-import { useUpdatePhysicalAssetPrice } from "../api";
-import { PhysicalAsset } from "../types";
+import { useUpdatePhysicalAssetPrice } from "../../api";
+import { PhysicalAsset } from "../../types";
 import useLedgerStore from "@/components/shared/store";
 import { format } from "date-fns";
-import { splitCurrencyForDisplay } from "../utils";
+import { splitCurrencyForDisplay } from "../../utils";
 
 interface UpdatePriceModalProps {
   isOpen: boolean;
@@ -175,17 +175,22 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "md" }}
+        borderRadius={{ base: 0, sm: "xl" }}
         boxShadow="2xl"
         border="1px solid"
         borderColor={borderColor}
         overflow="hidden"
         mx={{ base: 0, sm: 4 }}
         my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "95vh" }}
+        maxHeight={{ base: "100%", md: "90vh" }}
         display="flex"
         flexDirection="column"
       >
+        {/* Gradient accent line */}
+        <Box
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
         {/* Flat header */}
         <Box
           px={{ base: 4, sm: 8 }}
@@ -200,13 +205,14 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
               <HStack spacing={3} mb={1}>
                 <Text
                   fontSize="lg"
-                  fontWeight="bold"
+                  fontWeight="800"
+                  letterSpacing="-0.02em"
                   color={modalTitleColor}
                 >
                   Update Price
                 </Text>
                 <Badge
-                  colorScheme="teal"
+                  colorScheme="brand"
                   variant="subtle"
                   fontSize="sm"
                   borderRadius="full"
@@ -232,15 +238,16 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
           flex="1"
           display="flex"
           flexDirection="column"
-          overflow="auto"
+          overflowY="auto"
+          overflowX="hidden"
           justifyContent={{ base: "space-between", sm: "flex-start" }}
         >
           <VStack spacing={{ base: 5, sm: 6 }} align="stretch" w="100%">
             {/* Current Price Info Card */}
             <Box
-              bg={cardBg}
+              bg={useColorModeValue("gray.50", "gray.900")}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -294,9 +301,9 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
 
             {/* Price Update Form */}
             <Box
-              bg={cardBg}
+              bg={useColorModeValue("gray.50", "gray.900")}
               p={{ base: 4, sm: 6 }}
-              borderRadius="md"
+              borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -440,12 +447,13 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
           {/* Mobile-only action buttons that stay at bottom */}
           <Box display={{ base: "block", sm: "none" }} mt={6}>
             <Button
-              colorScheme="teal"
+              colorScheme="brand"
               onClick={handleUpdate}
               size="lg"
               width="100%"
               mb={3}
-              borderRadius="md"
+              borderRadius="lg"
+              fontWeight="bold"
               isLoading={isLoading}
               loadingText="Updating Price..."
               isDisabled={
@@ -462,7 +470,7 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
               onClick={handleClose}
               size="lg"
               width="100%"
-              borderRadius="md"
+              borderRadius="lg"
               isDisabled={isLoading}
             >
               Cancel
@@ -475,17 +483,18 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
           display={{ base: "none", sm: "flex" }}
           px={8}
           py={6}
-          bg={cardBg}
+          bg={useColorModeValue("gray.50", "gray.900")}
           borderTop="1px solid"
           borderColor={borderColor}
         >
           <Button
-            colorScheme="teal"
+            colorScheme="brand"
             mr={3}
             onClick={handleUpdate}
             px={8}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
+            fontWeight="bold"
             isLoading={isLoading}
             loadingText="Updating Price..."
             isDisabled={
@@ -503,7 +512,7 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
             isDisabled={isLoading}
             px={6}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
           >
             Cancel
           </Button>

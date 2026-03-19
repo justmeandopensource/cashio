@@ -146,7 +146,9 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
   };
 
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
-  const hoverBg = useColorModeValue("tertiaryBg", "gray.600");
+  const cardBorder = useColorModeValue("gray.100", "gray.600");
+  const cardHoverBorder = useColorModeValue("gray.200", "gray.500");
+  const expandedBorder = useColorModeValue("brand.200", "brand.600");
   const splitColor = useColorModeValue("split", "split");
   const transferColor = useColorModeValue("transfer", "transfer");
   const assetColor = useColorModeValue("asset", "asset");
@@ -157,28 +159,34 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
   const storeTagBorderColor = useColorModeValue("brand.200", "brand.600");
   const splitBg = useColorModeValue("splitBg", "splitBg");
   const transferBg = useColorModeValue("transferBg", "transferBg");
-  const modalBg = useColorModeValue("secondaryBg", "secondaryBg");
+  const modalBg = useColorModeValue("white", "gray.800");
+  const modalBorderColor = useColorModeValue("gray.100", "gray.700");
+  const modalDetailBg = useColorModeValue("gray.50", "gray.700");
+  const expandedSectionBorder = useColorModeValue("gray.100", "gray.600");
 
   return (
     <>
       <Box
         p={4}
-        borderWidth="1px"
-        borderRadius="lg"
+        border="1px solid"
+        borderColor={isExpanded ? expandedBorder : cardBorder}
+        borderRadius="xl"
         mb={3}
         bg={cardBg}
-        boxShadow="sm"
         onClick={toggleExpand}
         cursor="pointer"
-        transition="all 0.2s"
-        sx={{ '@media (hover: hover)': { '&:hover': { bg: hoverBg } } }}
+        transition="all 0.2s ease"
+        _hover={{
+          borderColor: cardHoverBorder,
+        }}
+        sx={{ '@media (hover: hover)': { '&:hover': { borderColor: cardHoverBorder } } }}
       >
         {/* Main row with essential info */}
         <Flex justify="space-between" align="flex-start">
           {/* Left side with date, category and notes */}
           <VStack align="flex-start" spacing={1} maxW="70%">
             <HStack spacing={2}>
-              <Icon as={Calendar} color="tertiaryTextColor" />
+              <Icon as={Calendar} color="tertiaryTextColor" boxSize={3.5} />
               <Text fontSize="sm" color="secondaryTextColor">
                 {formatDate(transaction.date)}
               </Text>
@@ -188,45 +196,45 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                 <HStack spacing={1}>
                   {transaction.is_split && !transaction.is_transfer && (
                     <Tooltip label="Split Transaction">
-                      <Square size="8px" bg={splitColor} borderRadius="md" />
+                      <Square size="7px" bg={splitColor} borderRadius="sm" />
                     </Tooltip>
                   )}
                   {transaction.is_transfer && (
                     <Tooltip label="Transfer">
-                      <Square size="8px" bg={transferColor} borderRadius="md" />
+                      <Square size="7px" bg={transferColor} borderRadius="sm" />
                     </Tooltip>
                   )}
                   {transaction.is_transfer && transaction.is_split && (
                     <Tooltip label="Transfer Fee">
-                      <Square size="8px" bg="orange.400" borderRadius="md" />
+                      <Square size="7px" bg="orange.400" borderRadius="sm" />
                     </Tooltip>
                   )}
                     {transaction.is_asset_transaction && (
                       <Tooltip label="Asset Transaction">
-                        <Square size="8px" bg={assetColor} borderRadius="md" />
+                        <Square size="7px" bg={assetColor} borderRadius="sm" />
                       </Tooltip>
                     )}
                     {transaction.is_mf_transaction && (
                       <Tooltip label="Mutual Fund Transaction">
-                        <Square size="8px" bg={mutualFundColor} borderRadius="md" />
+                        <Square size="7px" bg={mutualFundColor} borderRadius="sm" />
                       </Tooltip>
                     )}
                 </HStack>
               )}
             </HStack>
 
-            <Text fontWeight="medium">{displayCategoryName}</Text>
+            <Text fontWeight="semibold" fontSize="md">{displayCategoryName}</Text>
 
             {/* Notes section - visible by default */}
             {transaction.notes && (
-              <Text fontSize="sm" color="secondaryTextColor" mt={1} noOfLines={2}>
+              <Text fontSize="sm" color="secondaryTextColor" mt={0.5} noOfLines={2} lineHeight="1.5">
                 {transaction.notes}
               </Text>
             )}
 
             {/* Account name - displayed when showAccountName is true */}
             {showAccountName && transaction.account_name && transaction.account_id && (
-              <ChakraLink as={Link} to={`/account/${transaction.account_id}`} fontSize="sm" color={accountLinkColor} mt={1}>
+              <ChakraLink as={Link} to={`/account/${transaction.account_id}`} fontSize="sm" color={accountLinkColor} mt={0.5}>
                 {transaction.account_name}
               </ChakraLink>
             )}
@@ -255,10 +263,10 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
             {/* Right side with amount */}
             <Box textAlign="right">
               <HStack spacing={0} align="baseline">
-                <Text fontWeight="semibold" fontSize="lg" color={amount.color}>
+                <Text fontWeight="bold" fontSize="lg" color={amount.color} letterSpacing="-0.01em">
                   {splitCurrencyForDisplay(amountValue, currencySymbol || "₹").main}
                 </Text>
-                <Text fontSize="xs" color={amount.color} opacity={0.7}>
+                <Text fontSize="xs" color={amount.color} opacity={0.6}>
                   {splitCurrencyForDisplay(amountValue, currencySymbol || "₹").decimals}
                 </Text>
               </HStack>
@@ -267,14 +275,14 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
 
         {/* Expandable section */}
         {isExpanded && (
-          <Box mt={4} pt={3} borderTopWidth="1px">
+          <Box mt={4} pt={3} borderTop="1px solid" borderColor={expandedSectionBorder}>
             {/* Tags section */}
             {transaction.tags && transaction.tags.length > 0 && (
               <Box mt={1}>
                 <HStack mb={1}>
-                  <Icon as={TagIcon} color="tertiaryTextColor" />
-                  <Text fontSize="xs" fontWeight="medium" color="secondaryTextColor">
-                    TAGS
+                  <Icon as={TagIcon} color="tertiaryTextColor" boxSize={3.5} />
+                  <Text fontSize="xs" fontWeight="bold" color="secondaryTextColor" textTransform="uppercase" letterSpacing="wider">
+                    Tags
                   </Text>
                 </HStack>
                 <Wrap spacing={2} ml={6}>
@@ -307,6 +315,8 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                     fetchSplitTransactions(transaction.transaction_id);
                   }}
                   mb={2}
+                  borderRadius="lg"
+                  fontWeight="bold"
                 >
                   View Split Details
                 </Button>
@@ -316,8 +326,9 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                 ) : (
                   splitTransactions.length > 0 && (
                     <Box
-                      borderWidth="1px"
-                      borderRadius="md"
+                      border="1px solid"
+                      borderColor={expandedSectionBorder}
+                      borderRadius="xl"
                       p={2}
                       bg={splitBg}
                     >
@@ -331,6 +342,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                               ? "1px"
                               : "0"
                           }
+                          borderColor={expandedSectionBorder}
                         >
                           {/* Split main row with category and amount */}
                           <Flex justify="space-between">
@@ -386,6 +398,8 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                     fetchSplitTransactions(transaction.transaction_id);
                   }}
                   mb={2}
+                  borderRadius="lg"
+                  fontWeight="bold"
                 >
                   View Fee Details
                 </Button>
@@ -395,8 +409,9 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                 ) : (
                   splitTransactions.filter(s => s.category_name).length > 0 && (
                     <Box
-                      borderWidth="1px"
-                      borderRadius="md"
+                      border="1px solid"
+                      borderColor={expandedSectionBorder}
+                      borderRadius="xl"
                       p={2}
                       bg={splitBg}
                     >
@@ -438,6 +453,8 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                     fetchTransferDetails(transaction.transfer_id!);
                   }}
                   mb={2}
+                  borderRadius="lg"
+                  fontWeight="bold"
                 >
                   View Transfer Details
                 </Button>
@@ -446,7 +463,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                   <TransferDetailsSkeleton />
                 ) : (
                   transferDetails && (
-                    <Box borderWidth="1px" borderRadius="md" p={3} bg={transferBg}>
+                    <Box border="1px solid" borderColor={expandedSectionBorder} borderRadius="xl" p={3} bg={transferBg}>
                       <Text fontSize="sm" fontWeight="medium" mb={1}>
                         {transaction.debit > 0
                           ? "Transferred to:"
@@ -468,15 +485,16 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               </Box>
             )}
             {/* Action Icons */}
-             <Flex justify="flex-end" mt={3} gap={2}>
+             <Flex justify="flex-end" mt={3} gap={1}>
                 {!transaction.is_transfer && !transaction.is_asset_transaction && !transaction.is_mf_transaction && (
                   <>
                     <IconButton
-                      size="md"
+                      size="sm"
                       variant="ghost"
                       colorScheme="blue"
-                      icon={<Edit size={18} />}
+                      icon={<Edit size={16} />}
                       aria-label="Edit transaction"
+                      borderRadius="lg"
                       onClick={(e) => {
                         e.stopPropagation();
                         onEditTransaction(transaction);
@@ -484,11 +502,12 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                       data-testid="transactioncard-edit-icon"
                     />
                     <IconButton
-                      size="md"
+                      size="sm"
                       variant="ghost"
                       colorScheme="gray"
-                      icon={<Copy size={18} />}
+                      icon={<Copy size={16} />}
                       aria-label="Copy transaction"
+                      borderRadius="lg"
                       onClick={(e) => {
                         e.stopPropagation();
                         onCopyTransaction(transaction);
@@ -499,11 +518,12 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                 )}
                 {!transaction.is_asset_transaction && !transaction.is_mf_transaction && (
                   <IconButton
-                    size="md"
+                    size="sm"
                     variant="ghost"
                     colorScheme="red"
-                    icon={<Trash2 size={18} />}
+                    icon={<Trash2 size={16} />}
                     aria-label="Delete transaction"
+                    borderRadius="lg"
                     onClick={(e) => {
                       e.stopPropagation();
                       onOpen();
@@ -516,37 +536,41 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
         )}
       </Box>
 
-      {/* Confirmation Modal */}
+      {/* Delete Confirmation Modal */}
       <Modal
         isOpen={isOpen}
         onClose={onClose}
         size={modalSize}
         motionPreset="slideInBottom"
       >
-        <ModalOverlay />
+        <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
         <ModalContent
           margin={isMobile ? 0 : "auto"}
-          borderRadius={isMobile ? 0 : "md"}
+          borderRadius={isMobile ? 0 : "xl"}
+          bg={modalBg}
+          border="1px solid"
+          borderColor={modalBorderColor}
+          boxShadow="2xl"
         >
-          <ModalHeader>Delete Transaction</ModalHeader>
+          <ModalHeader fontWeight="800" letterSpacing="-0.02em">Delete Transaction</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Text>Are you sure you want to delete this transaction?</Text>
-            <Box mt={4} p={3} bg={modalBg} borderRadius="md">
+            <Box mt={4} p={3} bg={modalDetailBg} borderRadius="xl" border="1px solid" borderColor={modalBorderColor}>
               <Text fontWeight="bold">{transaction.category_name}</Text>
-              <Text>{formatDate(transaction.date)}</Text>
-                <HStack spacing={0} align="baseline">
-                  <Text fontWeight="semibold" color={amount.color}>
+              <Text fontSize="sm" color="secondaryTextColor">{formatDate(transaction.date)}</Text>
+                <HStack spacing={0} align="baseline" mt={1}>
+                  <Text fontWeight="bold" color={amount.color}>
                     {splitCurrencyForDisplay(amountValue, currencySymbol || "₹").main}
                   </Text>
-                  <Text fontSize="xs" color={amount.color} opacity={0.7}>
+                  <Text fontSize="xs" color={amount.color} opacity={0.6}>
                     {splitCurrencyForDisplay(amountValue, currencySymbol || "₹").decimals}
                   </Text>
                 </HStack>
             </Box>
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onClose} isDisabled={isDeleting}>
+            <Button variant="ghost" mr={3} onClick={onClose} isDisabled={isDeleting} borderRadius="lg">
               Cancel
             </Button>
             <Button
@@ -554,7 +578,9 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               onClick={handleDelete}
               isLoading={isDeleting}
               loadingText="Deleting"
-              leftIcon={<Trash2 size={18} />}
+              leftIcon={<Trash2 size={16} />}
+              borderRadius="lg"
+              fontWeight="bold"
             >
               Delete
             </Button>

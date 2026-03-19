@@ -160,17 +160,22 @@ const CreateAmcModal: FC<CreateAmcModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "md" }}
+        borderRadius={{ base: 0, sm: "xl" }}
         boxShadow="2xl"
         border="1px solid"
         borderColor={borderColor}
         overflow="hidden"
         mx={{ base: 0, sm: 4 }}
         my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "95vh" }}
+        maxHeight={{ base: "100%", md: "90vh" }}
         display="flex"
         flexDirection="column"
       >
+        {/* Gradient accent line */}
+        <Box
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
         {/* Flat header */}
         <Box
           px={{ base: 4, sm: 8 }}
@@ -182,19 +187,20 @@ const CreateAmcModal: FC<CreateAmcModalProps> = ({
             <Icon as={Building2} boxSize={5} mt="3px" color={modalIconColor} />
 
             <Box>
-              <Text
+              <Box
                 fontSize="lg"
-                fontWeight="bold"
+                fontWeight="800"
+                letterSpacing="-0.02em"
                 color={modalTitleColor}
               >
                 Create AMC
-              </Text>
-              <Text
+              </Box>
+              <Box
                 fontSize="sm"
                 color={modalSubtitleColor}
               >
                 Add a new AMC to manage mutual funds
-              </Text>
+              </Box>
             </Box>
           </HStack>
         </Box>
@@ -205,7 +211,8 @@ const CreateAmcModal: FC<CreateAmcModalProps> = ({
           flex="1"
           display="flex"
           flexDirection="column"
-          overflow="auto"
+          overflowY="auto"
+          overflowX="hidden"
           justifyContent={{ base: "space-between", sm: "flex-start" }}
         >
           <form id="create-amc-form" onSubmit={handleSubmit}>
@@ -214,7 +221,7 @@ const CreateAmcModal: FC<CreateAmcModalProps> = ({
               <Box
                 bg={cardBg}
                 p={{ base: 4, sm: 6 }}
-                borderRadius="md"
+                borderRadius="xl"
                 border="1px solid"
                 borderColor={borderColor}
               >
@@ -318,11 +325,12 @@ const CreateAmcModal: FC<CreateAmcModalProps> = ({
             <Button
               type="submit"
               form="create-amc-form"
-              colorScheme="teal"
+              colorScheme="brand"
               size="lg"
               width="100%"
               mb={3}
-              borderRadius="md"
+              borderRadius="lg"
+              fontWeight="bold"
               isLoading={isLoading}
               loadingText="Creating AMC..."
               isDisabled={!isFormValid}
@@ -337,7 +345,7 @@ const CreateAmcModal: FC<CreateAmcModalProps> = ({
               onClick={handleClose}
               size="lg"
               width="100%"
-              borderRadius="md"
+              borderRadius="lg"
               isDisabled={isLoading}
             >
               Cancel
@@ -357,11 +365,12 @@ const CreateAmcModal: FC<CreateAmcModalProps> = ({
           <Button
             type="submit"
             form="create-amc-form"
-            colorScheme="teal"
+            colorScheme="brand"
             mr={3}
             px={8}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
+            fontWeight="bold"
             isLoading={isLoading}
             loadingText="Creating AMC..."
             isDisabled={!isFormValid}
@@ -377,7 +386,7 @@ const CreateAmcModal: FC<CreateAmcModalProps> = ({
             isDisabled={isLoading}
             px={6}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
           >
             Cancel
           </Button>

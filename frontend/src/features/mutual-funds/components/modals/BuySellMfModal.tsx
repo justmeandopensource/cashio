@@ -462,7 +462,7 @@ const BuySellMfModal: FC<BuySellMfModalProps> = ({
       <Box
         bg={cardBg}
         p={{ base: 4, sm: 6 }}
-        borderRadius="md"
+        borderRadius="xl"
         border="1px solid"
         borderColor={borderColor}
       >
@@ -1010,11 +1010,12 @@ const BuySellMfModal: FC<BuySellMfModalProps> = ({
       <Box display={{ base: "block", sm: "none" }}>
         <Button
           onClick={() => handleSubmit()}
-          colorScheme={type === "buy" ? "teal" : "red"}
+          colorScheme={type === "buy" ? "brand" : "red"}
           size="lg"
           width="100%"
           mb={3}
-          borderRadius="md"
+          borderRadius="lg"
+          fontWeight="bold"
           isLoading={transactionMutation.isPending}
           loadingText={`Processing ${type === "buy" ? "Purchase" : "Sale"}...`}
           isDisabled={!isFormValid()}
@@ -1028,7 +1029,7 @@ const BuySellMfModal: FC<BuySellMfModalProps> = ({
           onClick={handleClose}
           size="lg"
           width="100%"
-          borderRadius="md"
+          borderRadius="lg"
           isDisabled={transactionMutation.isPending}
         >
           Cancel
@@ -1047,17 +1048,22 @@ const BuySellMfModal: FC<BuySellMfModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, sm: "md" }}
+        borderRadius={{ base: 0, sm: "xl" }}
         boxShadow="2xl"
         border="1px solid"
         borderColor={borderColor}
         overflow="hidden"
         mx={{ base: 0, sm: 4 }}
         my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "95vh" }}
+        maxHeight={{ base: "100%", md: "90vh" }}
         display="flex"
         flexDirection="column"
       >
+        {/* Gradient accent line */}
+        <Box
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
         {/* Flat header */}
         <Box
           px={{ base: 4, sm: 8 }}
@@ -1072,14 +1078,15 @@ const BuySellMfModal: FC<BuySellMfModalProps> = ({
               <HStack spacing={3} mb={1} align="center">
                 <Text
                   fontSize="lg"
-                  fontWeight="bold"
+                  fontWeight="800"
+                  letterSpacing="-0.02em"
                   color={modalTitleColor}
                 >
                   {fund ? fund.name : "Mutual Fund Transaction"}
                 </Text>
                 {fund && (
                   <Badge
-                    colorScheme="teal"
+                    colorScheme="brand"
                     variant="subtle"
                     fontSize="sm"
                     borderRadius="full"
@@ -1104,7 +1111,8 @@ const BuySellMfModal: FC<BuySellMfModalProps> = ({
           px={{ base: 4, sm: 8 }}
           py={{ base: 4, sm: 6 }}
           flex="1"
-          overflow="auto"
+          overflowY="auto"
+          overflowX="hidden"
           display="flex"
           flexDirection="column"
           justifyContent={{ base: "space-between", sm: "flex-start" }}
@@ -1205,11 +1213,12 @@ const BuySellMfModal: FC<BuySellMfModalProps> = ({
         >
           <Button
             onClick={() => handleSubmit()}
-            colorScheme={currentType === "buy" ? "teal" : "red"}
+            colorScheme={currentType === "buy" ? "brand" : "red"}
             mr={3}
             px={8}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
+            fontWeight="bold"
             isLoading={transactionMutation.isPending}
             loadingText={`Processing ${currentType === "buy" ? "Purchase" : "Sale"}...`}
             isDisabled={!isFormValid()}
@@ -1224,7 +1233,7 @@ const BuySellMfModal: FC<BuySellMfModalProps> = ({
             isDisabled={transactionMutation.isPending}
             px={6}
             py={3}
-            borderRadius="md"
+            borderRadius="lg"
           >
             Cancel
           </Button>

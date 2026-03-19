@@ -242,7 +242,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
       <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
       <ModalContent
         bg={bgColor}
-        borderRadius={{ base: 0, md: "md" }}
+        borderRadius={{ base: 0, md: "xl" }}
         boxShadow="2xl"
         border={{ base: "none", md: "1px solid" }}
         borderColor={borderColor}
@@ -252,13 +252,18 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
         display="flex"
         flexDirection="column"
       >
+        {/* Gradient accent line */}
+        <Box
+          h="3px"
+          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        />
         {/* Header */}
         <Box px={{ base: 4, md: 8 }} py={5} borderBottom="1px solid" borderColor={modalHeaderBorderColor}>
           <HStack spacing={3} align="flex-start" justify="space-between">
             <HStack spacing={3} align="flex-start">
               <Icon as={RefreshCw} boxSize={5} mt="3px" color={modalIconColor} />
               <Box>
-                <Text fontSize="lg" fontWeight="bold" color={modalTitleColor}>
+                <Text fontSize="lg" fontWeight="800" letterSpacing="-0.02em" color={modalTitleColor}>
                   Bulk NAV Update
                 </Text>
                 <Text fontSize="sm" color={subTextColor}>
@@ -576,7 +581,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
                 {!isFetching && (
                   <Button
                     leftIcon={<Play size={16} />}
-                    colorScheme="teal"
+                    colorScheme="brand"
                     onClick={handleBeginFetch}
                     isDisabled={isFetching}
                     size={{ base: "md", md: "md" }}
@@ -599,7 +604,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
                   Cancel
                 </Button>
                 <Button
-                  colorScheme="teal"
+                  colorScheme="brand"
                   onClick={handleApplySelected}
                   isDisabled={successfulComparisons.length === 0 || isFetching || bulkUpdateMutation.isPending}
                   isLoading={bulkUpdateMutation.isPending}

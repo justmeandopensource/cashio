@@ -14,6 +14,7 @@ import {
   Tabs,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { motion } from "framer-motion";
 import LedgerMainAccounts from "./LedgerMainAccounts";
 import LedgerMainTransactions from "./LedgerMainTransactions";
 import PhysicalAssets from "@features/physical-assets/PhysicalAssets";
@@ -21,6 +22,8 @@ import MutualFunds from "@features/mutual-funds/MutualFunds";
 import api from "@/lib/api";
 import { AlignLeft, CreditCard, Coins, TrendingUp } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
+
+const MotionBox = motion(Box);
 
 interface Account {
   account_id: string;
@@ -59,12 +62,14 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
   };
 
   const tabBg = useColorModeValue("primaryBg", "gray.700");
-  const tabBorderColor = useColorModeValue("tertiaryBg", "gray.600");
+  const tabBorderColor = useColorModeValue("gray.100", "gray.600");
   const selectedTabColor = useColorModeValue("brand.700", "brand.200");
-  const selectedTabBg = useColorModeValue("brand.50", "brand.800");
-  const selectedTabBorderColor = useColorModeValue("brand.400", "brand.500");
-  const hoverTabBg = useColorModeValue("brand.100", "brand.700");
-  const tabColor = useColorModeValue("gray.600", "gray.400");
+  const selectedTabBg = useColorModeValue("brand.50", "whiteAlpha.100");
+  const selectedTabBorderColor = useColorModeValue("brand.500", "brand.400");
+  const hoverTabBg = useColorModeValue("gray.50", "whiteAlpha.50");
+  const tabColor = useColorModeValue("gray.500", "gray.400");
+  const badgeBg = useColorModeValue("brand.50", "brand.900");
+  const badgeColor = useColorModeValue("brand.600", "brand.200");
 
   const { data: accounts, isError, isLoading } = useQuery<Account[]>({
     queryKey: ["accounts", ledgerId],
@@ -79,7 +84,6 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
   };
 
   const refreshInsightsData = async (): Promise<void> => {
-    // Invalidate insights queries to refresh charts after transaction changes
     await queryClient.invalidateQueries({
       queryKey: ["current-month-overview"],
     });
@@ -117,18 +121,28 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
     return null;
   }
 
+  const tabItems = [
+    { icon: CreditCard, label: "Accounts", badge: accountsCount > 0 ? accountsCount : null },
+    { icon: AlignLeft, label: "Transactions", badge: null },
+    { icon: Coins, label: "Physical Assets", badge: null },
+    { icon: TrendingUp, label: "Mutual Funds", badge: null },
+  ];
+
   return (
-    <Box>
-      <Box borderRadius="lg" boxShadow="lg" bg={tabBg} overflow="hidden">
+    <MotionBox
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+    >
+      <Box borderRadius="xl" bg={tabBg} overflow="hidden" border="1px solid" borderColor={tabBorderColor}>
         <Tabs
-          variant="soft-rounded"
-          colorScheme="brand"
+          variant="unstyled"
           size={{ base: "md", md: "md" }}
           index={tabIndex}
           onChange={handleTabChange}
         >
           <Box
-            px={{ base: 2, md: 4 }}
+            px={{ base: 1, md: 4 }}
             pt={{ base: 2, md: 3 }}
             pb={0}
             borderBottom="1px solid"
@@ -137,42 +151,45 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
             <TabList
               borderBottom="none"
               justifyContent={{ base: "space-around", md: "flex-start" }}
-              gap={1}
+              gap={{ base: 0, md: 1 }}
               mb="-1px"
             >
-              {[
-                { icon: CreditCard, label: "Accounts", badge: accountsCount > 0 ? accountsCount : null },
-                { icon: AlignLeft, label: "Transactions", badge: null },
-                { icon: Coins, label: "Physical Assets", badge: null },
-                { icon: TrendingUp, label: "Mutual Funds", badge: null },
-              ].map(({ icon, label, badge }) => (
+              {tabItems.map(({ icon, label, badge }) => (
                 <Tab
                   key={label}
                   px={{ base: 3, md: 4 }}
-                  py={2}
+                  py={2.5}
                   fontWeight="medium"
                   fontSize="sm"
-                  borderRadius="sm"
                   whiteSpace="nowrap"
                   flex={{ base: 1, md: "none" }}
-                  border="1px solid"
-                  borderColor="transparent"
+                  borderBottom="2px solid"
                   borderBottomColor="transparent"
+                  borderRadius={0}
+                  color={tabColor}
+                  transition="all 0.2s ease"
                   _selected={{
                     color: selectedTabColor,
                     bg: selectedTabBg,
                     fontWeight: "semibold",
-                    borderColor: selectedTabBorderColor,
-                    borderBottomColor: "transparent",
+                    borderBottomColor: selectedTabBorderColor,
                   }}
-                  color={tabColor}
                   _hover={{ bg: hoverTabBg }}
                 >
                   <Flex align="center" justify="center" gap={1.5}>
                     <Icon as={icon} boxSize={4} />
                     <Text fontSize="sm" display={{ base: "none", sm: "block" }}>{label}</Text>
                     {badge !== null && (
-                      <Badge colorScheme="brand" borderRadius="full" px={1.5} fontSize="2xs" display={{ base: "none", sm: "inline-flex" }}>
+                      <Badge
+                        borderRadius="full"
+                        px={1.5}
+                        py={0}
+                        fontSize="2xs"
+                        fontWeight="bold"
+                        bg={badgeBg}
+                        color={badgeColor}
+                        display={{ base: "none", sm: "inline-flex" }}
+                      >
                         {badge}
                       </Badge>
                     )}
@@ -221,7 +238,7 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
           </TabPanels>
         </Tabs>
       </Box>
-    </Box>
+    </MotionBox>
   );
 };
 

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Box,
   Text,
   VStack,
   Spinner,
@@ -8,7 +7,9 @@ import {
   useDisclosure,
   useToast,
   useColorModeValue,
+  Icon,
 } from "@chakra-ui/react";
+import { Target } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { toastDefaults } from "@/components/shared/utils";
@@ -37,7 +38,8 @@ const BudgetList: React.FC<BudgetListProps> = ({ ledgerId, period, currencySymbo
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [editingBudget, setEditingBudget] = useState<BudgetItemData | undefined>();
 
-  const emptyColor = useColorModeValue("gray.500", "gray.400");
+  const emptyColor = useColorModeValue("gray.400", "gray.500");
+  const emptyIconColor = useColorModeValue("gray.200", "gray.600");
 
   const { data, isLoading, isError } = useQuery<BudgetData>({
     queryKey: ["budgets", ledgerId, period],
@@ -80,7 +82,7 @@ const BudgetList: React.FC<BudgetListProps> = ({ ledgerId, period, currencySymbo
   if (isLoading) {
     return (
       <Center py={12}>
-        <Spinner size="md" color="brand.500" />
+        <Spinner size="md" color="brand.500" thickness="2px" />
       </Center>
     );
   }
@@ -95,7 +97,7 @@ const BudgetList: React.FC<BudgetListProps> = ({ ledgerId, period, currencySymbo
 
   return (
     <>
-      <VStack spacing={4} align="stretch">
+      <VStack spacing={3} align="stretch">
         {data && (
           <BudgetSummaryCard
             periodLabel={data.period_label}
@@ -106,24 +108,26 @@ const BudgetList: React.FC<BudgetListProps> = ({ ledgerId, period, currencySymbo
         )}
 
         {data?.budgets.length === 0 ? (
-          <Center py={12}>
-            <Box textAlign="center">
-              <Text color={emptyColor} fontSize="sm">
+          <Center py={10}>
+            <VStack spacing={2}>
+              <Icon as={Target} boxSize={8} color={emptyIconColor} strokeWidth={1.5} />
+              <Text color={emptyColor} fontSize="sm" textAlign="center">
                 No budgets set for this period.
               </Text>
-              <Text color={emptyColor} fontSize="sm" mt={1}>
+              <Text color={emptyColor} fontSize="xs" textAlign="center">
                 Use the Add button above to get started.
               </Text>
-            </Box>
+            </VStack>
           </Center>
         ) : (
-          data?.budgets.map((b) => (
+          data?.budgets.map((b, i) => (
             <BudgetItem
               key={b.budget_id}
               budget={b}
               currencySymbol={currencySymbol}
               onEdit={handleEdit}
               onDelete={(id) => deleteMutation.mutate(id)}
+              index={i}
             />
           ))
         )}
