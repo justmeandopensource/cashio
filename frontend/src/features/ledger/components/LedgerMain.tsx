@@ -37,9 +37,11 @@ interface LedgerMainProps {
   onAddTransaction: (accountId?: string, transaction?: any) => void;
   // eslint-disable-next-line no-unused-vars
   onTransferFunds: (accountId?: string, transaction?: any) => void;
+  // eslint-disable-next-line no-unused-vars
+  onEditTransfer?: (transaction: any) => void;
 }
 
-const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) => {
+const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds, onEditTransfer }) => {
   const { ledgerId } = useLedgerStore();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -58,7 +60,11 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
   });
 
   const handleCopyTransaction = async (transaction: any) => {
-    onAddTransaction(undefined, transaction);
+    if (transaction.is_transfer) {
+      onTransferFunds(undefined, transaction);
+    } else {
+      onAddTransaction(undefined, transaction);
+    }
   };
 
   const tabBg = useColorModeValue("primaryBg", "gray.700");
@@ -225,6 +231,7 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds }) 
                     await refreshInsightsData();
                   }}
                   onCopyTransaction={handleCopyTransaction}
+                  onEditTransfer={onEditTransfer}
                   shouldFetch={tabIndex === 1}
                 />
               )}

@@ -8,6 +8,8 @@ interface LedgerMainTransactionsProps {
   onTransactionUpdated: () => void;
   // eslint-disable-next-line no-unused-vars
   onCopyTransaction: (transaction: any) => Promise<void>;
+  // eslint-disable-next-line no-unused-vars
+  onEditTransfer?: (transaction: any) => void;
   shouldFetch?: boolean;
 }
 
@@ -16,6 +18,7 @@ const LedgerMainTransactions: React.FC<LedgerMainTransactionsProps> = ({
   onTransactionDeleted,
   onTransactionUpdated,
   onCopyTransaction,
+  onEditTransfer,
   shouldFetch = false,
 }) => {
   return (
@@ -25,6 +28,7 @@ const LedgerMainTransactions: React.FC<LedgerMainTransactionsProps> = ({
       onTransactionDeleted={onTransactionDeleted}
       onTransactionUpdated={onTransactionUpdated}
       onCopyTransaction={onCopyTransaction}
+      onEditTransfer={onEditTransfer}
       shouldFetch={shouldFetch}
     />
   );

@@ -86,6 +86,7 @@ interface Transaction {
   credit: number;
   debit: number;
   transfer_id?: string;
+  transfer_type?: string;
   filter_matched_split?: FilterMatchedSplit;
 }
 
@@ -585,7 +586,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                     transition="opacity 0.2s ease"
                     className="action-icons"
                   >
-                      {!transaction.is_transfer && !transaction.is_asset_transaction && !transaction.is_mf_transaction && (
+                      {!transaction.is_asset_transaction && !transaction.is_mf_transaction && transaction.transfer_type !== "destination" && (
                         <>
                           <ChakraLink
                             onClick={() => onEditTransaction(transaction)}

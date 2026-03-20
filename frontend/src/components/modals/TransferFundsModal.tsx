@@ -77,12 +77,23 @@ interface Transaction {
   tags?: any[];
 }
 
+interface TransferEditData {
+  transfer_id: string;
+  source_transaction: any;
+  destination_transaction: any;
+  source_account_name: string;
+  destination_account_name: string;
+  source_ledger_name: string;
+  destination_ledger_name: string;
+}
+
 interface TransferFundsModalProps {
   isOpen: boolean;
   onClose: () => void;
   accountId?: string;
   onTransferCompleted: () => void;
   initialData?: Transaction;
+  editTransferData?: TransferEditData;
 }
 
 const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
@@ -91,6 +102,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
   accountId,
   onTransferCompleted,
   initialData,
+  editTransferData,
 }) => {
   const [date, setDate] = useState<Date>(new Date());
   const [fromAccountId, setFromAccountId] = useState<string>(
@@ -130,6 +142,22 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
 
   // Notes suggestions open state (for keyboard shortcut guard)
   const [isNotesSuggestionsOpen, setIsNotesSuggestionsOpen] = useState<boolean>(false);
+
+  // Track initial edit state for change detection
+  const initialEditStateRef = useRef<{
+    fromAccountId: string;
+    toAccountId: string;
+    amount: string;
+    notes: string;
+    date: string;
+    isDifferentLedger: boolean;
+    destinationLedgerId: string;
+    destinationAmount: string;
+    feeAmount: string;
+    feeCategoryId: string;
+  } | null>(null);
+
+  const isEditMode = !!editTransferData;
 
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -285,25 +313,203 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      if (initialData) {
-        setDate(new Date());
-        setFromAccountId(initialData.account_id || "");
-        setToAccountId("");
-        setAmount(
-          initialData.debit > 0
-            ? initialData.debit.toString()
-            : initialData.credit.toString(),
-        );
-        setNotes(initialData.notes || "");
-        setIsDifferentLedger(false);
-        setDestinationLedgerId("");
-        setDestinationAmount("");
+      if (editTransferData) {
+        // For edit mode, fetch all required data first, then populate form
+        const initEditMode = async () => {
+          // Fetch accounts, ledgers, and categories in parallel
+          await Promise.all([fetchLedgers(), fetchAccounts(), fetchCategories()]);
+
+          const srcTx = editTransferData.source_transaction;
+          const destTx = editTransferData.destination_transaction;
+          setDate(new Date(srcTx.date));
+          // Use raw values (not .toString()) — account_id/category_id from API
+          // are numbers, and dropdown handlers also set them as numbers.
+          // Using .toString() would cause strict equality mismatches in .find().
+          setFromAccountId(srcTx.account_id ?? "");
+          setNotes(srcTx.notes || "");
+
+          // Check if cross-ledger
+          const isCrossLedger = editTransferData.source_ledger_id !== editTransferData.destination_ledger_id;
+          setIsDifferentLedger(isCrossLedger);
+          if (isCrossLedger) {
+            setDestinationAmount(String(destTx.credit));
+            setDestinationLedgerId(String(editTransferData.destination_ledger_id ?? ""));
+            // Fetch destination accounts so the To Account dropdown populates
+            try {
+              const destAccResponse = await api.get<Account[]>(
+                `/ledger/${editTransferData.destination_ledger_id}/accounts`
+              );
+              setDestinationAccounts(destAccResponse.data.filter(a => !a.is_group));
+            } catch {
+              // Silently fail — dropdown will be empty
+            }
+          } else {
+            setDestinationAmount("");
+            setDestinationLedgerId("");
+          }
+
+          // Now set toAccountId after destination accounts are loaded
+          setToAccountId(destTx.account_id ?? "");
+
+          setFromAccountSearch("");
+          setIsFromAccountOpen(false);
+          setHighlightedFromIndex(-1);
+          setToAccountSearch("");
+          setIsToAccountOpen(false);
+          setHighlightedToIndex(-1);
+          setIsNotesSuggestionsOpen(false);
+
+          // If source tx has splits (fee), fetch them to separate transfer amount from fee
+          let resolvedAmount = String(srcTx.debit);
+          let resolvedFeeAmount = "";
+          let resolvedFeeCategoryId: string | number = "";
+
+          if (srcTx.is_split) {
+            try {
+              const splitsRes = await api.get(
+                `/ledger/${ledgerId}/transaction/${srcTx.transaction_id}/splits`
+              );
+              const splits = splitsRes.data;
+              const feeSplit = splits.find((s: any) => s.category_id !== null);
+              const transferSplit = splits.find((s: any) => s.category_id === null);
+              resolvedAmount = String(transferSplit ? transferSplit.debit : srcTx.debit);
+              if (feeSplit) {
+                resolvedFeeAmount = String(feeSplit.debit);
+                // Keep as raw value (number) for dropdown matching
+                resolvedFeeCategoryId = feeSplit.category_id ?? "";
+              }
+            } catch {
+              // Keep defaults
+            }
+          }
+
+          setAmount(resolvedAmount);
+          setFeeAmount(resolvedFeeAmount);
+          setFeeCategoryId(resolvedFeeCategoryId as string);
+          setFeeCategorySearch("");
+          setIsFeeCategoryOpen(false);
+          setHighlightedFeeCategoryIndex(-1);
+
+          // Save initial state for change detection — stringify all IDs
+          // so comparisons work consistently regardless of type
+          const isCL = editTransferData.source_ledger_id !== editTransferData.destination_ledger_id;
+          initialEditStateRef.current = {
+            fromAccountId: String(srcTx.account_id ?? ""),
+            toAccountId: String(destTx.account_id ?? ""),
+            amount: resolvedAmount,
+            notes: srcTx.notes || "",
+            date: new Date(srcTx.date).toDateString(),
+            isDifferentLedger: isCL,
+            destinationLedgerId: isCL ? String(editTransferData.destination_ledger_id ?? "") : "",
+            destinationAmount: isCL ? String(destTx.credit) : "",
+            feeAmount: resolvedFeeAmount,
+            feeCategoryId: String(resolvedFeeCategoryId),
+          };
+        };
+        initEditMode();
+      } else if (initialData) {
+        if (initialData.is_transfer && initialData.transfer_id) {
+          // For transfer copies, fetch full transfer details to properly
+          // populate source/destination accounts, amounts, and fees
+          const initCopyTransfer = async () => {
+            const [,, , transferRes] = await Promise.all([
+              fetchLedgers(),
+              fetchAccounts(),
+              fetchCategories(),
+              api.get(`/ledger/transfer/${initialData.transfer_id}`),
+            ]);
+            const transferData = transferRes.data;
+            const srcTx = transferData.source_transaction;
+            const destTx = transferData.destination_transaction;
+
+            setDate(new Date());
+            setFromAccountId(srcTx.account_id ?? "");
+            setNotes(srcTx.notes || "");
+
+            // Cross-ledger detection
+            const isCrossLedger = transferData.source_ledger_id !== transferData.destination_ledger_id;
+            setIsDifferentLedger(isCrossLedger);
+            if (isCrossLedger) {
+              setDestinationAmount(String(destTx.credit));
+              setDestinationLedgerId(String(transferData.destination_ledger_id ?? ""));
+              try {
+                const destAccResponse = await api.get<Account[]>(
+                  `/ledger/${transferData.destination_ledger_id}/accounts`
+                );
+                setDestinationAccounts(destAccResponse.data.filter((a: Account) => !a.is_group));
+              } catch {
+                // Silently fail
+              }
+            } else {
+              setDestinationAmount("");
+              setDestinationLedgerId("");
+            }
+
+            setToAccountId(destTx.account_id ?? "");
+
+            setFromAccountSearch("");
+            setIsFromAccountOpen(false);
+            setHighlightedFromIndex(-1);
+            setToAccountSearch("");
+            setIsToAccountOpen(false);
+            setHighlightedToIndex(-1);
+            setIsNotesSuggestionsOpen(false);
+
+            // Handle fee splits
+            let resolvedAmount = String(srcTx.debit);
+            let resolvedFeeAmount = "";
+            let resolvedFeeCategoryId: string | number = "";
+
+            if (srcTx.is_split) {
+              try {
+                const splitsRes = await api.get(
+                  `/ledger/${ledgerId}/transaction/${srcTx.transaction_id}/splits`
+                );
+                const splits = splitsRes.data;
+                const feeSplit = splits.find((s: any) => s.category_id !== null);
+                const transferSplit = splits.find((s: any) => s.category_id === null);
+                resolvedAmount = String(transferSplit ? transferSplit.debit : srcTx.debit);
+                if (feeSplit) {
+                  resolvedFeeAmount = String(feeSplit.debit);
+                  resolvedFeeCategoryId = feeSplit.category_id ?? "";
+                }
+              } catch {
+                // Keep defaults
+              }
+            }
+
+            setAmount(resolvedAmount);
+            setFeeAmount(resolvedFeeAmount);
+            setFeeCategoryId(resolvedFeeCategoryId as string);
+            setFeeCategorySearch("");
+            setIsFeeCategoryOpen(false);
+            setHighlightedFeeCategoryIndex(-1);
+          };
+          initCopyTransfer();
+        } else {
+          // Non-transfer copy
+          setDate(new Date());
+          setFromAccountId(initialData.account_id || "");
+          setToAccountId("");
+          setAmount(
+            initialData.debit > 0
+              ? initialData.debit.toString()
+              : initialData.credit.toString(),
+          );
+          setNotes(initialData.notes || "");
+          setIsDifferentLedger(false);
+          setDestinationLedgerId("");
+          setDestinationAmount("");
+          fetchLedgers();
+          fetchAccounts();
+          fetchCategories();
+        }
       } else {
         resetForm();
+        fetchLedgers();
+        fetchAccounts();
+        fetchCategories();
       }
-      fetchLedgers();
-      fetchAccounts();
-      fetchCategories();
     } else {
       setFromAccountId("");
       setToAccountId("");
@@ -312,8 +518,9 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
       setIsDifferentLedger(false);
       setDestinationLedgerId("");
       setDestinationAmount("");
+      initialEditStateRef.current = null;
     }
-  }, [isOpen, resetForm, fetchLedgers, fetchAccounts, fetchCategories, initialData]);
+  }, [isOpen, resetForm, fetchLedgers, fetchAccounts, fetchCategories, initialData, editTransferData]);
 
   const fetchDestinationAccounts = useCallback(
     async (destLedgerId: string) => {
@@ -337,8 +544,13 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
   useEffect(() => {
     if (isDifferentLedger && destinationLedgerId) {
       fetchDestinationAccounts(destinationLedgerId);
+      // Set currency symbol from ledger list if available
+      const destLedger = ledgers.find(l => l.ledger_id.toString() === destinationLedgerId);
+      if (destLedger) {
+        setDestinationCurrencySymbol(destLedger.currency_symbol);
+      }
     }
-  }, [isDifferentLedger, destinationLedgerId, fetchDestinationAccounts]);
+  }, [isDifferentLedger, destinationLedgerId, fetchDestinationAccounts, ledgers]);
 
   useEffect(() => {
     if (fromAccountId) {
@@ -492,11 +704,20 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
         fee_category_id: feeCategoryId || null,
       };
 
-      await api.post(`/ledger/${ledgerId}/transaction/transfer`, payload);
+      if (isEditMode && editTransferData) {
+        await api.put(
+          `/ledger/${ledgerId}/transfer/${editTransferData.transfer_id}`,
+          payload,
+        );
+      } else {
+        await api.post(`/ledger/${ledgerId}/transaction/transfer`, payload);
+      }
       await queryClient.invalidateQueries({ queryKey: ["accounts"] });
 
       toast({
-        description: "Transfer completed successfully.",
+        description: isEditMode
+          ? "Transfer updated successfully."
+          : "Transfer completed successfully.",
         status: "success",
         ...toastDefaults,
       });
@@ -507,7 +728,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
       const axiosError = error as AxiosError<{ detail: string }>;
       if (axiosError.response?.status !== 401) {
         toast({
-          description: axiosError.response?.data?.detail || "Transfer failed",
+          description: axiosError.response?.data?.detail || (isEditMode ? "Update failed" : "Transfer failed"),
           status: "error",
           ...toastDefaults,
         });
@@ -521,11 +742,27 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
   const handleSubmitRef = useRef<() => void>(() => {});
   handleSubmitRef.current = handleSubmit;
 
+  // Check if form has changed from initial edit state
+  // Use String() coercion for ID comparisons since values may be numbers or strings
+  const hasEditChanges = isEditMode && initialEditStateRef.current ? (
+    String(fromAccountId) !== initialEditStateRef.current.fromAccountId ||
+    String(toAccountId) !== initialEditStateRef.current.toAccountId ||
+    amount !== initialEditStateRef.current.amount ||
+    notes !== initialEditStateRef.current.notes ||
+    date.toDateString() !== initialEditStateRef.current.date ||
+    isDifferentLedger !== initialEditStateRef.current.isDifferentLedger ||
+    String(destinationLedgerId) !== initialEditStateRef.current.destinationLedgerId ||
+    destinationAmount !== initialEditStateRef.current.destinationAmount ||
+    feeAmount !== initialEditStateRef.current.feeAmount ||
+    String(feeCategoryId) !== initialEditStateRef.current.feeCategoryId
+  ) : true;
+
   const isSaveDisabled =
     !fromAccountId ||
     !toAccountId ||
     !amount ||
-    (isDifferentLedger && (!destinationLedgerId || !destinationAmount));
+    (isDifferentLedger && (!destinationLedgerId || !destinationAmount)) ||
+    (isEditMode && !hasEditChanges);
 
   // Keyboard shortcuts: Enter to submit, Escape closes dropdowns before the modal
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -608,10 +845,10 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
             <Icon as={ArrowRightLeft} boxSize={5} mt="3px" color={modalIconColor} />
             <Box>
               <Box fontSize="lg" fontWeight="800" letterSpacing="-0.02em" color={modalTitleColor}>
-                Transfer Funds
+                {isEditMode ? "Edit Transfer" : "Transfer Funds"}
               </Box>
               <Box fontSize="sm" color={modalSubtitleColor}>
-                Move money between accounts
+                {isEditMode ? "Update transfer details" : "Move money between accounts"}
               </Box>
             </Box>
           </HStack>
@@ -759,7 +996,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                   </Box>
                 </FormControl>
 
-                {/* From Account (only shown if no accountId) */}
+                {/* From Account (only shown if no accountId — at ledger level) */}
                 {!accountId && accounts.length > 0 && (
                   <FormControl isRequired>
                     <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
@@ -1444,10 +1681,10 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
               borderRadius="lg"
               fontWeight="bold"
               isLoading={isLoading}
-              loadingText="Transferring..."
+              loadingText={isEditMode ? "Updating..." : "Transferring..."}
               isDisabled={isSaveDisabled}
             >
-              Complete Transfer
+              {isEditMode ? "Save Changes" : "Complete Transfer"}
             </Button>
             <Button
               variant="ghost"
@@ -1481,10 +1718,10 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
             borderRadius="lg"
             fontWeight="bold"
             isLoading={isLoading}
-            loadingText="Transferring..."
+            loadingText={isEditMode ? "Updating..." : "Transferring..."}
             isDisabled={isSaveDisabled}
           >
-            Complete Transfer
+            {isEditMode ? "Save Changes" : "Complete Transfer"}
           </Button>
           <Button
             variant="ghost"

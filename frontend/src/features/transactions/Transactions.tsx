@@ -87,6 +87,8 @@ interface TransactionsProps {
   onTransactionUpdated?: () => void;
   // eslint-disable-next-line no-unused-vars
   onCopyTransaction: (tx: Transaction) => Promise<void>;
+  // eslint-disable-next-line no-unused-vars
+  onEditTransfer?: (tx: Transaction) => void;
   shouldFetch?: boolean;
 }
 
@@ -96,6 +98,7 @@ const Transactions: React.FC<TransactionsProps> = ({
   onTransactionDeleted,
   onTransactionUpdated,
   onCopyTransaction,
+  onEditTransfer,
   shouldFetch = true,
 }) => {
   const { ledgerId } = useLedgerStore();
@@ -159,6 +162,10 @@ const Transactions: React.FC<TransactionsProps> = ({
   };
 
   const handleEditTransaction = (transaction: Transaction) => {
+    if (transaction.is_transfer && onEditTransfer) {
+      onEditTransfer(transaction);
+      return;
+    }
     setSelectedTransaction(transaction);
     setIsEditModalOpen(true);
   };

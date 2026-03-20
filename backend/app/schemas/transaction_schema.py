@@ -129,6 +129,18 @@ class TransferCreate(BaseModel):
 
 
 
+class TransferUpdate(BaseModel):
+    source_account_id: int
+    destination_account_id: int
+    source_amount: float
+    destination_amount: Optional[float] = None
+    date: datetime
+    notes: Optional[str] = None
+    tags: Optional[List[TagCreate]] = None
+    fee_amount: Optional[float] = None
+    fee_category_id: Optional[int] = None
+
+
 class TransferTransactionResponse(BaseModel):
     source_transaction: Transaction
     destination_transaction: Transaction
@@ -136,3 +148,5 @@ class TransferTransactionResponse(BaseModel):
     destination_account_name: str
     source_ledger_name: str
     destination_ledger_name: str
+    source_ledger_id: Optional[int] = None
+    destination_ledger_id: Optional[int] = None

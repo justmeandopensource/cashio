@@ -10,7 +10,8 @@ from app.models.model import (Account, Category, Ledger, Tag, Transaction,
                               TransactionSplit, TransactionTag)
 from app.schemas.transaction_schema import (TransactionCreate,
                                             TransactionSplitResponse,
-                                            TransactionUpdate, TransferCreate)
+                                            TransactionUpdate, TransferCreate,
+                                            TransferUpdate)
 
 
 def get_transactions_for_account_id(
@@ -460,7 +461,175 @@ def get_transfer_transactions(db: Session, transfer_id: str):
         "destination_account_name": destination_account.name,
         "source_ledger_name": source_ledger.name,
         "destination_ledger_name": destination_ledger.name,
+        "source_ledger_id": source_ledger.ledger_id,
+        "destination_ledger_id": destination_ledger.ledger_id,
     }
+
+
+def update_transfer_transaction(
+    db: Session, transfer_id: str, transfer_update: TransferUpdate, user_id: int
+):
+    # Fetch both transactions by transfer_id
+    transactions = (
+        db.query(Transaction)
+        .filter(Transaction.transfer_id == transfer_id)
+        .all()
+    )
+    if not transactions or len(transactions) != 2:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Transfer transactions not found or incomplete",
+        )
+
+    source_tx = next(
+        (t for t in transactions if t.transfer_type == "source"), None
+    )
+    destination_tx = next(
+        (t for t in transactions if t.transfer_type == "destination"), None
+    )
+    if not source_tx or not destination_tx:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Source or destination transaction not found",
+        )
+
+    # Fetch and validate new accounts
+    new_source_account = (
+        db.query(Account)
+        .filter(Account.account_id == transfer_update.source_account_id)
+        .first()
+    )
+    new_destination_account = (
+        db.query(Account)
+        .filter(Account.account_id == transfer_update.destination_account_id)
+        .first()
+    )
+
+    if not new_source_account or not new_destination_account:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Source or destination account not found",
+        )
+
+    if new_source_account == new_destination_account:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Transferring to same account not allowed",
+        )
+
+    if (
+        new_source_account.ledger.user_id != user_id
+        or new_destination_account.ledger.user_id != user_id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Source or destination account does not belong to the user",
+        )
+
+    if new_source_account.is_group or new_destination_account.is_group:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Operation cannot be performed on group accounts",
+        )
+
+    # Determine destination amount
+    if new_source_account.ledger_id == new_destination_account.ledger_id:
+        destination_amount = transfer_update.source_amount
+    else:
+        if transfer_update.destination_amount is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Destination amount is required for cross-ledger transfers",
+            )
+        destination_amount = transfer_update.destination_amount
+
+    if transfer_update.source_amount <= 0 or destination_amount <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Transfer amount is not valid",
+        )
+
+    fee_amount = transfer_update.fee_amount or 0
+    total_source_debit = transfer_update.source_amount + fee_amount
+    has_fee = fee_amount > 0
+
+    if has_fee and not transfer_update.fee_category_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="fee_category_id is required when fee_amount is provided",
+        )
+
+    # Reverse balances on old transactions
+    update_account_balance(db, source_tx, reverse=True)
+    update_account_balance(db, destination_tx, reverse=True)
+
+    # Update source transaction
+    source_tx.account_id = transfer_update.source_account_id
+    source_tx.debit = Decimal(str(total_source_debit))
+    source_tx.credit = Decimal("0.00")
+    source_tx.date = transfer_update.date
+    source_tx.notes = transfer_update.notes
+    source_tx.is_split = has_fee
+
+    # Update destination transaction
+    destination_tx.account_id = transfer_update.destination_account_id
+    destination_tx.credit = Decimal(str(destination_amount))
+    destination_tx.debit = Decimal("0.00")
+    destination_tx.date = transfer_update.date
+    destination_tx.notes = transfer_update.notes
+
+    # Handle splits on source transaction
+    db.query(TransactionSplit).filter(
+        TransactionSplit.transaction_id == source_tx.transaction_id
+    ).delete()
+
+    if has_fee:
+        db.add(TransactionSplit(
+            transaction_id=source_tx.transaction_id,
+            category_id=None,
+            debit=Decimal(str(transfer_update.source_amount)),
+            credit=Decimal("0.00"),
+            notes="Transfer amount",
+        ))
+        db.add(TransactionSplit(
+            transaction_id=source_tx.transaction_id,
+            category_id=transfer_update.fee_category_id,
+            debit=Decimal(str(fee_amount)),
+            credit=Decimal("0.00"),
+            notes="Transfer fee",
+        ))
+
+    # Handle tags on both transactions
+    if transfer_update.tags is not None:
+        for tx in [source_tx, destination_tx]:
+            db.query(TransactionTag).filter(
+                TransactionTag.transaction_id == tx.transaction_id
+            ).delete()
+            for tag_data in transfer_update.tags:
+                tag = (
+                    db.query(Tag)
+                    .filter(Tag.name == tag_data.name, Tag.user_id == user_id)
+                    .first()
+                )
+                if not tag:
+                    tag = Tag(name=tag_data.name, user_id=user_id)
+                    db.add(tag)
+                    db.flush()
+                db.add(
+                    TransactionTag(
+                        transaction_id=tx.transaction_id, tag_id=tag.tag_id
+                    )
+                )
+
+    db.commit()
+    db.refresh(source_tx)
+    db.refresh(destination_tx)
+
+    # Apply new balances
+    update_account_balance(db, source_tx)
+    update_account_balance(db, destination_tx)
+
+    return {"message": "Transfer updated successfully"}
 
 
 def delete_transaction(db: Session, transaction_id: int, user_id: int):

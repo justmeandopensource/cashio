@@ -14,6 +14,8 @@ interface AccountMainTransactionsProps {
   onTransactionUpdated: () => void;
    // eslint-disable-next-line no-unused-vars
    onCopyTransaction: (transaction: any) => Promise<void>;
+  // eslint-disable-next-line no-unused-vars
+  onEditTransfer?: (transaction: any) => void;
 }
 
 const AccountMainTransactions: React.FC<AccountMainTransactionsProps> = ({
@@ -22,6 +24,7 @@ const AccountMainTransactions: React.FC<AccountMainTransactionsProps> = ({
   onTransactionDeleted,
   onTransactionUpdated,
   onCopyTransaction,
+  onEditTransfer,
 }) => {
   const cardBg = useColorModeValue("white", "gray.700");
 
@@ -37,6 +40,7 @@ const AccountMainTransactions: React.FC<AccountMainTransactionsProps> = ({
       onTransactionDeleted={onTransactionDeleted}
       onTransactionUpdated={onTransactionUpdated}
       onCopyTransaction={onCopyTransaction}
+      onEditTransfer={onEditTransfer}
     />
     </Box>
   );

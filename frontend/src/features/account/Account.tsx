@@ -10,6 +10,7 @@ import { lazy, Suspense } from "react";
 import { Building, ShieldAlert, ChevronLeft, Plus, Repeat } from "lucide-react";
 import { formatNumberAsCurrency } from "@components/shared/utils";
 import config from "@/config";
+import api from "@/lib/api";
 import useLedgerStore from "@/components/shared/store";
 import UpdateAccountModal from "@components/modals/UpdateAccountModal";
 import CreateTransactionModal from "@components/modals/CreateTransactionModal";
@@ -81,6 +82,23 @@ const Account: React.FC = () => {
   const [transactionToCopy, setTransactionToCopy] = useState<any | undefined>(
     undefined
   );
+  const [editTransferData, setEditTransferData] = useState<any | undefined>(
+    undefined
+  );
+
+  const handleEditTransfer = async (transaction: any) => {
+    if (!transaction.transfer_id) return;
+    try {
+      const response = await api.get(`/ledger/transfer/${transaction.transfer_id}`);
+      setEditTransferData({
+        ...response.data,
+        transfer_id: transaction.transfer_id,
+      });
+      setIsTransferModalOpen(true);
+    } catch {
+      // Silently fail - toast will be shown by the API interceptor if needed
+    }
+  };
 
   const handleCopyTransaction = async (transaction: any) => {
     setTransactionToCopy(transaction);
@@ -258,6 +276,7 @@ const Account: React.FC = () => {
                onAddTransaction={() => setIsCreateModalOpen(true)}
                onTransactionDeleted={handleTransactionDeleted}
                onTransactionUpdated={handleTransactionUpdated}
+               onEditTransfer={handleEditTransfer}
              />
            )}
         </PageContainer>
@@ -285,6 +304,7 @@ const Account: React.FC = () => {
               onClose={() => {
                 setIsTransferModalOpen(false);
                 setTransactionToCopy(undefined);
+                setEditTransferData(undefined);
               }}
             accountId={accountId as string}
             onTransferCompleted={() => {
@@ -292,6 +312,7 @@ const Account: React.FC = () => {
               refreshTransactionsData();
             }}
             initialData={transactionToCopy}
+            editTransferData={editTransferData}
             />
           </Suspense>
 

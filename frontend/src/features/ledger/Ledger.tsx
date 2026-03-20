@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Button,
   useDisclosure,
+  useToast,
   Box,
   HStack,
   Text,
@@ -20,6 +21,7 @@ import CreateTransactionModal from "@components/modals/CreateTransactionModal";
 const TransferFundsModal = lazy(() => import("@components/modals/TransferFundsModal"));
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { toastDefaults } from "@components/shared/utils";
 
 const Ledger = () => {
   const navigate = useNavigate();
@@ -78,6 +80,28 @@ const Ledger = () => {
   const [transactionToCopy, setTransactionToCopy] = useState<any | undefined>(
     undefined,
   );
+  const [editTransferData, setEditTransferData] = useState<any | undefined>(
+    undefined,
+  );
+  const toast = useToast();
+
+  const handleEditTransfer = async (transaction: any) => {
+    if (!transaction.transfer_id) return;
+    try {
+      const response = await api.get(`/ledger/transfer/${transaction.transfer_id}`);
+      setEditTransferData({
+        ...response.data,
+        transfer_id: transaction.transfer_id,
+      });
+      setIsTransferModalOpen(true);
+    } catch {
+      toast({
+        description: "Failed to load transfer details.",
+        status: "error",
+        ...toastDefaults,
+      });
+    }
+  };
 
   const handleAddTransaction = (accountId: string | undefined = undefined, transaction?: any) => {
     setSelectedAccountId(accountId);
@@ -192,6 +216,7 @@ const Ledger = () => {
           <LedgerMain
             onAddTransaction={handleAddTransaction}
             onTransferFunds={handleTransferFunds}
+            onEditTransfer={handleEditTransfer}
           />
         </PageContainer>
       </Box>
@@ -242,6 +267,7 @@ const Ledger = () => {
             setIsTransferModalOpen(false);
             setTransactionToCopy(undefined);
             setSelectedAccountId(undefined);
+            setEditTransferData(undefined);
           }}
           accountId={selectedAccountId}
           onTransferCompleted={() => {
@@ -249,6 +275,7 @@ const Ledger = () => {
           refreshTransactionsData();
         }}
         initialData={transactionToCopy}
+        editTransferData={editTransferData}
         />
       </Suspense>
     </Layout>

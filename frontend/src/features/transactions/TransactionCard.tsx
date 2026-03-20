@@ -81,6 +81,7 @@ interface Transaction {
   debit: number;
   tags?: TagItem[];
   transfer_id?: string;
+  transfer_type?: string;
   filter_matched_split?: FilterMatchedSplit;
 }
 
@@ -486,7 +487,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
             )}
             {/* Action Icons */}
              <Flex justify="flex-end" mt={3} gap={1}>
-                {!transaction.is_transfer && !transaction.is_asset_transaction && !transaction.is_mf_transaction && (
+                {!transaction.is_asset_transaction && !transaction.is_mf_transaction && transaction.transfer_type !== "destination" && (
                   <>
                     <IconButton
                       size="sm"
@@ -516,7 +517,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                     />
                   </>
                 )}
-                {!transaction.is_asset_transaction && !transaction.is_mf_transaction && (
+                {!transaction.is_asset_transaction && !transaction.is_mf_transaction && transaction.transfer_type !== "destination" && (
                   <IconButton
                     size="sm"
                     variant="ghost"

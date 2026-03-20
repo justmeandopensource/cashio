@@ -24,6 +24,8 @@ interface AccountMainProps {
   onAddTransaction: () => void;
   onTransactionDeleted: () => void;
   onTransactionUpdated: () => void;
+  // eslint-disable-next-line no-unused-vars
+  onEditTransfer?: (transaction: any) => void;
 }
 
 const AccountMain: React.FC<AccountMainProps> = ({
@@ -31,7 +33,8 @@ const AccountMain: React.FC<AccountMainProps> = ({
   onCopyTransaction,
   onAddTransaction,
   onTransactionDeleted,
-  onTransactionUpdated
+  onTransactionUpdated,
+  onEditTransfer,
 }) => {
   return (
     <Box>
@@ -42,6 +45,7 @@ const AccountMain: React.FC<AccountMainProps> = ({
         onTransactionDeleted={onTransactionDeleted}
         onTransactionUpdated={onTransactionUpdated}
         onCopyTransaction={onCopyTransaction}
+        onEditTransfer={onEditTransfer}
       />
     </Box>
   );

@@ -258,6 +258,44 @@ def get_transfer_transactions(
     return transfer_details
 
 
+@transaction_Router.put(
+    "/{ledger_id}/transfer/{transfer_id}",
+    response_model=dict,
+    tags=["transactions"],
+)
+def update_transfer_transaction(
+    ledger_id: int,
+    transfer_id: str,
+    transfer_update: transaction_schema.TransferUpdate,
+    user: user_schema.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        UUID(transfer_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid transfer_id. It must be a valid UUID.",
+        )
+
+    # Ensure the ledger belongs to the user
+    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
+    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
+        raise HTTPException(status_code=404, detail="Ledger not found")
+
+    try:
+        return transaction_crud.update_transfer_transaction(
+            db=db,
+            transfer_id=transfer_id,
+            transfer_update=transfer_update,
+            user_id=user.user_id,
+        )
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
 from fastapi import Query
 
 
