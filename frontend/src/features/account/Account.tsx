@@ -165,6 +165,10 @@ const Account: React.FC = () => {
     await queryClient.invalidateQueries({
       queryKey: ["tag-trend"],
     });
+    // Invalidate budget queries to refresh spent amounts after transaction changes
+    await queryClient.invalidateQueries({
+      queryKey: ["budgets"],
+    });
   };
 
   const handleTransactionDeleted = async (): Promise<void> => {

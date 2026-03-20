@@ -185,6 +185,7 @@ const Transactions: React.FC<TransactionsProps> = ({
       ],
     });
     queryClient.refetchQueries({ queryKey: ["account", accountId] });
+    queryClient.invalidateQueries({ queryKey: ["budgets"] });
   };
 
   const {
@@ -280,6 +281,7 @@ const Transactions: React.FC<TransactionsProps> = ({
         onTransactionDeleted();
       }
       queryClient.invalidateQueries({ queryKey: ["account", accountId] });
+      queryClient.invalidateQueries({ queryKey: ["budgets"] });
       toast({
         description: "Transaction deleted",
         status: "success",
