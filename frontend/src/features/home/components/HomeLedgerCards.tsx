@@ -67,7 +67,7 @@ const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
   const descColor = useColorModeValue("gray.500", "gray.400");
   const dateColor = useColorModeValue("gray.400", "gray.500");
   const arrowColor = useColorModeValue("gray.300", "gray.600");
-  const arrowHoverColor = useColorModeValue("brand.500", "brand.400");
+
   const isDark = useColorModeValue(false, true);
 
   // Per-card glow shadows matching accent colors
@@ -338,7 +338,7 @@ const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
                   flexShrink={0}
                   transition="color 0.2s ease, transform 0.2s ease"
                   _groupHover={{
-                    color: arrowHoverColor,
+                    color: accent,
                     transform: "translateX(3px)",
                   }}
                 />
