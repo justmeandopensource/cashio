@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { Box, Flex, useToast, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex, useColorModeValue } from "@chakra-ui/react";
 import RegisterForm from "@features/auth/components/RegisterForm";
 import api from "@/lib/api";
+import { notify } from "@/components/shared/notify";
 
 interface RegisterFormData {
   full_name: string;
@@ -24,7 +25,6 @@ const Register: React.FC = () => {
   const [password, setPassword] = useState<string>("");
 
   const navigate = useNavigate();
-  const toast = useToast();
   const fullNameRef = useRef<HTMLInputElement>(null as any);
 
   useEffect(() => {
@@ -39,21 +39,19 @@ const Register: React.FC = () => {
     mutationFn: (formDetails: RegisterFormData) =>
       api.post("/user/create", formDetails),
     onSuccess: () => {
-      toast({
+      notify({
         title: "Account created",
         description: "Your account has been created successfully!",
         status: "success",
-        position: "top-right",
         duration: 3000,
       });
       navigate("/login");
     },
     onError: (error: AxiosError<ErrorResponse>) => {
-      toast({
+      notify({
         title: "Account creation failed",
         description: error.response?.data?.detail || error.message,
         status: "error",
-        position: "top-right",
         duration: 3000,
       });
       setFullName("");

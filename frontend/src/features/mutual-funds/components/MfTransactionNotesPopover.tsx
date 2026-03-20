@@ -13,7 +13,6 @@ import {
   Textarea,
   Button,
   Flex,
-  useToast,
   Text,
   Box,
 } from "@chakra-ui/react";
@@ -21,7 +20,7 @@ import { FileText, Edit, Save, X } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import useLedgerStore from "@/components/shared/store";
-import { toastDefaults } from "@/components/shared/utils";
+import { notify } from "@/components/shared/notify";
 import { MfTransaction } from "../types";
 
 const useUpdateMfTransactionNotes = () => {
@@ -66,7 +65,6 @@ const MfTransactionNotesPopover: FC<MfTransactionNotesPopoverProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [notes, setNotes] = useState(transaction.notes || "");
-  const toast = useToast();
   const popoverBg = useColorModeValue("white", "gray.800");
   const popoverBorderColor = useColorModeValue("gray.100", "gray.700");
   const popoverHeaderBorderColor = popoverBorderColor;
@@ -95,16 +93,14 @@ const MfTransactionNotesPopover: FC<MfTransactionNotesPopoverProps> = ({
         mfTransactionId: transaction.mf_transaction_id,
         notes,
       });
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Note updated",
         description: "The transaction note has been saved.",
         status: "success",
       });
       onClose();
     } catch {
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Error",
         description: "Failed to update the note.",
         status: "error",

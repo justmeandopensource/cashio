@@ -29,7 +29,6 @@ import {
   ModalCloseButton,
   Button,
   useDisclosure,
-  useToast,
   useBreakpointValue,
   HStack,
   Tooltip,
@@ -52,7 +51,7 @@ import {
   splitCurrencyForDisplay,
 } from "../utils";
 import useLedgerStore from "@/components/shared/store";
-import { toastDefaults } from "@/components/shared/utils";
+import { notify } from "@/components/shared/notify";
 import AssetTransactionNotesPopover from "./AssetTransactionNotesPopover";
 import EmptyStateTransactions from "./EmptyStateTransactions";
 
@@ -71,8 +70,6 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
   const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
   const [expandedCardId, setExpandedCardId] = useState<number | null>(null);
   const [openPopoverId, setOpenPopoverId] = useState<number | null>(null);
-  const toast = useToast();
-
   const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
   const accountLinkColor = useColorModeValue("brand.500", "brand.300");
   const notesColor = useColorModeValue("primaryTextColor", "primaryTextColor");
@@ -147,21 +144,18 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
       setSelectedTransactionId(null);
       onClose();
       onDataChange();
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Transaction Deleted",
         description: "The asset transaction has been successfully deleted.",
         status: "success",
       });
     } catch (error) {
       console.error("Error deleting asset transaction:", error);
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Error",
         description: "Failed to delete the asset transaction.",
         status: "error",
         duration: 5000,
-        isClosable: true,
       });
     }
   };

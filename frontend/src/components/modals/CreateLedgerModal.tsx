@@ -8,7 +8,6 @@ import {
   VStack,
   Input,
   Button,
-  useToast,
   FormControl,
   FormLabel,
   FormHelperText,
@@ -20,7 +19,7 @@ import {
   Icon,
 } from "@chakra-ui/react";
 import { Plus, X, Check } from "lucide-react";
-import { toastDefaults } from "../shared/utils";
+import { notify } from "@/components/shared/notify";
 
 interface Currency {
   symbol: string;
@@ -61,8 +60,6 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
   const [description, setDescription] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [navServiceType, setNavServiceType] = useState<string>("india");
-  const toast = useToast();
-
   // Modern color scheme
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.100", "gray.700");
@@ -78,10 +75,9 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
 
   const handleSubmit = (): void => {
     if (!newLedgerName || !selectedCurrency) {
-      toast({
+      notify({
         description: "Please enter both ledger name and select a currency.",
         status: "warning",
-        ...toastDefaults,
       });
       return;
     }

@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import {
   Button,
   useDisclosure,
-  useToast,
   Box,
   HStack,
   Text,
@@ -21,7 +20,7 @@ import CreateTransactionModal from "@components/modals/CreateTransactionModal";
 const TransferFundsModal = lazy(() => import("@components/modals/TransferFundsModal"));
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { toastDefaults } from "@components/shared/utils";
+import { notify } from "@/components/shared/notify";
 
 const Ledger = () => {
   const navigate = useNavigate();
@@ -83,8 +82,6 @@ const Ledger = () => {
   const [editTransferData, setEditTransferData] = useState<any | undefined>(
     undefined,
   );
-  const toast = useToast();
-
   const handleEditTransfer = async (transaction: any) => {
     if (!transaction.transfer_id) return;
     try {
@@ -95,10 +92,9 @@ const Ledger = () => {
       });
       setIsTransferModalOpen(true);
     } catch {
-      toast({
+      notify({
         description: "Failed to load transfer details.",
         status: "error",
-        ...toastDefaults,
       });
     }
   };

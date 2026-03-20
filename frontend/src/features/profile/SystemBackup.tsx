@@ -6,7 +6,6 @@ import {
   Text,
   HStack,
   Tag,
-  useToast,
   useDisclosure,
   Modal,
   ModalOverlay,
@@ -35,8 +34,8 @@ import {
   uploadBackup,
   downloadBackup,
 } from "./api";
-import { toastDefaults } from "@/components/shared/utils";
 import { useColorModeValue } from "@chakra-ui/react";
+import { notify } from "@/components/shared/notify";
 import { motion } from "framer-motion";
 import {
   Database,
@@ -54,8 +53,6 @@ const MotionBox = motion(Box);
 const MotionCard = motion(Card);
 
 const SystemBackup: React.FC = () => {
-  const toast = useToast();
-
   const textColor = useColorModeValue("gray.800", "gray.100");
   const subtitleColor = useColorModeValue("gray.500", "gray.400");
   const cardBg = useColorModeValue("white", "cardDarkBg");
@@ -136,8 +133,7 @@ const SystemBackup: React.FC = () => {
   const createMutation = useMutation({
     mutationFn: createBackup,
     onSuccess: (data) => {
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Backup Started",
         description: `Creating backup: ${data.filename}`,
         status: "info",
@@ -149,16 +145,14 @@ const SystemBackup: React.FC = () => {
       };
       poll(checkFn)
         .then(() =>
-          toast({
-            ...toastDefaults,
+          notify({
             title: "Success",
             description: "Database backup completed.",
             status: "success",
           }),
         )
         .catch((err) =>
-          toast({
-            ...toastDefaults,
+          notify({
             title: "Error",
             description: err.message,
             status: "error",
@@ -167,8 +161,7 @@ const SystemBackup: React.FC = () => {
         );
     },
     onError: (error: Error) =>
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Error",
         description: error.message,
         status: "error",
@@ -179,8 +172,7 @@ const SystemBackup: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: deleteBackup,
     onSuccess: (_, variables) => {
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Deletion Started",
         description: `Deleting backup: ${variables}`,
         status: "info",
@@ -192,16 +184,14 @@ const SystemBackup: React.FC = () => {
       };
       poll(checkFn)
         .then(() =>
-          toast({
-            ...toastDefaults,
+          notify({
             title: "Success",
             description: "Backup file deleted.",
             status: "success",
           }),
         )
         .catch((err) =>
-          toast({
-            ...toastDefaults,
+          notify({
             title: "Error",
             description: err.message,
             status: "error",
@@ -210,8 +200,7 @@ const SystemBackup: React.FC = () => {
         );
     },
     onError: (error: Error) =>
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Error",
         description: error.message,
         status: "error",
@@ -222,8 +211,7 @@ const SystemBackup: React.FC = () => {
   const restoreMutation = useMutation({
     mutationFn: restoreBackup,
     onSuccess: () => {
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Restore Started",
         description: "Please wait, the system will restart.",
         status: "info",
@@ -239,8 +227,7 @@ const SystemBackup: React.FC = () => {
       };
       poll(checkFn, 60000, 3000)
         .then(() => {
-          toast({
-            ...toastDefaults,
+          notify({
             title: "Success",
             description: "Database restore completed successfully.",
             status: "success",
@@ -248,8 +235,7 @@ const SystemBackup: React.FC = () => {
           queryClient.invalidateQueries({ queryKey: ["backups"] });
         })
         .catch(() =>
-          toast({
-            ...toastDefaults,
+          notify({
             title: "Error",
             description: "Restore process timed out or failed.",
             status: "error",
@@ -259,8 +245,7 @@ const SystemBackup: React.FC = () => {
         .finally(() => setIsRestoring(false));
     },
     onError: (error: Error) =>
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Error",
         description: error.message,
         status: "error",
@@ -271,8 +256,7 @@ const SystemBackup: React.FC = () => {
   const uploadMutation = useMutation({
     mutationFn: uploadBackup,
     onSuccess: (data) => {
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Upload Successful",
         description: data.message,
         status: "success",
@@ -281,8 +265,7 @@ const SystemBackup: React.FC = () => {
       handleRestoreClick(data.filename);
     },
     onError: (error: Error) =>
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Error",
         description: error.message,
         status: "error",
@@ -321,15 +304,13 @@ const SystemBackup: React.FC = () => {
   const handleDownloadClick = async (filename: string) => {
     try {
       await downloadBackup(filename);
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Download Started",
         description: `Downloading ${filename}`,
         status: "success",
       });
     } catch {
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Download Failed",
         description: "Failed to download the backup file. Please try again.",
         status: "error",

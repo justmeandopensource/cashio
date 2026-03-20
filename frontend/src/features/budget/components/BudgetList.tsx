@@ -5,14 +5,13 @@ import {
   Spinner,
   Center,
   useDisclosure,
-  useToast,
   useColorModeValue,
   Icon,
 } from "@chakra-ui/react";
 import { Target } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { toastDefaults } from "@/components/shared/utils";
+import { notify } from "@/components/shared/notify";
 import { AxiosError } from "axios";
 import BudgetSummaryCard from "./BudgetSummaryCard";
 import BudgetItem, { BudgetItemData } from "./BudgetItem";
@@ -33,7 +32,6 @@ interface BudgetListProps {
 }
 
 const BudgetList: React.FC<BudgetListProps> = ({ ledgerId, period, currencySymbol }) => {
-  const toast = useToast();
   const queryClient = useQueryClient();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [editingBudget, setEditingBudget] = useState<BudgetItemData | undefined>();
@@ -55,15 +53,14 @@ const BudgetList: React.FC<BudgetListProps> = ({ ledgerId, period, currencySymbo
       await api.delete(`/ledger/${ledgerId}/budgets/${budgetId}`);
     },
     onSuccess: () => {
-      toast({ description: "Budget deleted.", status: "success", ...toastDefaults });
+      notify({ description: "Budget deleted.", status: "success" });
       queryClient.invalidateQueries({ queryKey: ["budgets", ledgerId] });
     },
     onError: (error: AxiosError<{ detail: string }>) => {
       if (error.response?.status !== 401) {
-        toast({
+        notify({
           description: error.response?.data?.detail || "Failed to delete budget.",
           status: "error",
-          ...toastDefaults,
         });
       }
     },

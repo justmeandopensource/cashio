@@ -25,7 +25,6 @@ import React from "react";
   AlertDescription,
   InputGroup,
   InputLeftAddon,
-  useToast,
   Icon,
 } from "@chakra-ui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -36,6 +35,7 @@ import { MutualFund } from "../../types";
 
 import { splitCurrencyForDisplay } from "../../../physical-assets/utils";
 import useLedgerStore from "@/components/shared/store";
+import { notify } from "@/components/shared/notify";
 import { format } from "date-fns";
 
 interface UpdateNavModalProps {
@@ -58,7 +58,6 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
   const { ledgerId } = useLedgerStore();
   const { currencySymbol } = useLedgerStore();
   const queryClient = useQueryClient();
-  const toast = useToast();
 
   const [formData, setFormData] = useState<FormData>({ nav: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -107,22 +106,20 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
         setFormData({ nav: result.nav_value.toFixed(4) });
         setErrors({});
       } else {
-        toast({
+        notify({
           title: "Fetch Failed",
           description: result.error_message || "Failed to fetch NAV",
           status: "error",
           duration: 5000,
-          isClosable: true,
         });
       }
     },
     onError: (error: any) => {
-      toast({
+      notify({
         title: "Fetch Failed",
         description: error?.response?.data?.detail || error?.message || "Failed to fetch NAV",
         status: "error",
         duration: 5000,
-        isClosable: true,
       });
     },
   });

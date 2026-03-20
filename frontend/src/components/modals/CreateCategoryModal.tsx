@@ -14,7 +14,6 @@ import {
   Select,
   Checkbox,
   Button,
-  useToast,
   Box,
   VStack,
   HStack,
@@ -25,7 +24,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { Plus, Check } from "lucide-react";
-import { toastDefaults } from "../shared/utils";
+import { notify } from "@/components/shared/notify";
 import { AxiosError } from "axios";
 
 interface GroupCategory {
@@ -53,7 +52,6 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
   categoryType,
   parentCategoryId,
 }) => {
-  const toast = useToast();
   const queryClient = useQueryClient();
   const [categoryName, setCategoryName] = useState<string>("");
   const [isGroupCategory, setIsGroupCategory] = useState<boolean>(false);
@@ -136,10 +134,9 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
       return response.data;
     },
     onSuccess: () => {
-      toast({
+      notify({
         description: "Category created successfully.",
         status: "success",
-        ...toastDefaults,
       });
       resetForm();
       onClose();
@@ -149,12 +146,11 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
     },
     onError: (error: AxiosError<{ detail: string }>) => {
       if (error.response?.status !== 401) {
-        toast({
+        notify({
           description:
             error.response?.data?.detail || "Failed to create category.",
           status: "error",
-          ...toastDefaults,
-        });
+          });
       }
     },
   });
@@ -162,10 +158,9 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
   // Handle form submission
   const handleSubmit = (): void => {
     if (!categoryName) {
-      toast({
+      notify({
         description: "Please enter a category name.",
         status: "warning",
-        ...toastDefaults,
       });
       return;
     }

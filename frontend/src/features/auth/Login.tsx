@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
-import { Box, Flex, useToast, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex, useColorModeValue } from "@chakra-ui/react";
 import LoginForm from "@features/auth/components/LoginForm";
 import api from "@/lib/api";
+import { notify } from "@/components/shared/notify";
 
 interface LoginResponse {
   access_token: string;
@@ -19,7 +20,6 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState<string>("");
 
   const navigate = useNavigate();
-  const toast = useToast();
   const usernameInputRef = useRef<HTMLInputElement>(null as any);
 
   useEffect(() => {
@@ -39,15 +39,13 @@ const Login: React.FC = () => {
       navigate("/");
     },
     onError: (error: AxiosError<ErrorResponse>) => {
-      toast({
+      notify({
         title: "Login Failed",
         description:
           error.response?.data?.detail ||
           "Invalid credentials. Please try again.",
         status: "error",
-        position: "top-right",
         duration: 3000,
-        isClosable: true,
       });
       setUsername("");
       setPassword("");

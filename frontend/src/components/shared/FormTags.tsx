@@ -9,12 +9,11 @@ import {
   Input,
   Text,
   useColorModeValue,
-  useToast,
 } from "@chakra-ui/react";
 import { X } from "lucide-react";
 import { AxiosError } from "axios";
 import api from "@/lib/api";
-import { toastDefaults } from "./utils";
+import { notify } from "@/components/shared/notify";
 
 interface TagItem {
   tag_id?: string;
@@ -40,7 +39,6 @@ const FormTags: React.FC<FormTagsProps> = ({
   borderColor,
   onShouldBlockSubmit,
 }) => {
-  const toast = useToast();
   const [tagSuggestions, setTagSuggestions] = useState<TagItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
@@ -86,11 +84,10 @@ const FormTags: React.FC<FormTagsProps> = ({
           }
         } catch (error) {
           const apiError = error as AxiosError<ApiErrorResponse>;
-          toast({
+          notify({
             description:
               apiError.response?.data?.detail || "Failed to fetch tag suggestions.",
             status: "error",
-            ...toastDefaults,
           });
         }
       } else {
@@ -100,7 +97,7 @@ const FormTags: React.FC<FormTagsProps> = ({
         onShouldBlockSubmitRef.current?.(query.length > 0);
       }
     },
-    [toast]
+    []
   );
 
   const debouncedFetchTagSuggestions = useMemo(

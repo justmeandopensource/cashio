@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Flex, useDisclosure, useToast, Text } from "@chakra-ui/react";
+import { Flex, useDisclosure, Text } from "@chakra-ui/react";
 import Layout from "@components/Layout";
 import HomeMain from "@features/home/components/HomeMain";
 import api from "@/lib/api";
 import HomeLedgerCardsSkeleton from "./components/HomeLedgercardsSkeleton";
-import { toastDefaults } from "@/components/shared/utils";
+import { notify } from "@/components/shared/notify";
 import { useNavigate } from "react-router-dom";
 
 interface Ledger {
@@ -20,7 +20,6 @@ interface Ledger {
 
 const Home = () => {
   const navigate = useNavigate();
-  const toast = useToast();
   const queryClient = useQueryClient();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -68,17 +67,15 @@ const Home = () => {
         data,
       ]);
       onClose();
-      toast({
+      notify({
         description: "Ledger created successfully",
         status: "success",
-        ...toastDefaults,
       });
     },
     onError: (error: Error) => {
-      toast({
+      notify({
         description: error.message,
         status: "error",
-        ...toastDefaults,
       });
     },
   });
@@ -92,10 +89,9 @@ const Home = () => {
     navServiceType: string
   ) => {
     if (!newLedgerName || !newLedgerCurrency) {
-      toast({
+      notify({
         description: "All fields required.",
         status: "error",
-        ...toastDefaults,
       });
       return;
     }

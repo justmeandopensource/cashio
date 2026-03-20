@@ -15,7 +15,6 @@ import {
   InputLeftAddon,
   Select,
   Button,
-  useToast,
   Box,
   VStack,
   HStack,
@@ -28,7 +27,7 @@ import { AxiosError } from "axios";
 import api from "@/lib/api";
 import useLedgerStore from "../shared/store";
 import { Edit } from "lucide-react";
-import { toastDefaults } from "../shared/utils";
+import { notify } from "@/components/shared/notify";
 
 interface GroupAccount {
   account_id: string | number;
@@ -87,8 +86,6 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
   const [groupAccounts, setGroupAccounts] = useState<GroupAccount[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isFetchingGroups, setIsFetchingGroups] = useState<boolean>(false);
-  const toast = useToast();
-
   const { currencySymbol } = useLedgerStore();
 
   // Modern theme colors - matching other modals
@@ -123,13 +120,12 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
       } catch (error) {
         const axiosError = error as AxiosError<{ detail: string }>;
         if (axiosError.response?.status !== 401) {
-          toast({
+          notify({
             description:
               axiosError.response?.data?.detail ||
               "Failed to fetch group accounts",
             status: "error",
-            ...toastDefaults,
-          });
+              });
         }
       } finally {
         setIsFetchingGroups(false);
@@ -139,7 +135,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
     if (isOpen) {
       fetchGroupAccounts();
     }
-  }, [isOpen, account.ledger_id, account.type, toast]);
+  }, [isOpen, account.ledger_id, account.type]);
 
   // Update state when props change
   React.useEffect(() => {
@@ -149,10 +145,9 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
 
   const handleSubmit = async (): Promise<void> => {
     if (!name) {
-      toast({
+      notify({
         description: "Please enter an account name.",
         status: "warning",
-        ...toastDefaults,
       });
       return;
     }
@@ -172,10 +167,9 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
 
     // If no fields have changed, show an error toast
     if (Object.keys(payload).length === 0) {
-      toast({
+      notify({
         description: "Please update at least one field.",
         status: "warning",
-        ...toastDefaults,
       });
       return;
     }
@@ -186,22 +180,20 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
         `/ledger/${account.ledger_id}/account/${account.account_id}/update`,
         payload,
       );
-      toast({
+      notify({
         description: "Account updated successfully",
         status: "success",
-        ...toastDefaults,
       });
       onClose();
       onUpdateCompleted();
     } catch (error) {
       const axiosError = error as AxiosError<{ detail: string }>;
       if (axiosError.response?.status !== 401) {
-        toast({
+        notify({
           description:
             axiosError.response?.data?.detail || "Failed to update account",
           status: "error",
-          ...toastDefaults,
-        });
+          });
       }
     } finally {
       setIsLoading(false);

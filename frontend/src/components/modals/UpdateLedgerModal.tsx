@@ -8,7 +8,6 @@ import {
   VStack,
   Input,
   Button,
-  useToast,
   FormControl,
   FormLabel,
   FormHelperText,
@@ -25,7 +24,7 @@ import { AxiosError } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import useLedgerStore from "@/components/shared/store";
-import { toastDefaults } from "../shared/utils";
+import { notify } from "@/components/shared/notify";
 
 interface Currency {
   symbol: string;
@@ -90,8 +89,6 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
     currentNavServiceType,
   );
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const toast = useToast();
-
   // Fetch current ledger data when modal opens
   const { data: ledgerData, isLoading: isFetching } = useQuery({
     queryKey: ["ledger-details", ledgerId],
@@ -136,10 +133,9 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
 
   const handleSubmit = async (): Promise<void> => {
     if (!ledgerName || !selectedCurrency) {
-      toast({
+      notify({
         description: "Please enter both ledger name and select a currency.",
         status: "warning",
-        ...toastDefaults,
       });
       return;
     }
@@ -163,10 +159,9 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
     }
 
     if (Object.keys(payload).length === 0) {
-      toast({
+      notify({
         description: "No changes detected.",
         status: "info",
-        ...toastDefaults,
       });
       return;
     }
@@ -174,22 +169,20 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
     try {
       setIsLoading(true);
       const response = await api.put(`/ledger/${ledgerId}/update`, payload);
-      toast({
+      notify({
         description: "Ledger updated successfully",
         status: "success",
-        ...toastDefaults,
       });
       onClose();
       onUpdateCompleted(response.data);
     } catch (error) {
       const axiosError = error as AxiosError<{ detail: string }>;
       if (axiosError.response?.status !== 401) {
-        toast({
+        notify({
           description:
             axiosError.response?.data?.detail || "Failed to update ledger",
           status: "error",
-          ...toastDefaults,
-        });
+          });
       }
     } finally {
       setIsLoading(false);

@@ -6,14 +6,13 @@ import {
   Box,
   Text,
   useColorModeValue,
-  useToast,
   Popover,
   PopoverTrigger,
   PopoverContent,
 } from "@chakra-ui/react";
 import { AxiosError } from "axios";
 import api from "@/lib/api";
-import { toastDefaults } from "./utils";
+import { notify } from "@/components/shared/notify";
 
 interface FormStoreProps {
   ledgerId: string;
@@ -35,7 +34,6 @@ const FormStore: React.FC<FormStoreProps> = ({
   borderColor,
   onDropdownOpenChange,
 }) => {
-  const toast = useToast();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
@@ -78,11 +76,10 @@ const FormStore: React.FC<FormStoreProps> = ({
           }
         } catch (error) {
           const apiError = error as AxiosError<ApiErrorResponse>;
-          toast({
+          notify({
             description:
               apiError.response?.data?.detail || "Failed to fetch store suggestions.",
             status: "error",
-            ...toastDefaults,
           });
         }
       } else {
@@ -91,7 +88,7 @@ const FormStore: React.FC<FormStoreProps> = ({
         onDropdownOpenChangeRef.current?.(false);
       }
     },
-    [ledgerId, toast]
+    [ledgerId]
   );
 
   const debouncedFetch = useMemo(

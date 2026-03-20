@@ -13,7 +13,6 @@ import {
   Textarea,
   Select,
   Button,
-  useToast,
   Box,
   VStack,
   HStack,
@@ -27,6 +26,7 @@ import { updateMutualFund } from "../../api";
 import { MutualFund, Amc } from "../../types";
 import { Edit, TrendingUp, FileText, Building2 } from "lucide-react";
 import FormMutualFundSuggestionField from "../FormMutualFundSuggestionField";
+import { notify } from "@/components/shared/notify";
 
 const ASSET_CLASSES = [
   { value: "Debt", label: "Debt" },
@@ -61,8 +61,6 @@ const ASSET_SUB_CLASSES = {
     { value: "Silver", label: "Silver" },
   ].sort((a, b) => a.label.localeCompare(b.label)),
 };
-import { toastDefaults } from "@/components/shared/utils";
-
 interface UpdateMutualFundModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -100,7 +98,6 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
     notes: fund.notes || "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const toast = useToast();
   const queryClient = useQueryClient();
 
   // Modern theme colors - matching other modals
@@ -152,10 +149,9 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
       notes?: string;
     }) => updateMutualFund(fund.ledger_id, fund.mutual_fund_id, updateData),
     onSuccess: () => {
-      toast({
+      notify({
         description: "Mutual fund updated successfully",
         status: "success",
-        ...toastDefaults,
       });
       queryClient.invalidateQueries({ queryKey: ["mutual-funds", fund.ledger_id] });
       queryClient.invalidateQueries({ queryKey: ["amcs", fund.ledger_id] });
@@ -164,11 +160,10 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
     },
     onError: (error: AxiosError<{ detail: string }>) => {
       if (error.response?.status !== 401) {
-        toast({
+        notify({
           description:
             error.response?.data?.detail || "Failed to update mutual fund",
           status: "error",
-          ...toastDefaults,
         });
       }
     },
@@ -240,10 +235,9 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
 
     // If no fields have changed, show an error toast
     if (Object.keys(payload).length === 0) {
-      toast({
+      notify({
         description: "Please update at least one field.",
         status: "warning",
-        ...toastDefaults,
       });
       return;
     }

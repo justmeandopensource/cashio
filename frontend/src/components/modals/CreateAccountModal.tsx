@@ -14,7 +14,6 @@ import {
   Select,
   Checkbox,
   Button,
-  useToast,
   Box,
   VStack,
   HStack,
@@ -29,7 +28,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import useLedgerStore from "../shared/store";
 import { Plus, Check } from "lucide-react";
-import { toastDefaults } from "../shared/utils";
+import { notify } from "@/components/shared/notify";
 import { AxiosError } from "axios";
 
 interface GroupAccount {
@@ -60,7 +59,6 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   accountType,
   parentAccountId,
 }) => {
-  const toast = useToast();
   const queryClient = useQueryClient();
   const { ledgerId, currencySymbol } = useLedgerStore();
   const [accountName, setAccountName] = useState<string>("");
@@ -150,10 +148,9 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
       return response.data;
     },
     onSuccess: () => {
-      toast({
+      notify({
         description: "Account created successfully.",
         status: "success",
-        ...toastDefaults,
       });
       resetForm();
       onClose();
@@ -163,12 +160,11 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
     },
     onError: (error: AxiosError<{ detail: string }>) => {
       if (error.response?.status !== 401) {
-        toast({
+        notify({
           description:
             error.response?.data?.detail || "Failed to create account.",
           status: "error",
-          ...toastDefaults,
-        });
+          });
       }
     },
   });
@@ -176,10 +172,9 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   // Handle form submission
   const handleSubmit = (): void => {
     if (!accountName) {
-      toast({
+      notify({
         description: "Please enter an account name.",
         status: "warning",
-        ...toastDefaults,
       });
       return;
     }

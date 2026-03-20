@@ -32,7 +32,6 @@ import {
   Text,
   useColorModeValue,
   useDisclosure,
-  useToast,
   VStack,
   useBreakpointValue,
 } from "@chakra-ui/react";
@@ -40,7 +39,7 @@ import { motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
 import { usePhysicalAssets, useAssetTypes, useDeleteAssetType, useAllAssetTransactions } from "./api";
-import { toastDefaults } from "@/components/shared/utils";
+import { notify } from "@/components/shared/notify";
 import PhysicalAssetsOverview from "./components/PhysicalAssetsOverview";
 import BuySellAssetModal from "./components/modals/BuySellAssetModal";
 import CreateAssetTypeModal from "./components/modals/CreateAssetTypeModal";
@@ -54,7 +53,6 @@ const MotionBox = motion(Box);
 
 const PhysicalAssets: FC = () => {
   const queryClient = useQueryClient();
-  const toast = useToast();
   const { ledgerId } = useLedgerStore();
   const [selectedAsset, setSelectedAsset] = useState<PhysicalAsset | undefined>();
   const [tabIndex, setTabIndex] = useState(0);
@@ -151,8 +149,7 @@ const PhysicalAssets: FC = () => {
         ledgerId: Number(ledgerId),
         typeId: selectedAssetType.asset_type_id,
       });
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Asset Type Deleted",
         description: `"${selectedAssetType.name}" has been successfully deleted.`,
         status: "success",
@@ -160,8 +157,7 @@ const PhysicalAssets: FC = () => {
       setIsDeleteAssetTypeDialogOpen(false);
       setSelectedAssetType(null);
     } catch {
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Delete Failed",
         description: `Failed to delete "${selectedAssetType.name}". Please try again.`,
         status: "error",

@@ -7,7 +7,6 @@ import {
   FormLabel,
   Input,
   Button,
-  useToast,
   VStack,
   FormErrorMessage,
   Text,
@@ -21,12 +20,11 @@ import {
 import { motion } from "framer-motion";
 import { useChangePassword } from "./hooks";
 import { ChangePassword } from "./api";
+import { notify } from "@/components/shared/notify";
 
 const MotionBox = motion(Box);
 
 const ChangePasswordForm: React.FC = () => {
-  const toast = useToast();
-
   const textColor = useColorModeValue("gray.800", "gray.100");
   const subtitleColor = useColorModeValue("gray.500", "gray.400");
   const inputBg = useColorModeValue("white", "gray.700");
@@ -60,23 +58,21 @@ const ChangePasswordForm: React.FC = () => {
   const onSubmit = (data: ChangePassword) => {
     changePassword(data, {
       onSuccess: () => {
-        toast({
+        notify({
           title: "Password changed.",
           description: "Your password has been changed successfully.",
           status: "success",
           duration: 5000,
-          isClosable: true,
         });
         reset();
       },
       onError: (error: any) => {
-        toast({
+        notify({
           title: "An error occurred.",
           description:
             error.response?.data?.detail || "Unable to change your password.",
           status: "error",
           duration: 5000,
-          isClosable: true,
         });
       },
     });

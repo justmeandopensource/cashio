@@ -24,12 +24,11 @@ import {
   Icon,
   Text,
   useColorModeValue,
-  useToast,
 } from "@chakra-ui/react";
 import { Plus, Pencil, Search, ChevronDown, X, Check } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { toastDefaults } from "@/components/shared/utils";
+import { notify } from "@/components/shared/notify";
 import { AxiosError } from "axios";
 import { BudgetItemData } from "./BudgetItem";
 
@@ -57,7 +56,6 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
   mode,
   budget,
 }) => {
-  const toast = useToast();
   const queryClient = useQueryClient();
 
   const [categoryId, setCategoryId] = useState<string>("");
@@ -164,16 +162,15 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
       return response.data;
     },
     onSuccess: () => {
-      toast({ description: "Budget created.", status: "success", ...toastDefaults });
+      notify({ description: "Budget created.", status: "success" });
       queryClient.invalidateQueries({ queryKey: ["budgets", ledgerId] });
       onClose();
     },
     onError: (error: AxiosError<{ detail: string }>) => {
       if (error.response?.status !== 401) {
-        toast({
+        notify({
           description: error.response?.data?.detail || "Failed to create budget.",
           status: "error",
-          ...toastDefaults,
         });
       }
     },
@@ -187,16 +184,15 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
       return response.data;
     },
     onSuccess: () => {
-      toast({ description: "Budget updated.", status: "success", ...toastDefaults });
+      notify({ description: "Budget updated.", status: "success" });
       queryClient.invalidateQueries({ queryKey: ["budgets", ledgerId] });
       onClose();
     },
     onError: (error: AxiosError<{ detail: string }>) => {
       if (error.response?.status !== 401) {
-        toast({
+        notify({
           description: error.response?.data?.detail || "Failed to update budget.",
           status: "error",
-          ...toastDefaults,
         });
       }
     },
@@ -212,11 +208,11 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
 
   const handleSubmit = () => {
     if (!amount || Number(amount) <= 0) {
-      toast({ description: "Please enter a valid amount.", status: "warning", ...toastDefaults });
+      notify({ description: "Please enter a valid amount.", status: "warning" });
       return;
     }
     if (mode === "create" && !categoryId) {
-      toast({ description: "Please select a category.", status: "warning", ...toastDefaults });
+      notify({ description: "Please select a category.", status: "warning" });
       return;
     }
     if (mode === "create") {

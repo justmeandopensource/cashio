@@ -16,7 +16,6 @@ import {
   Text,
   VStack,
   HStack,
-  useToast,
   Box,
   useColorModeValue,
   Stack,
@@ -37,7 +36,7 @@ import FormTags from "@/components/shared/FormTags";
 import useLedgerStore from "@/components/shared/store";
 import { motion } from "framer-motion";
 import { Edit, Check, X, Search, ChevronDown } from "lucide-react";
-import { toastDefaults } from "@/components/shared/utils";
+import { notify } from "@/components/shared/notify";
 import {
   handleNumericInput,
   handleNumericPaste,
@@ -119,8 +118,6 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
   const [categorySearch, setCategorySearch] = useState<string>("");
   const [isCategoryOpen, setIsCategoryOpen] = useState<boolean>(false);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
-  const toast = useToast();
-
   const { ledgerId, currencySymbol } = useLedgerStore();
 
   // Modern theme colors
@@ -175,17 +172,16 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
       } catch (error) {
         const axiosError = error as AxiosError<{ detail: string }>;
         if (axiosError.response?.status !== 401) {
-          toast({
+          notify({
             description:
               axiosError.response?.data?.detail || "Failed to fetch splits.",
             status: "error",
-            ...toastDefaults,
-          });
+              });
         }
         return [];
       }
     },
-    [ledgerId, toast],
+    [ledgerId],
   );
 
   useEffect(() => {
@@ -264,15 +260,14 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
     } catch (error) {
       const axiosError = error as AxiosError<{ detail: string }>;
       if (axiosError.response?.status !== 401) {
-        toast({
+        notify({
           description:
             axiosError.response?.data?.detail || "Failed to fetch categories.",
           status: "error",
-          ...toastDefaults,
-        });
+          });
       }
     }
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -322,10 +317,9 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
   // Handle split transaction toggle
   const handleSplitToggle = (isChecked: boolean) => {
     if (!amount || parseFloat(amount) <= 0) {
-      toast({
+      notify({
         description: "Amount required before enabling split transactions.",
         status: "error",
-        ...toastDefaults,
       });
       return;
     }
@@ -358,10 +352,9 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
   // Handle form submission
   const handleSubmit = async () => {
     if (categories.length === 0) {
-      toast({
+      notify({
         description: "No categories found. Please create categories first.",
         status: "error",
-        ...toastDefaults,
       });
       return;
     }
@@ -372,11 +365,10 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
         (split) => !split.categoryId && (parseFloat(split.amount) || 0) > 0,
       );
       if (invalidSplits.length > 0) {
-        toast({
+        notify({
           description: "Please select a category for each split.",
           status: "error",
-          ...toastDefaults,
-        });
+          });
         return;
       }
 
@@ -386,12 +378,11 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
       );
 
       if (Math.abs(totalSplitAmount - (parseFloat(amount) || 0)) > 0.01) {
-        toast({
+        notify({
           description:
             "The sum of split amounts must equal the total transaction amount.",
           status: "error",
-          ...toastDefaults,
-        });
+          });
         return;
       }
     }
@@ -425,10 +416,9 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
         payload,
       );
 
-      toast({
+      notify({
         description: "Transaction updated successfully.",
         status: "success",
-        ...toastDefaults,
       });
 
       onClose();
@@ -436,12 +426,11 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
     } catch (error) {
       const axiosError = error as AxiosError<{ detail: string }>;
       if (axiosError.response?.status !== 401) {
-        toast({
+        notify({
           description:
             axiosError.response?.data?.detail || "Transaction failed",
           status: "error",
-          ...toastDefaults,
-        });
+          });
       }
     } finally {
       setIsLoading(false);

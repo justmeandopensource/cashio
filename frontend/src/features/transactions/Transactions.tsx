@@ -6,7 +6,6 @@ import {
   Text,
   Button,
   Flex,
-  useToast,
   VStack,
   IconButton,
   Icon,
@@ -24,7 +23,7 @@ import TransactionTable from "./TransactionTable";
 import TransactionFilter from "./TransactionFilter";
 import { AxiosError } from "axios";
 import useLedgerStore from "@/components/shared/store";
-import { toastDefaults } from "@/components/shared/utils";
+import { notify } from "@/components/shared/notify";
 const EditTransactionModal = lazy(() => import("@components/modals/EditTransactionModal/EditTransactionModal"));
 
 const MotionBox = motion(Box);
@@ -102,7 +101,6 @@ const Transactions: React.FC<TransactionsProps> = ({
   shouldFetch = true,
 }) => {
   const { ledgerId } = useLedgerStore();
-  const toast = useToast();
   const queryClient = useQueryClient();
 
   const [splitTransactions, setSplitTransactions] = useState<
@@ -270,10 +268,9 @@ const Transactions: React.FC<TransactionsProps> = ({
         );
       }
       const axiosError = err as AxiosError<{ detail: string }>;
-      toast({
+      notify({
         description: axiosError.response?.data?.detail || "Failed to delete transaction.",
         status: "error",
-        ...toastDefaults,
       });
     },
     onSuccess: () => {
@@ -282,10 +279,9 @@ const Transactions: React.FC<TransactionsProps> = ({
       }
       queryClient.invalidateQueries({ queryKey: ["account", accountId] });
       queryClient.invalidateQueries({ queryKey: ["budgets"] });
-      toast({
+      notify({
         description: "Transaction deleted",
         status: "success",
-        ...toastDefaults,
       });
     },
   });
@@ -395,10 +391,9 @@ const Transactions: React.FC<TransactionsProps> = ({
   }
 
   if (isTransactionsError) {
-    toast({
+    notify({
       description: "Failed to fetch transactions",
       status: "error",
-      ...toastDefaults,
     });
     return null;
   }

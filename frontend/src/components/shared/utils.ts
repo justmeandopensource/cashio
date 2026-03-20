@@ -1,5 +1,3 @@
-import { UseToastOptions } from "@chakra-ui/react";
-
 // prettier-ignore
 export const currencyLocales: Record<string, string> = {
   "£": "en-GB",
@@ -46,10 +44,4 @@ export const formatAmount = (
   } else {
     return { value: formattedAmount, color: "red.500", prefix: "-" };
   }
-};
-
-export const toastDefaults: Partial<UseToastOptions> = {
-  duration: 2000,
-  position: "bottom",
-  isClosable: false,
 };

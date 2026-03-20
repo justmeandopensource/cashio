@@ -15,7 +15,6 @@ import {
   SimpleGrid,
   Spinner,
   Link as ChakraLink,
-  useToast,
   Heading,
   HStack,
   IconButton,
@@ -27,7 +26,7 @@ import { Plus,
 } from "lucide-react";
 import CreateCategoryModal from "@components/modals/CreateCategoryModal";
 import config from "@/config";
-import { toastDefaults } from "@/components/shared/utils";
+import { notify } from "@/components/shared/notify";
 import { useColorModeValue } from "@chakra-ui/react";
 
 // Define TypeScript interfaces
@@ -45,7 +44,6 @@ const CategoriesMain: React.FC = () => {
     null,
   );
   const [parentCategoryId, setParentCategoryId] = useState<string | null>(null);
-  const toast = useToast();
   const queryClient = useQueryClient();
 
   const loadingBg = useColorModeValue("gray.50", "primaryBg");
@@ -212,10 +210,9 @@ const CategoriesMain: React.FC = () => {
   }
 
   if (isCategoriesError) {
-    toast({
+    notify({
       description: "Failed to fetch categories.",
       status: "error",
-      ...toastDefaults,
     });
     return (
       <Box bg={loadingBg} p={{ base: 3, md: 4, lg: 6 }} borderRadius="lg">

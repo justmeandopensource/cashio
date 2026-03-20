@@ -7,14 +7,13 @@ import {
   Box,
   Text,
   useColorModeValue,
-  useToast,
   Popover,
   PopoverTrigger,
   PopoverContent,
 } from "@chakra-ui/react";
 import { AxiosError } from "axios";
 import api from "@/lib/api";
-import { toastDefaults } from "@/components/shared/utils";
+import { notify } from "@/components/shared/notify";
 
 interface FormMutualFundSuggestionFieldProps {
   ledgerId: string;
@@ -46,7 +45,6 @@ const FormMutualFundSuggestionField: React.FC<FormMutualFundSuggestionFieldProps
   inputBg,
   onDropdownOpenChange,
 }) => {
-  const toast = useToast();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
@@ -89,11 +87,10 @@ const FormMutualFundSuggestionField: React.FC<FormMutualFundSuggestionFieldProps
           }
         } catch (error) {
           const apiError = error as AxiosError<ApiErrorResponse>;
-          toast({
+          notify({
             description:
               apiError.response?.data?.detail || `Failed to fetch ${field} suggestions.`,
             status: "error",
-            ...toastDefaults,
           });
         }
       } else {
@@ -102,7 +99,7 @@ const FormMutualFundSuggestionField: React.FC<FormMutualFundSuggestionFieldProps
         onDropdownOpenChangeRef.current?.(false);
       }
     },
-    [ledgerId, field, toast]
+    [ledgerId, field]
   );
 
   const debouncedFetch = useMemo(

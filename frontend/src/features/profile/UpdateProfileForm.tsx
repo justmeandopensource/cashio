@@ -7,7 +7,6 @@ import {
   FormLabel,
   Input,
   Button,
-  useToast,
   VStack,
   Text,
   HStack,
@@ -21,12 +20,11 @@ import {
 import { motion } from "framer-motion";
 import { useUpdateUserProfile, useUserProfile } from "./hooks";
 import { UserUpdate } from "./api";
+import { notify } from "@/components/shared/notify";
 
 const MotionBox = motion(Box);
 
 const UpdateProfileForm: React.FC = () => {
-  const toast = useToast();
-
   const textColor = useColorModeValue("gray.800", "gray.100");
   const subtitleColor = useColorModeValue("gray.500", "gray.400");
   const labelColor = useColorModeValue("gray.600", "gray.400");
@@ -68,21 +66,19 @@ const UpdateProfileForm: React.FC = () => {
   const onSubmit = (data: UserUpdate) => {
     updateUser(data, {
       onSuccess: () => {
-        toast({
+        notify({
           title: "Profile updated.",
           description: "Your profile has been updated successfully.",
           status: "success",
           duration: 5000,
-          isClosable: true,
         });
       },
       onError: () => {
-        toast({
+        notify({
           title: "An error occurred.",
           description: "Unable to update your profile.",
           status: "error",
           duration: 5000,
-          isClosable: true,
         });
       },
     });

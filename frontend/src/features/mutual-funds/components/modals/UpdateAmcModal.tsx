@@ -11,7 +11,6 @@ import {
   FormErrorMessage,
   Input,
   Button,
-  useToast,
   Box,
   VStack,
   HStack,
@@ -24,7 +23,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateAmc } from "../../api";
 import { Amc } from "../../types";
 import { Edit } from "lucide-react";
-import { toastDefaults } from "@/components/shared/utils";
+import { notify } from "@/components/shared/notify";
 
 interface UpdateAmcModalProps {
   isOpen: boolean;
@@ -49,7 +48,6 @@ const UpdateAmcModal: React.FC<UpdateAmcModalProps> = ({
     notes: amc.notes || "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const toast = useToast();
   const queryClient = useQueryClient();
 
   // Modern theme colors - matching other modals
@@ -87,10 +85,9 @@ const UpdateAmcModal: React.FC<UpdateAmcModalProps> = ({
     mutationFn: (updateData: { name?: string; notes?: string }) =>
       updateAmc(amc.ledger_id, amc.amc_id, updateData),
     onSuccess: () => {
-      toast({
+      notify({
         description: "AMC updated successfully",
         status: "success",
-        ...toastDefaults,
       });
       queryClient.invalidateQueries({ queryKey: ["amcs", amc.ledger_id] });
       queryClient.invalidateQueries({ queryKey: ["mutual-funds", amc.ledger_id] });
@@ -99,11 +96,10 @@ const UpdateAmcModal: React.FC<UpdateAmcModalProps> = ({
     },
     onError: (error: AxiosError<{ detail: string }>) => {
       if (error.response?.status !== 401) {
-        toast({
+        notify({
           description:
             error.response?.data?.detail || "Failed to update AMC",
           status: "error",
-          ...toastDefaults,
         });
       }
     },
@@ -142,10 +138,9 @@ const UpdateAmcModal: React.FC<UpdateAmcModalProps> = ({
 
     // If no fields have changed, show an error toast
     if (Object.keys(payload).length === 0) {
-      toast({
+      notify({
         description: "Please update at least one field.",
         status: "warning",
-        ...toastDefaults,
       });
       return;
     }

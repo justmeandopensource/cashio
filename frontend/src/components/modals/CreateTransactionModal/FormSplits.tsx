@@ -21,12 +21,11 @@ import {
   PopoverTrigger,
   PopoverContent,
   Icon,
-  useToast,
 } from "@chakra-ui/react";
 import { Plus, Trash2, Search, ChevronDown, Check, X } from "lucide-react";
 import { AxiosError } from "axios";
 import api from "@/lib/api";
-import { toastDefaults } from "@/components/shared/utils";
+import { notify } from "@/components/shared/notify";
 import {
   handleNumericInput,
   handleNumericPaste,
@@ -84,8 +83,6 @@ const FormSplits: React.FC<FormSplitsProps> = ({
   ledgerId,
   onDropdownOpenChange,
 }) => {
-  const toast = useToast();
-
   // Modern theme colors
   const cardBg = useColorModeValue("gray.50", "gray.700");
   const inputBg = useColorModeValue("white", "gray.700");
@@ -324,11 +321,10 @@ const FormSplits: React.FC<FormSplitsProps> = ({
           }
         } catch (error) {
           const apiError = error as AxiosError<ApiErrorResponse>;
-          toast({
+          notify({
             description:
               apiError.response?.data?.detail || "Failed to fetch note suggestions.",
             status: "error",
-            ...toastDefaults,
           });
         }
       } else {
@@ -336,7 +332,7 @@ const FormSplits: React.FC<FormSplitsProps> = ({
         setOpenNotesIndex((prev) => (prev === index ? null : prev));
       }
     },
-    [ledgerId, toast]
+    [ledgerId]
   );
 
   const debouncedFetchNotes = useMemo(

@@ -9,7 +9,6 @@ import {
   Flex,
   Icon,
   useColorModeValue,
-  useToast,
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { motion } from "framer-motion";
@@ -30,6 +29,7 @@ import {
   splitPercentageForDisplay,
 } from "../utils";
 import useLedgerStore from "../../../components/shared/store";
+import { notify } from "@/components/shared/notify";
 import MutualFundsTable from "./MutualFundsTable";
 import BulkNavUpdateModal from "./modals/BulkNavUpdateModal";
 import PortfolioChangeModal from "./modals/PortfolioChangeModal";
@@ -88,8 +88,6 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
   const [showChangeModal, setShowChangeModal] = useState(false);
   const [oldStats, setOldStats] = useState<{totalValue: number, totalUnrealizedPnL: number} | null>(null);
   const [portfolioChanges, setPortfolioChanges] = useState<{totalValueChange: number, totalValueChangePercent: number} | null>(null);
-  const toast = useToast();
-
   const emptyIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.12)");
   const emptyTitleColor = useColorModeValue("gray.800", "gray.100");
   const emptySubColor = useColorModeValue("gray.500", "gray.400");
@@ -158,13 +156,12 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
 
   const handleOpenBulkNavModal = () => {
     if (fundsWithCodes.length === 0) {
-      toast({
+      notify({
         title: "No Funds to Update",
         description:
           "No mutual funds with a positive balance and scheme code were found.",
         status: "warning",
         duration: 3000,
-        isClosable: true,
       });
       return;
     }
@@ -176,12 +173,11 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
   };
 
   const handleBulkNavSuccess = () => {
-    toast({
+    notify({
       title: "NAVs Updated",
       description: "Mutual fund NAVs have been successfully updated.",
       status: "success",
       duration: 3000,
-      isClosable: true,
     });
     setShowChangeModal(true);
   };

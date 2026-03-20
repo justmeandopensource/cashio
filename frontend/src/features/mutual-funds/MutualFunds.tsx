@@ -21,7 +21,6 @@ import {
   useBreakpointValue,
   Badge,
   Flex,
-  useToast,
   useColorModeValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
@@ -44,7 +43,7 @@ import { Building2, Trash2 } from "lucide-react";
 // API functions
 import { getAmcs, getMutualFunds, getAllMfTransactions, deleteMutualFund } from "./api";
 import { MutualFund } from "./types";
-import { toastDefaults } from "@/components/shared/utils";
+import { notify } from "@/components/shared/notify";
 
 const MotionBox = motion(Box);
 
@@ -71,7 +70,6 @@ interface MutualFundsProps {
 const MutualFunds: FC<MutualFundsProps> = (props) => {
   const { onAccountDataChange, filters, onFiltersChange } = props;
   const { ledgerId } = useLedgerStore();
-  const toast = useToast();
   const queryClient = useQueryClient();
   const [subTabIndex, setSubTabIndex] = useState(0);
   const [selectedFundFilter, setSelectedFundFilter] = useState<string>("all");
@@ -213,8 +211,7 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
       handleDataChange();
       onDeleteFundModalClose();
       setFundToDelete(null);
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Fund Closed",
         description: `"${fundName}" has been successfully closed.`,
         status: "success",
@@ -222,8 +219,7 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
     },
     onError: (error: any) => {
       const fundName = fundToDelete?.name || "Fund";
-      toast({
-        ...toastDefaults,
+      notify({
         title: "Delete Failed",
         description: `Failed to close "${fundName}". Please try again.`,
         status: "error",

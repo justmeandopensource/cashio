@@ -34,7 +34,6 @@ import {
   PopoverTrigger,
   PopoverContent,
   PopoverBody,
-  useToast,
 } from "@chakra-ui/react";
 import { Filter, X, RotateCcw, Search, ChevronDown, Check } from "lucide-react";
 import FormTags from "@/components/shared/FormTags";
@@ -42,7 +41,7 @@ import config from "@/config";
 import ChakraDatePicker from "@/components/shared/ChakraDatePicker";
 import { AxiosError } from "axios";
 import api from "@/lib/api";
-import { toastDefaults } from "@/components/shared/utils";
+import { notify } from "@/components/shared/notify";
 
 interface Tag {
   name: string;
@@ -107,8 +106,6 @@ const StoreLocationFilter: React.FC<StoreLocationFilterProps> = ({
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
-  const toast = useToast();
-
   // Dark-mode aware colors
   const suggestionBg = useColorModeValue("white", "gray.800");
   const suggestionBorderColor = useColorModeValue("gray.200", "gray.600");
@@ -138,10 +135,9 @@ const StoreLocationFilter: React.FC<StoreLocationFilterProps> = ({
           setShowSuggestions(true);
         } catch (error) {
           const apiError = error as AxiosError<{ detail?: string }>;
-          toast({
+          notify({
             description: apiError.response?.data?.detail || `Failed to fetch ${field} suggestions.`,
             status: "error",
-            ...toastDefaults,
           });
         }
       } else {
@@ -150,7 +146,7 @@ const StoreLocationFilter: React.FC<StoreLocationFilterProps> = ({
         setHighlightedIndex(-1);
       }
     },
-    [ledgerId, field, toast],
+    [ledgerId, field],
   );
 
   const debouncedFetchSuggestions = useMemo(

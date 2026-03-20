@@ -15,7 +15,6 @@ import {
   Text,
   VStack,
   HStack,
-  useToast,
   Box,
   useColorModeValue,
   InputGroup,
@@ -34,7 +33,7 @@ import ChakraDatePicker from "@components/shared/ChakraDatePicker";
 import api from "@/lib/api";
 import FormNotes from "../shared/FormNotes";
 import useLedgerStore from "../shared/store";
-import { toastDefaults } from "../shared/utils";
+import { notify } from "@/components/shared/notify";
 import {
   handleNumericInput,
   handleNumericPaste,
@@ -159,7 +158,6 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
 
   const isEditMode = !!editTransferData;
 
-  const toast = useToast();
   const queryClient = useQueryClient();
   const { ledgerId, currencySymbol } = useLedgerStore();
 
@@ -270,14 +268,13 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
     } catch (error) {
       const axiosError = error as AxiosError<{ detail: string }>;
       if (axiosError.response?.status !== 401) {
-        toast({
+        notify({
           description: axiosError.response?.data?.detail || "Failed to fetch ledgers.",
           status: "error",
-          ...toastDefaults,
         });
       }
     }
-  }, [toast]);
+  }, []);
 
   const fetchAccounts = useCallback(async () => {
     try {
@@ -286,14 +283,13 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
     } catch (error) {
       const axiosError = error as AxiosError<{ detail: string }>;
       if (axiosError.response?.status !== 401) {
-        toast({
+        notify({
           description: axiosError.response?.data?.detail || "Failed to fetch accounts.",
           status: "error",
-          ...toastDefaults,
         });
       }
     }
-  }, [ledgerId, toast]);
+  }, [ledgerId]);
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -302,14 +298,13 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
     } catch (error) {
       const axiosError = error as AxiosError<{ detail: string }>;
       if (axiosError.response?.status !== 401) {
-        toast({
+        notify({
           description: axiosError.response?.data?.detail || "Failed to fetch categories.",
           status: "error",
-          ...toastDefaults,
         });
       }
     }
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -530,15 +525,14 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
       } catch (error) {
         const axiosError = error as AxiosError<{ detail: string }>;
         if (axiosError.response?.status !== 401) {
-          toast({
+          notify({
             description: axiosError.response?.data?.detail || "Failed to fetch accounts.",
             status: "error",
-            ...toastDefaults,
-          });
+            });
         }
       }
     },
-    [toast],
+    [],
   );
 
   useEffect(() => {
@@ -714,12 +708,11 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
       }
       await queryClient.invalidateQueries({ queryKey: ["accounts"] });
 
-      toast({
+      notify({
         description: isEditMode
           ? "Transfer updated successfully."
           : "Transfer completed successfully.",
         status: "success",
-        ...toastDefaults,
       });
 
       onClose();
@@ -727,10 +720,9 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
     } catch (error) {
       const axiosError = error as AxiosError<{ detail: string }>;
       if (axiosError.response?.status !== 401) {
-        toast({
+        notify({
           description: axiosError.response?.data?.detail || (isEditMode ? "Update failed" : "Transfer failed"),
           status: "error",
-          ...toastDefaults,
         });
       }
     } finally {
