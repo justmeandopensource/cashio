@@ -417,6 +417,7 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
 
       <Modal
         isOpen={isDeleteFundModalOpen}
+        returnFocusOnClose={false}
         onClose={onDeleteFundModalClose}
         size={modalSize}
         motionPreset="slideInBottom"
@@ -459,6 +460,7 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
       {/* AMC Warning Dialog */}
       <Modal
         isOpen={isAmcWarningOpen}
+        returnFocusOnClose={false}
         onClose={() => setIsAmcWarningOpen(false)}
         size={{ base: "full", md: "lg" }}
       >

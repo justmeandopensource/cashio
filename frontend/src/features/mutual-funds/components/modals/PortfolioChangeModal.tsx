@@ -47,6 +47,7 @@ const PortfolioChangeModal: FC<PortfolioChangeModalProps> = ({
   return (
     <Modal
       isOpen={isOpen}
+      returnFocusOnClose={false}
       onClose={onClose}
       size="md"
       isCentered

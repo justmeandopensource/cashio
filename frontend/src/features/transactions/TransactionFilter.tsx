@@ -639,6 +639,7 @@ const TransactionFilter: React.FC<TransactionFilterProps> = ({
 
       <Modal
         isOpen={isOpen}
+        returnFocusOnClose={false}
         onClose={onClose}
         size={{ base: "full", sm: "xl" }}
         motionPreset="slideInBottom"

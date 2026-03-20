@@ -153,6 +153,7 @@ const CreateAmcModal: FC<CreateAmcModalProps> = ({
   return (
     <Modal
       isOpen={isOpen}
+      returnFocusOnClose={false}
       onClose={handleClose}
       size={{ base: "full", sm: "xl" }}
       motionPreset="slideInBottom"

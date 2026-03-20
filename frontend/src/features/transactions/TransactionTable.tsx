@@ -646,6 +646,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
       {/* Delete Confirmation Modal */}
       <Modal
         isOpen={isOpen}
+        returnFocusOnClose={false}
         onClose={onClose}
         size={modalSize}
         motionPreset="slideInBottom"

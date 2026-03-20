@@ -207,6 +207,7 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
   return (
     <Modal
       isOpen={isOpen}
+      returnFocusOnClose={false}
       onClose={handleClose}
       size={{ base: "full", sm: "lg" }}
       motionPreset="slideInBottom"

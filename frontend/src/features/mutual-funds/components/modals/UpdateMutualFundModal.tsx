@@ -283,6 +283,7 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
   return (
     <Modal
       isOpen={isOpen}
+      returnFocusOnClose={false}
       onClose={onClose}
       size={{ base: "full", sm: "xl" }}
       motionPreset="slideInBottom"

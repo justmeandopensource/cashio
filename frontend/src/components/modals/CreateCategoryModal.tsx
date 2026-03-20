@@ -183,6 +183,7 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
   return (
     <Modal
       isOpen={isOpen}
+      returnFocusOnClose={false}
       onClose={onClose}
       size={{ base: "full", sm: "xl" }}
       motionPreset="slideInBottom"

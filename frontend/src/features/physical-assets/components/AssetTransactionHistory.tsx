@@ -599,6 +599,7 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
         {/* Delete Confirmation Modal */}
         <Modal
           isOpen={isOpen}
+          returnFocusOnClose={false}
           onClose={onClose}
           size={isMobile ? "full" : "md"}
           motionPreset="slideInBottom"

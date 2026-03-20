@@ -116,6 +116,7 @@ const CreateLedgerModal: React.FC<CreateLedgerModalProps> = ({
   return (
     <Modal
       isOpen={isOpen}
+      returnFocusOnClose={false}
       onClose={onClose}
       size={{ base: "full", sm: "xl" }}
       motionPreset="slideInBottom"

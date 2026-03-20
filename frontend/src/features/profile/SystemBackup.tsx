@@ -803,7 +803,7 @@ const SystemBackup: React.FC = () => {
       </Box>
 
       {/* Restore Confirmation Modal */}
-      <Modal isOpen={isRestoreOpen} onClose={onRestoreClose} isCentered size="md">
+      <Modal isOpen={isRestoreOpen} returnFocusOnClose={false} onClose={onRestoreClose} isCentered size="md">
         <ModalOverlay bg={overlayBg} backdropFilter="blur(4px)" />
         <ModalContent
           bg={modalBg}
@@ -856,7 +856,7 @@ const SystemBackup: React.FC = () => {
       </Modal>
 
       {/* Upload and Restore Confirmation Modal */}
-      <Modal isOpen={isUploadRestoreOpen} onClose={onUploadRestoreClose} isCentered size="md">
+      <Modal isOpen={isUploadRestoreOpen} returnFocusOnClose={false} onClose={onUploadRestoreClose} isCentered size="md">
         <ModalOverlay bg={overlayBg} backdropFilter="blur(4px)" />
         <ModalContent
           bg={modalBg}

@@ -258,7 +258,7 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
   }, [isOpen, isCategoryOpen, isSubmitDisabled, onClose]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: "full", sm: "xl" }} motionPreset="slideInBottom">
+    <Modal isOpen={isOpen} returnFocusOnClose={false} onClose={onClose} size={{ base: "full", sm: "xl" }} motionPreset="slideInBottom">
       <ModalOverlay backdropFilter="blur(8px)" bg="blackAlpha.400" />
       <ModalContent
         bg={bgColor}

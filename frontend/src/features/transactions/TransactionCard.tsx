@@ -540,6 +540,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
       {/* Delete Confirmation Modal */}
       <Modal
         isOpen={isOpen}
+        returnFocusOnClose={false}
         onClose={onClose}
         size={modalSize}
         motionPreset="slideInBottom"
