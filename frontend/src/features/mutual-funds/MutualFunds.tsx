@@ -40,6 +40,9 @@ import UpdateNavModal from "./components/modals/UpdateNavModal";
 // Import icons
 import { Building2, Trash2 } from "lucide-react";
 
+// Import analytics drawer
+import FundAnalyticsDrawer from "./components/analytics/FundAnalyticsDrawer";
+
 // API functions
 import { getAmcs, getMutualFunds, getAllMfTransactions, deleteMutualFund } from "./api";
 import { MutualFund } from "./types";
@@ -111,7 +114,14 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
     onClose: onDeleteFundModalClose,
   } = useDisclosure();
 
+  const {
+    isOpen: isAnalyticsDrawerOpen,
+    onOpen: onAnalyticsDrawerOpen,
+    onClose: onAnalyticsDrawerClose,
+  } = useDisclosure();
+
   // State for modals
+  const [analyticsTargetFund, setAnalyticsTargetFund] = useState<MutualFund | null>(null);
   const [selectedFund, setSelectedFund] = useState<MutualFund | null>(null);
   const [selectedFundId, setSelectedFundId] = useState<number | undefined>();
   const [isAmcWarningOpen, setIsAmcWarningOpen] = useState<boolean>(false);
@@ -197,6 +207,11 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
       setFundToDelete({ id: fundId, name: fund.name });
       onDeleteFundModalOpen();
     }
+  };
+
+  const handleViewAnalytics = (fund: MutualFund) => {
+    setAnalyticsTargetFund(fund);
+    onAnalyticsDrawerOpen();
   };
 
   const handleViewTransactions = (fundId: number) => {
@@ -342,6 +357,7 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
                        onUpdateNav={handleUpdateNav}
                        onCloseFund={handleCloseFund}
                        onViewTransactions={handleViewTransactions}
+                       onViewAnalytics={handleViewAnalytics}
                       filters={filters}
                        onFiltersChange={onFiltersChange}
                      />
@@ -452,6 +468,16 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Fund Analytics Drawer */}
+      <FundAnalyticsDrawer
+        isOpen={isAnalyticsDrawerOpen}
+        onClose={() => {
+          onAnalyticsDrawerClose();
+          setAnalyticsTargetFund(null);
+        }}
+        fund={analyticsTargetFund}
+      />
 
       {/* AMC Warning Dialog */}
       <Modal

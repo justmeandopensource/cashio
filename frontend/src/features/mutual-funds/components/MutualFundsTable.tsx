@@ -43,6 +43,7 @@ import {
   List,
   Search,
   ChevronUp,
+  BarChart3,
 } from "lucide-react";
 import { MutualFund, Amc } from "../types";
 import {
@@ -77,6 +78,7 @@ interface ExpandedFundRowProps {
   onUpdateNav: (fund: MutualFund) => void;
   onCloseFund: (fundId: number) => void;
   onViewTransactions: (fundId: number) => void;
+  onViewAnalytics: (fund: MutualFund) => void;
 }
 /* eslint-enable no-unused-vars */
 
@@ -90,6 +92,7 @@ const ExpandedFundRow: React.FC<ExpandedFundRowProps & { positiveColor: string; 
   onUpdateNav,
   onCloseFund,
   onViewTransactions,
+  onViewAnalytics,
   positiveColor,
   negativeColor,
 }) => {
@@ -300,6 +303,15 @@ const ExpandedFundRow: React.FC<ExpandedFundRowProps & { positiveColor: string; 
            <Button
              size="xs"
              variant="outline"
+             colorScheme="purple"
+             leftIcon={<Icon as={BarChart3} boxSize={3} />}
+             onClick={() => onViewAnalytics(fund)}
+           >
+             Analytics
+           </Button>
+           <Button
+             size="xs"
+             variant="outline"
              leftIcon={<Icon as={RefreshCw} boxSize={3} />}
              onClick={() => onUpdateNav(fund)}
            >
@@ -330,6 +342,7 @@ interface MutualFundsTableProps {
   onUpdateNav: (fund: MutualFund) => void;
   onCloseFund: (fundId: number) => void;
   onViewTransactions: (fundId: number) => void;
+  onViewAnalytics: (fund: MutualFund) => void;
     filters: {
       selectedAmc: string;
       selectedOwner: string;
@@ -367,6 +380,7 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
   onUpdateNav,
   onCloseFund,
   onViewTransactions,
+  onViewAnalytics,
   filters,
   onFiltersChange,
 }) => {
@@ -677,6 +691,7 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
               onUpdateNav={onUpdateNav}
               onCloseFund={onCloseFund}
               onViewTransactions={onViewTransactions}
+              onViewAnalytics={onViewAnalytics}
               positiveColor={positiveColor}
               negativeColor={negativeColor}
             />
@@ -849,6 +864,7 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
               <IconButton size="sm" variant="ghost" icon={<Icon as={ShoppingCart} />} onClick={() => onTradeUnits(fund.mutual_fund_id)} aria-label="Buy/Sell" title="Buy/Sell" />
               <IconButton size="sm" variant="ghost" icon={<Icon as={ArrowRightLeft} />} onClick={() => onTransferUnits(fund.mutual_fund_id)} isDisabled={toNumber(fund.total_units) <= 0} aria-label="Transfer" title="Transfer" />
               <IconButton size="sm" variant="ghost" icon={<Icon as={List} />} onClick={() => onViewTransactions(fund.mutual_fund_id)} aria-label="Transactions" title="Transactions" />
+              <IconButton size="sm" variant="ghost" colorScheme="purple" icon={<Icon as={BarChart3} />} onClick={() => onViewAnalytics(fund)} aria-label="Analytics" title="Analytics" />
               <IconButton size="sm" variant="ghost" icon={<Icon as={RefreshCw} />} onClick={() => onUpdateNav(fund)} aria-label="Update NAV" title="Update NAV" />
               <IconButton size="sm" variant="ghost" colorScheme="red" icon={<Icon as={XCircle} />} onClick={() => onCloseFund(fund.mutual_fund_id)} isDisabled={toNumber(fund.total_units) > 0} aria-label="Close" title="Close" />
             </Flex>

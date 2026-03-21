@@ -55,6 +55,7 @@ Cashio is a full-stack personal finance management application supporting multi-
 - **XIRR** (Internal Rate of Return) calculated per fund
 - View full transaction history; edit/delete MF transactions
 - Filter by AMC, owner, asset class; hide zero-balance funds
+- **Fund Analytics Drawer** — per-fund deep-dive with performance summary cards, cost basis range indicator, NAV timeline with color-coded transaction markers, cumulative investment vs value area chart, and bidirectional transaction history bar chart
 - Charts: value by AMC, asset class allocation, yearly investments, corpus growth
 
 ---

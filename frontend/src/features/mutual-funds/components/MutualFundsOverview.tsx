@@ -53,6 +53,7 @@ interface MutualFundsOverviewProps {
   onUpdateNav: (fund: MutualFund) => void;
   onCloseFund: (fundId: number) => void;
   onViewTransactions: (fundId: number) => void;
+  onViewAnalytics: (fund: MutualFund) => void;
     filters: {
       selectedAmc: string;
       selectedOwner: string;
@@ -80,6 +81,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
   onUpdateNav,
   onCloseFund,
   onViewTransactions,
+  onViewAnalytics,
   filters,
   onFiltersChange,
 }) => {
@@ -573,6 +575,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                  onUpdateNav={onUpdateNav}
                  onCloseFund={onCloseFund}
                  onViewTransactions={onViewTransactions}
+                 onViewAnalytics={onViewAnalytics}
                  filters={filters}
                  onFiltersChange={onFiltersChange}
                />
