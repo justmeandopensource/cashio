@@ -506,7 +506,7 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
     !amount;
 
   // Keyboard shortcuts: Enter to submit, Escape closes dropdowns before the modal
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   useEffect(() => {
     if (!isOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {

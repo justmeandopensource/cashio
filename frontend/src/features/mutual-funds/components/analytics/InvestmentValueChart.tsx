@@ -29,15 +29,8 @@ const InvestmentValueChart: FC<InvestmentValueChartProps> = ({
   const tooltipBg = useColorModeValue("#FFFFFF", "#1A202C");
   const tooltipBorder = useColorModeValue("#E2E8F0", "#4A5568");
 
-  if (data.length === 0 || data[0].data.length === 0) {
-    return (
-      <Box textAlign="center" py={8}>
-        <Text color="gray.500">No transaction data available</Text>
-      </Box>
-    );
-  }
-
   const tickValues = useMemo(() => {
+    if (data.length === 0 || data[0].data.length === 0) return undefined;
     const xValues = data[0]?.data.map((d) => d.x) || [];
     if (xValues.length <= maxTicks) return undefined;
     const step = Math.ceil(xValues.length / maxTicks);
@@ -47,6 +40,14 @@ const InvestmentValueChart: FC<InvestmentValueChartProps> = ({
     }
     return ticks;
   }, [data, maxTicks]);
+
+  if (data.length === 0 || data[0].data.length === 0) {
+    return (
+      <Box textAlign="center" py={8}>
+        <Text color="gray.500">No transaction data available</Text>
+      </Box>
+    );
+  }
 
   const renderTooltip = ({ point }: { point: Point<ChartSeries> }) => {
     const dateStr = String(point.data.x);

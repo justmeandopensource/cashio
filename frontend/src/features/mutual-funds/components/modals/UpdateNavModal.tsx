@@ -76,6 +76,8 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = textColorSecondary;
   const modalIconColor = useColorModeValue("gray.400", "gray.500");
+  const footerBg = useColorModeValue("gray.50", "gray.900");
+
   const updateNavMutation = useMutation({
     mutationFn: (navData: { latest_nav: number }) =>
       updateMutualFundNav(Number(ledgerId), fund!.mutual_fund_id, navData),
@@ -538,7 +540,7 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
           display={{ base: "none", sm: "flex" }}
           px={8}
           py={6}
-          bg={useColorModeValue("gray.50", "gray.900")}
+          bg={footerBg}
           borderTop="1px solid"
           borderColor={borderColor}
         >

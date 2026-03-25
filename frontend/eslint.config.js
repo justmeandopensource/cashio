@@ -6,7 +6,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default [
-  { ignores: ["dist"] },
+  { ignores: ["dist", "pwa-assets.config.ts"] },
   // TS/TSX files configuration
   {
     files: ["**/*.{ts,tsx}"],
@@ -38,6 +38,11 @@ export default [
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },
+      ],
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
     },
   },

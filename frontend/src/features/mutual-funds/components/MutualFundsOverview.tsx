@@ -42,7 +42,7 @@ const floatKeyframes = keyframes`
   50% { transform: translateY(-6px); }
 `;
 
-/* eslint-disable no-unused-vars */
+ 
 interface MutualFundsOverviewProps {
   amcs: Amc[];
   mutualFunds: MutualFund[];
@@ -69,7 +69,7 @@ interface MutualFundsOverviewProps {
       searchTerm?: string;
     }) => void;
 }
-/* eslint-enable no-unused-vars */
+ 
 
 const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
   amcs,

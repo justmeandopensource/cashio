@@ -67,7 +67,7 @@ import MutualFundDetailsModal from "./modals/MutualFundDetailsModal";
 import UpdateMutualFundModal from "./modals/UpdateMutualFundModal";
 
 // Expanded Fund Row Component
-/* eslint-disable no-unused-vars */
+ 
 interface ExpandedFundRowProps {
   fund: MutualFund & { amc_name: string; invested: number; unrealized_pnl_percentage: number; xirr_percentage: number | null; cagr_percentage: number | null };
   currencySymbol: string | undefined;
@@ -80,7 +80,7 @@ interface ExpandedFundRowProps {
   onViewTransactions: (fundId: number) => void;
   onViewAnalytics: (fund: MutualFund) => void;
 }
-/* eslint-enable no-unused-vars */
+ 
 
 const ExpandedFundRow: React.FC<ExpandedFundRowProps & { positiveColor: string; negativeColor: string }> = ({
   fund,
@@ -333,7 +333,7 @@ const ExpandedFundRow: React.FC<ExpandedFundRowProps & { positiveColor: string; 
   );
 };
 
-/* eslint-disable no-unused-vars */
+ 
 interface MutualFundsTableProps {
   amcs: Amc[];
   mutualFunds: MutualFund[];
@@ -358,7 +358,7 @@ interface MutualFundsTableProps {
       searchTerm?: string;
     }) => void;
 }
-/* eslint-enable no-unused-vars */
+ 
 
 type SortField =
   | "amc"
@@ -701,7 +701,7 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
     );
   };
 
-  /* eslint-disable no-unused-vars */
+   
   const MobileFundCard: React.FC<{
     fund: typeof sortedFunds[0];
     onAmcClick: (amc: Amc) => void;
@@ -873,7 +873,7 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
       </Box>
     );
   };
-  /* eslint-enable no-unused-vars */
+   
 
   return (
     <Box>

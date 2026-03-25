@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import fs from "fs";
 import path from "path";
+import process from "process";
 import { fileURLToPath } from "url";
 
 const certFile = process.env.SSL_CERTFILE;

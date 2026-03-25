@@ -62,7 +62,7 @@ export const handleNumericInput = (
 // Function to handle paste events for numeric inputs
 export const handleNumericPaste = (  
   e: React.ClipboardEvent<HTMLInputElement>,
-  // eslint-disable-next-line no-unused-vars
+   
   onValue: (newValue: string) => void,
 ) => {
   e.preventDefault();

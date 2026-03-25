@@ -12,9 +12,9 @@ interface AccountMainTransactionsProps {
   onAddTransaction: () => void;
   onTransactionDeleted: () => void;
   onTransactionUpdated: () => void;
-   // eslint-disable-next-line no-unused-vars
+    
    onCopyTransaction: (transaction: any) => Promise<void>;
-  // eslint-disable-next-line no-unused-vars
+   
   onEditTransfer?: (transaction: any) => void;
 }
 

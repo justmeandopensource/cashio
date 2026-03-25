@@ -50,7 +50,7 @@ interface FormSplitsProps {
   amount: string;
   type: "income" | "expense";
   categories: Category[];
-  // eslint-disable-next-line no-unused-vars
+   
   setSplits: (splits: Split[]) => void;
   borderColor: string;
   bgColor: string;
@@ -294,7 +294,7 @@ const FormSplits: React.FC<FormSplitsProps> = ({
   };
 
   // Notes autocomplete helpers
-  // eslint-disable-next-line no-unused-vars
+   
   const debounce = <F extends (...args: any[]) => any>(func: F, delay: number) => {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     return function (this: any, ...args: Parameters<F>) {

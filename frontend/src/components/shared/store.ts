@@ -10,7 +10,7 @@ interface LedgerState {
   navServiceType: string | undefined;
   createdAt: string | undefined;
   updatedAt: string | undefined;
-  // eslint-disable-next-line no-unused-vars
+   
   setLedger: (id: string, name: string, symbol: string, description: string, notes: string, navServiceType: string, createdAt: string, updatedAt: string) => void;
   clearLedger: () => void;
 }

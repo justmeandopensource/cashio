@@ -93,6 +93,12 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
   const errorBorderLight = useColorModeValue("red.200", "red.700");
   const selectedCardBg = useColorModeValue("teal.50", "teal.900");
   const selectedCardBorder = useColorModeValue("teal.300", "teal.600");
+  const tealBadgeBg = useColorModeValue("teal.50", "teal.900");
+  const tealBadgeBorder = useColorModeValue("teal.200", "teal.700");
+  const redBadgeBg = useColorModeValue("red.50", "red.900");
+  const redBadgeBorder = useColorModeValue("red.200", "red.700");
+  const blueBadgeBg = useColorModeValue("blue.50", "blue.900");
+  const blueBadgeBorder = useColorModeValue("blue.200", "blue.700");
 
   useEffect(() => {
     if (isOpen) {
@@ -550,14 +556,14 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
             {results.size > 0 && (
               <Wrap spacing={2} justify="center">
                 <WrapItem>
-                  <HStack spacing={1} px={3} py={1} bg={useColorModeValue("teal.50", "teal.900")} borderRadius="full" border="1px solid" borderColor={useColorModeValue("teal.200", "teal.700")}>
+                  <HStack spacing={1} px={3} py={1} bg={tealBadgeBg} borderRadius="full" border="1px solid" borderColor={tealBadgeBorder}>
                     <Text fontSize="sm" fontWeight="bold" color={tealColor}>{successfulComparisons.length}</Text>
                     <Text fontSize="xs" color={subTextColor}>updates</Text>
                   </HStack>
                 </WrapItem>
                 {failedComparisons.length > 0 && (
                   <WrapItem>
-                    <HStack spacing={1} px={3} py={1} bg={useColorModeValue("red.50", "red.900")} borderRadius="full" border="1px solid" borderColor={useColorModeValue("red.200", "red.700")}>
+                    <HStack spacing={1} px={3} py={1} bg={redBadgeBg} borderRadius="full" border="1px solid" borderColor={redBadgeBorder}>
                       <Text fontSize="sm" fontWeight="bold" color={dangerColor}>{failedComparisons.length}</Text>
                       <Text fontSize="xs" color={subTextColor}>failed</Text>
                     </HStack>
@@ -565,7 +571,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
                 )}
                 {selectedFunds.size > 0 && (
                   <WrapItem>
-                    <HStack spacing={1} px={3} py={1} bg={useColorModeValue("blue.50", "blue.900")} borderRadius="full" border="1px solid" borderColor={useColorModeValue("blue.200", "blue.700")}>
+                    <HStack spacing={1} px={3} py={1} bg={blueBadgeBg} borderRadius="full" border="1px solid" borderColor={blueBadgeBorder}>
                       <Text fontSize="sm" fontWeight="bold" color={infoColor}>{selectedFunds.size}</Text>
                       <Text fontSize="xs" color={subTextColor}>selected</Text>
                     </HStack>

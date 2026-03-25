@@ -34,11 +34,11 @@ interface Account {
 }
 
 interface LedgerMainProps {
-  // eslint-disable-next-line no-unused-vars
+   
   onAddTransaction: (accountId?: string, transaction?: any) => void;
-  // eslint-disable-next-line no-unused-vars
+   
   onTransferFunds: (accountId?: string, transaction?: any) => void;
-  // eslint-disable-next-line no-unused-vars
+   
   onEditTransfer?: (transaction: any) => void;
 }
 

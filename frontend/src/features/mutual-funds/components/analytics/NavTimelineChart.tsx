@@ -103,7 +103,7 @@ const NavTimelineChart: FC<NavTimelineChartProps> = ({ data, currencySymbol }) =
   };
 
   const renderTooltip = useMemo(() => {
-    return ({ point }: { point: Point<ChartSeries> }) => {
+    const TooltipContent = ({ point }: { point: Point<ChartSeries> }) => {
       const dateStr = String(point.data.x);
       const original = data.find((d) => d.x === dateStr) || null;
       return (
@@ -144,6 +144,7 @@ const NavTimelineChart: FC<NavTimelineChartProps> = ({ data, currencySymbol }) =
         </Box>
       );
     };
+    return TooltipContent;
   }, [data, currencySymbol, tooltipBg, tooltipBorder]);
 
   if (data.length === 0) {

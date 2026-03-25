@@ -96,9 +96,9 @@ interface TransactionsProps {
   onAddTransaction: () => void;
   onTransactionDeleted?: () => void;
   onTransactionUpdated?: () => void;
-  // eslint-disable-next-line no-unused-vars
+   
   onCopyTransaction: (tx: Transaction) => Promise<void>;
-  // eslint-disable-next-line no-unused-vars
+   
   onEditTransfer?: (tx: Transaction) => void;
   shouldFetch?: boolean;
 }

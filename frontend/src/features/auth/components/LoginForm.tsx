@@ -23,13 +23,13 @@ import { LogIn, Eye, EyeOff, Mail, Lock } from "lucide-react";
 const MotionBox = motion(Box);
 
 interface LoginFormProps {
-  // eslint-disable-next-line no-unused-vars
+   
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   username: string;
-  // eslint-disable-next-line no-unused-vars
+   
   setUsername: (value: string) => void;
   password: string;
-  // eslint-disable-next-line no-unused-vars
+   
   setPassword: (value: string) => void;
   usernameInputRef: React.RefObject<HTMLInputElement>;
   isLoading?: boolean;

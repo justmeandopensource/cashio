@@ -88,21 +88,21 @@ interface Transaction {
 interface TransactionCardProps {
   transaction: Transaction;
   isExpanded: boolean;
-  // eslint-disable-next-line no-unused-vars
+   
   toggleExpand: (e: React.MouseEvent) => void;
-  // eslint-disable-next-line no-unused-vars
+   
   fetchSplitTransactions: (transactionId: string) => void;
   splitTransactions: SplitTransaction[];
-  // eslint-disable-next-line no-unused-vars
+   
   fetchTransferDetails: (transferId: string) => void;
   transferDetails?: TransferDetails;
   isSplitLoading: boolean;
   isTransferLoading: boolean;
-  // eslint-disable-next-line no-unused-vars
+   
   onDeleteTransaction: (transactionId: string) => Promise<void>;
-  // eslint-disable-next-line no-unused-vars
+   
   onEditTransaction: (transaction: Transaction) => void;
-  // eslint-disable-next-line no-unused-vars
+   
   onCopyTransaction: (transaction: Transaction) => void;
   showAccountName?: boolean;
 }

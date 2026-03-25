@@ -46,7 +46,7 @@ interface UpdateLedgerModalProps {
   currentDescription: string;
   currentNotes: string;
   currentNavServiceType: string;
-  // eslint-disable-next-line no-unused-vars
+   
   onUpdateCompleted: (data: {
     name: string;
     currency_symbol: string;

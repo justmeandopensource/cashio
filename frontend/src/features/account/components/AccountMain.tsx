@@ -22,12 +22,12 @@ interface Account {
 
 interface AccountMainProps {
   account: Account;
-   // eslint-disable-next-line no-unused-vars
+    
    onCopyTransaction: (transaction: any) => Promise<void>;
   onAddTransaction: () => void;
   onTransactionDeleted: () => void;
   onTransactionUpdated: () => void;
-  // eslint-disable-next-line no-unused-vars
+   
   onEditTransfer?: (transaction: any) => void;
 }
 

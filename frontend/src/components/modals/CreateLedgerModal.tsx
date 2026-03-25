@@ -37,15 +37,15 @@ interface CreateLedgerModalProps {
   isOpen: boolean;
   onClose: () => void;
   handleCreateLedger: (
-    // eslint-disable-next-line no-unused-vars
+     
     newLedgerName: string,
-    // eslint-disable-next-line no-unused-vars
+     
     currencySymbol: string,
-    // eslint-disable-next-line no-unused-vars
+     
     description: string,
-    // eslint-disable-next-line no-unused-vars
+     
     notes: string,
-    // eslint-disable-next-line no-unused-vars
+     
     navServiceType: string,
   ) => void;
 }

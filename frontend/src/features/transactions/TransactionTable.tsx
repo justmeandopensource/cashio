@@ -92,19 +92,19 @@ interface Transaction {
 
 interface TransactionTableProps {
   transactions: Transaction[];
-  // eslint-disable-next-line no-unused-vars
+   
   fetchSplitTransactions: (transactionId: string) => void;
-  // eslint-disable-next-line no-unused-vars
+   
   fetchTransferDetails: (transferId: string) => void;
   isSplitLoading: boolean;
   splitTransactions: SplitTransaction[];
   isTransferLoading: boolean;
   transferDetails?: TransferDetails;
-  // eslint-disable-next-line no-unused-vars
+   
   onDeleteTransaction: (transactionId: string) => Promise<void>;
-  // eslint-disable-next-line no-unused-vars
+   
   onEditTransaction: (transaction: Transaction) => void;
-  // eslint-disable-next-line no-unused-vars
+   
   onCopyTransaction: (transaction: Transaction) => void;
   showAccountName?: boolean;
 }

@@ -17,7 +17,7 @@ import { notify } from "@/components/shared/notify";
 interface FormNotesProps {
   ledgerId: string;
   notes: string;
-  // eslint-disable-next-line no-unused-vars
+   
   setNotes: (notes: string) => void;
   borderColor: string;
   onDropdownOpenChange?: (isOpen: boolean) => void;
@@ -51,7 +51,7 @@ const FormNotes: React.FC<FormNotesProps> = ({
     onDropdownOpenChangeRef.current?.(open);
   };
 
-  // eslint-disable-next-line no-unused-vars
+   
   const debounce = <F extends (...args: any[]) => any>(func: F, delay: number) => {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     return function (this: any, ...args: Parameters<F>) {

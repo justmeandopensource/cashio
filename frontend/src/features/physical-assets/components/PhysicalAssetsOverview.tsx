@@ -41,7 +41,7 @@ const floatKeyframes = keyframes`
   50% { transform: translateY(-6px); }
 `;
 
-/* eslint-disable no-unused-vars */
+ 
 interface PhysicalAssetsOverviewProps {
   assetTypes: AssetType[];
   physicalAssets: PhysicalAsset[];
@@ -61,7 +61,7 @@ interface PhysicalAssetsOverviewProps {
       searchTerm?: string;
     }) => void;
 }
-/* eslint-enable no-unused-vars */
+ 
 
 const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
   assetTypes,

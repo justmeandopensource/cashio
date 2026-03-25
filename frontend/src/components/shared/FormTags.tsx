@@ -22,7 +22,7 @@ interface TagItem {
 
 interface FormTagsProps {
   tags: (TagItem | string)[];
-  // eslint-disable-next-line no-unused-vars
+   
   setTags: (tags: TagItem[]) => void;
   borderColor: string;
   buttonColorScheme: string;
@@ -63,7 +63,7 @@ const FormTags: React.FC<FormTagsProps> = ({
     onShouldBlockSubmitRef.current?.(shouldBlock);
   };
 
-  // eslint-disable-next-line no-unused-vars
+   
   const debounce = <F extends (...args: any[]) => any>(func: F, delay: number) => {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     return function (this: any, ...args: Parameters<F>) {

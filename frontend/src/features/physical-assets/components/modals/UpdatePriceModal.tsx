@@ -63,6 +63,8 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
   const modalTitleColor = useColorModeValue("gray.900", "gray.50");
   const modalSubtitleColor = textColorSecondary;
   const modalIconColor = useColorModeValue("gray.400", "gray.500");
+  const cardBg = useColorModeValue("gray.50", "gray.900");
+  const footerBg = useColorModeValue("gray.50", "gray.900");
    const positiveBg = useColorModeValue("green.50", "green.900");
    const negativeBg = useColorModeValue("red.50", "red.900");
    const positiveBorder = useColorModeValue("green.200", "green.700");
@@ -242,7 +244,7 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
           <VStack spacing={{ base: 5, sm: 6 }} align="stretch" w="100%">
             {/* Current Price Info Card */}
             <Box
-              bg={useColorModeValue("gray.50", "gray.900")}
+              bg={cardBg}
               p={{ base: 4, sm: 6 }}
               borderRadius="xl"
               border="1px solid"
@@ -298,7 +300,7 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
 
             {/* Price Update Form */}
             <Box
-              bg={useColorModeValue("gray.50", "gray.900")}
+              bg={cardBg}
               p={{ base: 4, sm: 6 }}
               borderRadius="xl"
               border="1px solid"
@@ -480,7 +482,7 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
           display={{ base: "none", sm: "flex" }}
           px={8}
           py={6}
-          bg={useColorModeValue("gray.50", "gray.900")}
+          bg={footerBg}
           borderTop="1px solid"
           borderColor={borderColor}
         >

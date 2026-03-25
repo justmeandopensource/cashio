@@ -59,7 +59,7 @@ import { useAssetTransactions } from "../api";
 import useLedgerStore from "../../../components/shared/store";
 
 // Expanded Asset Row Component
-/* eslint-disable no-unused-vars */
+ 
 interface ExpandedAssetRowProps {
   asset: PhysicalAsset & { asset_type_name: string; invested: number; unrealized_pnl: number; unrealized_pnl_percentage: number };
   currencySymbol: string | undefined;
@@ -69,7 +69,7 @@ interface ExpandedAssetRowProps {
   onUpdatePrice: (asset: PhysicalAsset) => void;
   onViewTransactions: (asset: PhysicalAsset) => void;
 }
-/* eslint-enable no-unused-vars */
+ 
 
 const ExpandedAssetRow: React.FC<ExpandedAssetRowProps> = ({
   asset,
@@ -224,7 +224,7 @@ const ExpandedAssetRow: React.FC<ExpandedAssetRowProps> = ({
   );
 };
 
-/* eslint-disable no-unused-vars */
+ 
 interface PhysicalAssetsTableProps {
   assetTypes: AssetType[];
   physicalAssets: PhysicalAsset[];
@@ -242,7 +242,7 @@ interface PhysicalAssetsTableProps {
       searchTerm?: string;
     }) => void;
 }
-/* eslint-enable no-unused-vars */
+ 
 
 type SortField =
   | "asset_type"

@@ -108,8 +108,7 @@ const AssetTransactionNotesPopover: FC<AssetTransactionNotesPopoverProps> = ({
         status: "success",
       });
       onClose(); // Close popover on successful save
-    // eslint-disable-next-line no-unused-vars
-    } catch (error) {
+    } catch {
       notify({
         title: "Error",
         description: "Failed to update the note.",

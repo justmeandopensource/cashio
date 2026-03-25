@@ -196,7 +196,6 @@ const BuySellMfModal: FC<BuySellMfModalProps> = ({
       setErrors({});
       resetDropdownState();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, fund]);
 
   // Computed filtered accounts

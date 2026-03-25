@@ -132,6 +132,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
   const cardBg = useColorModeValue("white", "gray.900");
   const collapseButtonBg = useColorModeValue("gray.50", "gray.800");
   const collapseButtonHoverBg = useColorModeValue("gray.100", "gray.700");
+  const brandBgLight = useColorModeValue("brand.50", "rgba(53, 169, 163, 0.12)");
 
   const isActivePath = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -524,7 +525,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
               <Box
                 p={2}
                 borderRadius="xl"
-                bg={useColorModeValue("brand.50", "rgba(53, 169, 163, 0.12)")}
+                bg={brandBgLight}
               >
                 <Icon as={Wallet} boxSize={5} color={brandIconColor} flexShrink={0} />
               </Box>
@@ -691,7 +692,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
               <Box
                 p={2}
                 borderRadius="xl"
-                bg={useColorModeValue("brand.50", "rgba(53, 169, 163, 0.12)")}
+                bg={brandBgLight}
               >
                 <Icon as={Wallet} boxSize={5} color={brandIconColor} flexShrink={0} />
               </Box>

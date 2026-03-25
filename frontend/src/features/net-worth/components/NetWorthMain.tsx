@@ -36,7 +36,7 @@ interface NetWorthMainProps {
   isLoadingLedgers: boolean;
   ledgers: Ledger[];
   selectedLedgerId: string | undefined;
-  // eslint-disable-next-line no-unused-vars
+   
   onLedgerChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   onRefetch: () => void;
   currencySymbol: string;

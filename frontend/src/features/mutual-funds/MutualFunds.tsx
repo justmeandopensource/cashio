@@ -50,7 +50,7 @@ import { notify } from "@/components/shared/notify";
 
 const MotionBox = motion(Box);
 
-/* eslint-disable no-unused-vars */
+ 
 interface MutualFundsProps {
   onAccountDataChange?: () => void;
     filters: {
@@ -68,7 +68,7 @@ interface MutualFundsProps {
       searchTerm?: string;
     }) => void;
 }
-/* eslint-enable no-unused-vars */
+ 
 
 const MutualFunds: FC<MutualFundsProps> = (props) => {
   const { onAccountDataChange, filters, onFiltersChange } = props;

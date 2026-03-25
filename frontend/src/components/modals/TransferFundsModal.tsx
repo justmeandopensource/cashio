@@ -760,7 +760,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
     (isEditMode && !hasEditChanges);
 
   // Keyboard shortcuts: Enter to submit, Escape closes dropdowns before the modal
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   useEffect(() => {
     if (!isOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -1467,7 +1467,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                       />
                     </InputGroup>
                     <FormHelperText mt={2} color={helperTextColor}>
-                      Enter the amount in the destination ledger's currency
+                      Enter the amount in the destination ledger&apos;s currency
                     </FormHelperText>
                   </FormControl>
                 )}

@@ -407,7 +407,7 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
                   },
                 }}
                 tooltip={({ point }) => {
-                  const isIncome = point.serieId === "Income";
+                  const isIncome = point.seriesId === "Income";
                   const color = isIncome ? INCOME_COLOR : EXPENSE_COLOR;
                   return (
                     <Box
@@ -428,7 +428,7 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
                       <Flex align="center" gap={2}>
                         <Box w={2} h={2} borderRadius="full" bg={color} flexShrink={0} />
                         <Flex justify="space-between" flex={1} gap={3}>
-                          <Text color={textColor} opacity={0.7}>{point.serieId}</Text>
+                          <Text color={textColor} opacity={0.7}>{point.seriesId}</Text>
                           <Text fontWeight="600" color={color}>
                             {splitCurrencyForDisplay(Number(point.data.y), sym).main}
                             {splitCurrencyForDisplay(Number(point.data.y), sym).decimals}

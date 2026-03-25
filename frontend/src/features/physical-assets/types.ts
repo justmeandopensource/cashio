@@ -120,14 +120,14 @@ export interface BuySellAssetModalProps {
 export interface CreateAssetTypeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // eslint-disable-next-line no-unused-vars
+   
   onAssetTypeCreated: (_assetType: AssetType) => void;
 }
 
 export interface CreatePhysicalAssetModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // eslint-disable-next-line no-unused-vars
+   
   onAssetCreated: (_asset: PhysicalAsset) => void;
   assetTypeId?: number;
 }
@@ -136,7 +136,7 @@ export interface UpdatePriceModalProps {
   isOpen: boolean;
   onClose: () => void;
   asset?: PhysicalAsset;
-  // eslint-disable-next-line no-unused-vars
+   
   onPriceUpdated: (_asset: PhysicalAsset) => void;
 }
 

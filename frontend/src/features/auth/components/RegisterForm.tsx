@@ -25,19 +25,19 @@ import { UserPlus, Eye, EyeOff, Mail, Lock, User, AtSign } from "lucide-react";
 const MotionBox = motion(Box);
 
 interface RegisterFormProps {
-  // eslint-disable-next-line no-unused-vars
+   
   onSubmit: (event: React.FormEvent) => void;
   full_name: string;
-  // eslint-disable-next-line no-unused-vars
+   
   setFullName: (name: string) => void;
   username: string;
-  // eslint-disable-next-line no-unused-vars
+   
   setUsername: (username: string) => void;
   email: string;
-  // eslint-disable-next-line no-unused-vars
+   
   setEmail: (email: string) => void;
   password: string;
-  // eslint-disable-next-line no-unused-vars
+   
   setPassword: (password: string) => void;
   fullNameRef: RefObject<HTMLInputElement>;
 }
@@ -62,6 +62,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   fullNameRef,
 }) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const progressBg = useColorModeValue("gray.100", "gray.600");
   const [touched, setTouched] = useState<TouchedState>({
     full_name: false,
     username: false,
@@ -444,7 +445,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                         size="sm"
                         colorScheme={getStrengthColorScheme(passwordStrength)}
                         borderRadius="full"
-                        bg={useColorModeValue("gray.100", "gray.600")}
+                        bg={progressBg}
                       />
                     </Box>
                   )}

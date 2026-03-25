@@ -41,6 +41,7 @@ interface MutualFundsYearlyInvestmentsProps {
 interface ChartDatum {
   year: string;
   invested: number;
+  [key: string]: string | number;
 }
 
 const MutualFundsYearlyInvestments: React.FC<MutualFundsYearlyInvestmentsProps> = ({

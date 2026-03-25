@@ -6,7 +6,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 
 interface ChakraDatePickerProps {
   selected: Date | null;
-  // eslint-disable-next-line no-unused-vars
+   
   onChange: (date: Date | null) => void;
   placeholderText?: string;
   minDate?: Date | null;

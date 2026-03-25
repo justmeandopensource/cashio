@@ -28,7 +28,7 @@ import {
 import { useFundTransactions } from "../api";
 import useLedgerStore from "../../../components/shared/store";
 
-/* eslint-disable no-unused-vars */
+ 
 interface FundCardProps {
   fund: MutualFund;
   isExpanded: boolean;
@@ -38,7 +38,7 @@ interface FundCardProps {
   onUpdateNav: (fund: MutualFund) => void;
   onCloseFund: (fundId: number) => void;
 }
-/* eslint-enable no-unused-vars */
+ 
 
 const FundCard: FC<FundCardProps> = ({
   fund,
@@ -58,6 +58,7 @@ const FundCard: FC<FundCardProps> = ({
   const statColor = useColorModeValue("gray.600", "gray.300");
   const expandedSectionBorder = useColorModeValue("gray.100", "gray.600");
   const expandedBg = useColorModeValue("gray.50", "gray.750");
+  const hoverBorderColor = useColorModeValue("gray.200", "gray.600");
 
   const { unrealizedPnl, realizedPnl } = calculateFundPnL(fund);
   const totalUnits = Number(fund.total_units);
@@ -91,7 +92,7 @@ const FundCard: FC<FundCardProps> = ({
       onClick={handleCardClick}
       borderRadius="xl"
       overflow="hidden"
-      _hover={{ borderColor: isExpanded ? expandedBorder : useColorModeValue("gray.200", "gray.600") }}
+      _hover={{ borderColor: isExpanded ? expandedBorder : hoverBorderColor }}
       transition="all 0.2s ease"
     >
       <CardBody>

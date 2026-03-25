@@ -442,7 +442,6 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
   );
 
   // Line tooltip
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const lineTooltip = ({ point }: any) => (
     <Box bg={tooltipBg} border="1px solid" borderColor={tooltipBorder} borderRadius="md" px={3} py={2} boxShadow="lg" fontSize="xs" minW="160px" whiteSpace="nowrap">
       <Text fontWeight="bold" color={textColor} mb={0.5}>{formatPeriod(String(point.data.xFormatted))}</Text>

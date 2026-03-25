@@ -17,7 +17,7 @@ import { notify } from "@/components/shared/notify";
 interface FormLocationProps {
   ledgerId: string;
   location: string;
-  // eslint-disable-next-line no-unused-vars
+   
   setLocation: (location: string) => void;
   borderColor: string;
   onDropdownOpenChange?: (isOpen: boolean) => void;
@@ -51,7 +51,7 @@ const FormLocation: React.FC<FormLocationProps> = ({
     onDropdownOpenChangeRef.current?.(open);
   };
 
-  // eslint-disable-next-line no-unused-vars
+   
   const debounce = <F extends (...args: any[]) => any>(func: F, delay: number) => {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     return function (this: any, ...args: Parameters<F>) {

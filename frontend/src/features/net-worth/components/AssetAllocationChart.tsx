@@ -37,6 +37,7 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
   const primaryText = useColorModeValue("gray.800", "gray.100");
   const secondaryText = useColorModeValue("gray.500", "gray.400");
   const legendHoverBg = useColorModeValue("gray.50", "whiteAlpha.50");
+  const emptyStateBg = useColorModeValue("gray.50", "whiteAlpha.50");
   const sym = currencySymbol || "₹";
 
   const chartData = allocation.map((item) => ({
@@ -80,7 +81,7 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
             w="48px"
             h="48px"
             borderRadius="xl"
-            bg={useColorModeValue("gray.50", "whiteAlpha.50")}
+            bg={emptyStateBg}
             display="flex"
             alignItems="center"
             justifyContent="center"
