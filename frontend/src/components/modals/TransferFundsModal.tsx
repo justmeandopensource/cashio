@@ -83,6 +83,8 @@ interface TransferEditData {
   destination_transaction: any;
   source_account_name: string;
   destination_account_name: string;
+  source_ledger_id: number;
+  destination_ledger_id: number;
   source_ledger_name: string;
   destination_ledger_name: string;
 }

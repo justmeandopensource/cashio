@@ -1,6 +1,11 @@
 import { FC, useMemo } from "react";
 import { Box, Text, Flex, useColorModeValue, useBreakpointValue } from "@chakra-ui/react";
-import { ResponsiveLine, CustomLayerProps, Point } from "@nivo/line";
+import { ResponsiveLine, type LineCustomSvgLayerProps, type Point } from "@nivo/line";
+
+type ChartSeries = {
+  id: string;
+  data: { x: string; y: number }[];
+};
 import { NavTimelinePoint } from "./useFundAnalyticsData";
 
 const TYPE_COLORS: Record<string, string> = {
@@ -72,10 +77,10 @@ const NavTimelineChart: FC<NavTimelineChartProps> = ({ data, currencySymbol }) =
     return ticks;
   }, [data, maxTicks]);
 
-  const CustomPoints: FC<CustomLayerProps> = ({ points }) => {
+  const CustomPoints: FC<LineCustomSvgLayerProps<ChartSeries>> = ({ points }) => {
     return (
       <>
-        {points.map((point, i) => {
+        {points.map((point: { id: string; x: number; y: number }, i: number) => {
           const originalData = data[i];
           if (!originalData) return null;
           const color = TYPE_COLORS[originalData.type] || "#805AD5";
@@ -98,7 +103,7 @@ const NavTimelineChart: FC<NavTimelineChartProps> = ({ data, currencySymbol }) =
   };
 
   const renderTooltip = useMemo(() => {
-    return ({ point }: { point: Point }) => {
+    return ({ point }: { point: Point<ChartSeries> }) => {
       const dateStr = String(point.data.x);
       const original = data.find((d) => d.x === dateStr) || null;
       return (

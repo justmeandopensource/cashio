@@ -1,6 +1,11 @@
 import { FC, useMemo } from "react";
 import { Box, Text, useColorModeValue, useBreakpointValue } from "@chakra-ui/react";
-import { ResponsiveLine, Point } from "@nivo/line";
+import { ResponsiveLine, type Point } from "@nivo/line";
+
+type ChartSeries = {
+  id: string;
+  data: { x: string; y: number }[];
+};
 import { InvestmentValueSeries } from "./useFundAnalyticsData";
 
 const formatDateLabel = (dateStr: string): string => {
@@ -43,7 +48,7 @@ const InvestmentValueChart: FC<InvestmentValueChartProps> = ({
     return ticks;
   }, [data, maxTicks]);
 
-  const renderTooltip = ({ point }: { point: Point }) => {
+  const renderTooltip = ({ point }: { point: Point<ChartSeries> }) => {
     const dateStr = String(point.data.x);
     // Find the matching data from both series for this x value
     const investedPoint = data[0]?.data.find((d) => d.x === dateStr);

@@ -3,7 +3,6 @@ import {
   Box,
   Text,
   Flex,
-  HStack,
   VStack,
   SimpleGrid,
   Icon,

@@ -38,6 +38,7 @@ export interface TransactionBarDatum {
   sell: number;
   switchIn: number;
   switchOut: number;
+  [key: string]: string | number;
 }
 
 export interface CostBasisRange {
