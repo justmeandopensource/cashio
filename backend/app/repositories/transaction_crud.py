@@ -4,7 +4,7 @@ from typing import List, Optional
 from uuid import uuid4
 
 from fastapi import HTTPException, status
-from sqlalchemy import func
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.model import (Account, Category, Ledger, Tag, Transaction,
@@ -1047,10 +1047,10 @@ def get_transactions_stats_for_ledger_id(
     # Use a subquery to get the filtered transaction IDs, then aggregate
     filtered_ids = query.with_entities(Transaction.transaction_id).subquery()
     result = db.query(
-        func.count(filtered_ids.c.transaction_id).label("total_transactions"),
+        func.count(Transaction.transaction_id).label("total_transactions"),
         func.coalesce(func.sum(Transaction.credit), 0).label("total_credit"),
         func.coalesce(func.sum(Transaction.debit), 0).label("total_debit"),
-    ).filter(Transaction.transaction_id.in_(db.query(filtered_ids))).one()
+    ).filter(Transaction.transaction_id.in_(select(filtered_ids.c.transaction_id))).one()
 
     return {
         "total_transactions": result.total_transactions,
