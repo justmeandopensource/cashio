@@ -112,6 +112,9 @@ class PaginatedTransactionResponse(BaseModel):
     total_pages: int
     current_page: int
     per_page: int
+    total_credit: float = 0
+    total_debit: float = 0
+    net_amount: float = 0
 
 
 class TransferCreate(BaseModel):

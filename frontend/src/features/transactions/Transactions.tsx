@@ -21,6 +21,7 @@ import api from "@/lib/api";
 import TransactionCard from "./TransactionCard";
 import TransactionTable from "./TransactionTable";
 import TransactionFilter from "./TransactionFilter";
+import TransactionFilterStats from "./TransactionFilterStats";
 import { AxiosError } from "axios";
 import useLedgerStore from "@/components/shared/store";
 import { notify } from "@/components/shared/notify";
@@ -68,6 +69,17 @@ interface SplitTransaction {
   category_name: string | null;
   debit: number;
   notes?: string;
+}
+
+interface TransactionsResponse {
+  transactions: Transaction[];
+  total_transactions: number;
+  total_pages: number;
+  current_page: number;
+  per_page: number;
+  total_credit: number;
+  total_debit: number;
+  net_amount: number;
 }
 
 interface Filters {
@@ -190,7 +202,7 @@ const Transactions: React.FC<TransactionsProps> = ({
     data: transactionsData,
     isLoading: isTransactionsLoading,
     isError: isTransactionsError,
-  } = useQuery<Transaction[]>({
+  } = useQuery<TransactionsResponse>({
     queryKey: [
       "transactions",
       ledgerId,
@@ -224,7 +236,7 @@ const Transactions: React.FC<TransactionsProps> = ({
         total_pages: response.data.total_pages,
         current_page: response.data.current_page,
       });
-      return response.data.transactions;
+      return response.data;
     },
     enabled: shouldFetch,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -252,8 +264,8 @@ const Transactions: React.FC<TransactionsProps> = ({
       // Optimistically remove the transaction
       queryClient.setQueryData(
         ["transactions", ledgerId, accountId, pagination.current_page, { ...filters }],
-        (old: Transaction[] | undefined) =>
-          old ? old.filter((t) => t.transaction_id !== _transactionId) : old
+        (old: TransactionsResponse | undefined) =>
+          old ? { ...old, transactions: old.transactions.filter((t) => t.transaction_id !== _transactionId) } : old
       );
 
       // Return context with snapshotted value
@@ -400,7 +412,7 @@ const Transactions: React.FC<TransactionsProps> = ({
 
   return (
     <Box bg={boxBg} p={{ base: 2, lg: 6 }} borderRadius="lg">
-      {!shouldFetch || !transactionsData || transactionsData.length === 0 ? (
+      {!shouldFetch || !transactionsData || transactionsData.transactions.length === 0 ? (
         <MotionBox
           textAlign="center"
           py={{ base: 8, lg: 14 }}
@@ -473,6 +485,15 @@ const Transactions: React.FC<TransactionsProps> = ({
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
+          {hasActiveFilters && (
+            <TransactionFilterStats
+              totalTransactions={transactionsData.total_transactions}
+              totalCredit={transactionsData.total_credit}
+              totalDebit={transactionsData.total_debit}
+              netAmount={transactionsData.net_amount}
+            />
+          )}
+
           <Flex justify="space-between" align="center" mb={4}>
             <Flex align="center" gap={2}>
               <Icon as={AlignLeft} size={24} color="secondaryTextColor" />
@@ -492,7 +513,7 @@ const Transactions: React.FC<TransactionsProps> = ({
 
           <Box display={{ base: "none", lg: "block" }}>
             <TransactionTable
-              transactions={transactionsData}
+              transactions={transactionsData.transactions}
               fetchSplitTransactions={fetchSplitTransactions}
               fetchTransferDetails={fetchTransferDetails}
               isSplitLoading={isSplitLoading}
@@ -508,7 +529,7 @@ const Transactions: React.FC<TransactionsProps> = ({
 
            <Box display={{ base: "block", lg: "none" }}>
              <VStack spacing={1} align="stretch">
-               {transactionsData.map((transaction, index) => (
+               {transactionsData.transactions.map((transaction, index) => (
                  <MotionBox
                    key={transaction.transaction_id}
                    initial={{ opacity: 0, y: 8 }}

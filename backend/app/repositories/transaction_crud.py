@@ -4,6 +4,7 @@ from typing import List, Optional
 from uuid import uuid4
 
 from fastapi import HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.model import (Account, Category, Ledger, Tag, Transaction,
@@ -980,6 +981,82 @@ def get_transactions_count_for_ledger_id(
         query = query.filter(Transaction.location.ilike(f"%{location}%"))
 
     return query.count()
+
+
+def get_transactions_stats_for_ledger_id(
+    db: Session,
+    ledger_id: int,
+    account_id: Optional[int] = None,
+    from_date: Optional[datetime] = None,
+    to_date: Optional[datetime] = None,
+    category_id: Optional[int] = None,
+    tags: Optional[List[str]] = None,
+    tags_match: Optional[str] = "any",
+    search_text: Optional[str] = None,
+    transaction_type: Optional[str] = None,
+    store: Optional[str] = None,
+    location: Optional[str] = None,
+):
+    query = (
+        db.query(Transaction)
+        .join(Account, Transaction.account_id == Account.account_id)
+        .filter(Account.ledger_id == ledger_id)
+    )
+
+    if from_date:
+        query = query.filter(Transaction.date >= from_date)
+    if to_date:
+        query = query.filter(Transaction.date <= to_date)
+    if category_id:
+        split_with_category = (
+            db.query(TransactionSplit.transaction_id)
+            .filter(TransactionSplit.category_id == category_id)
+            .subquery()
+        )
+        query = query.filter(
+            (Transaction.category_id == category_id) |
+            Transaction.transaction_id.in_(split_with_category)
+        )
+    if tags:
+        if tags_match == "all":
+            for tag in tags:
+                query = query.filter(Transaction.tags.any(Tag.name == tag))
+        else:
+            query = query.filter(Transaction.tags.any(Tag.name.in_(tags)))
+    if search_text:
+        query = query.outerjoin(TransactionSplit, Transaction.transaction_id == TransactionSplit.transaction_id)
+        query = query.filter(
+            (Transaction.notes.ilike(f"%{search_text}%")) |
+            (TransactionSplit.notes.ilike(f"%{search_text}%"))
+        )
+        query = query.distinct(Transaction.transaction_id)
+    if transaction_type:
+        if transaction_type == "income":
+            query = query.filter(Transaction.credit > 0, Transaction.is_transfer == False)
+        elif transaction_type == "expense":
+            query = query.filter(Transaction.debit > 0, Transaction.is_transfer == False)
+        elif transaction_type == "transfer":
+            query = query.filter(Transaction.is_transfer == True)
+    if account_id:
+        query = query.filter(Transaction.account_id == account_id)
+    if store:
+        query = query.filter(Transaction.store.ilike(f"%{store}%"))
+    if location:
+        query = query.filter(Transaction.location.ilike(f"%{location}%"))
+
+    # Use a subquery to get the filtered transaction IDs, then aggregate
+    filtered_ids = query.with_entities(Transaction.transaction_id).subquery()
+    result = db.query(
+        func.count(filtered_ids.c.transaction_id).label("total_transactions"),
+        func.coalesce(func.sum(Transaction.credit), 0).label("total_credit"),
+        func.coalesce(func.sum(Transaction.debit), 0).label("total_debit"),
+    ).filter(Transaction.transaction_id.in_(db.query(filtered_ids))).one()
+
+    return {
+        "total_transactions": result.total_transactions,
+        "total_credit": float(result.total_credit),
+        "total_debit": float(result.total_debit),
+    }
 
 
 def update_transaction(

@@ -500,7 +500,7 @@ def get_transactions_by_ledger(
         location=location,
     )
 
-    total_transactions = transaction_crud.get_transactions_count_for_ledger_id(
+    stats = transaction_crud.get_transactions_stats_for_ledger_id(
         db=db,
         ledger_id=ledger_id,
         account_id=account_id,
@@ -515,6 +515,7 @@ def get_transactions_by_ledger(
         location=location,
     )
 
+    total_transactions = stats["total_transactions"]
     total_pages = (total_transactions + per_page - 1) // per_page
 
     return {
@@ -523,4 +524,7 @@ def get_transactions_by_ledger(
         "total_pages": total_pages,
         "current_page": page,
         "per_page": per_page,
+        "total_credit": stats["total_credit"],
+        "total_debit": stats["total_debit"],
+        "net_amount": stats["total_credit"] - stats["total_debit"],
     }
