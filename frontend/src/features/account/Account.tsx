@@ -171,6 +171,13 @@ const Account: React.FC = () => {
     await queryClient.invalidateQueries({
       queryKey: ["budgets"],
     });
+    // Invalidate account summary and insights
+    await queryClient.invalidateQueries({
+      queryKey: ["account-summary", accountId],
+    });
+    await queryClient.invalidateQueries({
+      queryKey: ["account-insights", accountId],
+    });
   };
 
   const handleTransactionDeleted = async (): Promise<void> => {

@@ -128,6 +128,50 @@ def get_owner_suggestions(
     )
 
 
+@account_Router.get(
+    "/{ledger_id}/account/{account_id}/summary",
+    response_model=account_schema.AccountSummary,
+    tags=["accounts"],
+)
+def get_account_summary(
+    ledger_id: int,
+    account_id: int,
+    user: user_schema.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
+    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
+        raise HTTPException(status_code=404, detail="Ledger not found")
+
+    account = account_crud.get_account_by_id(db=db, account_id=account_id)
+    if account is None or account.ledger_id != ledger_id:  # type: ignore
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    return account_crud.get_account_summary(db=db, account_id=account_id)
+
+
+@account_Router.get(
+    "/{ledger_id}/account/{account_id}/insights",
+    response_model=account_schema.AccountInsights,
+    tags=["accounts"],
+)
+def get_account_insights(
+    ledger_id: int,
+    account_id: int,
+    user: user_schema.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
+    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
+        raise HTTPException(status_code=404, detail="Ledger not found")
+
+    account = account_crud.get_account_by_id(db=db, account_id=account_id)
+    if account is None or account.ledger_id != ledger_id:  # type: ignore
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    return account_crud.get_account_insights(db=db, account_id=account_id)
+
+
 @account_Router.put(
     "/{ledger_id}/account/{account_id}/update",
     response_model=account_schema.Account,

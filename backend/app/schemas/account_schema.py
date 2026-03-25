@@ -70,3 +70,29 @@ class Account(BaseModel, str_strip_whitespace=True):
 
     class Config:
         from_attributes = True
+
+
+class AccountSummary(BaseModel):
+    total_credit: float
+    total_debit: float
+    transaction_count: int
+    first_transaction_date: Optional[datetime] = None
+    last_transaction_date: Optional[datetime] = None
+
+
+class AccountTrendItem(BaseModel):
+    period: str
+    income: float
+    expense: float
+
+
+class AccountCategoryItem(BaseModel):
+    name: str
+    amount: float
+    percentage: float
+
+
+class AccountInsights(BaseModel):
+    trend_data: list[AccountTrendItem]
+    top_categories: list[AccountCategoryItem]
+    summary: dict

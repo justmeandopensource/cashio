@@ -1,5 +1,7 @@
 import React from "react";
 import { Box } from "@chakra-ui/react";
+import AccountSummaryStats from "./AccountSummaryStats";
+import AccountInsights from "./AccountInsights";
 import AccountMainTransactions from "./AccountMainTransactions";
 
 interface Account {
@@ -39,6 +41,12 @@ const AccountMain: React.FC<AccountMainProps> = ({
 }) => {
   return (
     <Box>
+      {/* Account Summary Stats */}
+      <AccountSummaryStats accountId={account.account_id} />
+
+      {/* Account Insights */}
+      <AccountInsights accountId={account.account_id} />
+
       {/* Transactions Section */}
       <AccountMainTransactions
         account={account}
