@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from "react";
 import {
   Box,
+  VStack,
   HStack,
   Heading,
   Text,
   useColorModeValue,
+  useBreakpointValue,
   Flex,
   Icon,
   Center,
@@ -12,31 +14,34 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { ResponsiveLine } from "@nivo/line";
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, Activity, ChevronDown, Hash } from "lucide-react";
+import {
+  TrendingUp,
+  Activity,
+  ChevronDown,
+  ArrowUpRight,
+  ArrowDownRight,
+  Calendar,
+} from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
-import { formatNumberAsCurrency } from "@/components/shared/utils";
-import { splitCurrencyForDisplay } from "../../../mutual-funds/utils";
+import {
+  splitCurrencyForDisplay,
+  splitPercentageForDisplay,
+} from "../../../mutual-funds/utils";
 import { getMutualFunds, getCorpusGrowth } from "@/features/mutual-funds/api";
 import { MutualFund, YearlyInvestment } from "@/features/mutual-funds/types";
 
 const MotionBox = motion(Box);
 const MotionSimpleGrid = motion(SimpleGrid);
 
+const LINE_COLOR = "#38B2AC";
+
 interface MutualFundsCorpusProps {
   ledgerId?: string;
 }
 
-interface ChartData {
+interface ChartPoint {
   date: string;
   corpus: number;
 }
@@ -54,17 +59,25 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
   const primaryTextColor = useColorModeValue("gray.800", "gray.100");
   const secondaryTextColor = useColorModeValue("gray.600", "gray.300");
   const tertiaryTextColor = useColorModeValue("gray.500", "gray.400");
-  const gridStroke = useColorModeValue("#e2e8f0", "#2d3748");
-  const axisTickColor = useColorModeValue("#718096", "#cbd5e0");
-  const tooltipBg = useColorModeValue("#fff", "#2d3748");
   const columnHeaderColor = useColorModeValue("gray.400", "gray.500");
-  const positiveColor = useColorModeValue("green.500", "green.300");
   const iconColor = useColorModeValue("brand.500", "brand.300");
   const selectBg = useColorModeValue("gray.50", "gray.700");
+  const pnlPositiveColor = useColorModeValue("green.500", "green.300");
+  const pnlNegativeColor = useColorModeValue("red.500", "red.300");
+
+  // Nivo theme colors
+  const textColor = useColorModeValue("#4A5568", "#A0AEC0");
+  const gridColor = useColorModeValue("#E2E8F0", "#2D3748");
+  const tooltipBg = useColorModeValue("#FFFFFF", "#1A202C");
+  const tooltipBorder = useColorModeValue("#E2E8F0", "#4A5568");
 
   const portfolioAccentColor = useColorModeValue("green.400", "green.300");
-  const countAccentColor = useColorModeValue("blue.400", "blue.300");
+  const growthAccentColor = useColorModeValue("blue.400", "blue.300");
+  const peakAccentColor = useColorModeValue("purple.400", "purple.300");
+  const periodAccentColor = useColorModeValue("orange.400", "orange.300");
   const sym = currencySymbol || "₹";
+
+  const maxTicks = useBreakpointValue({ base: 5, md: 10 }) || 5;
 
   // Fetch mutual funds data
   const { data: mutualFunds = [], isLoading: isLoadingFunds } = useQuery<MutualFund[]>({
@@ -90,7 +103,7 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
   }, [mutualFunds]);
 
   // Process data for chart
-  const chartData: ChartData[] = useMemo(() => {
+  const chartPoints: ChartPoint[] = useMemo(() => {
     return corpusGrowth.map((item) => ({
       date: selectedGranularity === "monthly" && item.month
         ? `${item.year}-${item.month.toString().padStart(2, "0")}`
@@ -99,18 +112,47 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
     }));
   }, [corpusGrowth, selectedGranularity]);
 
-  const currentCorpus = chartData.length > 0 ? chartData[chartData.length - 1].corpus : 0;
-  const totalDataPoints = chartData.length;
+  // Nivo line data format
+  const lineData = useMemo(() => {
+    if (!chartPoints.length) return [];
+    return [{
+      id: "Corpus",
+      data: chartPoints.map(p => ({ x: p.date, y: p.corpus })),
+    }];
+  }, [chartPoints]);
 
-  // Format date for axis
+  // Tick values for x-axis
+  const tickValues = useMemo(() => {
+    const xValues = chartPoints.map(p => p.date);
+    if (xValues.length <= maxTicks) return undefined;
+    const step = Math.ceil(xValues.length / maxTicks);
+    const ticks = xValues.filter((_, i) => i % step === 0);
+    if (ticks[ticks.length - 1] !== xValues[xValues.length - 1]) {
+      ticks.push(xValues[xValues.length - 1]);
+    }
+    return ticks;
+  }, [chartPoints, maxTicks]);
+
+  // Format date for display
   const formatDate = (value: string) => {
     if (selectedGranularity === "monthly" && value.includes("-")) {
       const [year, month] = value.split("-");
       const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-      return `${monthNames[parseInt(month) - 1]} ${year}`;
+      return `${monthNames[parseInt(month) - 1]} '${year.slice(2)}`;
     }
     return value;
   };
+
+  // Aggregates
+  const currentCorpus = chartPoints.length > 0 ? chartPoints[chartPoints.length - 1].corpus : 0;
+  const startCorpus = chartPoints.length > 0 ? chartPoints[0].corpus : 0;
+  const corpusGrowthAmt = currentCorpus - startCorpus;
+  const corpusGrowthPct = startCorpus > 0 ? (corpusGrowthAmt / startCorpus) * 100 : 0;
+  const isGrowthPositive = corpusGrowthAmt >= 0;
+  const peakCorpus = chartPoints.length > 0
+    ? chartPoints.reduce((max, p) => p.corpus > max.corpus ? p : max, chartPoints[0])
+    : null;
+  const totalDataPoints = chartPoints.length;
 
   if (isLoading) {
     return (
@@ -136,23 +178,76 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
       accentColor: portfolioAccentColor,
       renderValue: () => (
         <HStack spacing={0} align="baseline">
-          <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={positiveColor} lineHeight="short" letterSpacing="-0.01em">
+          <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={pnlPositiveColor} lineHeight="short" letterSpacing="-0.01em">
             {splitCurrencyForDisplay(currentCorpus, sym).main}
           </Text>
-          <Text fontSize="xs" color={positiveColor} opacity={0.6}>
+          <Text fontSize="xs" color={pnlPositiveColor} opacity={0.6}>
             {splitCurrencyForDisplay(currentCorpus, sym).decimals}
           </Text>
         </HStack>
       ),
     },
     {
-      icon: Hash,
-      label: selectedGranularity === "monthly" ? "Months" : "Years",
-      accentColor: countAccentColor,
+      icon: isGrowthPositive ? ArrowUpRight : ArrowDownRight,
+      label: "Net Growth",
+      accentColor: isGrowthPositive ? growthAccentColor : pnlNegativeColor,
+      renderValue: () => {
+        const color = isGrowthPositive ? pnlPositiveColor : pnlNegativeColor;
+        const pctDisplay = splitPercentageForDisplay(corpusGrowthPct);
+        return (
+          <VStack spacing={0} align="flex-start">
+            <HStack spacing={0} align="baseline">
+              <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={color} lineHeight="short" letterSpacing="-0.01em">
+                {isGrowthPositive ? "+" : "-"}{splitCurrencyForDisplay(Math.abs(corpusGrowthAmt), sym).main}
+              </Text>
+              <Text fontSize="xs" color={color} opacity={0.6}>
+                {splitCurrencyForDisplay(Math.abs(corpusGrowthAmt), sym).decimals}
+              </Text>
+            </HStack>
+            <Text fontSize="2xs" color={color} fontWeight="600" opacity={0.8}>
+              {isGrowthPositive ? "+" : "-"}{pctDisplay.main}{pctDisplay.decimals} from start
+            </Text>
+          </VStack>
+        );
+      },
+    },
+    {
+      icon: Activity,
+      label: "Peak Corpus",
+      accentColor: peakAccentColor,
       renderValue: () => (
-        <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
-          {totalDataPoints}
-        </Text>
+        <VStack spacing={0} align="flex-start">
+          <HStack spacing={0} align="baseline">
+            <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
+              {peakCorpus ? splitCurrencyForDisplay(peakCorpus.corpus, sym).main : "—"}
+            </Text>
+            {peakCorpus && (
+              <Text fontSize="xs" color={primaryTextColor} opacity={0.6}>
+                {splitCurrencyForDisplay(peakCorpus.corpus, sym).decimals}
+              </Text>
+            )}
+          </HStack>
+          {peakCorpus && (
+            <Text fontSize="2xs" color={tertiaryTextColor} fontWeight="600">
+              {formatDate(peakCorpus.date)}
+            </Text>
+          )}
+        </VStack>
+      ),
+    },
+    {
+      icon: Calendar,
+      label: "Data Points",
+      accentColor: periodAccentColor,
+      renderValue: () => (
+        <HStack spacing={1.5} align="baseline">
+          <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
+            {totalDataPoints}
+          </Text>
+          <Text fontSize="2xs" color={tertiaryTextColor} fontWeight="500">
+            {selectedGranularity === "monthly" ? "months" : "years"}
+          </Text>
+        </HStack>
       ),
     },
   ];
@@ -219,9 +314,9 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
         </Flex>
 
         {/* Summary Cards */}
-        {chartData.length > 0 && (
+        {chartPoints.length > 0 && (
           <MotionSimpleGrid
-            columns={{ base: 1, sm: 2 }}
+            columns={{ base: 2, sm: 4 }}
             spacing={{ base: 3, md: 4 }}
             mb={{ base: 4, md: 5 }}
             initial="hidden"
@@ -263,48 +358,76 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
         )}
 
         {/* Chart Section */}
-        <Box height={{ base: "280px", md: "380px" }} width="full">
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={chartData}
-                margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
-              >
-                <defs>
-                  <linearGradient id="corpusGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#38B2AC" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#38B2AC" stopOpacity={0.1} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: "0.7rem", fill: axisTickColor }}
-                  interval={selectedGranularity === "monthly" ? Math.max(1, Math.floor(chartData.length / 10)) : "preserveStartEnd"}
-                  tickFormatter={formatDate}
-                />
-                <YAxis
-                  tick={{ fontSize: "0.7rem", fill: axisTickColor }}
-                  tickFormatter={(value) =>
-                    value === 0 ? "" : formatNumberAsCurrency(value, currencySymbol as string).replace("£", "")
-                  }
-                />
-                <Tooltip
-                  formatter={(value) => formatNumberAsCurrency(Number(value), currencySymbol as string)}
-                  labelFormatter={formatDate}
-                  contentStyle={{ backgroundColor: tooltipBg, borderRadius: "10px" }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="corpus"
-                  stroke="#38B2AC"
-                  fillOpacity={1}
-                  fill="url(#corpusGradient)"
-                  strokeWidth={2}
-                  name="Corpus"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+        <Box height={{ base: "300px", md: "380px" }} width="full">
+          {lineData.length > 0 ? (
+            <ResponsiveLine
+              data={lineData}
+              margin={{ top: 20, right: 20, bottom: 50, left: 60 }}
+              xScale={{ type: "point" }}
+              yScale={{ type: "linear", min: "auto", max: "auto", stacked: false }}
+              curve="monotoneX"
+              colors={[LINE_COLOR]}
+              lineWidth={2}
+              enablePoints={chartPoints.length <= 30}
+              pointSize={6}
+              pointColor={{ theme: "background" }}
+              pointBorderWidth={2}
+              pointBorderColor={LINE_COLOR}
+              enableArea={true}
+              areaOpacity={0.15}
+              useMesh={true}
+              enableCrosshair={true}
+              axisBottom={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: chartPoints.length > 8 ? -45 : 0,
+                format: formatDate,
+                tickValues,
+              }}
+              axisLeft={{
+                tickSize: 5,
+                tickPadding: 5,
+                format: (v) => {
+                  const abs = Math.abs(Number(v));
+                  if (abs >= 100000) return `${sym}${(abs / 100000).toFixed(1)}L`;
+                  if (abs >= 1000) return `${sym}${(abs / 1000).toFixed(1)}K`;
+                  if (abs === 0) return "";
+                  return `${sym}${v}`;
+                },
+              }}
+              tooltip={({ point }) => (
+                <Box
+                  bg={tooltipBg}
+                  border="1px solid"
+                  borderColor={tooltipBorder}
+                  borderRadius="md"
+                  px={3}
+                  py={2}
+                  boxShadow="lg"
+                  fontSize="xs"
+                  minW="160px"
+                  whiteSpace="nowrap"
+                >
+                  <Text fontWeight="bold" color={textColor} mb={0.5}>
+                    {formatDate(point.data.xFormatted as string)}
+                  </Text>
+                  <Flex justify="space-between" gap={4}>
+                    <Text color={textColor} opacity={0.7}>Corpus</Text>
+                    <Text fontWeight="600" color={LINE_COLOR}>
+                      {splitCurrencyForDisplay(Number(point.data.y), sym).main}
+                      {splitCurrencyForDisplay(Number(point.data.y), sym).decimals}
+                    </Text>
+                  </Flex>
+                </Box>
+              )}
+              theme={{
+                axis: {
+                  ticks: { text: { fill: textColor, fontSize: 11 } },
+                },
+                grid: { line: { stroke: gridColor, strokeWidth: 1 } },
+                crosshair: { line: { stroke: textColor, strokeWidth: 1, strokeOpacity: 0.35 } },
+              }}
+            />
           ) : (
             <Center height="full" borderRadius="lg" flexDirection="column" textAlign="center" p={6}>
               <Icon as={Activity} boxSize={6} color={tertiaryTextColor} mb={4} />

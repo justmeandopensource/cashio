@@ -13,16 +13,23 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-} from "recharts";
+import { ResponsivePie } from "@nivo/pie";
 import { useQuery } from "@tanstack/react-query";
-import { PieChart as PieChartIcon, TrendingUp, ChevronDown, Layers } from "lucide-react";
+import {
+  PieChart as PieChartIcon,
+  TrendingUp,
+  ChevronDown,
+  Layers,
+  Wallet,
+  ArrowUpRight,
+  ArrowDownRight,
+  X,
+} from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
-import { splitCurrencyForDisplay } from "../../../mutual-funds/utils";
+import {
+  splitCurrencyForDisplay,
+  splitPercentageForDisplay,
+} from "../../../mutual-funds/utils";
 import { getMutualFunds } from "@/features/mutual-funds/api";
 import { MutualFund } from "@/features/mutual-funds/types";
 
@@ -30,46 +37,78 @@ const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
 const MotionSimpleGrid = motion(SimpleGrid);
 
-// Each asset class has variations for sub-classes
-const ASSET_CLASS_COLORS: Record<string, string[]> = {
-  Equity: ["#10B981", "#34D399", "#6EE7B7"],
-  Debt: ["#3B82F6", "#60A5FA", "#93C5FD"],
-  Hybrid: ["#8B5CF6", "#A78BFA", "#C4B5FD"],
-  Others: ["#F59E0B", "#FBBF24", "#FCD34D"],
-  Gold: ["#EAB308", "#FACC15", "#FDE047"],
-  "Multi Asset": ["#6B7280", "#9CA3AF", "#D1D5DB"],
+const ASSET_CLASS_COLORS: Record<string, string> = {
+  Equity: "#10B981",
+  Debt: "#3B82F6",
+  Hybrid: "#8B5CF6",
+  Others: "#F59E0B",
+  Gold: "#EAB308",
+  "Multi Asset": "#6B7280",
 };
 
-const DEFAULT_COLORS = ["#EC4899", "#F472B6", "#F9A8D4", "#06B6D4", "#22D3EE", "#67E8F9"];
+const SUB_CLASS_COLORS: Record<string, string[]> = {
+  Equity: ["#34D399", "#6EE7B7", "#A7F3D0", "#059669", "#047857"],
+  Debt: ["#60A5FA", "#93C5FD", "#BFDBFE", "#2563EB", "#1D4ED8"],
+  Hybrid: ["#A78BFA", "#C4B5FD", "#DDD6FE", "#7C3AED", "#6D28D9"],
+  Others: ["#FBBF24", "#FCD34D", "#FDE68A", "#D97706", "#B45309"],
+  Gold: ["#FACC15", "#FDE047", "#FEF08A", "#CA8A04", "#A16207"],
+  "Multi Asset": ["#9CA3AF", "#D1D5DB", "#E5E7EB", "#4B5563", "#374151"],
+};
+
+const DEFAULT_COLOR = "#EC4899";
+const DEFAULT_SUB_COLORS = ["#F472B6", "#F9A8D4", "#FBCFE8", "#DB2777", "#BE185D"];
 
 interface MutualFundsAssetClassAllocationProps {
   ledgerId?: string;
 }
 
-interface AssetClassData {
+interface SubClassInfo {
   name: string;
   value: number;
+  invested: number;
+  pnl: number;
+  pnlPct: number;
   percentage: number;
   color: string;
-  subClasses: SubClassData[];
+  fundCount: number;
+  funds: FundInfo[];
 }
 
-interface SubClassData {
-  name: string;
+interface FundInfo {
+  fund: MutualFund;
+  currentValue: number;
+  invested: number;
+  pnl: number;
+  pnlPct: number;
+}
+
+interface AssetClassChartData {
+  id: string;
+  label: string;
   value: number;
   percentage: number;
-  displayName: string;
-  assetClass: string;
+  invested: number;
+  pnl: number;
+  pnlPct: number;
+  fundCount: number;
+  subClassCount: number;
   color: string;
+  subClasses: SubClassInfo[];
 }
+
+const toNumber = (value: number | string): number => {
+  if (value === undefined || value === null) return 0;
+  const num = typeof value === "string" ? parseFloat(value) : value;
+  return isNaN(num) ? 0 : num;
+};
 
 const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationProps> = ({
   ledgerId,
 }) => {
   const { currencySymbol } = useLedgerStore();
   const [selectedOwner, setSelectedOwner] = useState<string>("all");
-  const [hoveredClassIdx, setHoveredClassIdx] = useState<number | null>(null);
-  const [hoveredSubIdx, setHoveredSubIdx] = useState<number | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [selectedClassName, setSelectedClassName] = useState<string | null>(null);
 
   // Color modes
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
@@ -79,24 +118,15 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
   const tertiaryTextColor = useColorModeValue("gray.500", "gray.400");
   const legendHoverBg = useColorModeValue("gray.50", "whiteAlpha.50");
   const columnHeaderColor = useColorModeValue("gray.400", "gray.500");
-  const positiveColor = useColorModeValue("green.500", "green.300");
   const iconColor = useColorModeValue("brand.500", "brand.300");
   const selectBg = useColorModeValue("gray.50", "gray.700");
 
   const portfolioAccentColor = useColorModeValue("green.400", "green.300");
-  const classesAccentColor = useColorModeValue("blue.400", "blue.300");
-  const subClassesAccentColor = useColorModeValue("purple.400", "purple.300");
+  const investedAccentColor = useColorModeValue("blue.400", "blue.300");
+  const pnlPositiveColor = useColorModeValue("green.500", "green.300");
+  const pnlNegativeColor = useColorModeValue("red.500", "red.300");
+  const classesAccentColor = useColorModeValue("purple.400", "purple.300");
   const sym = currencySymbol || "₹";
-
-  // Get color for asset class
-  const getColorForAssetClass = (assetClass: string): string => {
-    return (ASSET_CLASS_COLORS[assetClass] ?? DEFAULT_COLORS)[0];
-  };
-
-  const getColorsForSubClasses = (assetClass: string): string[] => {
-    const colors = ASSET_CLASS_COLORS[assetClass] ?? DEFAULT_COLORS;
-    return colors.length > 1 ? colors.slice(1) : DEFAULT_COLORS.slice(1);
-  };
 
   // Fetch mutual funds data
   const { data: mutualFunds = [], isLoading, isError } = useQuery<MutualFund[]>({
@@ -106,10 +136,12 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
     staleTime: 1000 * 60 * 5,
   });
 
-  // Filter funds by owner
+  // Filter funds by owner, exclude 0-unit funds
   const filteredFunds = useMemo(() => {
-    if (selectedOwner === "all") return mutualFunds;
-    return mutualFunds.filter((fund) => fund.owner === selectedOwner);
+    const funds = selectedOwner === "all"
+      ? mutualFunds
+      : mutualFunds.filter((fund) => fund.owner === selectedOwner);
+    return funds.filter(fund => toNumber(fund.total_units) > 0);
   }, [mutualFunds, selectedOwner]);
 
   // Get unique owners
@@ -117,97 +149,106 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
     return Array.from(new Set(mutualFunds.map(fund => fund.owner).filter(Boolean))).sort();
   }, [mutualFunds]);
 
-  // Process data for concentric donut chart
-  const { assetClassData, subClassData } = useMemo(() => {
-    if (!filteredFunds.length) return { assetClassData: [], subClassData: [] };
+  // Process data for nivo pie chart with full financial info
+  const chartData: AssetClassChartData[] = useMemo(() => {
+    if (!filteredFunds.length) return [];
 
-    const assetClassGroups = new Map<string, { value: number; subClasses: Map<string, { value: number; funds: MutualFund[] }> }>();
+    const classGroups = new Map<string, {
+      value: number;
+      invested: number;
+      subClasses: Map<string, { value: number; invested: number; funds: MutualFund[] }>;
+    }>();
 
     filteredFunds.forEach((fund) => {
       const assetClass = fund.asset_class || "Others";
-      const assetSubClass = fund.asset_sub_class || "General";
-      const currentValue = Number(fund.current_value) || 0;
+      const subClass = fund.asset_sub_class || "General";
+      const currentValue = toNumber(fund.current_value);
+      const invested = toNumber(fund.total_invested_cash);
 
       if (currentValue > 0) {
-        if (!assetClassGroups.has(assetClass)) {
-          assetClassGroups.set(assetClass, { value: 0, subClasses: new Map() });
+        if (!classGroups.has(assetClass)) {
+          classGroups.set(assetClass, { value: 0, invested: 0, subClasses: new Map() });
         }
-        const classGroup = assetClassGroups.get(assetClass)!;
-        classGroup.value += currentValue;
+        const group = classGroups.get(assetClass)!;
+        group.value += currentValue;
+        group.invested += invested;
 
-        if (!classGroup.subClasses.has(assetSubClass)) {
-          classGroup.subClasses.set(assetSubClass, { value: 0, funds: [] });
+        if (!group.subClasses.has(subClass)) {
+          group.subClasses.set(subClass, { value: 0, invested: 0, funds: [] });
         }
-        const subClassGroup = classGroup.subClasses.get(assetSubClass)!;
-        subClassGroup.value += currentValue;
-        subClassGroup.funds.push(fund);
+        const subGroup = group.subClasses.get(subClass)!;
+        subGroup.value += currentValue;
+        subGroup.invested += invested;
+        subGroup.funds.push(fund);
       }
     });
 
-    const assetClasses: AssetClassData[] = Array.from(assetClassGroups.entries())
-      .map(([assetClass, classGroup]) => {
-        const subClasses: SubClassData[] = Array.from(classGroup.subClasses.entries())
-          .map(([subClass, subGroup]) => ({
-            name: subClass,
-            value: subGroup.value,
-            percentage: 0,
-            displayName: subClass,
-            assetClass,
-            color: getColorsForSubClasses(assetClass)[Array.from(classGroup.subClasses.keys()).indexOf(subClass) % getColorsForSubClasses(assetClass).length],
-          }))
+    const totalValue = Array.from(classGroups.values()).reduce((s, g) => s + g.value, 0);
+
+    return Array.from(classGroups.entries())
+      .map(([className, group]) => {
+        const classColor = ASSET_CLASS_COLORS[className] ?? DEFAULT_COLOR;
+        const subColors = SUB_CLASS_COLORS[className] ?? DEFAULT_SUB_COLORS;
+
+        const subClasses: SubClassInfo[] = Array.from(group.subClasses.entries())
+          .map(([subName, sub], subIdx) => {
+            const subPnl = sub.value - sub.invested;
+            const subPnlPct = sub.invested > 0 ? (subPnl / sub.invested) * 100 : 0;
+            return {
+              name: subName,
+              value: sub.value,
+              invested: sub.invested,
+              pnl: subPnl,
+              pnlPct: subPnlPct,
+              percentage: group.value > 0 ? (sub.value / group.value) * 100 : 0,
+              color: subColors[subIdx % subColors.length],
+              fundCount: sub.funds.length,
+              funds: sub.funds
+                .map(fund => {
+                  const cv = toNumber(fund.current_value);
+                  const inv = toNumber(fund.total_invested_cash);
+                  const pnl = cv - inv;
+                  return { fund, currentValue: cv, invested: inv, pnl, pnlPct: inv > 0 ? (pnl / inv) * 100 : 0 };
+                })
+                .sort((a, b) => b.currentValue - a.currentValue),
+            };
+          })
           .sort((a, b) => b.value - a.value);
 
-        const classTotal = subClasses.reduce((sum, sub) => sum + sub.value, 0);
-        subClasses.forEach(sub => {
-          sub.percentage = classTotal > 0 ? (sub.value / classTotal) * 100 : 0;
-        });
+        const pnl = group.value - group.invested;
+        const pnlPct = group.invested > 0 ? (pnl / group.invested) * 100 : 0;
+        const fundCount = subClasses.reduce((s, sc) => s + sc.fundCount, 0);
 
         return {
-          name: assetClass,
-          value: classGroup.value,
-          percentage: 0,
-          color: getColorForAssetClass(assetClass),
+          id: className,
+          label: className,
+          value: group.value,
+          percentage: totalValue > 0 ? (group.value / totalValue) * 100 : 0,
+          invested: group.invested,
+          pnl,
+          pnlPct,
+          fundCount,
+          subClassCount: subClasses.length,
+          color: classColor,
           subClasses,
         };
       })
       .sort((a, b) => b.value - a.value);
-
-    const totalValue = assetClasses.reduce((sum, item) => sum + item.value, 0);
-    assetClasses.forEach(item => {
-      item.percentage = totalValue > 0 ? (item.value / totalValue) * 100 : 0;
-    });
-
-    const allSubClasses: SubClassData[] = assetClasses.flatMap(ac => ac.subClasses);
-
-    return { assetClassData: assetClasses, subClassData: allSubClasses };
   }, [filteredFunds]);
 
-  const totalPortfolioValue = assetClassData.reduce((sum, item) => sum + item.value, 0);
+  // Aggregates
+  const totalPortfolioValue = chartData.reduce((s, d) => s + d.value, 0);
+  const totalInvested = chartData.reduce((s, d) => s + d.invested, 0);
+  const totalPnl = totalPortfolioValue - totalInvested;
+  const totalPnlPct = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
+  const totalFundCount = chartData.reduce((s, d) => s + d.fundCount, 0);
+  const isPnlPositive = totalPnl >= 0;
 
-  // Determine what's hovered for the center label
-  const hoveredClassItem = hoveredClassIdx !== null ? assetClassData[hoveredClassIdx] ?? null : null;
-  const hoveredSubItem = hoveredSubIdx !== null ? subClassData[hoveredSubIdx] ?? null : null;
-  const activeItem = hoveredSubItem || hoveredClassItem;
-  const activeColor = hoveredSubItem
-    ? hoveredSubItem.color
-    : hoveredClassItem
-      ? hoveredClassItem.color
-      : null;
+  const hoveredItem = hoveredId ? chartData.find(d => d.id === hoveredId) ?? null : null;
+  const selectedClass = selectedClassName ? chartData.find(d => d.id === selectedClassName) ?? null : null;
 
-  // Determine opacity for class cells
-  const getClassCellOpacity = (idx: number) => {
-    if (hoveredClassIdx === null && hoveredSubIdx === null) return 1;
-    if (hoveredClassIdx === idx) return 1;
-    if (hoveredSubIdx !== null && subClassData[hoveredSubIdx]?.assetClass === assetClassData[idx]?.name) return 1;
-    return 0.25;
-  };
-
-  // Determine opacity for sub-class cells
-  const getSubCellOpacity = (idx: number) => {
-    if (hoveredClassIdx === null && hoveredSubIdx === null) return 1;
-    if (hoveredSubIdx === idx) return 1;
-    if (hoveredClassIdx !== null && subClassData[idx]?.assetClass === assetClassData[hoveredClassIdx]?.name) return 1;
-    return 0.25;
+  const handleClassClick = (className: string) => {
+    setSelectedClassName(prev => (prev === className ? null : className));
   };
 
   if (isLoading) {
@@ -230,37 +271,71 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
   const summaryCards = [
     {
       icon: TrendingUp,
-      label: "Total Portfolio Value",
+      label: "Current Value",
       accentColor: portfolioAccentColor,
       renderValue: () => (
         <HStack spacing={0} align="baseline">
-          <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={positiveColor} lineHeight="short" letterSpacing="-0.01em">
+          <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={pnlPositiveColor} lineHeight="short" letterSpacing="-0.01em">
             {splitCurrencyForDisplay(totalPortfolioValue, sym).main}
           </Text>
-          <Text fontSize="xs" color={positiveColor} opacity={0.6}>
+          <Text fontSize="xs" color={pnlPositiveColor} opacity={0.6}>
             {splitCurrencyForDisplay(totalPortfolioValue, sym).decimals}
           </Text>
         </HStack>
       ),
     },
     {
-      icon: PieChartIcon,
-      label: "Asset Classes",
-      accentColor: classesAccentColor,
+      icon: Wallet,
+      label: "Total Invested",
+      accentColor: investedAccentColor,
       renderValue: () => (
-        <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
-          {assetClassData.length}
-        </Text>
+        <HStack spacing={0} align="baseline">
+          <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
+            {splitCurrencyForDisplay(totalInvested, sym).main}
+          </Text>
+          <Text fontSize="xs" color={primaryTextColor} opacity={0.6}>
+            {splitCurrencyForDisplay(totalInvested, sym).decimals}
+          </Text>
+        </HStack>
       ),
     },
     {
+      icon: isPnlPositive ? ArrowUpRight : ArrowDownRight,
+      label: "Unrealized P&L",
+      accentColor: isPnlPositive ? portfolioAccentColor : pnlNegativeColor,
+      renderValue: () => {
+        const pnlColor = isPnlPositive ? pnlPositiveColor : pnlNegativeColor;
+        const pctDisplay = splitPercentageForDisplay(totalPnlPct);
+        return (
+          <VStack spacing={0} align="flex-start">
+            <HStack spacing={0} align="baseline">
+              <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={pnlColor} lineHeight="short" letterSpacing="-0.01em">
+                {isPnlPositive ? "+" : "-"}{splitCurrencyForDisplay(Math.abs(totalPnl), sym).main}
+              </Text>
+              <Text fontSize="xs" color={pnlColor} opacity={0.6}>
+                {splitCurrencyForDisplay(Math.abs(totalPnl), sym).decimals}
+              </Text>
+            </HStack>
+            <Text fontSize="2xs" color={pnlColor} fontWeight="600" opacity={0.8}>
+              {isPnlPositive ? "+" : "-"}{pctDisplay.main}{pctDisplay.decimals}
+            </Text>
+          </VStack>
+        );
+      },
+    },
+    {
       icon: Layers,
-      label: "Total Sub-Classes",
-      accentColor: subClassesAccentColor,
+      label: "Breakdown",
+      accentColor: classesAccentColor,
       renderValue: () => (
-        <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
-          {subClassData.length}
-        </Text>
+        <HStack spacing={1.5} align="baseline">
+          <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
+            {totalFundCount}
+          </Text>
+          <Text fontSize="2xs" color={tertiaryTextColor} fontWeight="500">
+            fund{totalFundCount !== 1 ? "s" : ""} across {chartData.length} class{chartData.length !== 1 ? "es" : ""}
+          </Text>
+        </HStack>
       ),
     },
   ];
@@ -309,9 +384,9 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
         </Flex>
 
         {/* Summary Cards */}
-        {assetClassData.length > 0 && (
+        {chartData.length > 0 && (
           <MotionSimpleGrid
-            columns={{ base: 1, sm: 3 }}
+            columns={{ base: 2, sm: 4 }}
             spacing={{ base: 3, md: 4 }}
             mb={{ base: 4, md: 5 }}
             initial="hidden"
@@ -354,81 +429,40 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
 
         {/* Chart + Legend */}
         <Box width="full">
-          {assetClassData.length > 0 ? (
+          {chartData.length > 0 ? (
             <Flex direction={{ base: "column", md: "row" }} align="center" gap={5}>
-              {/* Concentric donut chart */}
+              {/* Donut chart */}
               <Box
                 position="relative"
                 w={{ base: "280px", md: "full" }}
-                h={{ base: "280px", md: "380px" }}
-                minH="250px"
+                h={{ base: "280px", md: "360px" }}
+                minH="220px"
                 flex={{ md: 2 }}
               >
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    {/* Outer ring: sub-classes */}
-                    <Pie
-                      data={subClassData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius="65%"
-                      outerRadius="82%"
-                      dataKey="value"
-                      labelLine={false}
-                      label={false}
-                      onMouseEnter={(_, idx) => { setHoveredSubIdx(idx); setHoveredClassIdx(null); }}
-                      onMouseLeave={() => setHoveredSubIdx(null)}
-                      strokeWidth={0}
-                      cornerRadius={2}
-                      paddingAngle={1}
-                    >
-                      {subClassData.map((entry, idx) => (
-                        <Cell
-                          key={`subclass-${idx}`}
-                          fill={entry.color}
-                          opacity={getSubCellOpacity(idx)}
-                          style={{
-                            filter: hoveredSubIdx === idx ? "brightness(1.1)" : "none",
-                            transition: "opacity 0.2s ease, filter 0.2s ease",
-                          }}
-                        />
-                      ))}
-                    </Pie>
-                    {/* Inner ring: asset classes */}
-                    <Pie
-                      data={assetClassData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius="35%"
-                      outerRadius="60%"
-                      dataKey="value"
-                      label={false}
-                      onMouseEnter={(_, idx) => { setHoveredClassIdx(idx); setHoveredSubIdx(null); }}
-                      onMouseLeave={() => setHoveredClassIdx(null)}
-                      strokeWidth={0}
-                      cornerRadius={3}
-                      paddingAngle={2}
-                    >
-                      {assetClassData.map((_, idx) => (
-                        <Cell
-                          key={`class-${idx}`}
-                          fill={assetClassData[idx].color}
-                          opacity={getClassCellOpacity(idx)}
-                          style={{
-                            filter: hoveredClassIdx === idx ? "brightness(1.1)" : "none",
-                            transition: "opacity 0.2s ease, filter 0.2s ease",
-                          }}
-                        />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
+                <ResponsivePie
+                  data={chartData}
+                  margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+                  innerRadius={0.55}
+                  padAngle={2}
+                  cornerRadius={3}
+                  activeOuterRadiusOffset={8}
+                  colors={{ datum: "data.color" }}
+                  borderWidth={0}
+                  enableArcLinkLabels={false}
+                  enableArcLabels={false}
+                  motionConfig="gentle"
+                  transitionMode="pushIn"
+                  onMouseEnter={(datum) => setHoveredId(datum.id as string)}
+                  onMouseLeave={() => setHoveredId(null)}
+                  onClick={(datum) => handleClassClick(datum.id as string)}
+                  tooltip={() => <></>}
+                />
 
                 {/* Animated center label */}
                 <Center position="absolute" top={0} left={0} right={0} bottom={0} pointerEvents="none">
                   <AnimatePresence mode="wait">
                     <MotionFlex
-                      key={activeItem ? activeItem.name : "default"}
+                      key={hoveredId ?? "default"}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.9 }}
@@ -438,24 +472,22 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
                       textAlign="center"
                       px={3}
                     >
-                      {activeItem ? (
+                      {hoveredItem ? (
                         <>
-                          <Text fontSize="xs" fontWeight="600" color={activeColor!} lineHeight="short" mb={0.5}>
-                            {"displayName" in activeItem ? activeItem.displayName : activeItem.name}
+                          <Text fontSize="xs" fontWeight="600" color={hoveredItem.color} lineHeight="short" mb={0.5}>
+                            {hoveredItem.label}
                           </Text>
-                          {"assetClass" in activeItem && (
-                            <Text fontSize="2xs" color={tertiaryTextColor} fontWeight="500" mb={0.5}>
-                              {activeItem.assetClass}
-                            </Text>
-                          )}
                           <Text fontSize="md" fontWeight="800" color={primaryTextColor} lineHeight="1.1">
-                            {splitCurrencyForDisplay(activeItem.value, sym).main}
+                            {splitCurrencyForDisplay(hoveredItem.value, sym).main}
                             <Text as="span" fontSize="xs" opacity={0.5}>
-                              {splitCurrencyForDisplay(activeItem.value, sym).decimals}
+                              {splitCurrencyForDisplay(hoveredItem.value, sym).decimals}
                             </Text>
+                          </Text>
+                          <Text fontSize="2xs" fontWeight="600" color={hoveredItem.pnl >= 0 ? pnlPositiveColor : pnlNegativeColor} mt={0.5}>
+                            {hoveredItem.pnl >= 0 ? "+" : ""}{hoveredItem.pnlPct.toFixed(1)}%
                           </Text>
                           <Text fontSize="xs" fontWeight="600" color={tertiaryTextColor} mt={0.5}>
-                            {((activeItem.value / totalPortfolioValue) * 100).toFixed(1)}%
+                            {hoveredItem.percentage.toFixed(1)}%
                           </Text>
                         </>
                       ) : (
@@ -469,74 +501,64 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
                 </Center>
               </Box>
 
-              {/* Hierarchical Legend */}
+              {/* Legend */}
               <VStack
                 align="stretch" spacing={1}
                 w={{ base: "full", md: "auto" }}
-                minW={{ md: "200px" }}
+                minW={{ md: "240px" }}
                 flex={{ md: 1 }}
-                maxH={{ md: "380px" }}
+                maxH={{ md: "360px" }}
                 overflowY="auto"
               >
                 <Text fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={columnHeaderColor} mb={1} px={2.5}>
                   Asset Class Overview
                 </Text>
-                {assetClassData.map((assetClass, classIdx) => {
-                  const isClassActive = hoveredClassIdx === null && hoveredSubIdx === null
-                    ? true
-                    : hoveredClassIdx === classIdx
-                      || (hoveredSubIdx !== null && subClassData[hoveredSubIdx]?.assetClass === assetClass.name);
-
+                {chartData.map((item) => {
+                  const isActive = hoveredId === null || hoveredId === item.id;
+                  const itemPnlPositive = item.pnl >= 0;
                   return (
-                    <Box key={assetClass.name}>
-                      <Flex
-                        align="center" gap={2.5} px={2.5} py={2}
-                        borderRadius="lg"
-                        onMouseEnter={() => { setHoveredClassIdx(classIdx); setHoveredSubIdx(null); }}
-                        onMouseLeave={() => setHoveredClassIdx(null)}
-                        cursor="default"
-                        opacity={isClassActive ? 1 : 0.35}
-                        bg={hoveredClassIdx === classIdx ? legendHoverBg : "transparent"}
-                        transition="all 0.15s ease"
-                      >
-                        <Box w={3} h={3} borderRadius="sm" bg={assetClass.color} flexShrink={0} />
-                        <Box flex={1} minW={0}>
-                          <Text fontSize="xs" color={primaryTextColor} fontWeight="600" isTruncated>{assetClass.name}</Text>
-                          <Text fontSize="2xs" color={tertiaryTextColor} fontWeight="500">
-                            {assetClass.percentage.toFixed(1)}%
+                    <Flex
+                      key={item.id}
+                      direction="column"
+                      gap={0.5}
+                      px={2.5}
+                      py={2}
+                      borderRadius="lg"
+                      onMouseEnter={() => setHoveredId(item.id)}
+                      onMouseLeave={() => setHoveredId(null)}
+                      onClick={() => handleClassClick(item.id)}
+                      cursor="pointer"
+                      opacity={isActive ? 1 : 0.35}
+                      bg={hoveredId === item.id || selectedClassName === item.id ? legendHoverBg : "transparent"}
+                      borderLeft={selectedClassName === item.id ? "2px solid" : "2px solid transparent"}
+                      borderLeftColor={selectedClassName === item.id ? item.color : "transparent"}
+                      transition="all 0.15s ease"
+                    >
+                      {/* Row 1: color + name + value */}
+                      <Flex align="center" justify="space-between" gap={2}>
+                        <Flex align="center" gap={2} minW={0} flex={1}>
+                          <Box w={2.5} h={2.5} borderRadius="sm" bg={item.color} flexShrink={0} />
+                          <Text fontSize="xs" color={primaryTextColor} fontWeight="600" isTruncated>{item.label}</Text>
+                        </Flex>
+                        <HStack spacing={0} flexShrink={0}>
+                          <Text fontSize="xs" color={primaryTextColor} fontWeight="700">
+                            {splitCurrencyForDisplay(item.value, sym).main}
                           </Text>
-                        </Box>
+                          <Text fontSize="2xs" color={primaryTextColor} opacity={0.5}>
+                            {splitCurrencyForDisplay(item.value, sym).decimals}
+                          </Text>
+                        </HStack>
                       </Flex>
-                      {/* Sub-class items */}
-                      <VStack spacing={0} align="stretch" pl={5}>
-                        {assetClass.subClasses.map((sub) => {
-                          const subGlobalIdx = subClassData.indexOf(sub);
-                          const isSubActive = hoveredClassIdx === null && hoveredSubIdx === null
-                            ? true
-                            : hoveredSubIdx === subGlobalIdx
-                              || hoveredClassIdx === classIdx;
-
-                          return (
-                            <Flex
-                              key={sub.name}
-                              align="center" gap={2} px={2.5} py={1.5}
-                              borderRadius="md"
-                              onMouseEnter={() => { setHoveredSubIdx(subGlobalIdx); setHoveredClassIdx(null); }}
-                              onMouseLeave={() => setHoveredSubIdx(null)}
-                              cursor="default"
-                              opacity={isSubActive ? 1 : 0.35}
-                              bg={hoveredSubIdx === subGlobalIdx ? legendHoverBg : "transparent"}
-                              transition="all 0.15s ease"
-                            >
-                              <Box w={2} h={2} borderRadius="sm" bg={sub.color} flexShrink={0} />
-                              <Text fontSize="2xs" color={tertiaryTextColor} fontWeight="500" isTruncated>
-                                {sub.displayName}: {sub.percentage.toFixed(1)}%
-                              </Text>
-                            </Flex>
-                          );
-                        })}
-                      </VStack>
-                    </Box>
+                      {/* Row 2: allocation + sub-classes + P&L */}
+                      <Flex align="center" justify="space-between" pl={4.5}>
+                        <Text fontSize="2xs" color={tertiaryTextColor} fontWeight="500">
+                          {item.percentage.toFixed(1)}% · {item.fundCount} fund{item.fundCount !== 1 ? "s" : ""} · {item.subClassCount} sub
+                        </Text>
+                        <Text fontSize="2xs" fontWeight="600" color={itemPnlPositive ? pnlPositiveColor : pnlNegativeColor}>
+                          {itemPnlPositive ? "+" : ""}{item.pnlPct.toFixed(1)}%
+                        </Text>
+                      </Flex>
+                    </Flex>
                   );
                 })}
               </VStack>
@@ -548,6 +570,233 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
               <Text color={secondaryTextColor} fontSize="sm">Add mutual fund investments to see your asset class allocation.</Text>
             </Center>
           )}
+
+          {/* Drill-down panel */}
+          <AnimatePresence>
+            {selectedClass && (
+              <MotionBox
+                key={selectedClassName}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                overflow="hidden"
+              >
+                <Box
+                  mt={4}
+                  p={{ base: 3, md: 4 }}
+                  bg={cardBg}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={sectionBorderColor}
+                  position="relative"
+                >
+                  <Box position="absolute" top={0} left={0} right={0} h="2px" bg={selectedClass.color} opacity={0.7} borderTopRadius="xl" />
+
+                  {/* Panel header */}
+                  <Flex justify="space-between" align="center" mb={3}>
+                    <Flex align="center" gap={2}>
+                      <Box w={2.5} h={2.5} borderRadius="sm" bg={selectedClass.color} flexShrink={0} />
+                      <Text fontSize="sm" fontWeight="700" color={primaryTextColor}>
+                        {selectedClass.label}
+                      </Text>
+                      <Text fontSize="2xs" color={tertiaryTextColor} fontWeight="500">
+                        {selectedClass.fundCount} fund{selectedClass.fundCount !== 1 ? "s" : ""} · {selectedClass.subClassCount} sub-class{selectedClass.subClassCount !== 1 ? "es" : ""}
+                      </Text>
+                    </Flex>
+                    <Flex
+                      as="button"
+                      align="center"
+                      justify="center"
+                      w={6} h={6}
+                      borderRadius="md"
+                      cursor="pointer"
+                      onClick={() => setSelectedClassName(null)}
+                      _hover={{ bg: legendHoverBg }}
+                      transition="background 0.15s ease"
+                    >
+                      <Icon as={X} boxSize={3.5} color={tertiaryTextColor} />
+                    </Flex>
+                  </Flex>
+
+                  {/* Sub-class groups */}
+                  <VStack align="stretch" spacing={3}>
+                    {selectedClass.subClasses.map((subClass) => {
+                      const subPnlPositive = subClass.pnl >= 0;
+                      return (
+                        <Box
+                          key={subClass.name}
+                          border="1px solid"
+                          borderColor={sectionBorderColor}
+                          borderRadius="lg"
+                          overflow="hidden"
+                        >
+                          {/* Sub-class header */}
+                          <Flex
+                            align="center"
+                            justify="space-between"
+                            px={3}
+                            py={2}
+                            bg={legendHoverBg}
+                          >
+                            <Flex align="center" gap={2}>
+                              <Box w={2} h={2} borderRadius="sm" bg={subClass.color} flexShrink={0} />
+                              <Text fontSize="xs" fontWeight="700" color={primaryTextColor}>
+                                {subClass.name}
+                              </Text>
+                              <Text fontSize="2xs" color={tertiaryTextColor} fontWeight="500">
+                                {subClass.fundCount} fund{subClass.fundCount !== 1 ? "s" : ""} · {subClass.percentage.toFixed(1)}%
+                              </Text>
+                            </Flex>
+                            <Flex align="center" gap={3}>
+                              <HStack spacing={0}>
+                                <Text fontSize="xs" fontWeight="600" color={primaryTextColor}>
+                                  {splitCurrencyForDisplay(subClass.value, sym).main}
+                                </Text>
+                                <Text fontSize="2xs" color={primaryTextColor} opacity={0.5}>
+                                  {splitCurrencyForDisplay(subClass.value, sym).decimals}
+                                </Text>
+                              </HStack>
+                              <Text fontSize="2xs" fontWeight="600" color={subPnlPositive ? pnlPositiveColor : pnlNegativeColor}>
+                                {subPnlPositive ? "+" : ""}{subClass.pnlPct.toFixed(1)}%
+                              </Text>
+                            </Flex>
+                          </Flex>
+
+                          {/* Desktop column headers */}
+                          <Flex
+                            display={{ base: "none", md: "flex" }}
+                            px={3}
+                            pt={2}
+                            pb={1.5}
+                          >
+                            <Text flex={1} fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={columnHeaderColor}>
+                              Fund
+                            </Text>
+                            <Text w="100px" fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={columnHeaderColor} textAlign="right">
+                              Value
+                            </Text>
+                            <Text w="100px" fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={columnHeaderColor} textAlign="right">
+                              Invested
+                            </Text>
+                            <Text w="90px" fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={columnHeaderColor} textAlign="right">
+                              P&L
+                            </Text>
+                            <Text w="60px" fontSize="2xs" fontWeight="semibold" textTransform="uppercase" letterSpacing="wider" color={columnHeaderColor} textAlign="right">
+                              XIRR
+                            </Text>
+                          </Flex>
+
+                          {/* Fund rows */}
+                          {subClass.funds.map(({ fund, currentValue, invested, pnl, pnlPct }) => {
+                            const fundPnlPositive = pnl >= 0;
+                            const fundPnlColor = fundPnlPositive ? pnlPositiveColor : pnlNegativeColor;
+                            const xirr = fund.xirr_percentage;
+                            const hasXirr = xirr !== null && xirr !== undefined;
+
+                            return (
+                              <Box key={fund.mutual_fund_id}>
+                                {/* Desktop row */}
+                                <Flex
+                                  display={{ base: "none", md: "flex" }}
+                                  align="center"
+                                  px={3}
+                                  py={2}
+                                  _hover={{ bg: legendHoverBg }}
+                                  transition="background 0.15s ease"
+                                >
+                                  <Box flex={1} minW={0}>
+                                    <Text fontSize="xs" fontWeight="600" color={primaryTextColor} isTruncated>
+                                      {fund.name}
+                                    </Text>
+                                    {fund.owner && (
+                                      <Text fontSize="2xs" color={tertiaryTextColor}>{fund.owner}</Text>
+                                    )}
+                                  </Box>
+                                  <HStack w="100px" spacing={0} justify="flex-end">
+                                    <Text fontSize="xs" fontWeight="600" color={primaryTextColor}>
+                                      {splitCurrencyForDisplay(currentValue, sym).main}
+                                    </Text>
+                                    <Text fontSize="2xs" color={primaryTextColor} opacity={0.5}>
+                                      {splitCurrencyForDisplay(currentValue, sym).decimals}
+                                    </Text>
+                                  </HStack>
+                                  <HStack w="100px" spacing={0} justify="flex-end">
+                                    <Text fontSize="xs" color={tertiaryTextColor}>
+                                      {splitCurrencyForDisplay(invested, sym).main}
+                                    </Text>
+                                    <Text fontSize="2xs" color={tertiaryTextColor} opacity={0.5}>
+                                      {splitCurrencyForDisplay(invested, sym).decimals}
+                                    </Text>
+                                  </HStack>
+                                  <Box w="90px" textAlign="right">
+                                    <Text fontSize="xs" fontWeight="600" color={fundPnlColor}>
+                                      {fundPnlPositive ? "+" : ""}{pnlPct.toFixed(1)}%
+                                    </Text>
+                                  </Box>
+                                  <Box w="60px" textAlign="right">
+                                    <Text fontSize="xs" fontWeight="600" color={hasXirr ? (xirr >= 0 ? pnlPositiveColor : pnlNegativeColor) : tertiaryTextColor}>
+                                      {hasXirr ? `${xirr >= 0 ? "+" : ""}${xirr.toFixed(1)}%` : "—"}
+                                    </Text>
+                                  </Box>
+                                </Flex>
+
+                                {/* Mobile card */}
+                                <Box
+                                  display={{ base: "block", md: "none" }}
+                                  px={3}
+                                  py={2.5}
+                                  borderTop="1px solid"
+                                  borderColor={sectionBorderColor}
+                                >
+                                  <Flex justify="space-between" align="center" mb={1}>
+                                    <Text fontSize="xs" fontWeight="600" color={primaryTextColor} isTruncated flex={1}>
+                                      {fund.name}
+                                    </Text>
+                                    {fund.owner && (
+                                      <Text fontSize="2xs" color={tertiaryTextColor} ml={2}>{fund.owner}</Text>
+                                    )}
+                                  </Flex>
+                                  <SimpleGrid columns={2} spacing={1}>
+                                    <Box>
+                                      <Text fontSize="2xs" color={tertiaryTextColor}>Value</Text>
+                                      <Text fontSize="xs" fontWeight="600" color={primaryTextColor}>
+                                        {splitCurrencyForDisplay(currentValue, sym).main}
+                                        <Text as="span" fontSize="2xs" opacity={0.5}>{splitCurrencyForDisplay(currentValue, sym).decimals}</Text>
+                                      </Text>
+                                    </Box>
+                                    <Box>
+                                      <Text fontSize="2xs" color={tertiaryTextColor}>Invested</Text>
+                                      <Text fontSize="xs" color={tertiaryTextColor}>
+                                        {splitCurrencyForDisplay(invested, sym).main}
+                                        <Text as="span" fontSize="2xs" opacity={0.5}>{splitCurrencyForDisplay(invested, sym).decimals}</Text>
+                                      </Text>
+                                    </Box>
+                                    <Box>
+                                      <Text fontSize="2xs" color={tertiaryTextColor}>P&L</Text>
+                                      <Text fontSize="xs" fontWeight="600" color={fundPnlColor}>
+                                        {fundPnlPositive ? "+" : ""}{pnlPct.toFixed(1)}%
+                                      </Text>
+                                    </Box>
+                                    <Box>
+                                      <Text fontSize="2xs" color={tertiaryTextColor}>XIRR</Text>
+                                      <Text fontSize="xs" fontWeight="600" color={hasXirr ? (xirr >= 0 ? pnlPositiveColor : pnlNegativeColor) : tertiaryTextColor}>
+                                        {hasXirr ? `${xirr >= 0 ? "+" : ""}${xirr.toFixed(1)}%` : "—"}
+                                      </Text>
+                                    </Box>
+                                  </SimpleGrid>
+                                </Box>
+                              </Box>
+                            );
+                          })}
+                        </Box>
+                      );
+                    })}
+                  </VStack>
+                </Box>
+              </MotionBox>
+            )}
+          </AnimatePresence>
         </Box>
       </Box>
     </MotionBox>

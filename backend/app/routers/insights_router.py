@@ -39,6 +39,23 @@ class ExpenseByLocationResponse(BaseModel):
     total_expense: float
     period_type: str
 
+class CategoryExpenseData(BaseModel):
+    category: str
+    amount: float
+    percentage: float
+
+class StoreCategoryBreakdownResponse(BaseModel):
+    store: str
+    category_data: List[CategoryExpenseData]
+    total_expense: float
+    period_type: str
+
+class LocationCategoryBreakdownResponse(BaseModel):
+    location: str
+    category_data: List[CategoryExpenseData]
+    total_expense: float
+    period_type: str
+
 class ExpenseCalendarData(BaseModel):
     date: str
     amount: float
@@ -256,6 +273,76 @@ def get_expense_by_location_route(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error generating expense by location insights: {str(e)}",
+        )
+
+
+@insights_router.get(
+    "/expense-by-store/categories",
+    response_model=StoreCategoryBreakdownResponse,
+)
+def get_store_category_breakdown_route(
+    ledger_id: int,
+    store_name: str = Query(..., description="Store name to get category breakdown for"),
+    period_type: Literal[
+        "all_time", "last_12_months", "this_month"
+    ] = Query(
+        default="all_time",
+        description="Type of period to analyze: all_time, last_12_months, or this_month",
+    ),
+    user: user_schema.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.repositories.insights.store_location_crud import get_category_breakdown_by_store
+
+    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
+    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Ledger not found"
+        )
+
+    try:
+        return get_category_breakdown_by_store(
+            db=db, ledger_id=ledger_id, store_name=store_name, period_type=period_type
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating store category breakdown: {str(e)}",
+        )
+
+
+@insights_router.get(
+    "/expense-by-location/categories",
+    response_model=LocationCategoryBreakdownResponse,
+)
+def get_location_category_breakdown_route(
+    ledger_id: int,
+    location_name: str = Query(..., description="Location name to get category breakdown for"),
+    period_type: Literal[
+        "all_time", "last_12_months", "this_month"
+    ] = Query(
+        default="all_time",
+        description="Type of period to analyze: all_time, last_12_months, or this_month",
+    ),
+    user: user_schema.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.repositories.insights.store_location_crud import get_category_breakdown_by_location
+
+    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
+    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Ledger not found"
+        )
+
+    try:
+        return get_category_breakdown_by_location(
+            db=db, ledger_id=ledger_id, location_name=location_name, period_type=period_type
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating location category breakdown: {str(e)}",
         )
 
 

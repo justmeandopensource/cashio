@@ -189,3 +189,171 @@ def get_expense_by_location(
         "total_expense": total_amount,
         "period_type": period_type,
     }
+
+
+def get_category_breakdown_by_store(
+    db: Session,
+    ledger_id: int,
+    store_name: str,
+    period_type: Literal["all_time", "last_12_months", "this_month"],
+):
+    now = datetime.now()
+
+    if period_type == "this_month":
+        start_date = now.replace(day=1)
+    elif period_type == "last_12_months":
+        start_date = now - timedelta(days=365)
+    else:
+        start_date = None
+
+    # Regular transactions for this store
+    base_regular_query = db.query(Transaction, Category).join(
+        Account, Transaction.account_id == Account.account_id
+    ).join(
+        Category, Transaction.category_id == Category.category_id
+    ).filter(
+        Account.ledger_id == ledger_id,
+        Transaction.is_split == False,
+        Transaction.is_transfer == False,
+        Transaction.is_asset_transaction == False,
+        Transaction.is_mf_transaction == False,
+        Category.type == "expense",
+        Transaction.store == store_name,
+    )
+
+    # Split transactions for this store
+    base_split_query = db.query(TransactionSplit, Category).join(
+        Transaction, TransactionSplit.transaction_id == Transaction.transaction_id
+    ).join(
+        Account, Transaction.account_id == Account.account_id
+    ).join(
+        Category, TransactionSplit.category_id == Category.category_id
+    ).filter(
+        Account.ledger_id == ledger_id,
+        Transaction.is_split == True,
+        Transaction.is_transfer == False,
+        Transaction.is_asset_transaction == False,
+        Transaction.is_mf_transaction == False,
+        Category.type == "expense",
+        Transaction.store == store_name,
+    )
+
+    if start_date:
+        base_regular_query = base_regular_query.filter(Transaction.date >= start_date)
+        base_split_query = base_split_query.filter(Transaction.date >= start_date)
+
+    category_totals = {}
+
+    for transaction, category in base_regular_query.all():
+        amount = float(transaction.debit - transaction.credit)
+        if amount > 0:
+            cat_name = category.name
+            category_totals[cat_name] = category_totals.get(cat_name, 0) + amount
+
+    for split, category in base_split_query.all():
+        amount = float(split.debit - split.credit)
+        if amount > 0:
+            cat_name = category.name
+            category_totals[cat_name] = category_totals.get(cat_name, 0) + amount
+
+    category_data = [
+        {"category": cat, "amount": amount, "percentage": 0.0}
+        for cat, amount in category_totals.items()
+        if amount > 0
+    ]
+    category_data.sort(key=lambda x: x["amount"], reverse=True)
+
+    total_amount = sum(c["amount"] for c in category_data)
+    for c in category_data:
+        c["percentage"] = (c["amount"] / total_amount * 100) if total_amount > 0 else 0
+
+    return {
+        "store": store_name,
+        "category_data": category_data,
+        "total_expense": total_amount,
+        "period_type": period_type,
+    }
+
+
+def get_category_breakdown_by_location(
+    db: Session,
+    ledger_id: int,
+    location_name: str,
+    period_type: Literal["all_time", "last_12_months", "this_month"],
+):
+    now = datetime.now()
+
+    if period_type == "this_month":
+        start_date = now.replace(day=1)
+    elif period_type == "last_12_months":
+        start_date = now - timedelta(days=365)
+    else:
+        start_date = None
+
+    # Regular transactions for this location
+    base_regular_query = db.query(Transaction, Category).join(
+        Account, Transaction.account_id == Account.account_id
+    ).join(
+        Category, Transaction.category_id == Category.category_id
+    ).filter(
+        Account.ledger_id == ledger_id,
+        Transaction.is_split == False,
+        Transaction.is_transfer == False,
+        Transaction.is_asset_transaction == False,
+        Transaction.is_mf_transaction == False,
+        Category.type == "expense",
+        Transaction.location == location_name,
+    )
+
+    # Split transactions for this location
+    base_split_query = db.query(TransactionSplit, Category).join(
+        Transaction, TransactionSplit.transaction_id == Transaction.transaction_id
+    ).join(
+        Account, Transaction.account_id == Account.account_id
+    ).join(
+        Category, TransactionSplit.category_id == Category.category_id
+    ).filter(
+        Account.ledger_id == ledger_id,
+        Transaction.is_split == True,
+        Transaction.is_transfer == False,
+        Transaction.is_asset_transaction == False,
+        Transaction.is_mf_transaction == False,
+        Category.type == "expense",
+        Transaction.location == location_name,
+    )
+
+    if start_date:
+        base_regular_query = base_regular_query.filter(Transaction.date >= start_date)
+        base_split_query = base_split_query.filter(Transaction.date >= start_date)
+
+    category_totals = {}
+
+    for transaction, category in base_regular_query.all():
+        amount = float(transaction.debit - transaction.credit)
+        if amount > 0:
+            cat_name = category.name
+            category_totals[cat_name] = category_totals.get(cat_name, 0) + amount
+
+    for split, category in base_split_query.all():
+        amount = float(split.debit - split.credit)
+        if amount > 0:
+            cat_name = category.name
+            category_totals[cat_name] = category_totals.get(cat_name, 0) + amount
+
+    category_data = [
+        {"category": cat, "amount": amount, "percentage": 0.0}
+        for cat, amount in category_totals.items()
+        if amount > 0
+    ]
+    category_data.sort(key=lambda x: x["amount"], reverse=True)
+
+    total_amount = sum(c["amount"] for c in category_data)
+    for c in category_data:
+        c["percentage"] = (c["amount"] / total_amount * 100) if total_amount > 0 else 0
+
+    return {
+        "location": location_name,
+        "category_data": category_data,
+        "total_expense": total_amount,
+        "period_type": period_type,
+    }
