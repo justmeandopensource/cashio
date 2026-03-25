@@ -88,12 +88,6 @@ def create_transaction(db: Session, transaction: TransactionCreate):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Account not found"
         )
-    if account.is_group is True:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Operation can be performed on group accounts",
-        )
-
     credit = (
         Decimal(str(transaction.credit))
         if transaction.credit is not None
@@ -248,13 +242,6 @@ def create_transfer_transaction(db: Session, transfer: TransferCreate, user_id: 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Source or destination account does not belong to the user",
-        )
-
-    # Ensure the accounts are not group accounts
-    if source_account.is_group is True or destination_account.is_group is True:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Source or destination account is a group account. Operation cannot be performed on group accounts",
         )
 
     # Check if the accounts are in the same ledger
@@ -524,12 +511,6 @@ def update_transfer_transaction(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Source or destination account does not belong to the user",
-        )
-
-    if new_source_account.is_group or new_destination_account.is_group:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Operation cannot be performed on group accounts",
         )
 
     # Determine destination amount

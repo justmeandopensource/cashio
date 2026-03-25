@@ -44,11 +44,6 @@ def create_mf_transaction(
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND, detail="Account not found"
                 )
-            if account.is_group:  # type: ignore
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Cannot use group accounts for transactions. Please select a leaf account.",
-                )
             if transaction_data.amount_excluding_charges <= 0:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,

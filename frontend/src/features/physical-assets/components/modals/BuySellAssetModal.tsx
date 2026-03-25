@@ -56,7 +56,8 @@ interface Account {
   account_id: number;
   name: string;
   type: "asset" | "liability";
-  is_group: boolean;
+  subtype?: string;
+  owner?: string;
 }
 
 interface TransactionFormData {
@@ -111,7 +112,7 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
 
   const getFilteredAccounts = () => {
     if (!accounts) return [];
-    return accounts.filter((account) => !account.is_group);
+    return accounts;
   };
 
   const buyAssetMutation = useBuyAsset();

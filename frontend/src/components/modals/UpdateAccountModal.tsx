@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
-  Flex,
-  Spinner,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -19,7 +17,6 @@ import {
   VStack,
   HStack,
   useColorModeValue,
-  Text,
   Textarea,
   Icon,
 } from "@chakra-ui/react";
@@ -28,18 +25,16 @@ import api from "@/lib/api";
 import useLedgerStore from "../shared/store";
 import { Edit } from "lucide-react";
 import { notify } from "@/components/shared/notify";
-
-interface GroupAccount {
-  account_id: string | number;
-  name: string;
-}
+import FormOwnerSuggestionField from "@/components/shared/FormOwnerSuggestionField";
+import { getSubtypesForType } from "@/features/ledger/constants/accountSubtypes";
 
 interface Account {
   account_id: string | number;
   name: string;
   opening_balance: number;
-  parent_account_id: string | number | null;
   type: "asset" | "liability";
+  subtype: string;
+  owner?: string;
   ledger_id: string | number;
   description?: string;
   notes?: string;
@@ -56,8 +51,9 @@ interface UpdateAccountModalProps {
 
 interface UpdateAccountPayload {
   name?: string;
+  subtype?: string;
+  owner?: string;
   opening_balance?: number;
-  parent_account_id?: string | number | null;
   description?: string;
   notes?: string;
 }
@@ -74,21 +70,20 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
   const [openingBalance, setOpeningBalance] = useState<string>(
     account.opening_balance.toString(),
   );
-  const [parentAccountId, setParentAccountId] = useState<
-    string | number | null
-  >(account.parent_account_id);
+  const [subtype, setSubtype] = useState<string>(account.subtype);
+  const [owner, setOwner] = useState<string>(account.owner ?? "");
   const [description, setDescription] = useState<string>(
     currentDescription ?? account.description ?? ""
   );
   const [notes, setNotes] = useState<string>(
     currentNotes ?? account.notes ?? ""
   );
-  const [groupAccounts, setGroupAccounts] = useState<GroupAccount[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isFetchingGroups, setIsFetchingGroups] = useState<boolean>(false);
   const { currencySymbol } = useLedgerStore();
 
-  // Modern theme colors - matching other modals
+  const subtypeOptions = getSubtypesForType(account.type);
+
+  // Theme colors
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.100", "gray.700");
   const cardBg = useColorModeValue("gray.50", "gray.700");
@@ -101,76 +96,48 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
   const modalSubtitleColor = useColorModeValue("gray.500", "gray.400");
   const modalIconColor = useColorModeValue("gray.400", "gray.500");
 
-  // Handle Enter key press
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === "Enter") {
       handleSubmit();
     }
   };
 
-  // Fetch group accounts based on the account type
-  useEffect(() => {
-    const fetchGroupAccounts = async (): Promise<void> => {
-      try {
-        setIsFetchingGroups(true);
-        const response = await api.get<GroupAccount[]>(
-          `/ledger/${account.ledger_id}/accounts/group?account_type=${account.type}`,
-        );
-        setGroupAccounts(response.data);
-      } catch (error) {
-        const axiosError = error as AxiosError<{ detail: string }>;
-        if (axiosError.response?.status !== 401) {
-          notify({
-            description:
-              axiosError.response?.data?.detail ||
-              "Failed to fetch group accounts",
-            status: "error",
-              });
-        }
-      } finally {
-        setIsFetchingGroups(false);
-      }
-    };
-
-    if (isOpen) {
-      fetchGroupAccounts();
-    }
-  }, [isOpen, account.ledger_id, account.type]);
-
-  // Update state when props change
   React.useEffect(() => {
     setDescription(currentDescription ?? account.description ?? "");
     setNotes(currentNotes ?? account.notes ?? "");
   }, [currentDescription, currentNotes, account.description, account.notes]);
 
+  const hasChanges = () => {
+    return (
+      name !== account.name ||
+      parseFloat(openingBalance) !== account.opening_balance ||
+      subtype !== account.subtype ||
+      owner !== (account.owner ?? "") ||
+      description !== (currentDescription ?? account.description ?? "") ||
+      notes !== (currentNotes ?? account.notes ?? "")
+    );
+  };
+
   const handleSubmit = async (): Promise<void> => {
     if (!name) {
-      notify({
-        description: "Please enter an account name.",
-        status: "warning",
-      });
+      notify({ description: "Please enter an account name.", status: "warning" });
       return;
     }
 
     const payload: UpdateAccountPayload = {};
 
-    // Add only the fields that have changed
     if (name !== account.name) payload.name = name;
     if (parseFloat(openingBalance) !== account.opening_balance)
       payload.opening_balance = parseFloat(openingBalance) || 0;
-    if (parentAccountId !== account.parent_account_id)
-      payload.parent_account_id = parentAccountId;
+    if (subtype !== account.subtype) payload.subtype = subtype;
+    if (owner !== (account.owner ?? "")) payload.owner = owner.trim();
     if (description !== (currentDescription ?? account.description ?? ""))
       payload.description = description;
     if (notes !== (currentNotes ?? account.notes ?? ""))
       payload.notes = notes;
 
-    // If no fields have changed, show an error toast
     if (Object.keys(payload).length === 0) {
-      notify({
-        description: "Please update at least one field.",
-        status: "warning",
-      });
+      notify({ description: "Please update at least one field.", status: "warning" });
       return;
     }
 
@@ -180,20 +147,16 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
         `/ledger/${account.ledger_id}/account/${account.account_id}/update`,
         payload,
       );
-      notify({
-        description: "Account updated successfully",
-        status: "success",
-      });
+      notify({ description: "Account updated successfully", status: "success" });
       onClose();
       onUpdateCompleted();
     } catch (error) {
       const axiosError = error as AxiosError<{ detail: string }>;
       if (axiosError.response?.status !== 401) {
         notify({
-          description:
-            axiosError.response?.data?.detail || "Failed to update account",
+          description: axiosError.response?.data?.detail || "Failed to update account",
           status: "error",
-          });
+        });
       }
     } finally {
       setIsLoading(false);
@@ -222,12 +185,8 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
         display="flex"
         flexDirection="column"
       >
-        {/* Gradient accent line */}
-        <Box
-          h="3px"
-          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
-        />
-        {/* Flat header */}
+        <Box h="3px" bgGradient="linear(to-r, brand.400, brand.600, teal.300)" />
+
         <Box
           px={{ base: 4, sm: 8 }}
           py={5}
@@ -236,7 +195,6 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
         >
           <HStack spacing={3} align="flex-start">
             <Icon as={Edit} boxSize={5} mt="3px" color={modalIconColor} />
-
             <Box>
               <Box
                 fontSize="lg"
@@ -244,13 +202,9 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
                 letterSpacing="-0.02em"
                 color={modalTitleColor}
               >
-                Update {account.type === "asset" ? "Asset" : "Liability"}{" "}
-                Account
+                Update {account.type === "asset" ? "Asset" : "Liability"} Account
               </Box>
-              <Box
-                fontSize="sm"
-                color={modalSubtitleColor}
-              >
+              <Box fontSize="sm" color={modalSubtitleColor}>
                 Modify account details and settings
               </Box>
             </Box>
@@ -268,7 +222,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
           justifyContent={{ base: "space-between", sm: "flex-start" }}
         >
           <VStack spacing={{ base: 5, sm: 6 }} align="stretch" w="100%">
-            {/* Account Name Card */}
+            {/* Account Name */}
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
@@ -281,11 +235,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
                   Account Name
                 </FormLabel>
                 <Input
-                  placeholder={`e.g., ${
-                    account.type === "asset"
-                      ? "Cash, Bank Account"
-                      : "Credit Card, Mortgage"
-                  }`}
+                  placeholder={`e.g., ${account.type === "asset" ? "Cash, Bank Account" : "Credit Card, Mortgage"}`}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -307,7 +257,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
               </FormControl>
             </Box>
 
-            {/* Opening Balance Card */}
+            {/* Subtype + Opening Balance */}
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
@@ -315,43 +265,74 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
               border="1px solid"
               borderColor={borderColor}
             >
-              <FormControl>
-                <FormLabel fontWeight="semibold" mb={2}>
-                  Opening Balance
-                </FormLabel>
-                <InputGroup size="lg">
-                  <InputLeftAddon
-                    bg={inputBorderColor}
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    color={useColorModeValue("gray.600", "gray.200")}
-                    fontWeight="semibold"
-                  >
-                    {currencySymbol}
-                  </InputLeftAddon>
-                  <Input
-                    type="number"
-                    value={openingBalance}
-                    onChange={(e) => setOpeningBalance(e.target.value)}
-                    placeholder="0.00"
+              <VStack spacing={5} align="stretch">
+                <FormControl>
+                  <FormLabel fontWeight="semibold" mb={2}>
+                    Account Type
+                  </FormLabel>
+                  <Select
+                    value={subtype}
+                    onChange={(e) => setSubtype(e.target.value)}
                     borderWidth="2px"
                     borderColor={inputBorderColor}
                     bg={inputBg}
+                    size="lg"
                     borderRadius="lg"
                     _hover={{ borderColor: "brand.300" }}
                     _focus={{
                       borderColor: focusBorderColor,
                       boxShadow: `0 0 0 1px ${focusBorderColor}`,
                     }}
-                  />
-                </InputGroup>
-                <FormHelperText mt={2}>
-                  Starting balance for this account
-                </FormHelperText>
-              </FormControl>
+                  >
+                    {subtypeOptions.map(([value, meta]) => (
+                      <option key={value} value={value}>
+                        {meta.label}
+                      </option>
+                    ))}
+                  </Select>
+                  <FormHelperText mt={2}>
+                    Choose the category that best describes this account
+                  </FormHelperText>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel fontWeight="semibold" mb={2}>
+                    Opening Balance
+                  </FormLabel>
+                  <InputGroup size="lg">
+                    <InputLeftAddon
+                      bg={inputBorderColor}
+                      borderWidth="2px"
+                      borderColor={inputBorderColor}
+                      color={useColorModeValue("gray.600", "gray.200")}
+                      fontWeight="semibold"
+                    >
+                      {currencySymbol}
+                    </InputLeftAddon>
+                    <Input
+                      type="number"
+                      value={openingBalance}
+                      onChange={(e) => setOpeningBalance(e.target.value)}
+                      placeholder="0.00"
+                      borderWidth="2px"
+                      borderColor={inputBorderColor}
+                      bg={inputBg}
+                      borderRadius="lg"
+                      _hover={{ borderColor: "brand.300" }}
+                      _focus={{
+                        borderColor: focusBorderColor,
+                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                      }}
+                    />
+                  </InputGroup>
+                  <FormHelperText mt={2}>
+                    Starting balance for this account
+                  </FormHelperText>
+                </FormControl>
+              </VStack>
             </Box>
 
-            {/* Parent Account Card */}
+            {/* Owner */}
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
@@ -359,80 +340,19 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
               border="1px solid"
               borderColor={borderColor}
             >
-              <FormControl>
-                <FormLabel fontWeight="semibold" mb={2}>
-                  Parent Account (Optional)
-                </FormLabel>
-
-                {/* Show loading spinner while fetching group accounts */}
-                {isFetchingGroups && (
-                  <Flex justify="center" align="center" py={8}>
-                    <VStack spacing={3}>
-                      <Spinner size="md" color="teal.500" thickness="3px" />
-                      <Text fontSize="sm" color="gray.600">
-                        Loading parent accounts...
-                      </Text>
-                    </VStack>
-                  </Flex>
-                )}
-
-                {/* Show parent account selection if data is available */}
-                {groupAccounts.length > 0 && !isFetchingGroups && (
-                  <>
-                    <Select
-                      value={parentAccountId?.toString() || ""}
-                      onChange={(e) =>
-                        setParentAccountId(
-                          e.target.value ? e.target.value : null,
-                        )
-                      }
-                      placeholder="Select parent account"
-                      borderWidth="2px"
-                      borderColor={inputBorderColor}
-                      bg={inputBg}
-                      size="lg"
-                      borderRadius="lg"
-                      _hover={{ borderColor: "brand.300" }}
-                      _focus={{
-                        borderColor: focusBorderColor,
-                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                      }}
-                      data-testid="updateaccountmodal-parent-account-dropdown"
-                    >
-                      {groupAccounts.map((group) => (
-                        <option
-                          key={group.account_id.toString()}
-                          value={group.account_id.toString()}
-                        >
-                          {group.name}
-                        </option>
-                      ))}
-                    </Select>
-                    <FormHelperText mt={2}>
-                      Organize this account under an existing group
-                    </FormHelperText>
-                  </>
-                )}
-
-                {/* Show message if no group accounts are available */}
-                {groupAccounts.length === 0 && !isFetchingGroups && (
-                  <Box
-                    bg="blue.50"
-                    border="2px solid"
-                    borderColor="blue.200"
-                    borderRadius="md"
-                    p={4}
-                  >
-                    <Text color="blue.700" fontSize="sm" fontWeight="medium">
-                      No group accounts available. This account will remain at
-                      the root level.
-                    </Text>
-                  </Box>
-                )}
-              </FormControl>
+              <FormOwnerSuggestionField
+                suggestionsUrl={`/ledger/${account.ledger_id}/account/owner/suggestions`}
+                label="Owner (Optional)"
+                value={owner}
+                setValue={setOwner}
+                placeholder="e.g., John Doe"
+                helperText="Assign this account to a person for filtering"
+                borderColor={inputBorderColor}
+                inputBg={inputBg}
+              />
             </Box>
 
-            {/* Optional fields card */}
+            {/* Description + Notes */}
             <Box
               bg={cardBg}
               p={{ base: 4, sm: 6 }}
@@ -495,7 +415,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
             </Box>
           </VStack>
 
-          {/* Mobile-only action buttons that stay at bottom */}
+          {/* Mobile action buttons */}
           <Box display={{ base: "block", sm: "none" }} mt={6}>
             <Button
               onClick={handleSubmit}
@@ -507,14 +427,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
               fontWeight="bold"
               isLoading={isLoading}
               loadingText="Updating..."
-               isDisabled={
-                 !name ||
-                 (name === account.name &&
-                   openingBalance === account.opening_balance.toString() &&
-                   parentAccountId === account.parent_account_id &&
-                   description === (currentDescription ?? account.description ?? "") &&
-                   notes === (currentNotes ?? account.notes ?? ""))
-               }
+              isDisabled={!name || !hasChanges()}
             >
               Update Account
             </Button>
@@ -532,7 +445,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
           </Box>
         </ModalBody>
 
-        {/* Desktop-only footer */}
+        {/* Desktop footer */}
         <ModalFooter
           display={{ base: "none", sm: "flex" }}
           px={8}
@@ -551,14 +464,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
             fontWeight="bold"
             isLoading={isLoading}
             loadingText="Updating..."
-             isDisabled={
-               !name ||
-               (name === account.name &&
-                 openingBalance === account.opening_balance.toString() &&
-                 parentAccountId === account.parent_account_id &&
-                 description === (currentDescription ?? account.description ?? "") &&
-                 notes === (currentNotes ?? account.notes ?? ""))
-             }
+            isDisabled={!name || !hasChanges()}
           >
             Update Account
           </Button>

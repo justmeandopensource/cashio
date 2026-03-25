@@ -29,7 +29,8 @@ interface Account {
   account_id: string;
   name: string;
   type: "asset" | "liability";
-  is_group: boolean;
+  subtype: string;
+  owner?: string;
 }
 
 interface LedgerMainProps {
@@ -104,9 +105,7 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds, on
     });
   };
 
-  const accountsCount = accounts
-    ? accounts.filter((account) => !account.is_group).length
-    : 0;
+  const accountsCount = accounts ? accounts.length : 0;
 
   const handleTabChange = (index: number) => {
     setTabIndex(index);

@@ -9,6 +9,7 @@ import { Button, Box, Text, HStack, Badge, useColorModeValue } from "@chakra-ui/
 import { lazy, Suspense } from "react";
 import { Building, ShieldAlert, ChevronLeft, Plus, Repeat } from "lucide-react";
 import { formatNumberAsCurrency } from "@components/shared/utils";
+import { getSubtypeLabel } from "@/features/ledger/constants/accountSubtypes";
 import config from "@/config";
 import api from "@/lib/api";
 import useLedgerStore from "@/components/shared/store";
@@ -23,9 +24,10 @@ interface AccountData {
   account_id: string;
   name: string;
   type: "asset" | "liability";
+  subtype: string;
+  owner?: string;
   net_balance: number;
   opening_balance: number;
-  parent_account_id: string;
   balance: number;
   description?: string;
   notes?: string;
@@ -237,8 +239,12 @@ const Account: React.FC = () => {
           )
         }
         subtitle={
-          account?.description ||
-          `${account?.type === "asset" ? "Asset" : "Liability"} account`
+          account
+            ? [
+                getSubtypeLabel(account.subtype),
+                account.owner,
+              ].filter(Boolean).join(" \u00B7 ")
+            : ""
         }
         icon={account?.type === "asset" ? Building : ShieldAlert}
         backIcon={ChevronLeft}
@@ -337,6 +343,8 @@ const Account: React.FC = () => {
             onClose={onDetailsModalClose}
             accountName={account.name}
             accountType={account.type}
+            accountSubtype={account.subtype}
+            accountOwner={account.owner}
             openingBalance={account.opening_balance}
             netBalance={account.net_balance}
             currencySymbol={currencySymbol || "$"}

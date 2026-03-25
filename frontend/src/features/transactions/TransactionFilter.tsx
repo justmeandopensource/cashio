@@ -385,7 +385,7 @@ const TransactionFilter: React.FC<TransactionFilterProps> = ({
     queryFn: async () => {
       const token = localStorage.getItem("access_token");
       const response = await fetch(
-        `${config.apiBaseUrl}/ledger/${ledgerId}/accounts?ignore_group=true`,
+        `${config.apiBaseUrl}/ledger/${ledgerId}/accounts`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (!response.ok) throw new Error("Failed to fetch accounts");

@@ -1,15 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Flex,
   Box,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Text,
-  Button,
   Icon,
   useDisclosure,
   SimpleGrid,
@@ -17,18 +10,31 @@ import {
   IconButton,
   Heading,
   HStack,
+  Stack,
   Card,
   CardHeader,
-  Stack,
   Spinner,
   useColorModeValue,
+  Badge,
+  Select,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { Link as RouterLink } from "react-router-dom";
-import { Plus, Repeat, Eye, EyeOff, Building, ShieldAlert, ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
+import {
+  Plus,
+  Repeat,
+  Eye,
+  EyeOff,
+  Building,
+  ShieldAlert,
+  ChevronDown,
+  ChevronUp,
+  TrendingUp,
+} from "lucide-react";
 import CreateAccountModal from "@components/modals/CreateAccountModal";
 import useLedgerStore from "@/components/shared/store";
 import { splitCurrencyForDisplay } from "../../mutual-funds/utils";
+import { ACCOUNT_SUBTYPES, getSubtypeLabel, getSubtypeIcon } from "../constants/accountSubtypes";
 
 const MotionBox = motion(Box);
 const MotionSimpleGrid = motion(SimpleGrid);
@@ -37,9 +43,9 @@ interface Account {
   account_id: string;
   name: string;
   type: "asset" | "liability";
+  subtype: string;
+  owner?: string;
   net_balance?: number;
-  is_group: boolean;
-  parent_account_id?: string;
 }
 
 interface LedgerMainAccountsProps {
@@ -51,6 +57,14 @@ interface LedgerMainAccountsProps {
   onTransferFunds: (accountId?: string, transaction?: any) => void;
 }
 
+interface SubtypeGroup {
+  subtype: string;
+  label: string;
+  accounts: Account[];
+  totalBalance: number;
+  order: number;
+}
+
 const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
   accounts,
   isLoading,
@@ -59,110 +73,102 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { currencySymbol } = useLedgerStore();
-  const [accountType, setAccountType] = useState<"asset" | "liability" | null>(
-    null
-  );
-  const [parentAccountId, setParentAccountId] = useState<string | null>(null);
+  const [accountType, setAccountType] = useState<"asset" | "liability">("asset");
   const [showZeroBalanceAssets, setShowZeroBalanceAssets] = useState(false);
-  const [showZeroBalanceLiabilities, setShowZeroBalanceLiabilities] =
-    useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<{
-    [key: string]: boolean;
-  }>({});
+  const [showZeroBalanceLiabilities, setShowZeroBalanceLiabilities] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const [selectedOwner, setSelectedOwner] = useState<string>("all");
 
-  // Separate accounts into Assets and Liabilities
-  const assetAccounts = accounts.filter((account) => account.type === "asset");
-  const liabilityAccounts = accounts.filter(
-    (account) => account.type === "liability"
-  );
+  // Get unique owners for the filter dropdown
+  const owners = useMemo(() => {
+    const ownerSet = new Set<string>();
+    accounts.forEach((a) => {
+      if (a.owner) ownerSet.add(a.owner);
+    });
+    return Array.from(ownerSet).sort();
+  }, [accounts]);
 
-  // Toggle expansion of group accounts
-  const toggleGroupExpansion = (accountId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    setExpandedGroups((prev) => ({
-      ...prev,
-      [accountId]: !prev[accountId],
-    }));
+  // Filter accounts by owner
+  const filteredAccounts = useMemo(() => {
+    if (selectedOwner === "all") return accounts;
+    return accounts.filter((a) => a.owner === selectedOwner);
+  }, [accounts, selectedOwner]);
+
+  // Helper to get owner initials
+  const getOwnerInitials = (owner: string | null | undefined): string => {
+    if (!owner) return "";
+    return owner.split(" ").map((word) => word.charAt(0).toUpperCase()).join("");
   };
 
-  // Color variables for balance display
+  // Separate into assets and liabilities
+  const assetAccounts = filteredAccounts.filter((a) => a.type === "asset");
+  const liabilityAccounts = filteredAccounts.filter((a) => a.type === "liability");
+
+  // Group accounts by subtype
+  const groupBySubtype = (accts: Account[]): SubtypeGroup[] => {
+    const groups: Record<string, Account[]> = {};
+    accts.forEach((a) => {
+      const key = a.subtype || "other";
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(a);
+    });
+
+    return Object.entries(groups)
+      .map(([subtype, groupAccounts]) => ({
+        subtype,
+        label: getSubtypeLabel(subtype),
+        accounts: groupAccounts.sort((a, b) => a.name.localeCompare(b.name)),
+        totalBalance: groupAccounts.reduce((sum, a) => sum + (a.net_balance || 0), 0),
+        order: ACCOUNT_SUBTYPES[subtype]?.order ?? 99,
+      }))
+      .sort((a, b) => a.order - b.order);
+  };
+
+  const assetGroups = groupBySubtype(assetAccounts);
+  const liabilityGroups = groupBySubtype(liabilityAccounts);
+
+  const toggleGroupExpansion = (key: string) => {
+    setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  // Colors
   const positiveColor = useColorModeValue("green.500", "green.300");
   const negativeColor = useColorModeValue("red.500", "red.300");
   const groupPositiveColor = useColorModeValue("green.400", "green.400");
 
-  // Helper function to determine text color based on account type, balance, and whether it's a group account
   const getBalanceColor = (
     balance: number,
-    accountType: "asset" | "liability",
-    isGroup: boolean
-  ) => {
-    if (accountType === "asset") {
-      if (balance >= 0) {
-        return isGroup ? groupPositiveColor : positiveColor;
-      } else {
-        return negativeColor;
-      }
-    } else if (accountType === "liability") {
-      if (balance <= 0) {
-        return isGroup ? groupPositiveColor : positiveColor;
-      } else {
-        return negativeColor;
-      }
-    }
-    return "secondaryTextColor";
-  };
-
-  // Function to compute the balance for group accounts
-  const computeGroupBalance = (accountId: string): number => {
-    let totalBalance = 0;
-
-    const childAccounts = accounts.filter(
-      (account) => account.parent_account_id === accountId
-    );
-
-    childAccounts.forEach((childAccount) => {
-      if (childAccount.is_group) {
-        totalBalance += computeGroupBalance(childAccount.account_id);
-      } else {
-        totalBalance += childAccount.net_balance || 0;
-      }
-    });
-
-    return totalBalance;
-  };
-
-  // Open modal for creating a new account
-  const handleCreateAccountClick = (
     type: "asset" | "liability",
-    parentId: string | null = null
+    isGroupHeader: boolean
   ) => {
-    setAccountType(type);
-    setParentAccountId(parentId);
-    onOpen();
+    if (type === "asset") {
+      return balance >= 0 ? (isGroupHeader ? groupPositiveColor : positiveColor) : negativeColor;
+    }
+    return balance <= 0 ? (isGroupHeader ? groupPositiveColor : positiveColor) : negativeColor;
   };
 
-  const groupBg = useColorModeValue("teal.50", "teal.900");
-  const hoverBg = useColorModeValue("secondaryBg", "secondaryBg");
-  const groupColor = useColorModeValue("brand.600", "brand.200");
   const iconColor = useColorModeValue("brand.500", "brand.300");
   const hoverIconColor = useColorModeValue("brand.600", "brand.400");
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
-  const cardBorderColor = useColorModeValue("gray.200", "gray.600");
   const sectionBorderColor = useColorModeValue("gray.100", "gray.700");
-  const groupCardBg = useColorModeValue("teal.50", "teal.900");
-  const groupTextColor = useColorModeValue("brand.700", "brand.200");
+  const groupColor = useColorModeValue("brand.600", "brand.200");
   const tertiaryTextColor = useColorModeValue("tertiaryTextColor", "tertiaryTextColor");
-  const pillBorderColor = useColorModeValue("gray.300", "gray.600");
-  const pillActiveBg = useColorModeValue("brand.50", "brand.900");
-  const pillHoverBg = useColorModeValue("gray.50", "gray.800");
-  const pillTextColor = useColorModeValue("gray.600", "gray.400");
-  const groupAccentColor = useColorModeValue("brand.400", "brand.500");
-  const guideLineColor = useColorModeValue("brand.100", "whiteAlpha.200");
   const columnHeaderColor = useColorModeValue("gray.400", "gray.500");
   const sectionHoverShadow = useColorModeValue(
     "0 8px 24px -4px rgba(53,169,163,0.08), 0 4px 12px -2px rgba(0,0,0,0.04)",
     "0 8px 24px -4px rgba(78,194,188,0.1), 0 4px 12px -2px rgba(0,0,0,0.2)"
   );
+  const subtypeHeaderBg = useColorModeValue("gray.50", "gray.750");
+  const subtypeHeaderHoverBg = useColorModeValue("gray.100", "gray.700");
+  const subtypeIconBg = useColorModeValue("brand.50", "whiteAlpha.100");
+  const subtypeAccentColor = useColorModeValue("brand.400", "brand.500");
+  const accountHoverBg = useColorModeValue("gray.50", "whiteAlpha.50");
+  const accountCardBg = useColorModeValue("primaryBg", "cardDarkBg");
+  const accountCardBorder = useColorModeValue("gray.200", "gray.600");
+  const pillBorderColor = useColorModeValue("gray.300", "gray.600");
+  const pillActiveBg = useColorModeValue("brand.50", "brand.900");
+  const pillHoverBg = useColorModeValue("gray.50", "gray.800");
+  const pillTextColor = useColorModeValue("gray.600", "gray.400");
 
   // Summary card accent colors
   const assetAccentColor = useColorModeValue("teal.400", "teal.300");
@@ -170,362 +176,257 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
   const netWorthPositiveAccentColor = useColorModeValue("green.400", "green.300");
   const netWorthNegativeAccentColor = useColorModeValue("red.400", "red.300");
 
-  // Summary totals — root-level accounts only (groups aggregate their children)
-  const totalAssets = assetAccounts
-    .filter((a) => !a.parent_account_id)
-    .reduce(
-      (sum, a) =>
-        sum + (a.is_group ? computeGroupBalance(a.account_id) : a.net_balance || 0),
-      0
-    );
-  const totalLiabilities = liabilityAccounts
-    .filter((a) => !a.parent_account_id)
-    .reduce(
-      (sum, a) =>
-        sum + (a.is_group ? computeGroupBalance(a.account_id) : a.net_balance || 0),
-      0
-    );
+  // Summary totals
+  const totalAssets = assetAccounts.reduce((sum, a) => sum + (a.net_balance || 0), 0);
+  const totalLiabilities = liabilityAccounts.reduce((sum, a) => sum + (a.net_balance || 0), 0);
   const netWorth = totalAssets - totalLiabilities;
 
-  // Function to render accounts in table format (for larger screens)
-  const renderAccountsTable = (
-    accounts: Account[],
-    parentId: string | null = null,
-    level: number = 0,
-    showZeroBalance: boolean
-  ) => {
-    return accounts
-      .filter((account) => account.parent_account_id === parentId)
-      .filter(
-        (account) =>
-          showZeroBalance ||
-          (account.is_group
-            ? computeGroupBalance(account.account_id) !== 0
-            : account.net_balance !== 0)
-      )
-      .map((account) => {
-        const balance = account.is_group
-          ? computeGroupBalance(account.account_id)
-          : account.net_balance || 0;
-        const balanceColor = getBalanceColor(
-          balance,
-          account.type,
-          account.is_group
-        );
-
-        const trSx = {
-          "&:hover .action-icons": {
-            opacity: !account.is_group ? 1 : 0,
-          },
-        };
-
-        return (
-          <React.Fragment key={account.account_id}>
-            <Tr
-              bg={account.is_group ? groupBg : "transparent"}
-              _hover={{ bg: hoverBg }}
-              position="relative"
-              sx={trSx}
-              transition="background 0.15s ease"
-            >
-              <Td pl={`${level * 24 + 8}px`} position="relative">
-                {account.is_group && (
-                  <Box
-                    position="absolute"
-                    left={0}
-                    top={0}
-                    bottom={0}
-                    width="3px"
-                    bg={groupAccentColor}
-                    borderRadius="0 2px 2px 0"
-                  />
-                )}
-                {!account.is_group && level > 0 && (
-                  <Box
-                    position="absolute"
-                    left={`${(level - 1) * 24 + 20}px`}
-                    top={0}
-                    bottom={0}
-                    width="1px"
-                    bg={guideLineColor}
-                  />
-                )}
-                {!account.is_group ? (
-                  <ChakraLink
-                    as={RouterLink}
-                    to={`/account/${account.account_id}`}
-                    _hover={{ textDecoration: "none" }}
-                  >
-                    <Text
-                      fontWeight="normal"
-                      color={tertiaryTextColor}
-                      fontSize="sm"
-                      _hover={{ color: "brand.500" }}
-                      transition="color 0.15s ease"
-                    >
-                      {account.name}
-                    </Text>
-                  </ChakraLink>
-                ) : (
-                  <Text fontWeight="bold" color={groupColor} fontSize="md">
-                    {account.name}
-                  </Text>
-                )}
-              </Td>
-               <Td isNumeric>
-                 <HStack spacing={0} align="baseline" justify="flex-end">
-                   <Text
-                     fontWeight="semibold"
-                     color={balanceColor}
-                     fontSize="md"
-                   >
-                     {splitCurrencyForDisplay(balance, currencySymbol || "₹").main}
-                   </Text>
-                   <Text
-                     fontSize="xs"
-                     color={balanceColor}
-                     opacity={0.7}
-                   >
-                     {splitCurrencyForDisplay(balance, currencySymbol || "₹").decimals}
-                   </Text>
-                 </HStack>
-               </Td>
-              <Td>
-                <Box display="flex" gap={2}>
-                  {account.is_group && (
-                    <ChakraLink
-                      onClick={() =>
-                        handleCreateAccountClick(
-                          account.type,
-                          account.account_id
-                        )
-                      }
-                      _hover={{ textDecoration: "none" }}
-                      data-testid={`ledgermainaccounts-group-account-plus-icon-${account.account_id}`}
-                    >
-                      <Icon
-                        as={Plus}
-                        size={16}
-                        color={iconColor}
-                        _hover={{ color: hoverIconColor }}
-                        transition="color 0.15s ease"
-                      />
-                    </ChakraLink>
-                  )}
-                  {!account.is_group && (
-                    <Flex
-                      gap={2}
-                      opacity={0.3}
-                      transition="opacity 0.2s"
-                      className="action-icons"
-                    >
-                      <ChakraLink
-                        onClick={() => onAddTransaction(account.account_id, undefined)}
-                        _hover={{ textDecoration: "none" }}
-                      >
-                        <Icon
-                          as={Plus}
-                          size={16}
-                          color={iconColor}
-                          _hover={{ color: hoverIconColor }}
-                          transition="color 0.15s ease"
-                        />
-                      </ChakraLink>
-                      <ChakraLink
-                        onClick={() => onTransferFunds(account.account_id)}
-                        _hover={{ textDecoration: "none" }}
-                      >
-                        <Icon
-                          as={Repeat}
-                          size={16}
-                          color={iconColor}
-                          _hover={{ color: hoverIconColor }}
-                          transition="color 0.15s ease"
-                        />
-                      </ChakraLink>
-                    </Flex>
-                  )}
-                </Box>
-              </Td>
-            </Tr>
-            {renderAccountsTable(
-              accounts,
-              account.account_id,
-              level + 1,
-              showZeroBalance
-            )}
-          </React.Fragment>
-        );
-      });
+  const handleCreateAccountClick = (type: "asset" | "liability") => {
+    setAccountType(type);
+    onOpen();
   };
 
-  // Function to render accounts in card format (for mobile/tablet)
-  const renderAccountsAccordion = (
-    accounts: Account[],
-    parentId: string | null = null,
-    level: number = 0,
+  // Render a subtype group section
+  const renderSubtypeGroup = (
+    group: SubtypeGroup,
+    type: "asset" | "liability",
     showZeroBalance: boolean
   ) => {
-    const filteredAccounts = accounts
-      .filter((account) => account.parent_account_id === parentId)
-      .filter(
-        (account) =>
-          showZeroBalance ||
-          (account.is_group
-            ? computeGroupBalance(account.account_id) !== 0
-            : account.net_balance !== 0)
-      );
+    const SubtypeIcon = getSubtypeIcon(group.subtype);
+    const sectionKey = `${type}-${group.subtype}`;
+    const isExpanded = expandedGroups[sectionKey] === true; // default collapsed
+    const balanceColor = getBalanceColor(group.totalBalance, type, true);
 
-    if (filteredAccounts.length === 0) return null;
+    const visibleAccounts = showZeroBalance
+      ? group.accounts
+      : group.accounts.filter((a) => a.net_balance !== 0);
+
+    if (!showZeroBalance && visibleAccounts.length === 0) return null;
 
     return (
-      <Stack
-        spacing={3}
-        pl={level > 0 ? 4 : 0}
-        mt={level > 0 ? 3 : 0}
-        mb={level > 0 ? 3 : 0}
-      >
-        {filteredAccounts.map((account) => {
-          const balance = account.is_group
-            ? computeGroupBalance(account.account_id)
-            : account.net_balance || 0;
-          const balanceColor = getBalanceColor(
-            balance,
-            account.type,
-            account.is_group
-          );
-          const hasChildren = accounts.some(
-            (a) => a.parent_account_id === account.account_id
-          );
-          const isExpanded = expandedGroups[account.account_id];
-
-          return (
-            <Card
-              key={account.account_id}
-              variant="outline"
-              bg={account.is_group ? groupCardBg : cardBg}
-              borderColor={cardBorderColor}
-              borderLeftWidth={account.is_group ? "3px" : "1px"}
-              borderLeftColor={account.is_group ? groupAccentColor : cardBorderColor}
-              size="sm"
-              boxShadow="sm"
-              _hover={{ boxShadow: "md" }}
-              transition="box-shadow 0.2s ease"
+      <Box key={sectionKey} mb={2}>
+        {/* Subtype header */}
+        <Flex
+          align="center"
+          justify="space-between"
+          py={2.5}
+          px={3}
+          bg={subtypeHeaderBg}
+          borderRadius="lg"
+          cursor="pointer"
+          onClick={() => toggleGroupExpansion(sectionKey)}
+          _hover={{ bg: subtypeHeaderHoverBg }}
+          transition="background 0.15s ease"
+        >
+          <Flex align="center" gap={2.5} flex={1} minW={0}>
+            <Flex
+              w={7}
+              h={7}
+              borderRadius="md"
+              bg={subtypeIconBg}
+              align="center"
+              justify="center"
+              flexShrink={0}
             >
-              <CardHeader
-                py={2}
-                px={3}
-                onClick={
-                  account.is_group && hasChildren
-                    ? (e) => toggleGroupExpansion(account.account_id, e)
-                    : undefined
-                }
-                cursor={account.is_group && hasChildren ? "pointer" : "default"}
-              >
-                <Flex justifyContent="space-between" alignItems="flex-start">
-                  <Flex direction="column" flex="1">
-                    <Flex alignItems="center" gap={2} mb={1}>
-                      {!account.is_group ? (
-                        <ChakraLink
-                          as={RouterLink}
-                          to={`/account/${account.account_id}`}
-                          _hover={{ textDecoration: "none" }}
+              <Icon as={SubtypeIcon} boxSize={3.5} color={subtypeAccentColor} />
+            </Flex>
+            <Text
+              fontWeight="semibold"
+              fontSize="sm"
+              color={groupColor}
+              isTruncated
+            >
+              {group.label}
+            </Text>
+            <Badge
+              colorScheme="gray"
+              variant="subtle"
+              fontSize="2xs"
+              borderRadius="full"
+              px={1.5}
+              fontWeight="medium"
+            >
+              {visibleAccounts.length}
+            </Badge>
+          </Flex>
+          <Flex align="center" gap={2}>
+            <HStack spacing={0} align="baseline">
+              <Text fontWeight="semibold" color={balanceColor} fontSize="sm">
+                {splitCurrencyForDisplay(group.totalBalance, currencySymbol || "").main}
+              </Text>
+              <Text fontSize="2xs" color={balanceColor} opacity={0.7}>
+                {splitCurrencyForDisplay(group.totalBalance, currencySymbol || "").decimals}
+              </Text>
+            </HStack>
+            <Icon
+              as={isExpanded ? ChevronUp : ChevronDown}
+              boxSize={4}
+              color={columnHeaderColor}
+            />
+          </Flex>
+        </Flex>
+
+        {/* Accounts list */}
+        {isExpanded && visibleAccounts.length > 0 && (
+          <>
+            {/* Desktop table view */}
+            <Box display={{ base: "none", xl: "block" }} mt={1}>
+              {visibleAccounts.map((account) => {
+                const balance = account.net_balance || 0;
+                const acctBalanceColor = getBalanceColor(balance, type, false);
+                return (
+                  <Flex
+                    key={account.account_id}
+                    align="center"
+                    justify="space-between"
+                    py={2}
+                    px={3}
+                    pl={12}
+                    _hover={{ bg: accountHoverBg, "& .action-icons": { opacity: 1 } }}
+                    transition="background 0.15s ease"
+                    borderRadius="md"
+                  >
+                    <HStack spacing={1.5} flex={1} minW={0}>
+                      <ChakraLink
+                        as={RouterLink}
+                        to={`/account/${account.account_id}`}
+                        _hover={{ textDecoration: "none" }}
+                      >
+                        <Text
+                          fontSize="sm"
+                          color={tertiaryTextColor}
+                          _hover={{ color: "brand.500" }}
+                          transition="color 0.15s ease"
+                          isTruncated
                         >
-                          <Text
-                            fontWeight={account.is_group ? "medium" : "normal"}
-                            color={account.is_group ? groupTextColor : tertiaryTextColor}
-                          >
-                            {account.name}
-                          </Text>
-                        </ChakraLink>
-                      ) : (
-                        <Text fontWeight="medium" color={groupTextColor}>
                           {account.name}
                         </Text>
+                      </ChakraLink>
+                      {getOwnerInitials(account.owner) && (
+                        <Text as="span" fontSize="xs" color="gray.500">
+                          [{getOwnerInitials(account.owner)}]
+                        </Text>
                       )}
+                    </HStack>
+                    <Flex align="center" gap={3}>
+                      <HStack spacing={0} align="baseline">
+                        <Text fontWeight="semibold" color={acctBalanceColor} fontSize="sm">
+                          {splitCurrencyForDisplay(balance, currencySymbol || "").main}
+                        </Text>
+                        <Text fontSize="2xs" color={acctBalanceColor} opacity={0.7}>
+                          {splitCurrencyForDisplay(balance, currencySymbol || "").decimals}
+                        </Text>
+                      </HStack>
+                      <Flex
+                        gap={1.5}
+                        opacity={0}
+                        transition="opacity 0.2s"
+                        className="action-icons"
+                      >
+                        <ChakraLink
+                          onClick={() => onAddTransaction(account.account_id, undefined)}
+                          _hover={{ textDecoration: "none" }}
+                        >
+                          <Icon
+                            as={Plus}
+                            size={14}
+                            color={iconColor}
+                            _hover={{ color: hoverIconColor }}
+                            transition="color 0.15s ease"
+                          />
+                        </ChakraLink>
+                        <ChakraLink
+                          onClick={() => onTransferFunds(account.account_id)}
+                          _hover={{ textDecoration: "none" }}
+                        >
+                          <Icon
+                            as={Repeat}
+                            size={14}
+                            color={iconColor}
+                            _hover={{ color: hoverIconColor }}
+                            transition="color 0.15s ease"
+                          />
+                        </ChakraLink>
+                      </Flex>
                     </Flex>
-                     <HStack spacing={0} align="baseline">
-                       <Text
-                         fontWeight="semibold"
-                         color={balanceColor}
-                       >
-                         {splitCurrencyForDisplay(balance, currencySymbol || "₹").main}
-                       </Text>
-                       <Text
-                         fontSize="xs"
-                         color={balanceColor}
-                         opacity={0.7}
-                       >
-                         {splitCurrencyForDisplay(balance, currencySymbol || "₹").decimals}
-                       </Text>
-                     </HStack>
                   </Flex>
-                  {!account.is_group ? (
-                    <Flex gap={1} align="center" justify="flex-end">
-                      <IconButton
-                        icon={<Plus size={14} />}
-                        size="xs"
-                        variant="ghost"
-                        colorScheme="brand"
-                        aria-label="Add transaction"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAddTransaction(account.account_id, undefined);
-                        }}
-                      />
-                      <IconButton
-                        icon={<Repeat size={14} />}
-                        size="xs"
-                        variant="ghost"
-                        colorScheme="brand"
-                        aria-label="Transfer funds"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onTransferFunds(account.account_id);
-                        }}
-                      />
-                    </Flex>
-                  ) : (
-                    <Flex gap={1} align="center">
-                      <IconButton
-                        icon={<Plus size={14} />}
-                        size="xs"
-                        variant="ghost"
-                        colorScheme="brand"
-                        aria-label="Add sub-account"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCreateAccountClick(
-                            account.type,
-                            account.account_id
-                          );
-                        }}
-                      />
-                      {hasChildren && (
-                        <Icon
-                          as={isExpanded ? ChevronUp : ChevronDown}
-                          size={16}
-                          color={iconColor}
-                        />
-                      )}
-                    </Flex>
-                  )}
-                </Flex>
-              </CardHeader>
-              {account.is_group && hasChildren && isExpanded && (
-                <Box px={3} pb={3}>
-                  {renderAccountsAccordion(
-                    accounts,
-                    account.account_id,
-                    level + 1,
-                    showZeroBalance
-                  )}
-                </Box>
-              )}
-            </Card>
-          );
-        })}
-      </Stack>
+                );
+              })}
+            </Box>
+
+            {/* Mobile card view */}
+            <Stack spacing={2} display={{ base: "block", xl: "none" }} mt={2} pl={2}>
+              {visibleAccounts.map((account) => {
+                const balance = account.net_balance || 0;
+                const acctBalanceColor = getBalanceColor(balance, type, false);
+                return (
+                  <Card
+                    key={account.account_id}
+                    variant="outline"
+                    bg={accountCardBg}
+                    borderColor={accountCardBorder}
+                    size="sm"
+                    boxShadow="sm"
+                  >
+                    <CardHeader py={2} px={3}>
+                      <Flex justifyContent="space-between" alignItems="center">
+                        <HStack spacing={1.5} flex={1} minW={0}>
+                          <ChakraLink
+                            as={RouterLink}
+                            to={`/account/${account.account_id}`}
+                            _hover={{ textDecoration: "none" }}
+                          >
+                            <Text
+                              color={tertiaryTextColor}
+                              fontSize="sm"
+                              isTruncated
+                            >
+                              {account.name}
+                            </Text>
+                          </ChakraLink>
+                          {getOwnerInitials(account.owner) && (
+                            <Text as="span" fontSize="xs" color="gray.500">
+                              [{getOwnerInitials(account.owner)}]
+                            </Text>
+                          )}
+                        </HStack>
+                        <Flex align="center" gap={2}>
+                          <HStack spacing={0} align="baseline">
+                            <Text fontWeight="semibold" color={acctBalanceColor} fontSize="sm">
+                              {splitCurrencyForDisplay(balance, currencySymbol || "").main}
+                            </Text>
+                            <Text fontSize="2xs" color={acctBalanceColor} opacity={0.7}>
+                              {splitCurrencyForDisplay(balance, currencySymbol || "").decimals}
+                            </Text>
+                          </HStack>
+                          <Flex gap={1}>
+                            <IconButton
+                              icon={<Plus size={14} />}
+                              size="xs"
+                              variant="ghost"
+                              colorScheme="brand"
+                              aria-label="Add transaction"
+                              onClick={() => onAddTransaction(account.account_id, undefined)}
+                            />
+                            <IconButton
+                              icon={<Repeat size={14} />}
+                              size="xs"
+                              variant="ghost"
+                              colorScheme="brand"
+                              aria-label="Transfer funds"
+                              onClick={() => onTransferFunds(account.account_id)}
+                            />
+                          </Flex>
+                        </Flex>
+                      </Flex>
+                    </CardHeader>
+                  </Card>
+                );
+              })}
+            </Stack>
+          </>
+        )}
+      </Box>
     );
   };
 
@@ -543,28 +444,23 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
       <Text color="secondaryTextColor" mb={5} fontSize="sm">
         {message}
       </Text>
-      <Button
-        leftIcon={<Plus />}
+      <IconButton
+        icon={<Plus />}
         onClick={onClick}
         size="sm"
         colorScheme="brand"
         borderRadius="lg"
-        fontWeight="bold"
-      >
-        {buttonText}
-      </Button>
-    </Box>
-  );
-
-  // Loading state component
-  const LoadingState: React.FC = () => (
-    <Box textAlign="center" py={10}>
-      <Spinner size="xl" color="brand.500" />
+        aria-label={buttonText}
+      />
     </Box>
   );
 
   if (isLoading) {
-    return <LoadingState />;
+    return (
+      <Box textAlign="center" py={10}>
+        <Spinner size="xl" color="brand.500" />
+      </Box>
+    );
   }
 
   const summaryCards = [
@@ -573,7 +469,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
       label: "Assets",
       value: totalAssets,
       accentColor: assetAccentColor,
-      colorFn: () => totalAssets >= 0 ? positiveColor : negativeColor,
+      colorFn: () => (totalAssets >= 0 ? positiveColor : negativeColor),
     },
     {
       icon: ShieldAlert,
@@ -587,12 +483,32 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
       label: "Net Worth",
       value: netWorth,
       accentColor: netWorth >= 0 ? netWorthPositiveAccentColor : netWorthNegativeAccentColor,
-      colorFn: () => netWorth >= 0 ? positiveColor : negativeColor,
+      colorFn: () => (netWorth >= 0 ? positiveColor : negativeColor),
     },
   ];
 
   return (
     <Box p={{ base: 2, md: 4 }}>
+      {/* Owner filter */}
+      {owners.length > 0 && (
+        <Flex mb={4} justify="flex-end">
+          <Select
+            value={selectedOwner}
+            onChange={(e) => setSelectedOwner(e.target.value)}
+            size="sm"
+            maxW={{ base: "100%", md: "200px" }}
+            borderRadius="lg"
+          >
+            <option value="all">All Owners</option>
+            {owners.map((owner) => (
+              <option key={owner} value={owner}>
+                {owner}
+              </option>
+            ))}
+          </Select>
+        </Flex>
+      )}
+
       {/* Summary bar */}
       <MotionSimpleGrid
         columns={{ base: 1, md: 3 }}
@@ -624,7 +540,6 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
               transition="border-color 0.2s ease"
               _hover={{ borderColor: accentColor }}
             >
-              {/* Accent line at top */}
               <Box
                 position="absolute"
                 top={0}
@@ -634,7 +549,6 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
                 bg={accentColor}
                 opacity={0.7}
               />
-
               <Flex align="center" gap={1.5} mb={2}>
                 <Flex
                   w={5}
@@ -644,13 +558,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
                   opacity={0.12}
                   position="absolute"
                 />
-                <Flex
-                  w={5}
-                  h={5}
-                  borderRadius="md"
-                  align="center"
-                  justify="center"
-                >
+                <Flex w={5} h={5} borderRadius="md" align="center" justify="center">
                   <Icon as={icon} boxSize={3} color={accentColor} />
                 </Flex>
                 <Text
@@ -671,14 +579,10 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
                   lineHeight="short"
                   letterSpacing="-0.01em"
                 >
-                  {splitCurrencyForDisplay(value, currencySymbol || "₹").main}
+                  {splitCurrencyForDisplay(value, currencySymbol || "").main}
                 </Text>
-                <Text
-                  fontSize="xs"
-                  color={colorFn()}
-                  opacity={0.6}
-                >
-                  {splitCurrencyForDisplay(value, currencySymbol || "₹").decimals}
+                <Text fontSize="xs" color={colorFn()} opacity={0.6}>
+                  {splitCurrencyForDisplay(value, currencySymbol || "").decimals}
                 </Text>
               </HStack>
             </Box>
@@ -687,10 +591,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
       </MotionSimpleGrid>
 
       {/* Assets & Liabilities detail */}
-      <SimpleGrid
-        columns={{ base: 1, md: 1, lg: 2 }}
-        spacing={{ base: 4, md: 6 }}
-      >
+      <SimpleGrid columns={{ base: 1, md: 1, lg: 2 }} spacing={{ base: 4, md: 6 }}>
         {/* Assets Section */}
         <MotionBox
           initial={{ opacity: 0, y: 12 }}
@@ -714,7 +615,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
             >
               <Flex align="center" gap={2}>
                 <Icon as={Building} size={20} color={iconColor} />
-                <Heading size="md" color={groupColor} mb={{ base: 1, sm: 0 }} letterSpacing="-0.02em">
+                <Heading size="md" color={groupColor} letterSpacing="-0.02em">
                   Assets
                 </Heading>
               </Flex>
@@ -746,12 +647,11 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
                   colorScheme="brand"
                   variant="ghost"
                   aria-label="Add Asset Account"
-                  data-testid="ledgermainaccounts-add-asset-account-plus-icon"
                   onClick={() => handleCreateAccountClick("asset")}
                 />
               </Flex>
             </Flex>
-            {assetAccounts.length === 0 ? (
+            {assetGroups.length === 0 ? (
               <EmptyState
                 title="No Asset Accounts"
                 message="You don't have any asset accounts yet."
@@ -759,60 +659,11 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
                 onClick={() => handleCreateAccountClick("asset")}
               />
             ) : (
-              <>
-                <Box display={{ base: "none", xl: "block" }}>
-                  <Table
-                    variant="simple"
-                    size="sm"
-                    data-testid="ledgermainaccounts-asset-accounts-table"
-                  >
-                    <Thead>
-                      <Tr>
-                        <Th
-                          color={columnHeaderColor}
-                          fontSize="2xs"
-                          fontWeight="semibold"
-                          textTransform="uppercase"
-                          letterSpacing="wider"
-                          pb={2}
-                          borderBottomColor={sectionBorderColor}
-                        >
-                          Account
-                        </Th>
-                        <Th
-                          color={columnHeaderColor}
-                          fontSize="2xs"
-                          fontWeight="semibold"
-                          textTransform="uppercase"
-                          letterSpacing="wider"
-                          pb={2}
-                          isNumeric
-                          borderBottomColor={sectionBorderColor}
-                        >
-                          Balance
-                        </Th>
-                        <Th pb={2} borderBottomColor={sectionBorderColor} />
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {renderAccountsTable(
-                        assetAccounts,
-                        null,
-                        0,
-                        showZeroBalanceAssets
-                      )}
-                    </Tbody>
-                  </Table>
-                </Box>
-                <Box display={{ base: "block", xl: "none" }}>
-                  {renderAccountsAccordion(
-                    assetAccounts,
-                    null,
-                    0,
-                    showZeroBalanceAssets
-                  )}
-                </Box>
-              </>
+              <Box>
+                {assetGroups.map((group) =>
+                  renderSubtypeGroup(group, "asset", showZeroBalanceAssets)
+                )}
+              </Box>
             )}
           </Box>
         </MotionBox>
@@ -840,7 +691,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
             >
               <Flex align="center" gap={2}>
                 <Icon as={ShieldAlert} size={20} color={iconColor} />
-                <Heading size="md" color={groupColor} mb={{ base: 1, sm: 0 }} letterSpacing="-0.02em">
+                <Heading size="md" color={groupColor} letterSpacing="-0.02em">
                   Liabilities
                 </Heading>
               </Flex>
@@ -872,12 +723,11 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
                   colorScheme="brand"
                   variant="ghost"
                   aria-label="Add Liability Account"
-                  data-testid="ledgermainaccounts-add-liability-account-plus-icon"
                   onClick={() => handleCreateAccountClick("liability")}
                 />
               </Flex>
             </Flex>
-            {liabilityAccounts.length === 0 ? (
+            {liabilityGroups.length === 0 ? (
               <EmptyState
                 title="No Liability Accounts"
                 message="You don't have any liability accounts yet."
@@ -885,69 +735,20 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
                 onClick={() => handleCreateAccountClick("liability")}
               />
             ) : (
-              <>
-                <Box display={{ base: "none", xl: "block" }}>
-                  <Table
-                    variant="simple"
-                    size="sm"
-                    data-testid="ledgermainaccounts-liability-accounts-table"
-                  >
-                    <Thead>
-                      <Tr>
-                        <Th
-                          color={columnHeaderColor}
-                          fontSize="2xs"
-                          fontWeight="semibold"
-                          textTransform="uppercase"
-                          letterSpacing="wider"
-                          pb={2}
-                          borderBottomColor={sectionBorderColor}
-                        >
-                          Account
-                        </Th>
-                        <Th
-                          color={columnHeaderColor}
-                          fontSize="2xs"
-                          fontWeight="semibold"
-                          textTransform="uppercase"
-                          letterSpacing="wider"
-                          pb={2}
-                          isNumeric
-                          borderBottomColor={sectionBorderColor}
-                        >
-                          Balance
-                        </Th>
-                        <Th pb={2} borderBottomColor={sectionBorderColor} />
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {renderAccountsTable(
-                        liabilityAccounts,
-                        null,
-                        0,
-                        showZeroBalanceLiabilities
-                      )}
-                    </Tbody>
-                  </Table>
-                </Box>
-                <Box display={{ base: "block", xl: "none" }}>
-                  {renderAccountsAccordion(
-                    liabilityAccounts,
-                    null,
-                    0,
-                    showZeroBalanceLiabilities
-                  )}
-                </Box>
-              </>
+              <Box>
+                {liabilityGroups.map((group) =>
+                  renderSubtypeGroup(group, "liability", showZeroBalanceLiabilities)
+                )}
+              </Box>
             )}
           </Box>
         </MotionBox>
       </SimpleGrid>
+
       <CreateAccountModal
         isOpen={isOpen}
         onClose={onClose}
-        accountType={accountType === "asset" ? "asset" : "liability"}
-        parentAccountId={parentAccountId}
+        accountType={accountType}
       />
     </Box>
   );

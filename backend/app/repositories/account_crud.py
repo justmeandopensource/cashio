@@ -21,32 +21,14 @@ def create_account(db: Session, ledger_id: int, account: AccountCreate):
             status_code=status.HTTP_400_BAD_REQUEST, detail="Account already exists"
         )
 
-    # Validate parent_account_id (if provided)
-    if account.parent_account_id is not None:
-        parent_account = (
-            db.query(Account)
-            .filter(
-                Account.account_id == account.parent_account_id,
-                Account.ledger_id == ledger_id,
-                Account.is_group == True,
-            )
-            .first()
-        )
-
-        if not parent_account:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid parent_account_id: The parent account must exist and be a group account in the same ledger",
-            )
-
     db_account = Account(
         ledger_id=ledger_id,
         name=account.name,
         type=account.type,
-        is_group=account.is_group,
-        opening_balance=account.opening_balance,
-        net_balance=account.opening_balance,
-        parent_account_id=account.parent_account_id,
+        subtype=account.subtype,
+        owner=account.owner,
+        opening_balance=account.opening_balance or 0,
+        net_balance=account.opening_balance or 0,
         description=account.description,
         notes=account.notes,
         created_at=datetime.now(),
@@ -63,17 +45,15 @@ def get_accounts_by_ledger_id(
     db: Session,
     ledger_id: int,
     account_type: Optional[str] = None,
-    ignore_group: Optional[bool] = False,
+    subtype: Optional[str] = None,
 ):
     query = db.query(Account).filter(Account.ledger_id == ledger_id)
 
-    # Filter by account type if provided
     if account_type:
         query = query.filter(Account.type == account_type)
 
-    # Exclude group account if ignore_group is True
-    if ignore_group:
-        query = query.filter(Account.is_group == False)
+    if subtype:
+        query = query.filter(Account.subtype == subtype)
 
     query = query.order_by(Account.name.asc())
 
@@ -85,18 +65,6 @@ def get_account_by_id(db: Session, account_id: int):
     return db.query(Account).filter(Account.account_id == account_id).first()
 
 
-def get_group_accounts_by_type(
-    db: Session, ledger_id: int, account_type: Optional[str] = None
-):
-    query = db.query(Account).filter(
-        Account.ledger_id == ledger_id, Account.is_group == True
-    )
-    if account_type:
-        query = query.filter(Account.type == account_type)
-
-    return query.all()
-
-
 def update_account(db: Session, account_id: int, account_update: AccountUpdate):
     db_account = db.query(Account).filter(Account.account_id == account_id).first()
     if not db_account:
@@ -104,31 +72,15 @@ def update_account(db: Session, account_id: int, account_update: AccountUpdate):
             status_code=status.HTTP_404_NOT_FOUND, detail="Account not found"
         )
 
-    # Validate parent account
-    if account_update.parent_account_id is not None:
-        parent_account = (
-            db.query(Account)
-            .filter(Account.account_id == account_update.parent_account_id)
-            .first()
-        )
-        if not parent_account:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Parent account not found",
-            )
-        if not parent_account.is_group:  # type: ignore
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Parent account must be a group account",
-            )
-
     if account_update.name is not None:
         db_account.name = account_update.name  # type: ignore[reportAttributeAccessIssue]
+    if account_update.subtype is not None:
+        db_account.subtype = account_update.subtype  # type: ignore
+    if account_update.owner is not None:
+        db_account.owner = account_update.owner  # type: ignore
     if account_update.opening_balance is not None:
         db_account.opening_balance = Decimal(str(account_update.opening_balance))  # type: ignore
         db_account.net_balance = db_account.opening_balance + db_account.balance  # type: ignore[reportAttributeAccessIssue]
-    if account_update.parent_account_id is not None:
-        db_account.parent_account_id = account_update.parent_account_id  # type: ignore
     if account_update.description is not None:
         db_account.description = account_update.description  # type: ignore
     if account_update.notes is not None:
@@ -139,3 +91,18 @@ def update_account(db: Session, account_id: int, account_update: AccountUpdate):
     db.commit()
     db.refresh(db_account)
     return db_account
+
+
+def get_account_owner_suggestions(db: Session, ledger_id: int, search_text: str):
+    """Get distinct owner suggestions matching the search text."""
+    results = (
+        db.query(Account.owner)
+        .filter(Account.ledger_id == ledger_id)
+        .filter(Account.owner.isnot(None))
+        .filter(Account.owner != "")
+        .filter(Account.owner.ilike(f"%{search_text}%"))
+        .distinct()
+        .limit(10)
+        .all()
+    )
+    return [r[0] for r in results if r[0]]

@@ -7,9 +7,10 @@ interface Account {
   account_id: string;
   name: string;
   type: "asset" | "liability";
+  subtype: string;
+  owner?: string;
   net_balance: number;
   opening_balance: number;
-  parent_account_id: string;
   balance: number;
   description?: string;
   notes?: string;

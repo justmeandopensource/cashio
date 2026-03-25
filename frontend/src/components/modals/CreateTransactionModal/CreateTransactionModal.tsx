@@ -218,7 +218,7 @@ const CreateTransactionModal: React.FC<CreateTransactionModalProps> = ({
   const fetchAccounts = useCallback(async () => {
     try {
       const response = await api.get<Account[]>(
-        `/ledger/${ledgerId}/accounts?ignore_group=true`,
+        `/ledger/${ledgerId}/accounts`,
       );
       setAccounts(response.data);
     } catch (error) {

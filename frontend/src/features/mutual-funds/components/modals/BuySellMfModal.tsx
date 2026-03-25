@@ -67,7 +67,8 @@ interface Account {
   account_id: number;
   name: string;
   type: "asset" | "liability";
-  is_group: boolean;
+  subtype?: string;
+  owner?: string;
 }
 
 interface FormData {

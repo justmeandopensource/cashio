@@ -65,13 +65,21 @@ class Account(Base):
 
     account_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     ledger_id: Mapped[int] = mapped_column(Integer, ForeignKey("ledgers.ledger_id"), nullable=False)
-    parent_account_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("accounts.account_id"), nullable=True
-    )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str | None] = mapped_column(String(100), nullable=True)
     type: Mapped[str] = mapped_column(Enum("asset", "liability", name="account_type"), nullable=False)
-    is_group: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    subtype: Mapped[str] = mapped_column(
+        Enum(
+            "current_account", "savings_account", "isa", "fixed_deposit", "recurring_deposit",
+            "pension", "gift_card", "cash", "fixed_asset", "depreciating_asset",
+            "insurance", "savings_scheme",
+            "credit_card", "loan", "other",
+            name="account_subtype",
+        ),
+        nullable=False,
+        default="other",
+    )
+    owner: Mapped[str | None] = mapped_column(String(100), nullable=True)
     opening_balance: Mapped[Decimal] = mapped_column(Numeric(15, 2), default=0.00, nullable=False)
     balance: Mapped[Decimal] = mapped_column(Numeric(15, 2), default=0.00, nullable=False)
     net_balance: Mapped[Decimal] = mapped_column(Numeric(15, 2), default=0.00, nullable=False)
@@ -80,10 +88,6 @@ class Account(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
 
     ledger = relationship("Ledger", back_populates="accounts")
-    parent_account = relationship(
-        "Account", remote_side=[account_id], back_populates="child_accounts"
-    )
-    child_accounts = relationship("Account", back_populates="parent_account")
     transactions = relationship("Transaction", back_populates="account")
     asset_transactions = relationship("AssetTransaction", back_populates="account")
     mf_transactions = relationship("MfTransaction", back_populates="account")

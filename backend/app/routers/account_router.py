@@ -21,8 +21,8 @@ def get_ledger_accounts(
     type: Optional[Literal["asset", "liability"]] = Query(
         default=None, description="Filter by account type (asset or liability)"
     ),
-    ignore_group: Optional[bool] = Query(
-        default=False, description="Exclude group accounts if set to true"
+    subtype: Optional[str] = Query(
+        default=None, description="Filter by account subtype"
     ),
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -32,7 +32,7 @@ def get_ledger_accounts(
         raise HTTPException(status_code=404, detail="Ledger not found")
 
     accounts = account_crud.get_accounts_by_ledger_id(
-        db=db, ledger_id=ledger_id, account_type=type, ignore_group=ignore_group
+        db=db, ledger_id=ledger_id, account_type=type, subtype=subtype
     )
     if not accounts:
         return []
@@ -91,26 +91,41 @@ def create_account(
 
 
 @account_Router.get(
-    "/{ledger_id}/accounts/group",
-    response_model=list[account_schema.AccountBase],
+    "/{ledger_id}/accounts/subtypes",
+    response_model=dict,
     tags=["accounts"],
 )
-def get_group_accounts_by_type(
+def get_account_subtypes(
     ledger_id: int,
-    account_type: Optional[str] = None,
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
     if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Ledger not found"
-        )
+        raise HTTPException(status_code=404, detail="Ledger not found")
 
-    group_accounts = account_crud.get_group_accounts_by_type(
-        db=db, ledger_id=ledger_id, account_type=account_type
+    return account_schema.ACCOUNT_SUBTYPES
+
+
+@account_Router.get(
+    "/{ledger_id}/account/owner/suggestions",
+    response_model=list[str],
+    tags=["accounts"],
+)
+def get_owner_suggestions(
+    ledger_id: int,
+    search_text: str = Query(..., min_length=3),
+    user: user_schema.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get owner suggestions for accounts in a ledger."""
+    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
+    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
+        raise HTTPException(status_code=404, detail="Ledger not found")
+
+    return account_crud.get_account_owner_suggestions(
+        db=db, ledger_id=ledger_id, search_text=search_text
     )
-    return group_accounts
 
 
 @account_Router.put(

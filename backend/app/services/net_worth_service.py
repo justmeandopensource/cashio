@@ -16,7 +16,6 @@ def get_net_worth(db: Session, ledger_id: int) -> NetWorthResponse:
     # Accounts
     accounts = db.query(Account).filter(
         Account.ledger_id == ledger_id,
-        Account.is_group == False,
     ).all()
 
     asset_accounts = [

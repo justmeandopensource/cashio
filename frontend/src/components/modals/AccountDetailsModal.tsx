@@ -17,12 +17,15 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { Building, ShieldAlert, FileText } from "lucide-react";
+import { getSubtypeLabel } from "@/features/ledger/constants/accountSubtypes";
 
 interface AccountDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   accountName: string;
   accountType: string;
+  accountSubtype?: string;
+  accountOwner?: string;
   openingBalance: number;
   netBalance: number;
   currencySymbol: string;
@@ -38,6 +41,8 @@ const AccountDetailsModal: React.FC<AccountDetailsModalProps> = ({
   onClose,
   accountName,
   accountType,
+  accountSubtype,
+  accountOwner,
   openingBalance,
   netBalance,
   currencySymbol,
@@ -145,6 +150,19 @@ const AccountDetailsModal: React.FC<AccountDetailsModalProps> = ({
                 >
                   {accountType}
                 </Badge>
+                {accountSubtype && (
+                  <Badge
+                    colorScheme="gray"
+                    variant="subtle"
+                    fontSize="xs"
+                    px={2}
+                    py={0.5}
+                    borderRadius="full"
+                    flexShrink={0}
+                  >
+                    {getSubtypeLabel(accountSubtype)}
+                  </Badge>
+                )}
               </HStack>
 
               <Text
@@ -153,6 +171,7 @@ const AccountDetailsModal: React.FC<AccountDetailsModalProps> = ({
                 fontStyle={!description ? "italic" : "normal"}
               >
                 {description || "No description"}
+                {accountOwner && ` \u00B7 ${accountOwner}`}
               </Text>
             </VStack>
           </HStack>

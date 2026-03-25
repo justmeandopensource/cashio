@@ -56,7 +56,8 @@ interface Account {
   name: string;
   type: string;
   net_balance?: number;
-  is_group: boolean;
+  subtype?: string;
+  owner?: string;
 }
 
 interface Transaction {
@@ -279,7 +280,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
   const fetchAccounts = useCallback(async () => {
     try {
       const response = await api.get<Account[]>(`/ledger/${ledgerId}/accounts`);
-      setAccounts(response.data.filter(a => !a.is_group));
+      setAccounts(response.data);
     } catch (error) {
       const axiosError = error as AxiosError<{ detail: string }>;
       if (axiosError.response?.status !== 401) {
@@ -334,7 +335,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
               const destAccResponse = await api.get<Account[]>(
                 `/ledger/${editTransferData.destination_ledger_id}/accounts`
               );
-              setDestinationAccounts(destAccResponse.data.filter(a => !a.is_group));
+              setDestinationAccounts(destAccResponse.data);
             } catch {
               // Silently fail — dropdown will be empty
             }
@@ -431,7 +432,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                 const destAccResponse = await api.get<Account[]>(
                   `/ledger/${transferData.destination_ledger_id}/accounts`
                 );
-                setDestinationAccounts(destAccResponse.data.filter((a: Account) => !a.is_group));
+                setDestinationAccounts(destAccResponse.data);
               } catch {
                 // Silently fail
               }
@@ -521,7 +522,7 @@ const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
     async (destLedgerId: string) => {
       try {
         const response = await api.get<Account[]>(`/ledger/${destLedgerId}/accounts`);
-        setDestinationAccounts(response.data.filter(a => !a.is_group));
+        setDestinationAccounts(response.data);
       } catch (error) {
         const axiosError = error as AxiosError<{ detail: string }>;
         if (axiosError.response?.status !== 401) {
