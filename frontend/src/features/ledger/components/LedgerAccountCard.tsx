@@ -4,8 +4,6 @@ import {
   Text,
   Icon,
   HStack,
-  Card,
-  CardHeader,
   IconButton,
   Link as ChakraLink,
   useColorModeValue,
@@ -130,70 +128,67 @@ export const LedgerAccountCardMobile: React.FC<LedgerAccountCardProps> = ({
   const { currencySymbol } = useLedgerStore();
   const balance = account.net_balance || 0;
   const tertiaryTextColor = useColorModeValue("tertiaryTextColor", "tertiaryTextColor");
-  const accountCardBg = useColorModeValue("primaryBg", "cardDarkBg");
-  const accountCardBorder = useColorModeValue("gray.200", "gray.600");
+  const dividerColor = useColorModeValue("gray.100", "gray.700");
 
   return (
-    <Card
+    <Flex
       key={account.account_id}
-      variant="outline"
-      bg={accountCardBg}
-      borderColor={accountCardBorder}
-      size="sm"
-      boxShadow="sm"
+      justifyContent="space-between"
+      alignItems="center"
+      py={2.5}
+      px={3}
+      borderBottom="1px solid"
+      borderColor={dividerColor}
+      _last={{ borderBottom: "none" }}
     >
-      <CardHeader py={2} px={3}>
-        <Flex justifyContent="space-between" alignItems="center">
-          <HStack spacing={1.5} flex={1} minW={0}>
-            <ChakraLink
-              as={RouterLink}
-              to={`/account/${account.account_id}`}
-              _hover={{ textDecoration: "none" }}
-            >
-              <Text
-                color={tertiaryTextColor}
-                fontSize="sm"
-                isTruncated
-              >
-                {account.name}
-              </Text>
-            </ChakraLink>
-            {getOwnerInitials(account.owner) && (
-              <Text as="span" fontSize="xs" color="gray.500">
-                [{getOwnerInitials(account.owner)}]
-              </Text>
-            )}
-          </HStack>
-          <Flex align="center" gap={2}>
-            <HStack spacing={0} align="baseline">
-              <Text fontWeight="semibold" color={balanceColor} fontSize="sm">
-                {splitCurrencyForDisplay(balance, currencySymbol || "").main}
-              </Text>
-              <Text fontSize="2xs" color={balanceColor} opacity={0.7}>
-                {splitCurrencyForDisplay(balance, currencySymbol || "").decimals}
-              </Text>
-            </HStack>
-            <Flex gap={1}>
-              <IconButton
-                icon={<Plus size={14} />}
-                size="xs"
-                variant="ghost"
-                colorScheme="brand"
-                aria-label="Add transaction"
-                onClick={() => onAddTransaction(account.account_id, undefined)}
-              />
-              <IconButton
-                icon={<Repeat size={14} />}
-                size="xs"
-                variant="ghost"
-                colorScheme="brand"
-                aria-label="Transfer funds"
-                onClick={() => onTransferFunds(account.account_id)}
-              />
-            </Flex>
-          </Flex>
+      <HStack spacing={1.5} flex={1} minW={0}>
+        <ChakraLink
+          as={RouterLink}
+          to={`/account/${account.account_id}`}
+          _hover={{ textDecoration: "none" }}
+        >
+          <Text
+            color={tertiaryTextColor}
+            fontSize="sm"
+            isTruncated
+          >
+            {account.name}
+          </Text>
+        </ChakraLink>
+        {getOwnerInitials(account.owner) && (
+          <Text as="span" fontSize="xs" color="gray.500">
+            [{getOwnerInitials(account.owner)}]
+          </Text>
+        )}
+      </HStack>
+      <Flex align="center" gap={2}>
+        <HStack spacing={0} align="baseline">
+          <Text fontWeight="semibold" color={balanceColor} fontSize="sm">
+            {splitCurrencyForDisplay(balance, currencySymbol || "").main}
+          </Text>
+          <Text fontSize="2xs" color={balanceColor} opacity={0.7}>
+            {splitCurrencyForDisplay(balance, currencySymbol || "").decimals}
+          </Text>
+        </HStack>
+        <Flex gap={1}>
+          <IconButton
+            icon={<Plus size={14} />}
+            size="xs"
+            variant="ghost"
+            colorScheme="brand"
+            aria-label="Add transaction"
+            onClick={() => onAddTransaction(account.account_id, undefined)}
+          />
+          <IconButton
+            icon={<Repeat size={14} />}
+            size="xs"
+            variant="ghost"
+            colorScheme="brand"
+            aria-label="Transfer funds"
+            onClick={() => onTransferFunds(account.account_id)}
+          />
         </Flex>
-      </CardHeader>
-    </Card>
+      </Flex>
+    </Flex>
   );
 };

@@ -118,7 +118,7 @@ const AccountInsights: React.FC<AccountInsightsProps> = ({ accountId }) => {
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
                     data={data.trend_data}
-                    margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+                    margin={{ top: 10, right: 10, left: -10, bottom: 10 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
                     <XAxis

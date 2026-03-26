@@ -7,7 +7,6 @@ import {
   IconButton,
   Heading,
   HStack,
-  Stack,
   Badge,
   useColorModeValue,
 } from "@chakra-ui/react";
@@ -161,7 +160,7 @@ export const SubtypeGroupSection: React.FC<SubtypeGroupSectionProps> = ({
           </Box>
 
           {/* Mobile card view */}
-          <Stack spacing={2} display={{ base: "block", xl: "none" }} mt={2} pl={2}>
+          <Box display={{ base: "block", xl: "none" }} mt={1}>
             {visibleAccounts.map((account) => {
               const acctBalanceColor = getBalanceColor(account.net_balance || 0, type, false);
               return (
@@ -175,7 +174,7 @@ export const SubtypeGroupSection: React.FC<SubtypeGroupSectionProps> = ({
                 />
               );
             })}
-          </Stack>
+          </Box>
         </>
       )}
     </Box>
