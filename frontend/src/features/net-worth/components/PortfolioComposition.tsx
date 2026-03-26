@@ -11,7 +11,7 @@ import {
 import { motion } from "framer-motion";
 import { Landmark, TrendingUp, Gem, BarChart2 } from "lucide-react";
 import { splitCurrencyForDisplay } from "@/features/mutual-funds/utils";
-import { ALLOCATION_COLORS } from "./AssetAllocationChart";
+import { ALLOCATION_COLORS } from "../constants";
 
 const MotionBox = motion(Box);
 

@@ -5,12 +5,14 @@ import PageContainer from "@components/shared/PageContainer";
 import HomeMainHeader from "./HomeMainHeader";
 import { Box } from "@chakra-ui/react";
 
+import type { Ledger } from "@/types";
+
 interface HomeMainProps {
-  ledgers?: Array<{ ledger_id: string; name: string; currency_symbol: string; description: string; notes: string; created_at: string; updated_at: string }>;
+  ledgers?: Ledger[];
   onOpen: () => void;
   isOpen: boolean;
   onClose: () => void;
-   
+
   handleCreateLedger: (name: string, currency: string, description: string, notes: string, navServiceType: string) => void;
 }
 

@@ -21,10 +21,10 @@ import {
 } from "@chakra-ui/react";
 import { Edit } from "lucide-react";
 import { AxiosError } from "axios";
-import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import useLedgerStore from "@/components/shared/store";
 import { notify } from "@/components/shared/notify";
+import { useLedgerDetails } from "@features/ledger/hooks";
 
 interface Currency {
   symbol: string;
@@ -90,16 +90,7 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
   );
   const [isLoading, setIsLoading] = useState<boolean>(false);
   // Fetch current ledger data when modal opens
-  const { data: ledgerData, isLoading: isFetching } = useQuery({
-    queryKey: ["ledger-details", ledgerId],
-    queryFn: async () => {
-      if (!ledgerId) return null;
-      const response = await api.get(`/ledger/${ledgerId}`);
-      return response.data;
-    },
-    enabled: isOpen && !!ledgerId,
-    staleTime: 0, // Always fetch fresh data
-  });
+  const { data: ledgerData, isLoading: isFetching } = useLedgerDetails(ledgerId, isOpen);
 
   // Update state when props change or data is fetched
   useEffect(() => {

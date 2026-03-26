@@ -18,7 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Store, TrendingUp, PieChart as PieChartIcon, ChevronDown, X } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
 import { splitCurrencyForDisplay } from "../../../mutual-funds/utils";
-import config from "@/config";
+import api from "@/lib/api";
 
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
@@ -106,21 +106,10 @@ const ExpenseByStore: React.FC<ExpenseByStoreProps> = ({ ledgerId }) => {
     queryFn: async () => {
       if (!ledgerId) return null;
 
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(
-        `${config.apiBaseUrl}/ledger/${ledgerId}/insights/expense-by-store?period_type=${periodType}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+      const response = await api.get(
+        `/ledger/${ledgerId}/insights/expense-by-store?period_type=${periodType}`,
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch expense by store data");
-      }
-
-      return response.json();
+      return response.data;
     },
     enabled: !!ledgerId,
     staleTime: 1000 * 60 * 5,
@@ -132,21 +121,10 @@ const ExpenseByStore: React.FC<ExpenseByStoreProps> = ({ ledgerId }) => {
     queryFn: async () => {
       if (!ledgerId || !selectedStoreName) return null;
 
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(
-        `${config.apiBaseUrl}/ledger/${ledgerId}/insights/expense-by-store/categories?store_name=${encodeURIComponent(selectedStoreName)}&period_type=${periodType}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+      const response = await api.get(
+        `/ledger/${ledgerId}/insights/expense-by-store/categories?store_name=${encodeURIComponent(selectedStoreName)}&period_type=${periodType}`,
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch store category breakdown");
-      }
-
-      return response.json();
+      return response.data;
     },
     enabled: !!ledgerId && !!selectedStoreName,
     staleTime: 1000 * 60 * 5,

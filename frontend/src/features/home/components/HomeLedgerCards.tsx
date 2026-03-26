@@ -15,16 +15,10 @@ import useLedgerStore from "@/components/shared/store";
 
 const MotionBox = motion(Box);
 
+import type { Ledger } from "@/types";
+
 interface HomeLedgerCardsProps {
-  ledgers?: Array<{
-    ledger_id: string;
-    name: string;
-    currency_symbol: string;
-    description: string;
-    notes: string;
-    created_at: string;
-    updated_at: string;
-  }>;
+  ledgers?: Ledger[];
   onOpen: () => void;
 }
 
@@ -247,11 +241,11 @@ const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
                   ledger.ledger_id,
                   ledger.name,
                   ledger.currency_symbol,
-                  ledger.description,
-                  ledger.notes,
+                  ledger.description ?? "",
+                  ledger.notes ?? "",
                   "",
-                  ledger.created_at,
-                  ledger.updated_at
+                  ledger.created_at ?? "",
+                  ledger.updated_at ?? ""
                 )
               }
               _hover={{
@@ -324,7 +318,7 @@ const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
                   <HStack spacing={1.5} mt={2.5}>
                     <Icon as={Calendar} boxSize={3} color={dateColor} />
                     <Text fontSize="xs" color={dateColor} letterSpacing="0.02em">
-                      {formatDate(ledger.created_at)}
+                      {formatDate(ledger.created_at ?? "")}
                     </Text>
                   </HStack>
                 </Box>

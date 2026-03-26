@@ -9,22 +9,13 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
 import { TrendingUp, TrendingDown, Hash, Calendar } from "lucide-react";
-import api from "@/lib/api";
 import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
+import { useAccountSummary } from "../hooks";
 
 const MotionBox = motion(Box);
 const MotionSimpleGrid = motion(SimpleGrid);
-
-interface AccountSummaryData {
-  total_credit: number;
-  total_debit: number;
-  transaction_count: number;
-  first_transaction_date: string | null;
-  last_transaction_date: string | null;
-}
 
 interface AccountSummaryStatsProps {
   accountId: string;
@@ -53,17 +44,7 @@ const AccountSummaryStats: React.FC<AccountSummaryStatsProps> = ({
   const countAccentColor = useColorModeValue("blue.400", "blue.300");
   const dateAccentColor = useColorModeValue("gray.400", "gray.500");
 
-  const { data } = useQuery<AccountSummaryData>({
-    queryKey: ["account-summary", accountId],
-    queryFn: async () => {
-      const response = await api.get(
-        `/ledger/${ledgerId}/account/${accountId}/summary`
-      );
-      return response.data;
-    },
-    enabled: !!ledgerId && !!accountId,
-    staleTime: 1000 * 60 * 5,
-  });
+  const { data } = useAccountSummary(ledgerId || "", accountId);
 
   if (!data || data.transaction_count === 0) return null;
 

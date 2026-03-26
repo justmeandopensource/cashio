@@ -14,11 +14,7 @@ import { X } from "lucide-react";
 import { AxiosError } from "axios";
 import api from "@/lib/api";
 import { notify } from "@/components/shared/notify";
-
-interface TagItem {
-  tag_id?: string;
-  name: string;
-}
+import type { TagItem } from "@/types";
 
 interface FormTagsProps {
   tags: (TagItem | string)[];

@@ -9,21 +9,11 @@ import {
   Icon,
 } from "@chakra-ui/react";
 import { Target } from "lucide-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
 import { notify } from "@/components/shared/notify";
-import { AxiosError } from "axios";
 import BudgetSummaryCard from "./BudgetSummaryCard";
 import BudgetItem, { BudgetItemData } from "./BudgetItem";
 import BudgetModal from "./BudgetModal";
-
-interface BudgetData {
-  period: string;
-  period_label: string;
-  total_budgeted: number;
-  total_spent: number;
-  budgets: BudgetItemData[];
-}
+import { useBudgets, useDeleteBudget } from "../hooks";
 
 interface BudgetListProps {
   ledgerId: string;
@@ -32,39 +22,35 @@ interface BudgetListProps {
 }
 
 const BudgetList: React.FC<BudgetListProps> = ({ ledgerId, period, currencySymbol }) => {
-  const queryClient = useQueryClient();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [editingBudget, setEditingBudget] = useState<BudgetItemData | undefined>();
 
   const emptyColor = useColorModeValue("gray.400", "gray.500");
   const emptyIconColor = useColorModeValue("gray.200", "gray.600");
 
-  const { data, isLoading, isError } = useQuery<BudgetData>({
-    queryKey: ["budgets", ledgerId, period],
-    queryFn: async () => {
-      const response = await api.get(`/ledger/${ledgerId}/budgets?period=${period}`);
-      return response.data;
-    },
-    enabled: !!ledgerId,
-  });
+  const { data, isLoading, isError } = useBudgets(ledgerId, period);
 
-  const deleteMutation = useMutation({
-    mutationFn: async (budgetId: number) => {
-      await api.delete(`/ledger/${ledgerId}/budgets/${budgetId}`);
+  const deleteBudgetMutation = useDeleteBudget();
+  const deleteMutation = {
+    mutate: (budgetId: number) => {
+      deleteBudgetMutation.mutate(
+        { ledgerId, budgetId },
+        {
+          onSuccess: () => {
+            notify({ description: "Budget deleted.", status: "success" });
+          },
+          onError: (error: any) => {
+            if (error.response?.status !== 401) {
+              notify({
+                description: error.response?.data?.detail || "Failed to delete budget.",
+                status: "error",
+              });
+            }
+          },
+        },
+      );
     },
-    onSuccess: () => {
-      notify({ description: "Budget deleted.", status: "success" });
-      queryClient.invalidateQueries({ queryKey: ["budgets", ledgerId] });
-    },
-    onError: (error: AxiosError<{ detail: string }>) => {
-      if (error.response?.status !== 401) {
-        notify({
-          description: error.response?.data?.detail || "Failed to delete budget.",
-          status: "error",
-        });
-      }
-    },
-  });
+  };
 
   const handleEdit = (budget: BudgetItemData) => {
     setEditingBudget(budget);

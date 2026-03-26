@@ -51,14 +51,7 @@ import { BuySellAssetModalProps, AssetTransactionCreate } from "../../types";
 import { useBuyAsset, useSellAsset } from "../../api";
 import useLedgerStore from "@/components/shared/store";
 import { formatCurrencyWithSymbol } from "../../utils";
-
-interface Account {
-  account_id: number;
-  name: string;
-  type: "asset" | "liability";
-  subtype?: string;
-  owner?: string;
-}
+import type { Account } from "@/types";
 
 interface TransactionFormData {
   quantity: string;

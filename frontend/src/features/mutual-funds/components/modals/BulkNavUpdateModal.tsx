@@ -118,7 +118,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
     if (!currentFund) return;
     const row = rowRefs.current.get(currentFund.mutual_fund_id);
     row?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [currentFetchingCode, isFetching]);
+  }, [currentFetchingCode, isFetching, mutualFunds]);
 
   const handleBeginFetch = async () => {
     setIsFetching(true);

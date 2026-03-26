@@ -7,18 +7,7 @@ import { PieChart } from "lucide-react";
 import { Box, Flex, FormControl, Select, Text, useColorModeValue } from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
 import useLedgerStore from "@/components/shared/store";
-import { useQuery } from "@tanstack/react-query";
-import config from "@/config";
-
-interface Ledger {
-  ledger_id: string;
-  name: string;
-  currency_symbol: string;
-  description?: string;
-  notes?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+import { useLedgers } from "@features/ledger/hooks";
 
 const visualizationOptions = [
   {
@@ -80,25 +69,7 @@ const Insights = () => {
 
 
 
-  const { data: ledgers, isLoading } = useQuery<Ledger[]>({
-    queryKey: ["ledgers"],
-    queryFn: async () => {
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(`${config.apiBaseUrl}/ledger/list`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch ledgers");
-      }
-
-      return response.json();
-    },
-  });
+  const { data: ledgers, isLoading } = useLedgers();
 
   useEffect(() => {
     setSelectedLedgerId(ledgerId);

@@ -1,26 +1,13 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Flex, useDisclosure, Text } from "@chakra-ui/react";
 import Layout from "@components/Layout";
 import HomeMain from "@features/home/components/HomeMain";
-import api from "@/lib/api";
 import HomeLedgerCardsSkeleton from "./components/HomeLedgercardsSkeleton";
 import { notify } from "@/components/shared/notify";
 import { useNavigate } from "react-router-dom";
-
-interface Ledger {
-  ledger_id: string;
-  name: string;
-  currency_symbol: string;
-  description: string;
-  notes: string;
-  nav_service_type: string;
-  created_at: string;
-  updated_at: string;
-}
+import { useLedgers, useCreateLedger } from "@features/ledger/hooks";
 
 const Home = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   // Fetch ledgers
@@ -28,57 +15,10 @@ const Home = () => {
     data: ledgers,
     isLoading: isFetchingLedgers,
     isError: isLedgersError,
-  } = useQuery<Ledger[]>({
-    queryKey: ["ledgers"],
-    queryFn: async () => {
-      const response = await api.get("/ledger/list");
-      return response.data;
-    },
-  });
+  } = useLedgers();
 
   // Create ledger mutation
-  const createLedgerMutation = useMutation({
-    mutationFn: async ({
-      name,
-      currency_symbol,
-      description,
-      notes,
-      nav_service_type,
-    }: {
-      name: string;
-      currency_symbol: string;
-      description: string;
-      notes: string;
-      nav_service_type: string;
-    }) => {
-      const response = await api.post("/ledger/create", {
-        name,
-        currency_symbol,
-        description,
-        notes,
-        nav_service_type,
-      });
-      return response.data;
-    },
-    onSuccess: (data: Ledger) => {
-      // Update the cached ledgers list with the new ledger
-      queryClient.setQueryData(["ledgers"], (oldData: Ledger[] | undefined) => [
-        ...(oldData || []),
-        data,
-      ]);
-      onClose();
-      notify({
-        description: "Ledger created successfully",
-        status: "success",
-      });
-    },
-    onError: (error: Error) => {
-      notify({
-        description: error.message,
-        status: "error",
-      });
-    },
-  });
+  const createLedgerMutation = useCreateLedger();
 
   // handle ledger creation
   const handleCreateLedger = async (

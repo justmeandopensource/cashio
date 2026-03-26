@@ -22,36 +22,12 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { useQuery } from "@tanstack/react-query";
 import { LineChart, BarChart2 } from "lucide-react";
-import api from "@/lib/api";
 import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
+import { useAccountInsights } from "../hooks";
 
 const MotionBox = motion(Box);
-
-interface TrendItem {
-  period: string;
-  income: number;
-  expense: number;
-}
-
-interface CategoryItem {
-  name: string;
-  amount: number;
-  percentage: number;
-}
-
-interface InsightsData {
-  trend_data: TrendItem[];
-  top_categories: CategoryItem[];
-  summary: {
-    total_income: number;
-    total_expense: number;
-    avg_income: number;
-    avg_expense: number;
-  };
-}
 
 interface AccountInsightsProps {
   accountId: string;
@@ -91,17 +67,7 @@ const AccountInsights: React.FC<AccountInsightsProps> = ({ accountId }) => {
   const headingColor = useColorModeValue("red.600", "red.300");
   const baseColors = useColorModeValue(BASE_COLORS_LIGHT, BASE_COLORS_DARK);
 
-  const { data } = useQuery<InsightsData>({
-    queryKey: ["account-insights", accountId],
-    queryFn: async () => {
-      const response = await api.get(
-        `/ledger/${ledgerId}/account/${accountId}/insights`
-      );
-      return response.data;
-    },
-    enabled: !!ledgerId && !!accountId,
-    staleTime: 1000 * 60 * 5,
-  });
+  const { data } = useAccountInsights(ledgerId || "", accountId);
 
   if (!data || (data.trend_data.length === 0 && data.top_categories.length === 0)) {
     return null;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Box,
   Table,
@@ -25,18 +25,10 @@ import { Plus,
   ArrowDownCircle,
 } from "lucide-react";
 import CreateCategoryModal from "@components/modals/CreateCategoryModal";
-import config from "@/config";
 import { notify } from "@/components/shared/notify";
 import { useColorModeValue } from "@chakra-ui/react";
-
-// Define TypeScript interfaces
-interface Category {
-  category_id: string;
-  name: string;
-  type: "income" | "expense";
-  is_group: boolean;
-  parent_category_id: string | null;
-}
+import type { Category } from "@/types";
+import { useCategories } from "../hooks";
 
 const CategoriesMain: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -83,23 +75,7 @@ const CategoriesMain: React.FC = () => {
     data: categories = [],
     isLoading: isCategoriesLoading,
     isError: isCategoriesError,
-  } = useQuery<Category[]>({
-    queryKey: ["categories"],
-    queryFn: async () => {
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(`${config.apiBaseUrl}/category/list`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch categories");
-      }
-
-      return response.json();
-    },
-  });
+  } = useCategories();
 
   // Function to refresh categories data
   const refreshCategories = () => {

@@ -20,12 +20,11 @@ import {
   Textarea,
   Icon,
 } from "@chakra-ui/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
 import useLedgerStore from "../shared/store";
 import { Plus, Check } from "lucide-react";
 import { notify } from "@/components/shared/notify";
 import { AxiosError } from "axios";
+import { useCreateAccount } from "@features/ledger/hooks";
 import FormOwnerSuggestionField from "@/components/shared/FormOwnerSuggestionField";
 import { getSubtypesForType } from "@/features/ledger/constants/accountSubtypes";
 
@@ -35,22 +34,12 @@ interface CreateAccountModalProps {
   accountType: "asset" | "liability";
 }
 
-interface CreateAccountPayload {
-  name: string;
-  subtype: string;
-  type: string;
-  owner?: string;
-  opening_balance?: number;
-  description?: string;
-  notes?: string;
-}
 
 const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   isOpen,
   onClose,
   accountType,
 }) => {
-  const queryClient = useQueryClient();
   const { ledgerId, currencySymbol } = useLedgerStore();
   const [accountName, setAccountName] = useState<string>("");
   const [subtype, setSubtype] = useState<string>("");
@@ -91,32 +80,28 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
     }
   };
 
-  const createAccountMutation = useMutation({
-    mutationFn: async (payload: CreateAccountPayload) => {
-      const response = await api.post(
-        `/ledger/${ledgerId}/account/create`,
-        payload,
+  const createAccountBase = useCreateAccount();
+  const createAccountMutation = {
+    ...createAccountBase,
+    mutate: (payload: { name: string; subtype: string; type: string; owner?: string; opening_balance?: number; description?: string; notes?: string }) => {
+      createAccountBase.mutate(
+        { ledgerId: ledgerId!, data: payload },
+        {
+          onSuccess: () => {
+            notify({ description: "Account created successfully.", status: "success" });
+            resetForm();
+            onClose();
+          },
+          onError: (error: Error) => {
+            const axiosErr = error as AxiosError<{ detail: string }>;
+            if (axiosErr.response?.status !== 401) {
+              notify({ description: axiosErr.response?.data?.detail || "Failed to create account.", status: "error" });
+            }
+          },
+        },
       );
-      return response.data;
     },
-    onSuccess: () => {
-      notify({
-        description: "Account created successfully.",
-        status: "success",
-      });
-      resetForm();
-      onClose();
-      queryClient.invalidateQueries({ queryKey: ["accounts"] });
-    },
-    onError: (error: AxiosError<{ detail: string }>) => {
-      if (error.response?.status !== 401) {
-        notify({
-          description: error.response?.data?.detail || "Failed to create account.",
-          status: "error",
-        });
-      }
-    },
-  });
+  };
 
   const handleSubmit = (): void => {
     if (!accountName) {
@@ -128,7 +113,7 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
       return;
     }
 
-    const payload: CreateAccountPayload = {
+    const payload: Record<string, any> = {
       name: accountName,
       subtype,
       type: accountType,
@@ -147,7 +132,7 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
       payload.notes = notes;
     }
 
-    createAccountMutation.mutate(payload);
+    createAccountMutation.mutate(payload as any);
   };
 
   return (

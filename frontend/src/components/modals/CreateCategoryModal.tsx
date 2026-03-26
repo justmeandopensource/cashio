@@ -21,16 +21,10 @@ import {
   Text,
   Icon,
 } from "@chakra-ui/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
 import { Plus, Check } from "lucide-react";
 import { notify } from "@/components/shared/notify";
 import { AxiosError } from "axios";
-
-interface GroupCategory {
-  category_id: string;
-  name: string;
-}
+import { useGroupCategories, useCreateCategory } from "@features/categories/hooks";
 
 interface CreateCategoryModalProps {
   isOpen: boolean;
@@ -39,20 +33,12 @@ interface CreateCategoryModalProps {
   parentCategoryId?: string | null;
 }
 
-interface CreateCategoryPayload {
-  name: string;
-  is_group: boolean;
-  parent_category_id: string | null;
-  type: string;
-}
-
 const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
   isOpen,
   onClose,
   categoryType,
   parentCategoryId,
 }) => {
-  const queryClient = useQueryClient();
   const [categoryName, setCategoryName] = useState<string>("");
   const [isGroupCategory, setIsGroupCategory] = useState<boolean>(false);
   const [parentCategory, setParentCategory] = useState<string>(
@@ -91,27 +77,7 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
     data: groupCategories,
     isLoading: isGroupCategoriesLoading,
     isError: isGroupCategoriesError,
-  } = useQuery({
-    queryKey: ["groupCategories", categoryType],
-    queryFn: async (): Promise<GroupCategory[]> => {
-      try {
-        const response = await api.get<GroupCategory[]>(
-          `/category/group?category_type=${categoryType}`,
-        );
-        return response.data;
-      } catch (error) {
-        const axiosError = error as AxiosError<{ detail: string }>;
-        if (axiosError.response?.status === 401) {
-          throw error; // Let the interceptor handle the redirect
-        }
-        throw new Error(
-          axiosError.response?.data?.detail ||
-            "Failed to fetch group categories",
-        );
-      }
-    },
-    enabled: isOpen && !parentCategoryId, // Only fetch group categories when the modal is open and no parentCategoryId is provided
-  });
+  } = useGroupCategories(categoryType, isOpen && !parentCategoryId);
 
   // Reset form fields
   const resetForm = (): void => {
@@ -128,32 +94,25 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
   };
 
   // Mutation for creating a new category
-  const createCategoryMutation = useMutation({
-    mutationFn: async (payload: CreateCategoryPayload) => {
-      const response = await api.post(`/category/create`, payload);
-      return response.data;
-    },
-    onSuccess: () => {
-      notify({
-        description: "Category created successfully.",
-        status: "success",
+  const createCategoryBase = useCreateCategory();
+  const createCategoryMutation = {
+    ...createCategoryBase,
+    mutate: (payload: { name: string; is_group: boolean; parent_category_id: string | null; type: string }) => {
+      createCategoryBase.mutate(payload, {
+        onSuccess: () => {
+          notify({ description: "Category created successfully.", status: "success" });
+          resetForm();
+          onClose();
+        },
+        onError: (error: Error) => {
+          const axiosErr = error as AxiosError<{ detail: string }>;
+          if (axiosErr.response?.status !== 401) {
+            notify({ description: axiosErr.response?.data?.detail || "Failed to create category.", status: "error" });
+          }
+        },
       });
-      resetForm();
-      onClose();
-      queryClient.invalidateQueries({
-        queryKey: ["categories"],
-      });
     },
-    onError: (error: AxiosError<{ detail: string }>) => {
-      if (error.response?.status !== 401) {
-        notify({
-          description:
-            error.response?.data?.detail || "Failed to create category.",
-          status: "error",
-          });
-      }
-    },
-  });
+  };
 
   // Handle form submission
   const handleSubmit = (): void => {
@@ -165,7 +124,7 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
       return;
     }
 
-    const payload: CreateCategoryPayload = {
+    const payload = {
       name: categoryName,
       is_group: isGroupCategory,
       parent_category_id: parentCategory || null,

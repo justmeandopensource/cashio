@@ -26,18 +26,12 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { Plus, Pencil, Search, ChevronDown, X, Check } from "lucide-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
 import { notify } from "@/components/shared/notify";
 import { AxiosError } from "axios";
 import { BudgetItemData } from "./BudgetItem";
-
-interface Category {
-  category_id: number;
-  name: string;
-  type: string;
-  is_group: boolean;
-}
+import type { Category } from "@/types";
+import { useExpenseLeafCategories } from "@features/categories/hooks";
+import { useCreateBudget, useUpdateBudget } from "../hooks";
 
 interface BudgetModalProps {
   isOpen: boolean;
@@ -56,8 +50,6 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
   mode,
   budget,
 }) => {
-  const queryClient = useQueryClient();
-
   const [categoryId, setCategoryId] = useState<string>("");
   const [categorySearch, setCategorySearch] = useState<string>("");
   const [isCategoryOpen, setIsCategoryOpen] = useState<boolean>(false);
@@ -82,14 +74,7 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
   const modalIconColor = useColorModeValue("brand.500", "brand.400");
   const selectedBorderColor = useColorModeValue("brand.400", "brand.400");
 
-  const { data: categories = [] } = useQuery<Category[]>({
-    queryKey: ["expenseLeafCategories"],
-    queryFn: async () => {
-      const response = await api.get("/category/list?type=expense&ignore_group=true");
-      return response.data;
-    },
-    enabled: isOpen && mode === "create",
-  });
+  const { data: categories = [] } = useExpenseLeafCategories(isOpen && mode === "create") as { data: Category[] };
 
   const filteredCategories = categories.filter((c) =>
     c.name.toLowerCase().includes(categorySearch.toLowerCase())
@@ -152,51 +137,50 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
     }
   };
 
-  const createMutation = useMutation({
-    mutationFn: async () => {
-      const response = await api.post(`/ledger/${ledgerId}/budgets`, {
-        category_id: Number(categoryId),
-        period: selectedPeriod,
-        amount: Number(amount),
-      });
-      return response.data;
-    },
-    onSuccess: () => {
-      notify({ description: "Budget created.", status: "success" });
-      queryClient.invalidateQueries({ queryKey: ["budgets", ledgerId] });
-      onClose();
-    },
-    onError: (error: AxiosError<{ detail: string }>) => {
-      if (error.response?.status !== 401) {
-        notify({
-          description: error.response?.data?.detail || "Failed to create budget.",
-          status: "error",
-        });
-      }
-    },
-  });
+  const createBudgetMutation = useCreateBudget();
+  const updateBudgetMutation = useUpdateBudget();
 
-  const updateMutation = useMutation({
-    mutationFn: async () => {
-      const response = await api.put(`/ledger/${ledgerId}/budgets/${budget!.budget_id}`, {
-        amount: Number(amount),
-      });
-      return response.data;
+  const createMutation = {
+    mutate: () => {
+      createBudgetMutation.mutate(
+        { ledgerId, data: { category_id: Number(categoryId), period: selectedPeriod, amount: Number(amount) } },
+        {
+          onSuccess: () => {
+            notify({ description: "Budget created.", status: "success" });
+            onClose();
+          },
+          onError: (error: Error) => {
+            const axiosErr = error as AxiosError<{ detail: string }>;
+            if (axiosErr.response?.status !== 401) {
+              notify({ description: axiosErr.response?.data?.detail || "Failed to create budget.", status: "error" });
+            }
+          },
+        },
+      );
     },
-    onSuccess: () => {
-      notify({ description: "Budget updated.", status: "success" });
-      queryClient.invalidateQueries({ queryKey: ["budgets", ledgerId] });
-      onClose();
+    isPending: createBudgetMutation.isPending,
+  };
+
+  const updateMutation = {
+    mutate: () => {
+      updateBudgetMutation.mutate(
+        { ledgerId, budgetId: budget!.budget_id, data: { amount: Number(amount) } },
+        {
+          onSuccess: () => {
+            notify({ description: "Budget updated.", status: "success" });
+            onClose();
+          },
+          onError: (error: Error) => {
+            const axiosErr = error as AxiosError<{ detail: string }>;
+            if (axiosErr.response?.status !== 401) {
+              notify({ description: axiosErr.response?.data?.detail || "Failed to update budget.", status: "error" });
+            }
+          },
+        },
+      );
     },
-    onError: (error: AxiosError<{ detail: string }>) => {
-      if (error.response?.status !== 401) {
-        notify({
-          description: error.response?.data?.detail || "Failed to update budget.",
-          status: "error",
-        });
-      }
-    },
-  });
+    isPending: updateBudgetMutation.isPending,
+  };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 

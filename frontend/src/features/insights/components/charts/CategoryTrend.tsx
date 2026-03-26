@@ -17,6 +17,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ResponsiveBar } from "@nivo/bar";
 import { ResponsiveLine } from "@nivo/line";
 import { useQuery } from "@tanstack/react-query";
+import { useCategories } from "@features/categories/hooks";
+import api from "@/lib/api";
 import {
   TrendingUp,
   TrendingDown,
@@ -27,7 +29,6 @@ import {
   ArrowUpRight,
   X,
 } from "lucide-react";
-import config from "@/config";
 import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
 import { splitCurrencyForDisplay } from "../../../mutual-funds/utils";
@@ -43,13 +44,6 @@ const SUBCATEGORY_COLORS = [
 ];
 
 // Interfaces
-interface Category {
-  category_id: string;
-  name: string;
-  type: "income" | "expense";
-  is_group: boolean;
-}
-
 interface CategoryAmount {
   amount: number;
   category_name: string;
@@ -135,31 +129,17 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
   const maxTicks = useBreakpointValue({ base: 5, md: 10 }) || 5;
 
   // Fetch categories
-  const { data: categories, isLoading: isCategoriesLoading } = useQuery<Category[]>({
-    queryKey: ["categories"],
-    queryFn: async () => {
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(`${config.apiBaseUrl}/category/list`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error("Failed to fetch categories");
-      return response.json();
-    },
-    staleTime: 0,
-  });
+  const { data: categories, isLoading: isCategoriesLoading } = useCategories();
 
   // Fetch trend data
   const { data: trendData, isLoading: isTrendDataLoading, isError } = useQuery<CategoryTrendData>({
     queryKey: ["categoryTrend", ledgerId, selectedCategory, periodType],
     queryFn: async () => {
       if (!ledgerId || !selectedCategory) return null;
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(
-        `${config.apiBaseUrl}/ledger/${ledgerId}/insights/category-trend?category_id=${selectedCategory}&period_type=${periodType}`,
-        { headers: { Authorization: `Bearer ${token}` } },
+      const response = await api.get(
+        `/ledger/${ledgerId}/insights/category-trend?category_id=${selectedCategory}&period_type=${periodType}`,
       );
-      if (!response.ok) throw new Error("Failed to fetch category trend data");
-      return response.json();
+      return response.data;
     },
     enabled: !!ledgerId && !!selectedCategory,
     staleTime: 1000 * 60 * 5,

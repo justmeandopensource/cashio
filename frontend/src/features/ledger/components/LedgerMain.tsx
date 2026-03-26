@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Badge,
   Box,
@@ -19,19 +19,11 @@ import LedgerMainAccounts from "./LedgerMainAccounts";
 import LedgerMainTransactions from "./LedgerMainTransactions";
 import PhysicalAssets from "@features/physical-assets/PhysicalAssets";
 import MutualFunds from "@features/mutual-funds/MutualFunds";
-import api from "@/lib/api";
 import { AlignLeft, CreditCard, Coins, TrendingUp } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
+import { useAccounts } from "../hooks";
 
 const MotionBox = motion(Box);
-
-interface Account {
-  account_id: string;
-  name: string;
-  type: "asset" | "liability";
-  subtype: string;
-  owner?: string;
-}
 
 interface LedgerMainProps {
    
@@ -78,13 +70,7 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds, on
   const badgeBg = useColorModeValue("brand.50", "brand.900");
   const badgeColor = useColorModeValue("brand.600", "brand.200");
 
-  const { data: accounts, isError, isLoading } = useQuery<Account[]>({
-    queryKey: ["accounts", ledgerId],
-    queryFn: async () => {
-      const response = await api.get(`/ledger/${ledgerId}/accounts`);
-      return response.data;
-    },
-  });
+  const { data: accounts, isError, isLoading } = useAccounts(ledgerId);
 
   const refreshAccountsData = async (): Promise<void> => {
     await queryClient.invalidateQueries({ queryKey: ["accounts", ledgerId] });

@@ -13,25 +13,13 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { Target, Plus, Calendar, CalendarDays } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import Layout from "@components/Layout";
 import PageHeader from "@components/shared/PageHeader";
 import PageContainer from "@components/shared/PageContainer";
 import useLedgerStore from "@/components/shared/store";
-import api from "@/lib/api";
 import BudgetList from "./components/BudgetList";
 import BudgetModal from "./components/BudgetModal";
-
-interface Ledger {
-  ledger_id: string;
-  name: string;
-  currency_symbol: string;
-  description?: string;
-  notes?: string;
-  nav_service_type?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+import { useLedgers } from "@features/ledger/hooks";
 
 const Budget: React.FC = () => {
   const navigate = useNavigate();
@@ -44,13 +32,7 @@ const Budget: React.FC = () => {
     setSelectedLedgerId(ledgerId);
   }, [ledgerId]);
 
-  const { data: ledgers, isLoading: isLoadingLedgers } = useQuery<Ledger[]>({
-    queryKey: ["ledgers"],
-    queryFn: async () => {
-      const response = await api.get("/ledger/list");
-      return response.data;
-    },
-  });
+  const { data: ledgers, isLoading: isLoadingLedgers } = useLedgers();
 
   const handleLedgerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newId = e.target.value;

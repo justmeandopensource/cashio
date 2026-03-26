@@ -22,13 +22,9 @@ import { NetWorthResponse } from "../types";
 import NetWorthSummary from "./NetWorthSummary";
 import AssetAllocationChart from "./AssetAllocationChart";
 import PortfolioComposition from "./PortfolioComposition";
+import type { Ledger } from "@/types";
 
 const MotionCenter = motion(Center);
-
-interface Ledger {
-  ledger_id: string;
-  name: string;
-}
 
 interface NetWorthMainProps {
   data: NetWorthResponse | undefined;

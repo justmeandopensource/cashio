@@ -3,22 +3,7 @@ import { Box } from "@chakra-ui/react";
 import AccountSummaryStats from "./AccountSummaryStats";
 import AccountInsights from "./AccountInsights";
 import AccountMainTransactions from "./AccountMainTransactions";
-
-interface Account {
-  ledger_id: string;
-  account_id: string;
-  name: string;
-  type: "asset" | "liability";
-  subtype: string;
-  owner?: string;
-  net_balance: number;
-  opening_balance: number;
-  balance: number;
-  description?: string;
-  notes?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+import type { Account } from "@/types";
 
 interface AccountMainProps {
   account: Account;

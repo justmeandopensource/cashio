@@ -6,42 +6,17 @@ import {
   Flex,
   VStack,
   Text,
-  FormControl,
-  FormLabel,
-  InputGroup,
-  InputLeftAddon,
-  InputLeftElement,
-  InputRightElement,
-  Input,
   HStack,
   Button,
-  FormHelperText,
   useColorModeValue,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  Icon,
 } from "@chakra-ui/react";
-import { Plus, Trash2, Search, ChevronDown, Check, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import { AxiosError } from "axios";
 import api from "@/lib/api";
 import { notify } from "@/components/shared/notify";
-import {
-  handleNumericInput,
-  handleNumericPaste,
-} from "@/components/shared/numericInputUtils";
-
-interface Category {
-  category_id: string;
-  name: string;
-  type: string;
-}
-
-interface Split {
-  amount: string;
-  categoryId: string;
-  notes?: string;
-}
+import type { Split } from "@/types";
+import type { Category, ApiErrorResponse } from "./types";
+import SplitRow from "./SplitRow";
 
 interface FormSplitsProps {
   splits: Split[];
@@ -50,7 +25,7 @@ interface FormSplitsProps {
   amount: string;
   type: "income" | "expense";
   categories: Category[];
-   
+
   setSplits: (splits: Split[]) => void;
   borderColor: string;
   bgColor: string;
@@ -58,10 +33,6 @@ interface FormSplitsProps {
   buttonColorScheme: string;
   ledgerId: string;
   onDropdownOpenChange?: (isOpen: boolean) => void;
-}
-
-interface ApiErrorResponse {
-  detail?: string;
 }
 
 // Helper function to round to 2 decimal places for financial calculations
@@ -85,20 +56,10 @@ const FormSplits: React.FC<FormSplitsProps> = ({
 }) => {
   // Modern theme colors
   const cardBg = useColorModeValue("gray.50", "gray.700");
-  const inputBg = useColorModeValue("white", "gray.700");
-  const inputBorderColor = useColorModeValue("gray.200", "gray.600");
-  const focusBorderColor = useColorModeValue("teal.500", "teal.300");
-  const splitCardBg = useColorModeValue("white", "gray.800");
   const splitBorderColor = useColorModeValue("gray.100", "gray.600");
   const progressTrackBg = useColorModeValue("gray.200", "gray.600");
   const subtitleColor = useColorModeValue("gray.600", "gray.300");
   const allocationLabelColor = useColorModeValue("gray.500", "gray.400");
-  const addonColor = useColorModeValue("gray.600", "gray.200");
-  const helperTextColor = useColorModeValue("gray.500", "gray.400");
-  const dropdownBgColor = useColorModeValue("white", "gray.800");
-  const dropdownBorderColor = useColorModeValue("gray.100", "gray.700");
-  const dropdownHighlightColor = useColorModeValue("teal.50", "teal.900");
-  const dropdownTextColor = useColorModeValue("gray.700", "gray.200");
 
   // Category dropdown state (tracks which split's dropdown is open)
   const [openCategoryIndex, setOpenCategoryIndex] = useState<number | null>(null);
@@ -294,7 +255,7 @@ const FormSplits: React.FC<FormSplitsProps> = ({
   };
 
   // Notes autocomplete helpers
-   
+
   const debounce = <F extends (...args: any[]) => any>(func: F, delay: number) => {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     return function (this: any, ...args: Parameters<F>) {
@@ -432,9 +393,6 @@ const FormSplits: React.FC<FormSplitsProps> = ({
 
         <VStack spacing={4} align="stretch">
           {splits.map((split, index) => {
-            const selectedCategory = categories.find(
-              (c) => c.category_id === split.categoryId
-            );
             const isCategoryOpen = openCategoryIndex === index;
             const isNotesOpen =
               openNotesIndex === index &&
@@ -442,375 +400,96 @@ const FormSplits: React.FC<FormSplitsProps> = ({
             const currentNotesSuggestions = notesSuggestions[index] || [];
 
             return (
-              <Box
+              <SplitRow
                 key={index}
-                bg={splitCardBg}
-                p={{ base: 4, sm: 5 }}
-                borderRadius="md"
-                border="2px solid"
-                borderColor={splitBorderColor}
-                boxShadow="sm"
-                _hover={{
-                  borderColor: "teal.200",
-                  boxShadow: "md",
+                split={split}
+                index={index}
+                canRemove={splits.length > 1}
+                currencySymbol={currencySymbol}
+                categories={categories}
+                type={type}
+                isCategoryOpen={isCategoryOpen}
+                categorySearch={categorySearch}
+                categoryHighlight={categoryHighlight}
+                filteredCategories={filteredCategories}
+                onCategorySearchChange={(value) => {
+                  setCategorySearch(value);
+                  const newSplits = [...splits];
+                  newSplits[index].categoryId = "";
+                  setSplits(newSplits);
+                  setCategoryHighlight(-1);
+                  setOpenCategoryIndex(index);
+                  notifyDropdownChange(true);
                 }}
-                transition="all 0.2s"
-              >
-                <VStack spacing={4} align="stretch">
-                  <HStack spacing={4} align="end">
-                    <FormControl flex="1" isRequired>
-                      <FormLabel fontSize="sm" fontWeight="semibold" mb={2}>
-                        Amount
-                      </FormLabel>
-                      <InputGroup>
-                        <InputLeftAddon
-                          bg={inputBorderColor}
-                          borderWidth="2px"
-                          borderColor={inputBorderColor}
-                          color={addonColor}
-                          fontWeight="semibold"
-                          fontSize="sm"
-                        >
-                          {currencySymbol}
-                        </InputLeftAddon>
-                        <Input
-                          type="text"
-                          inputMode="decimal"
-                          value={(split.amount || "").toString()}
-                          onChange={(e) => {
-                            handleSplitAmountChange(index, e.target.value);
-                          }}
-                          onKeyDown={(e) =>
-                            handleNumericInput(e, (split.amount || "").toString())
-                          }
-                          onPaste={(e) =>
-                            handleNumericPaste(e, (value) => {
-                              handleSplitAmountChange(index, value);
-                            })
-                          }
-                          placeholder="0.00"
-                          borderWidth="2px"
-                          borderColor={inputBorderColor}
-                          bg={inputBg}
-                          borderRadius="md"
-                          _hover={{ borderColor: "teal.300" }}
-                          _focus={{
-                            borderColor: focusBorderColor,
-                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                          }}
-                        />
-                      </InputGroup>
-                    </FormControl>
-
-                    {splits.length > 1 && (
-                      <Button
-                        leftIcon={<Trash2 size={16} />}
-                        variant="outline"
-                        colorScheme="red"
-                        size="md"
-                        height="40px"
-                        onClick={() => removeSplit(index)}
-                        borderWidth="2px"
-                        px={4}
-                        _hover={{
-                          bg: "red.50",
-                          borderColor: "red.300",
-                          transform: "translateY(-1px)",
-                        }}
-                        transition="all 0.2s"
-                      >
-                        Remove
-                      </Button>
-                    )}
-                  </HStack>
-
-                  {/* Category searchable dropdown */}
-                  <FormControl isRequired>
-                    <FormLabel
-                      fontSize="sm"
-                      fontWeight="semibold"
-                      mb={2}
-                      display="flex"
-                      alignItems="center"
-                      gap={1.5}
-                    >
-                      Category
-                      {split.categoryId && (
-                        <Icon as={Check} boxSize={3.5} color="teal.500" />
-                      )}
-                    </FormLabel>
-                    <Popover
-                      isOpen={isCategoryOpen}
-                      onClose={() => {
-                        setOpenCategoryIndex(null);
-                        notifyDropdownChange(false);
-                        setCategoryHighlight(-1);
-                      }}
-                      matchWidth
-                      placement="bottom-start"
-                      autoFocus={false}
-                      returnFocusOnClose={false}
-                    >
-                      <PopoverTrigger>
-                        <InputGroup>
-                          <InputLeftElement pointerEvents="none" height="100%">
-                            <Icon as={Search} boxSize={4} color={helperTextColor} />
-                          </InputLeftElement>
-                          <Input
-                            value={
-                              isCategoryOpen
-                                ? categorySearch
-                                : (selectedCategory?.name ?? "")
-                            }
-                            onChange={(e) => {
-                              setCategorySearch(e.target.value);
-                              const newSplits = [...splits];
-                              newSplits[index].categoryId = "";
-                              setSplits(newSplits);
-                              setCategoryHighlight(-1);
-                              setOpenCategoryIndex(index);
-                              notifyDropdownChange(true);
-                            }}
-                            onFocus={() => {
-                              setCategorySearch("");
-                              setCategoryHighlight(-1);
-                              setOpenCategoryIndex(index);
-                              notifyDropdownChange(true);
-                            }}
-                            onKeyDown={(e) => handleCategoryKeyDown(e, index)}
-                            placeholder="Search categories..."
-                            borderWidth="2px"
-                            borderColor={
-                              split.categoryId ? "teal.400" : inputBorderColor
-                            }
-                            bg={inputBg}
-                            borderRadius="md"
-                            _hover={{ borderColor: "teal.300" }}
-                            _focus={{
-                              borderColor: focusBorderColor,
-                              boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                            }}
-                            autoComplete="off"
-                            data-testid="formsplits-category-dropdown"
-                          />
-                          <InputRightElement height="100%" pr={1}>
-                            {split.categoryId ? (
-                              <Icon
-                                as={X}
-                                boxSize={4}
-                                color={helperTextColor}
-                                cursor="pointer"
-                                onClick={() => {
-                                  const newSplits = [...splits];
-                                  newSplits[index].categoryId = "";
-                                  setSplits(newSplits);
-                                  setCategorySearch("");
-                                  setOpenCategoryIndex(null);
-                                  notifyDropdownChange(false);
-                                  setCategoryHighlight(-1);
-                                }}
-                              />
-                            ) : (
-                              <Icon
-                                as={ChevronDown}
-                                boxSize={4}
-                                color={helperTextColor}
-                                cursor="pointer"
-                                onClick={() => {
-                                  if (isCategoryOpen) {
-                                    setOpenCategoryIndex(null);
-                                    notifyDropdownChange(false);
-                                  } else {
-                                    setCategorySearch("");
-                                    setCategoryHighlight(-1);
-                                    setOpenCategoryIndex(index);
-                                    notifyDropdownChange(true);
-                                  }
-                                }}
-                              />
-                            )}
-                          </InputRightElement>
-                        </InputGroup>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        p={0}
-                        bg={dropdownBgColor}
-                        border="1px solid"
-                        borderColor={dropdownBorderColor}
-                        borderRadius="md"
-                        boxShadow="lg"
-                        maxH="220px"
-                        overflowY="auto"
-                        _focus={{ outline: "none" }}
-                      >
-                        {filteredCategories.length === 0 ? (
-                          <Box px={4} py={3}>
-                            <Text fontSize="sm" color={helperTextColor}>
-                              No categories found
-                            </Text>
-                          </Box>
-                        ) : (
-                          <>
-                            <Box
-                              px={3}
-                              py={2}
-                              bg={cardBg}
-                              borderBottom="1px solid"
-                              borderColor={dropdownBorderColor}
-                            >
-                              <Text
-                                fontSize="xs"
-                                fontWeight="semibold"
-                                color={helperTextColor}
-                                textTransform="uppercase"
-                                letterSpacing="wider"
-                              >
-                                {type === "income"
-                                  ? "Income Categories"
-                                  : "Expense Categories"}
-                              </Text>
-                            </Box>
-                            {filteredCategories.map((cat, i) => (
-                              <Box
-                                key={cat.category_id}
-                                px={4}
-                                py={3}
-                                cursor="pointer"
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="space-between"
-                                bg={
-                                  split.categoryId === cat.category_id ||
-                                  i === categoryHighlight
-                                    ? dropdownHighlightColor
-                                    : "transparent"
-                                }
-                                _hover={{ bg: dropdownHighlightColor }}
-                                onMouseDown={(e) => {
-                                  e.preventDefault();
-                                  selectCategory(index, cat.category_id);
-                                }}
-                                onMouseEnter={() => setCategoryHighlight(i)}
-                              >
-                                <Text
-                                  fontSize="sm"
-                                  color={dropdownTextColor}
-                                  fontWeight={
-                                    split.categoryId === cat.category_id
-                                      ? "semibold"
-                                      : "normal"
-                                  }
-                                >
-                                  {cat.name}
-                                </Text>
-                                {split.categoryId === cat.category_id && (
-                                  <Icon as={Check} boxSize={4} color="teal.500" />
-                                )}
-                              </Box>
-                            ))}
-                          </>
-                        )}
-                      </PopoverContent>
-                    </Popover>
-                    <FormHelperText mt={1} fontSize="xs">
-                      Choose the category for this split
-                    </FormHelperText>
-                  </FormControl>
-
-                  {/* Notes with autocomplete */}
-                  <FormControl>
-                    <FormLabel fontSize="sm" fontWeight="semibold" mb={2}>
-                      Notes
-                    </FormLabel>
-                    <Popover
-                      isOpen={isNotesOpen}
-                      onClose={() => {
-                        setNotesSuggestions((prev) => ({ ...prev, [index]: [] }));
-                        setOpenNotesIndex(null);
-                        notifyDropdownChange(false);
-                        setNotesHighlight(-1);
-                      }}
-                      matchWidth
-                      placement="bottom-start"
-                      autoFocus={false}
-                      returnFocusOnClose={false}
-                    >
-                      <PopoverTrigger>
-                        <Input
-                          type="text"
-                          value={split.notes || ""}
-                          onChange={(e) => {
-                            const newSplits = [...splits];
-                            newSplits[index].notes = e.target.value;
-                            setSplits(newSplits);
-                            debouncedFetchNotes(index, e.target.value);
-                            setNotesHighlight(-1);
-                            if (e.target.value.length < 3) {
-                              setNotesSuggestions((prev) => ({
-                                ...prev,
-                                [index]: [],
-                              }));
-                              setOpenNotesIndex((prev) =>
-                                prev === index ? null : prev
-                              );
-                            }
-                          }}
-                          onKeyDown={(e) => handleNotesKeyDown(e, index)}
-                          placeholder="Optional notes for this split"
-                          borderWidth="2px"
-                          borderColor={inputBorderColor}
-                          bg={inputBg}
-                          borderRadius="md"
-                          _hover={{ borderColor: "teal.300" }}
-                          _focus={{
-                            borderColor: focusBorderColor,
-                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                          }}
-                          autoComplete="off"
-                        />
-                      </PopoverTrigger>
-                      <PopoverContent
-                        p={0}
-                        bg={dropdownBgColor}
-                        border="1px solid"
-                        borderColor={dropdownBorderColor}
-                        borderRadius="md"
-                        boxShadow="lg"
-                        maxH="200px"
-                        overflowY="auto"
-                        _focus={{ outline: "none" }}
-                      >
-                        {currentNotesSuggestions.map((suggestion, i) => (
-                          <Box
-                            key={i}
-                            px={4}
-                            py={3}
-                            cursor="pointer"
-                            bg={
-                              i === notesHighlight
-                                ? dropdownHighlightColor
-                                : "transparent"
-                            }
-                            _hover={{ bg: dropdownHighlightColor }}
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              selectNotesSuggestion(index, suggestion);
-                            }}
-                            onMouseEnter={() => setNotesHighlight(i)}
-                          >
-                            <Text fontSize="sm" color={dropdownTextColor}>
-                              {suggestion}
-                            </Text>
-                          </Box>
-                        ))}
-                      </PopoverContent>
-                    </Popover>
-                    <FormHelperText mt={1} fontSize="xs">
-                      Add specific details about this split
-                    </FormHelperText>
-                  </FormControl>
-                </VStack>
-              </Box>
+                onCategoryFocus={() => {
+                  setCategorySearch("");
+                  setCategoryHighlight(-1);
+                  setOpenCategoryIndex(index);
+                  notifyDropdownChange(true);
+                }}
+                onCategoryKeyDown={(e) => handleCategoryKeyDown(e, index)}
+                onCategoryClose={() => {
+                  setOpenCategoryIndex(null);
+                  notifyDropdownChange(false);
+                  setCategoryHighlight(-1);
+                }}
+                onCategorySelect={(categoryId) => selectCategory(index, categoryId)}
+                onCategoryClear={() => {
+                  const newSplits = [...splits];
+                  newSplits[index].categoryId = "";
+                  setSplits(newSplits);
+                  setCategorySearch("");
+                  setOpenCategoryIndex(null);
+                  notifyDropdownChange(false);
+                  setCategoryHighlight(-1);
+                }}
+                onCategoryToggle={() => {
+                  if (isCategoryOpen) {
+                    setOpenCategoryIndex(null);
+                    notifyDropdownChange(false);
+                  } else {
+                    setCategorySearch("");
+                    setCategoryHighlight(-1);
+                    setOpenCategoryIndex(index);
+                    notifyDropdownChange(true);
+                  }
+                }}
+                isNotesOpen={isNotesOpen}
+                notesSuggestions={currentNotesSuggestions}
+                notesHighlight={notesHighlight}
+                onNotesChange={(value) => {
+                  const newSplits = [...splits];
+                  newSplits[index].notes = value;
+                  setSplits(newSplits);
+                  debouncedFetchNotes(index, value);
+                  setNotesHighlight(-1);
+                  if (value.length < 3) {
+                    setNotesSuggestions((prev) => ({
+                      ...prev,
+                      [index]: [],
+                    }));
+                    setOpenNotesIndex((prev) =>
+                      prev === index ? null : prev
+                    );
+                  }
+                }}
+                onNotesKeyDown={(e) => handleNotesKeyDown(e, index)}
+                onNotesClose={() => {
+                  setNotesSuggestions((prev) => ({ ...prev, [index]: [] }));
+                  setOpenNotesIndex(null);
+                  notifyDropdownChange(false);
+                  setNotesHighlight(-1);
+                }}
+                onNotesSuggestionSelect={(value) => selectNotesSuggestion(index, value)}
+                onNotesHighlightChange={setNotesHighlight}
+                onAmountChange={handleSplitAmountChange}
+                onRemove={removeSplit}
+                onSplitCategoryIdChange={(idx, catId) => {
+                  const newSplits = [...splits];
+                  newSplits[idx].categoryId = catId;
+                  setSplits(newSplits);
+                }}
+              />
             );
           })}
         </VStack>
@@ -921,7 +600,7 @@ const FormSplits: React.FC<FormSplitsProps> = ({
                     color="teal.500"
                     textAlign="center"
                   >
-                    ✓ Perfectly Allocated
+                    Perfectly Allocated
                   </Text>
                 )}
                 {!isComplete && !isOver && (

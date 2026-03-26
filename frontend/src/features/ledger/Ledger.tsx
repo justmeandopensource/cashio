@@ -15,12 +15,13 @@ import PageContainer from "@components/shared/PageContainer";
 import PageHeader from "@components/shared/PageHeader";
 import { BookText, ChevronLeft, Plus, Repeat } from "lucide-react";
 import LedgerDetailsModal from "@components/modals/LedgerDetailsModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CreateTransactionModal from "@components/modals/CreateTransactionModal";
 const TransferFundsModal = lazy(() => import("@components/modals/TransferFundsModal"));
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { notify } from "@/components/shared/notify";
+import { useLedger } from "./hooks";
 
 const Ledger = () => {
   const navigate = useNavigate();
@@ -38,27 +39,22 @@ const Ledger = () => {
   const queryClient = useQueryClient();
 
   // Fetch ledger details to ensure store has correct navServiceType
-  useQuery({
-    queryKey: ["ledger", ledgerId],
-    queryFn: async () => {
-      if (!ledgerId) return null;
-      const response = await api.get(`/ledger/${ledgerId}`);
-      const data = response.data;
-      // Update store with fetched data
+  const { data: ledgerData } = useLedger(ledgerId);
+
+  useEffect(() => {
+    if (ledgerData) {
       setLedger(
-        data.ledger_id || ledgerId,
-        data.name,
-        data.currency_symbol,
-        data.description,
-        data.notes,
-        data.nav_service_type,
-        data.created_at,
-        data.updated_at,
+        ledgerData.ledger_id || ledgerId || "",
+        ledgerData.name,
+        ledgerData.currency_symbol,
+        ledgerData.description ?? "",
+        ledgerData.notes ?? "",
+        ledgerData.nav_service_type ?? "",
+        ledgerData.created_at ?? "",
+        ledgerData.updated_at ?? "",
       );
-      return data;
-    },
-    enabled: !!ledgerId,
-  });
+    }
+  }, [ledgerData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const {
     isOpen: isUpdateLedgerModalOpen,

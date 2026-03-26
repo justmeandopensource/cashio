@@ -3,20 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@components/Layout";
 import useLedgerStore from "@/components/shared/store";
-import api from "@/lib/api";
 import { getNetWorth } from "./api";
 import NetWorthMain from "./components/NetWorthMain";
-
-interface Ledger {
-  ledger_id: string;
-  name: string;
-  currency_symbol: string;
-  description?: string;
-  notes?: string;
-  nav_service_type?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+import { useLedgers } from "@features/ledger/hooks";
 
 const NetWorth: React.FC = () => {
   const navigate = useNavigate();
@@ -29,13 +18,7 @@ const NetWorth: React.FC = () => {
   }, [ledgerId]);
 
   // Fetch all ledgers for the dropdown
-  const { data: ledgers, isLoading: isLoadingLedgers } = useQuery<Ledger[]>({
-    queryKey: ["ledgers"],
-    queryFn: async () => {
-      const response = await api.get("/ledger/list");
-      return response.data;
-    },
-  });
+  const { data: ledgers, isLoading: isLoadingLedgers } = useLedgers();
 
   // Fetch net worth only when a ledger is selected
   const { data, isLoading, refetch } = useQuery({

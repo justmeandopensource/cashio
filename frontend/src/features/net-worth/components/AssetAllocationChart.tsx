@@ -14,11 +14,10 @@ import { PieChart as PieChartIcon } from "lucide-react";
 import { AssetAllocationItem } from "../types";
 import { splitCurrencyForDisplay } from "@/features/mutual-funds/utils";
 
+import { ALLOCATION_COLORS } from "../constants";
+
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
-
-// High-contrast palette: blue, amber, emerald
-export const ALLOCATION_COLORS = ["#3B82F6", "#F59E0B", "#10B981"];
 
 interface AssetAllocationChartProps {
   allocation: AssetAllocationItem[];

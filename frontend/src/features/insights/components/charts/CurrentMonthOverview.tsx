@@ -25,7 +25,7 @@ import {
   ChevronDown,
   Wallet,
 } from "lucide-react";
-import config from "@/config";
+import api from "@/lib/api";
 import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
 
@@ -395,13 +395,10 @@ const CurrentMonthOverview: React.FC = () => {
     queryKey: ["current-month-overview", ledgerId],
     queryFn: async () => {
       if (!ledgerId) return null;
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(
-        `${config.apiBaseUrl}/ledger/${ledgerId}/insights/current-month-overview`,
-        { headers: { Authorization: `Bearer ${token}` } },
+      const response = await api.get(
+        `/ledger/${ledgerId}/insights/current-month-overview`,
       );
-      if (!response.ok) throw new Error("Failed to fetch current month overview");
-      return response.json();
+      return response.data;
     },
     enabled: !!ledgerId,
     staleTime: 1000 * 60 * 5,

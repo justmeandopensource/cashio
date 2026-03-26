@@ -7,7 +7,8 @@ import {
 import { motion } from "framer-motion";
 import React from "react";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
-import BudgetProgressBar, { getBudgetStatusColor } from "./BudgetProgressBar";
+import BudgetProgressBar from "./BudgetProgressBar";
+import { getBudgetStatusColor } from "../utils";
 
 const MotionBox = motion(Box);
 

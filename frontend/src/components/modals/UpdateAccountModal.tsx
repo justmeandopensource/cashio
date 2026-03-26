@@ -27,36 +27,24 @@ import { Edit } from "lucide-react";
 import { notify } from "@/components/shared/notify";
 import FormOwnerSuggestionField from "@/components/shared/FormOwnerSuggestionField";
 import { getSubtypesForType } from "@/features/ledger/constants/accountSubtypes";
+import type { Account, AccountUpdate } from "@/types";
 
-interface Account {
-  account_id: string | number;
-  name: string;
+interface UpdateAccountModalAccount extends Account {
   opening_balance: number;
   type: "asset" | "liability";
   subtype: string;
-  owner?: string;
-  ledger_id: string | number;
-  description?: string;
-  notes?: string;
+  ledger_id: string;
 }
 
 interface UpdateAccountModalProps {
   isOpen: boolean;
   onClose: () => void;
-  account: Account;
+  account: UpdateAccountModalAccount;
   onUpdateCompleted: () => void;
   currentDescription?: string;
   currentNotes?: string;
 }
 
-interface UpdateAccountPayload {
-  name?: string;
-  subtype?: string;
-  owner?: string;
-  opening_balance?: number;
-  description?: string;
-  notes?: string;
-}
 
 const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
   isOpen,
@@ -124,7 +112,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
       return;
     }
 
-    const payload: UpdateAccountPayload = {};
+    const payload: AccountUpdate = {};
 
     if (name !== account.name) payload.name = name;
     if (parseFloat(openingBalance) !== account.opening_balance)

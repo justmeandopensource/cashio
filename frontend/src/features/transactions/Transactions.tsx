@@ -25,6 +25,7 @@ import TransactionFilterStats from "./TransactionFilterStats";
 import { AxiosError } from "axios";
 import useLedgerStore from "@/components/shared/store";
 import { notify } from "@/components/shared/notify";
+import type { Transaction, TransferDetails, SplitTransaction, TransactionsResponse, Filters, Pagination } from "@/types";
 const EditTransactionModal = lazy(() => import("@components/modals/EditTransactionModal/EditTransactionModal"));
 
 const MotionBox = motion(Box);
@@ -33,63 +34,6 @@ const floatKeyframes = keyframes`
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
 `;
-
-interface Transaction {
-  transaction_id: string;
-  date: string;
-  category_name: string;
-  account_id?: string;
-  account_name?: string;
-  is_split: boolean;
-  is_transfer: boolean;
-  is_asset_transaction: boolean;
-  is_mf_transaction: boolean;
-  notes?: string;
-  credit: number;
-  debit: number;
-  transfer_id?: string;
-  filter_matched_split?: FilterMatchedSplit;
-}
-
-interface TransferDetails {
-  // Define the structure of transfer details
-}
-
-interface FilterMatchedSplit {
-  split_id: string;
-  category_id: string;
-  category_name: string;
-  debit: number;
-  credit: number;
-  notes?: string;
-}
-
-interface SplitTransaction {
-  split_id: string;
-  category_name: string | null;
-  debit: number;
-  notes?: string;
-}
-
-interface TransactionsResponse {
-  transactions: Transaction[];
-  total_transactions: number;
-  total_pages: number;
-  current_page: number;
-  per_page: number;
-  total_credit: number;
-  total_debit: number;
-  net_amount: number;
-}
-
-interface Filters {
-  [key: string]: any;
-}
-
-interface Pagination {
-  total_pages: number;
-  current_page: number;
-}
 
 interface TransactionsProps {
   accountId?: string;
@@ -144,7 +88,7 @@ const Transactions: React.FC<TransactionsProps> = ({
     for (const key of searchParams.keys()) {
         if (key === 'tab') continue;
         if (key === 'tags') {
-            newFilters.tags = searchParams.getAll('tags');
+            newFilters.tags = searchParams.getAll('tags').map(t => ({ name: t }));
         } else {
             newFilters[key] = searchParams.get(key);
         }

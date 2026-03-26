@@ -21,7 +21,7 @@ import CalendarHeatmap from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
 import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
-import config from "@/config";
+import api from "@/lib/api";
 
 const MotionBox = motion(Box);
 
@@ -91,21 +91,10 @@ const ExpenseCalendarHeatmap: React.FC<ExpenseCalendarHeatmapProps> = ({ ledgerI
     queryFn: async () => {
       if (!ledgerId) return null;
 
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(
-        `${config.apiBaseUrl}/ledger/${ledgerId}/insights/expense-calendar?year=${selectedYear}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+      const response = await api.get(
+        `/ledger/${ledgerId}/insights/expense-calendar?year=${selectedYear}`,
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch expense calendar data");
-      }
-
-      return response.json();
+      return response.data;
     },
     enabled: !!ledgerId,
     staleTime: 1000 * 60 * 5,

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Layout from "@components/Layout";
 import AccountMain from "@features/account/components/AccountMain";
 import PageContainer from "@components/shared/PageContainer";
@@ -10,7 +10,6 @@ import { lazy, Suspense } from "react";
 import { Building, ShieldAlert, ChevronLeft, Plus, Repeat } from "lucide-react";
 import { formatNumberAsCurrency } from "@components/shared/utils";
 import { getSubtypeLabel } from "@/features/ledger/constants/accountSubtypes";
-import config from "@/config";
 import api from "@/lib/api";
 import useLedgerStore from "@/components/shared/store";
 import UpdateAccountModal from "@components/modals/UpdateAccountModal";
@@ -18,22 +17,7 @@ import CreateTransactionModal from "@components/modals/CreateTransactionModal";
 const TransferFundsModal = lazy(() => import("@components/modals/TransferFundsModal"));
 import AccountDetailsModal from "@components/modals/AccountDetailsModal";
 import { useDisclosure } from "@chakra-ui/react";
-
-interface AccountData {
-  ledger_id: string;
-  account_id: string;
-  name: string;
-  type: "asset" | "liability";
-  subtype: string;
-  owner?: string;
-  net_balance: number;
-  opening_balance: number;
-  balance: number;
-  description?: string;
-  notes?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+import { useAccount } from "./hooks";
 
 const Account: React.FC = () => {
   const navigate = useNavigate();
@@ -118,29 +102,7 @@ const Account: React.FC = () => {
   };
 
   // Fetch account
-  const fetchAccount = async (): Promise<AccountData> => {
-    const token = localStorage.getItem("access_token");
-    const response = await fetch(
-      `${config.apiBaseUrl}/ledger/${ledgerId}/account/${accountId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch account details");
-    }
-
-    return response.json();
-  };
-
-  const { data: account, isError } = useQuery<AccountData, Error>({
-    queryKey: ["account", accountId],
-    queryFn: fetchAccount,
-    enabled: !!accountId,
-  });
+  const { data: account, isError } = useAccount(ledgerId || "", accountId || "");
 
   const refreshAccountData = async (): Promise<void> => {
     await queryClient.invalidateQueries({ queryKey: ["account", accountId] });

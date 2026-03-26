@@ -20,17 +20,14 @@ import {
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { BarChart, RefreshCw, PieChart as PieChartIcon, AlertCircle, Tag } from "lucide-react";
-import config from "@/config";
+import api from "@/lib/api";
 import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
 import FormTags from "@/components/shared/FormTags";
 
-// Define interfaces for the component
-interface TagItem {
-  tag_id?: string;
-  name: string;
-}
+import type { TagItem } from "@/types";
 
+// Define interfaces for the component
 interface TagBreakdownItem {
   tag: string;
   amount: number;
@@ -103,21 +100,10 @@ const TagTrendAnalysis: React.FC<TagTrendAnalysisProps> = () => {
     queryFn: async () => {
       if (!ledgerId || selectedTags.length === 0) return null;
 
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(
-        `${config.apiBaseUrl}/ledger/${ledgerId}/insights/tag-trend?${getTagNamesParam()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+      const response = await api.get(
+        `/ledger/${ledgerId}/insights/tag-trend?${getTagNamesParam()}`,
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch tag trend data");
-      }
-
-      return response.json();
+      return response.data;
     },
     enabled: false, // We'll trigger this manually
     staleTime: 1000 * 60 * 5, // 5 minutes

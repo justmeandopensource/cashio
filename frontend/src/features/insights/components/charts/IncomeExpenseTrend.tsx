@@ -26,7 +26,7 @@ import {
   ArrowDownRight,
   Activity,
 } from "lucide-react";
-import config from "@/config";
+import api from "@/lib/api";
 import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
 import {
@@ -122,13 +122,10 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
     queryKey: ["insights", ledgerId, periodType],
     queryFn: async () => {
       if (!ledgerId) return null;
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(
-        `${config.apiBaseUrl}/ledger/${ledgerId}/insights/income-expense-trend?period_type=${periodType}`,
-        { headers: { Authorization: `Bearer ${token}` } },
+      const response = await api.get(
+        `/ledger/${ledgerId}/insights/income-expense-trend?period_type=${periodType}`,
       );
-      if (!response.ok) throw new Error("Failed to fetch insights data");
-      return response.json();
+      return response.data;
     },
     enabled: !!ledgerId,
     staleTime: 1000 * 60 * 5,

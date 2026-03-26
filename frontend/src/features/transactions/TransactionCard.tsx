@@ -35,55 +35,7 @@ import {
 import { SplitTransactionSkeleton, TransferDetailsSkeleton } from "./Skeletons";
 import useLedgerStore from "@/components/shared/store";
 import { splitCurrencyForDisplay } from "../mutual-funds/utils";
-
-interface TagItem {
-  tag_id: string;
-  name: string;
-}
-
-interface FilterMatchedSplit {
-  split_id: string;
-  category_id: string;
-  category_name: string;
-  debit: number;
-  credit: number;
-  notes?: string;
-}
-
-interface SplitTransaction {
-  split_id: string;
-  category_name: string | null;
-  debit: number;
-  notes?: string;
-}
-
-interface TransferDetails {
-  destination_account_name?: string;
-  source_account_name?: string;
-  destination_ledger_name?: string;
-  source_ledger_name?: string;
-}
-
-interface Transaction {
-  transaction_id: string;
-  date: string;
-  category_name: string;
-  notes?: string;
-  store?: string;
-  location?: string;
-  account_id?: string;
-  account_name?: string;
-  is_split: boolean;
-  is_transfer: boolean;
-  is_asset_transaction: boolean;
-  is_mf_transaction: boolean;
-  credit: number;
-  debit: number;
-  tags?: TagItem[];
-  transfer_id?: string;
-  transfer_type?: string;
-  filter_matched_split?: FilterMatchedSplit;
-}
+import type { SplitTransaction, TransferDetails, Transaction } from "@/types";
 
 interface TransactionCardProps {
   transaction: Transaction;
