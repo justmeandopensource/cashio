@@ -13,10 +13,10 @@ from app.security.user_security import (
     get_current_user,
 )
 
-user_Router = APIRouter(prefix="/user")
+user_router = APIRouter(prefix="/user")
 
 
-@user_Router.post(
+@user_router.post(
     "/create", response_model=general_schema.RegisterResponse, tags=["users"]
 )
 def create_user(user: user_schema.UserCreate, db: Session = Depends(get_db)):
@@ -30,7 +30,7 @@ def create_user(user: user_schema.UserCreate, db: Session = Depends(get_db)):
     return {"message": "user created successfully"}
 
 
-@user_Router.post("/login", tags=["users"])
+@user_router.post("/login", tags=["users"])
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
 ):
@@ -45,7 +45,7 @@ async def login(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@user_Router.post("/verify-token", tags=["users"])
+@user_router.post("/verify-token", tags=["users"])
 async def verify_user_token(
     token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
 ):
@@ -61,7 +61,7 @@ async def verify_user_token(
         )
 
 
-@user_Router.get("/me", response_model=user_schema.UserProfile, tags=["users"])
+@user_router.get("/me", response_model=user_schema.UserProfile, tags=["users"])
 async def read_users_me(
     current_user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -69,7 +69,7 @@ async def read_users_me(
     return user_crud.get_user_by_id(db=db, user_id=current_user.user_id)
 
 
-@user_Router.put("/me", response_model=user_schema.UserProfile, tags=["users"])
+@user_router.put("/me", response_model=user_schema.UserProfile, tags=["users"])
 async def update_user_profile(
     user_update: user_schema.UserUpdate,
     current_user: user_schema.User = Depends(get_current_user),
@@ -86,7 +86,7 @@ async def update_user_profile(
     return updated_user
 
 
-@user_Router.put("/change-password", tags=["users"])
+@user_router.put("/change-password", tags=["users"])
 async def change_password(
     password_data: user_schema.ChangePassword,
     current_user: user_schema.User = Depends(get_current_user),

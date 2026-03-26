@@ -12,58 +12,22 @@ from app.repositories.insights import (
     income_expense_trend_crud,
     tag_trend_crud,
 )
+from app.repositories.insights.store_location_crud import (
+    get_category_breakdown_by_location,
+    get_category_breakdown_by_store,
+    get_expense_by_location,
+    get_expense_by_store,
+)
+from app.repositories.insights.expense_calendar_crud import get_expense_calendar
 from app.schemas import insights_schema, user_schema
 from app.schemas.insights import category_trend_schema, tag_trend_schema
-
-# Store location schemas
-from typing import List
-from pydantic import BaseModel
-
-class StoreExpenseData(BaseModel):
-    store: str
-    amount: float
-    percentage: float
-
-class LocationExpenseData(BaseModel):
-    location: str
-    amount: float
-    percentage: float
-
-class ExpenseByStoreResponse(BaseModel):
-    store_data: List[StoreExpenseData]
-    total_expense: float
-    period_type: str
-
-class ExpenseByLocationResponse(BaseModel):
-    location_data: List[LocationExpenseData]
-    total_expense: float
-    period_type: str
-
-class CategoryExpenseData(BaseModel):
-    category: str
-    amount: float
-    percentage: float
-
-class StoreCategoryBreakdownResponse(BaseModel):
-    store: str
-    category_data: List[CategoryExpenseData]
-    total_expense: float
-    period_type: str
-
-class LocationCategoryBreakdownResponse(BaseModel):
-    location: str
-    category_data: List[CategoryExpenseData]
-    total_expense: float
-    period_type: str
-
-class ExpenseCalendarData(BaseModel):
-    date: str
-    amount: float
-
-class ExpenseCalendarResponse(BaseModel):
-    expenses: List[ExpenseCalendarData]
-    total_expense: float
-
+from app.schemas.insights.store_location_schema import (
+    ExpenseByLocationResponse,
+    ExpenseByStoreResponse,
+    LocationCategoryBreakdownResponse,
+    StoreCategoryBreakdownResponse,
+)
+from app.schemas.insights.expense_calendar_schema import ExpenseCalendarResponse
 from app.security.user_security import get_current_user
 
 insights_router = APIRouter(prefix="/ledger/{ledger_id}/insights", tags=["insights"])
@@ -223,8 +187,6 @@ def get_expense_by_store_route(
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    from app.repositories.insights.store_location_crud import get_expense_by_store
-
     ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
     if ledger is None or ledger.user_id != user.user_id:  # type: ignore
         raise HTTPException(
@@ -257,8 +219,6 @@ def get_expense_by_location_route(
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    from app.repositories.insights.store_location_crud import get_expense_by_location
-
     ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
     if ledger is None or ledger.user_id != user.user_id:  # type: ignore
         raise HTTPException(
@@ -292,8 +252,6 @@ def get_store_category_breakdown_route(
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    from app.repositories.insights.store_location_crud import get_category_breakdown_by_store
-
     ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
     if ledger is None or ledger.user_id != user.user_id:  # type: ignore
         raise HTTPException(
@@ -327,8 +285,6 @@ def get_location_category_breakdown_route(
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    from app.repositories.insights.store_location_crud import get_category_breakdown_by_location
-
     ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
     if ledger is None or ledger.user_id != user.user_id:  # type: ignore
         raise HTTPException(
@@ -356,8 +312,6 @@ def get_expense_calendar_route(
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    from app.repositories.insights.expense_calendar_crud import get_expense_calendar
-
     ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
     if ledger is None or ledger.user_id != user.user_id:  # type: ignore
         raise HTTPException(

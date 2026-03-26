@@ -25,3 +25,23 @@ class ExpenseByLocationResponse(BaseModel):
     location_data: List[LocationExpenseData]
     total_expense: float
     period_type: Literal["all_time", "last_12_months", "this_month"]
+
+
+class CategoryExpenseData(BaseModel):
+    category: str
+    amount: float
+    percentage: float
+
+
+class StoreCategoryBreakdownResponse(BaseModel):
+    store: str
+    category_data: List[CategoryExpenseData]
+    total_expense: float
+    period_type: str
+
+
+class LocationCategoryBreakdownResponse(BaseModel):
+    location: str
+    category_data: List[CategoryExpenseData]
+    total_expense: float
+    period_type: str

@@ -8,10 +8,10 @@ from app.repositories import account_crud, ledger_crud
 from app.schemas import account_schema, user_schema
 from app.security.user_security import get_current_user
 
-account_Router = APIRouter(prefix="/ledger")
+account_router = APIRouter(prefix="/ledger")
 
 
-@account_Router.get(
+@account_router.get(
     "/{ledger_id}/accounts",
     response_model=list[account_schema.Account],
     tags=["accounts"],
@@ -40,7 +40,7 @@ def get_ledger_accounts(
     return accounts
 
 
-@account_Router.get(
+@account_router.get(
     "/{ledger_id}/account/{account_id}",
     response_model=account_schema.Account,
     tags=["accounts"],
@@ -59,7 +59,7 @@ def get_account(
     return account
 
 
-@account_Router.post(
+@account_router.post(
     "/{ledger_id}/account/create",
     response_model=account_schema.Account,
     tags=["accounts"],
@@ -90,7 +90,7 @@ def create_account(
         )
 
 
-@account_Router.get(
+@account_router.get(
     "/{ledger_id}/accounts/subtypes",
     response_model=dict,
     tags=["accounts"],
@@ -107,7 +107,7 @@ def get_account_subtypes(
     return account_schema.ACCOUNT_SUBTYPES
 
 
-@account_Router.get(
+@account_router.get(
     "/{ledger_id}/account/owner/suggestions",
     response_model=list[str],
     tags=["accounts"],
@@ -128,7 +128,7 @@ def get_owner_suggestions(
     )
 
 
-@account_Router.get(
+@account_router.get(
     "/{ledger_id}/account/{account_id}/summary",
     response_model=account_schema.AccountSummary,
     tags=["accounts"],
@@ -150,7 +150,7 @@ def get_account_summary(
     return account_crud.get_account_summary(db=db, account_id=account_id)
 
 
-@account_Router.get(
+@account_router.get(
     "/{ledger_id}/account/{account_id}/insights",
     response_model=account_schema.AccountInsights,
     tags=["accounts"],
@@ -172,7 +172,7 @@ def get_account_insights(
     return account_crud.get_account_insights(db=db, account_id=account_id)
 
 
-@account_Router.put(
+@account_router.put(
     "/{ledger_id}/account/{account_id}/update",
     response_model=account_schema.Account,
     tags=["accounts"],

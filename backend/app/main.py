@@ -8,20 +8,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database.connection import Base, engine
 from app.models import model
 from app.repositories.settings import settings
-from app.routers import (
-    account_router,
-    category_router,
-    insights_router,
-    ledger_router,
-    system_router,
-    tag_router,
-    transaction_router,
-    user_router,
-)
-from app.routers.physical_assets_router import physical_assets_router
+from app.routers.account_router import account_router
+from app.routers.budget_router import budget_router
+from app.routers.category_router import category_router
+from app.routers.insights_router import insights_router
+from app.routers.ledger_router import ledger_router
 from app.routers.mutual_funds_router import mutual_funds_router
 from app.routers.net_worth_router import net_worth_router
-from app.routers.budget_router import budget_router
+from app.routers.physical_assets_router import physical_assets_router
+from app.routers.system_router import system_router
+from app.routers.tag_router import tag_router
+from app.routers.transaction_router import transaction_router
+from app.routers.user_router import user_router
 from app.version import __version__
 
 
@@ -43,18 +41,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(user_router.user_Router)
-app.include_router(ledger_router.ledger_Router)
-app.include_router(account_router.account_Router)
-app.include_router(transaction_router.transaction_Router)
-app.include_router(tag_router.tag_Router)
-app.include_router(category_router.category_Router)
-app.include_router(insights_router.insights_router)
+app.include_router(user_router)
+app.include_router(ledger_router)
+app.include_router(account_router)
+app.include_router(transaction_router)
+app.include_router(tag_router)
+app.include_router(category_router)
+app.include_router(insights_router)
 app.include_router(physical_assets_router)
 app.include_router(mutual_funds_router)
 app.include_router(net_worth_router)
 app.include_router(budget_router)
-app.include_router(system_router.system_Router)
+app.include_router(system_router)
 
 if __name__ == "__main__":
     uvicorn.run(

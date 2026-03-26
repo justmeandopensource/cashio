@@ -11,10 +11,10 @@ from app.repositories import ledger_crud, transaction_crud
 from app.schemas import transaction_schema, user_schema
 from app.security.user_security import get_current_user
 
-transaction_Router = APIRouter(prefix="/ledger")
+transaction_router = APIRouter(prefix="/ledger")
 
 
-@transaction_Router.get(
+@transaction_router.get(
     "/{ledger_id}/account/{account_id}/transactions",
     response_model=transaction_schema.PaginatedTransactionResponse,
     tags=["transactions"],
@@ -54,7 +54,7 @@ def get_transactions_by_account(
     }
 
 
-@transaction_Router.get(
+@transaction_router.get(
     "/{ledger_id}/transaction/{transaction_id}",
     response_model=transaction_schema.Transaction,
     tags=["transactions"],
@@ -101,7 +101,7 @@ def get_transaction_by_id(
     }
 
 
-@transaction_Router.post(
+@transaction_router.post(
     "/{ledger_id}/transaction/income",
     response_model=transaction_schema.Transaction,
     tags=["transactions"],
@@ -129,7 +129,7 @@ def add_income_transaction(
     return transaction_crud.create_transaction(db, transaction)
 
 
-@transaction_Router.post(
+@transaction_router.post(
     "/{ledger_id}/transaction/expense",
     response_model=transaction_schema.Transaction,
     tags=["transactions"],
@@ -157,7 +157,7 @@ def add_expense_transaction(
     return transaction_crud.create_transaction(db, transaction)
 
 
-@transaction_Router.post(
+@transaction_router.post(
     "/{ledger_id}/transaction/transfer", response_model=dict, tags=["transactions"]
 )
 def add_transfer_transaction(
@@ -176,9 +176,7 @@ def add_transfer_transaction(
 
 
 
-
-
-@transaction_Router.get(
+@transaction_router.get(
     "/{ledger_id}/transaction/{transaction_id}/splits",
     response_model=List[transaction_schema.TransactionSplitResponse],
     tags=["transactions"],
@@ -202,7 +200,7 @@ def get_split_transactions(
     return splits
 
 
-@transaction_Router.get(
+@transaction_router.get(
     "/transfer/{transfer_id}",
     response_model=transaction_schema.TransferTransactionResponse,
     tags=["transactions"],
@@ -258,7 +256,7 @@ def get_transfer_transactions(
     return transfer_details
 
 
-@transaction_Router.put(
+@transaction_router.put(
     "/{ledger_id}/transfer/{transfer_id}",
     response_model=dict,
     tags=["transactions"],
@@ -296,10 +294,7 @@ def update_transfer_transaction(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-from fastapi import Query
-
-
-@transaction_Router.delete(
+@transaction_router.delete(
     "/{ledger_id}/transaction/{transaction_id}",
     response_model=dict,
     tags=["transactions"],
@@ -326,7 +321,7 @@ def delete_transaction(
     return {"message": "Transaction deleted successfully"}
 
 
-@transaction_Router.put(
+@transaction_router.put(
     "/{ledger_id}/transaction/{transaction_id}",
     response_model=transaction_schema.Transaction,
     tags=["transactions"],
@@ -357,7 +352,7 @@ def update_transaction(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@transaction_Router.get(
+@transaction_router.get(
     "/{ledger_id}/transaction/notes/suggestions",
     response_model=List[str],
     tags=["transactions"],
@@ -383,7 +378,7 @@ def get_note_suggestions(
     return suggestions
 
 
-@transaction_Router.get(
+@transaction_router.get(
     "/{ledger_id}/transaction/store/suggestions",
     response_model=List[str],
     tags=["transactions"],
@@ -409,7 +404,7 @@ def get_store_suggestions(
     return suggestions
 
 
-@transaction_Router.get(
+@transaction_router.get(
     "/{ledger_id}/transaction/location/suggestions",
     response_model=List[str],
     tags=["transactions"],
@@ -435,7 +430,7 @@ def get_location_suggestions(
     return suggestions
 
 
-@transaction_Router.get(
+@transaction_router.get(
     "/{ledger_id}/transactions",
     response_model=transaction_schema.PaginatedTransactionResponse,
     tags=["transactions"],

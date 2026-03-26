@@ -7,10 +7,10 @@ from app.schemas import ledger_schema, user_schema
 from app.schemas.ledger_schema import LedgerUpdate
 from app.security.user_security import get_current_user
 
-ledger_Router = APIRouter(prefix="/ledger")
+ledger_router = APIRouter(prefix="/ledger")
 
 
-@ledger_Router.get("/list", response_model=list[ledger_schema.Ledger], tags=["ledgers"])
+@ledger_router.get("/list", response_model=list[ledger_schema.Ledger], tags=["ledgers"])
 def get_user_ledgers(
     user: user_schema.User = Depends(get_current_user), db: Session = Depends(get_db)
 ):
@@ -22,7 +22,7 @@ def get_user_ledgers(
     return ledgers
 
 
-@ledger_Router.post("/create", response_model=ledger_schema.Ledger, tags=["ledgers"])
+@ledger_router.post("/create", response_model=ledger_schema.Ledger, tags=["ledgers"])
 def create_ledger(
     ledger: ledger_schema.LedgerCreate,
     user: user_schema.User = Depends(get_current_user),
@@ -47,7 +47,7 @@ def create_ledger(
         )
 
 
-@ledger_Router.get(
+@ledger_router.get(
     "/{ledger_id}", response_model=ledger_schema.Ledger, tags=["ledgers"]
 )
 def get_ledger(
@@ -62,7 +62,7 @@ def get_ledger(
     return ledger
 
 
-@ledger_Router.put(
+@ledger_router.put(
     "/{ledger_id}/update", response_model=ledger_schema.Ledger, tags=["ledgers"]
 )
 def update_ledger_route(

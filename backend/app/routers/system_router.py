@@ -15,7 +15,7 @@ from app.security.user_security import get_current_user
 from app.schemas.user_schema import User
 from app.repositories.settings import settings
 
-system_Router = APIRouter(prefix="/api")
+system_router = APIRouter(prefix="/api")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -113,14 +113,14 @@ def run_restore(db_settings: dict, backup_filepath: str):
         logger.error(f"An exception occurred during restore: {e}")
 
 
-@system_Router.get("/sysinfo", tags=["system"])
+@system_router.get("/sysinfo", tags=["system"])
 async def get_sysinfo():
     return {
         "api_version": __version__,
         "python_version": platform.python_version(),
     }
 
-@system_Router.post("/system/upload-backup", tags=["system"])
+@system_router.post("/system/upload-backup", tags=["system"])
 async def upload_backup_file(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user)
@@ -150,7 +150,7 @@ async def upload_backup_file(
 
     return {"message": "File uploaded successfully", "filename": safe_filename}
 
-@system_Router.post("/system/backup", status_code=status.HTTP_202_ACCEPTED, tags=["system"])
+@system_router.post("/system/backup", status_code=status.HTTP_202_ACCEPTED, tags=["system"])
 async def create_backup(
     background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user)
@@ -175,7 +175,7 @@ async def create_backup(
     return {"message": "Database backup process started.", "filename": backup_filename}
 
 
-@system_Router.get("/system/backups", response_model=List[str], tags=["system"])
+@system_router.get("/system/backups", response_model=List[str], tags=["system"])
 async def list_backups(current_user: User = Depends(get_current_user)):
     """
     Lists all available backup files.
@@ -191,7 +191,7 @@ async def list_backups(current_user: User = Depends(get_current_user)):
         return []
 
 
-@system_Router.post("/system/restore/{filename}", status_code=status.HTTP_202_ACCEPTED, tags=["system"])
+@system_router.post("/system/restore/{filename}", status_code=status.HTTP_202_ACCEPTED, tags=["system"])
 async def restore_from_backup(
     filename: str,
     background_tasks: BackgroundTasks,
@@ -219,7 +219,7 @@ async def restore_from_backup(
     return {"message": "Database restore process started from file.", "filename": filename}
 
 
-@system_Router.delete("/system/backups/{filename}", status_code=status.HTTP_200_OK, tags=["system"])
+@system_router.delete("/system/backups/{filename}", status_code=status.HTTP_200_OK, tags=["system"])
 async def delete_backup(
     filename: str,
     current_user: User = Depends(get_current_user)
@@ -242,7 +242,7 @@ async def delete_backup(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to delete file: {e}")
 
 
-@system_Router.get("/system/download-backup/{filename}", tags=["system"])
+@system_router.get("/system/download-backup/{filename}", tags=["system"])
 async def download_backup(
     filename: str,
     current_user: User = Depends(get_current_user)

@@ -8,10 +8,10 @@ from app.repositories import category_crud
 from app.schemas import category_schema, user_schema
 from app.security.user_security import get_current_user
 
-category_Router = APIRouter(prefix="/category")
+category_router = APIRouter(prefix="/category")
 
 
-@category_Router.get(
+@category_router.get(
     "/list", response_model=list[category_schema.Category], tags=["categories"]
 )
 def get_user_categories(
@@ -34,7 +34,7 @@ def get_user_categories(
     return categories
 
 
-@category_Router.post(
+@category_router.post(
     "/create", response_model=category_schema.Category, tags=["categories"]
 )
 def create_category(
@@ -56,7 +56,7 @@ def create_category(
         )
 
 
-@category_Router.get(
+@category_router.get(
     "/group", response_model=list[category_schema.CategoryBase], tags=["categories"]
 )
 def get_group_categories_by_type(

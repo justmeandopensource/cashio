@@ -442,8 +442,6 @@ def sell_mutual_fund(
 
 
 
-
-
 @mutual_funds_router.post(
     "/{ledger_id}/mf-transaction/switch",
     response_model=List[mutual_funds_schema.MfTransaction],
