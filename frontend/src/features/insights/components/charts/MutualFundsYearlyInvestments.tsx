@@ -47,7 +47,7 @@ interface ChartDatum {
 const MutualFundsYearlyInvestments: React.FC<MutualFundsYearlyInvestmentsProps> = ({
   ledgerId,
 }) => {
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const [selectedOwner, setSelectedOwner] = useState<string>("all");
 
   // Color modes

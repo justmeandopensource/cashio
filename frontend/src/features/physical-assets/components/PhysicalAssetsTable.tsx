@@ -263,7 +263,7 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
   filters,
   onFiltersChange,
 }) => {
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const mutedColor = useColorModeValue("gray.600", "gray.400");
    const isMobile = useBreakpointValue({ base: true, md: false });
    const tertiaryTextColor = useColorModeValue("tertiaryTextColor", "tertiaryTextColor");

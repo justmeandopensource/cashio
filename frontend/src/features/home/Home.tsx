@@ -3,11 +3,10 @@ import Layout from "@components/Layout";
 import HomeMain from "@features/home/components/HomeMain";
 import HomeLedgerCardsSkeleton from "./components/HomeLedgercardsSkeleton";
 import { notify } from "@/components/shared/notify";
-import { useNavigate } from "react-router-dom";
 import { useLedgers, useCreateLedger } from "@features/ledger/hooks";
+import { useLogout } from "@/lib/useLogout";
 
 const Home = () => {
-  const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   // Fetch ledgers
@@ -45,11 +44,7 @@ const Home = () => {
     });
   };
 
-  // handle logout
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    navigate("/login");
-  };
+  const handleLogout = useLogout();
 
   if (isFetchingLedgers) {
     return (

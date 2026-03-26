@@ -13,7 +13,7 @@ export const useAccount = (
 ) => {
   return useQuery<AccountData>({
     queryKey: queryKeys.accounts.detail(accountId),
-    queryFn: () => getAccount(ledgerId, accountId),
+    queryFn: ({ signal }) => getAccount(ledgerId, accountId, signal),
     enabled: !!ledgerId && !!accountId,
   });
 };
@@ -24,7 +24,7 @@ export const useAccountSummary = (
 ) => {
   return useQuery<AccountSummaryData>({
     queryKey: queryKeys.accounts.summary(accountId),
-    queryFn: () => getAccountSummary(ledgerId, accountId),
+    queryFn: ({ signal }) => getAccountSummary(ledgerId, accountId, signal),
     enabled: !!ledgerId && !!accountId,
     staleTime: 5 * 60 * 1000,
   });
@@ -36,7 +36,7 @@ export const useAccountInsights = (
 ) => {
   return useQuery<AccountInsightsData>({
     queryKey: queryKeys.accounts.insights(accountId),
-    queryFn: () => getAccountInsights(ledgerId, accountId),
+    queryFn: ({ signal }) => getAccountInsights(ledgerId, accountId, signal),
     enabled: !!ledgerId && !!accountId,
     staleTime: 5 * 60 * 1000,
   });

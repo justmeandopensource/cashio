@@ -50,7 +50,8 @@ export function useCreateTransactionForm({
   const [accountSearch, setAccountSearch] = useState<string>("");
   const [isAccountOpen, setIsAccountOpen] = useState<boolean>(false);
   const [highlightedAccountIndex, setHighlightedAccountIndex] = useState<number>(-1);
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
 
   // Computed values
   const selectedCategory = categories.find((c) => c.category_id === categoryId);

@@ -68,7 +68,7 @@ const toNumber = (value: number | string): number => {
 const MutualFundsAllocation: React.FC<MutualFundsAllocationProps> = ({
   ledgerId,
 }) => {
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const [selectedOwner, setSelectedOwner] = useState<string>("all");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [selectedAmcName, setSelectedAmcName] = useState<string | null>(null);

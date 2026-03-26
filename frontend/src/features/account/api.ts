@@ -44,28 +44,33 @@ export interface AccountInsightsData {
 
 export const getAccount = async (
   ledgerId: string | number,
-  accountId: string | number
+  accountId: string | number,
+  signal?: AbortSignal
 ): Promise<AccountData> => {
-  const response = await api.get(`/ledger/${ledgerId}/account/${accountId}`);
+  const response = await api.get(`/ledger/${ledgerId}/account/${accountId}`, { signal });
   return response.data;
 };
 
 export const getAccountSummary = async (
   ledgerId: string | number,
-  accountId: string | number
+  accountId: string | number,
+  signal?: AbortSignal
 ): Promise<AccountSummaryData> => {
   const response = await api.get(
-    `/ledger/${ledgerId}/account/${accountId}/summary`
+    `/ledger/${ledgerId}/account/${accountId}/summary`,
+    { signal }
   );
   return response.data;
 };
 
 export const getAccountInsights = async (
   ledgerId: string | number,
-  accountId: string | number
+  accountId: string | number,
+  signal?: AbortSignal
 ): Promise<AccountInsightsData> => {
   const response = await api.get(
-    `/ledger/${ledgerId}/account/${accountId}/insights`
+    `/ledger/${ledgerId}/account/${accountId}/insights`,
+    { signal }
   );
   return response.data;
 };

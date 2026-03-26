@@ -70,7 +70,8 @@ const PIE_COLORS = [
 const TagTrendAnalysis: React.FC<TagTrendAnalysisProps> = () => {
   const [selectedTags, setSelectedTags] = useState<TagItem[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
 
   // Color modes
   const bgColor = useColorModeValue("white", "gray.800");

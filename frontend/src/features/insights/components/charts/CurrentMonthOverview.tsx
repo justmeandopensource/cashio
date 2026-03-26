@@ -389,7 +389,8 @@ const CurrentMonthOverview: React.FC = () => {
   const savingsNegativeTopAccent = useColorModeValue("orange.400", "orange.400");
 
   const baseColors = useColorModeValue(BASE_COLORS_LIGHT, BASE_COLORS_DARK);
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
 
   const { data, isLoading, isError } = useQuery<CurrentMonthOverviewData>({
     queryKey: ["current-month-overview", ledgerId],

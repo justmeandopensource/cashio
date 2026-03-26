@@ -53,7 +53,7 @@ const MotionBox = motion(Box);
 
 const PhysicalAssets: FC = () => {
   const queryClient = useQueryClient();
-  const { ledgerId } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
   const [selectedAsset, setSelectedAsset] = useState<PhysicalAsset | undefined>();
   const [tabIndex, setTabIndex] = useState(0);
   const [initialAssetFilter, setInitialAssetFilter] = useState<string>("all");

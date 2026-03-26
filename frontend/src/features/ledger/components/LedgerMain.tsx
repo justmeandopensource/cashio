@@ -35,7 +35,7 @@ interface LedgerMainProps {
 }
 
 const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds, onEditTransfer }) => {
-  const { ledgerId } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [tabIndex, setTabIndex] = useState(() => {

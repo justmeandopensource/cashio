@@ -1,7 +1,8 @@
-import React, { lazy, Suspense } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { lazy, Suspense, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import { Spinner, Center } from "@chakra-ui/react";
 import ProtectedRoute from "@components/ProtectedRoute";
+import { setOnUnauthorized, setAuthToken } from "@/lib/api";
 
 const Login = lazy(() => import("@features/auth/Login"));
 const Register = lazy(() => import("@features/auth/Register"));
@@ -14,9 +15,22 @@ const Profile = lazy(() => import("@features/profile/Profile"));
 const NetWorth = lazy(() => import("@features/net-worth/NetWorth"));
 const Budget = lazy(() => import("@features/budget/Budget"));
 
+/** Registers the 401 handler so axios redirects via React Router instead of full reload */
+const UnauthorizedHandler: React.FC = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    setOnUnauthorized(() => {
+      setAuthToken(null);
+      navigate("/login");
+    });
+  }, [navigate]);
+  return null;
+};
+
 const App: React.FC = () => {
   return (
     <Router>
+      <UnauthorizedHandler />
       <Suspense fallback={<Center h="100vh"><Spinner size="xl" /></Center>}>
         <Routes>
           {/* Public routes */}

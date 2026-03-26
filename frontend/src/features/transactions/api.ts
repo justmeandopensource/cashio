@@ -10,7 +10,8 @@ export interface GetTransactionsParams {
 
 export const getTransactions = async (
   ledgerId: string | number,
-  params: GetTransactionsParams = {}
+  params: GetTransactionsParams = {},
+  signal?: AbortSignal
 ): Promise<TransactionsResponse> => {
   const { page = 1, per_page = 50, account_id, filters = {} } = params;
   const searchParams = new URLSearchParams();
@@ -34,6 +35,7 @@ export const getTransactions = async (
 
   const response = await api.get(`/ledger/${ledgerId}/transactions`, {
     params: searchParams,
+    signal,
   });
   return response.data;
 };

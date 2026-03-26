@@ -42,7 +42,8 @@ interface AnalyticsContentProps {
 }
 
 const AnalyticsContent: FC<AnalyticsContentProps> = ({ fund }) => {
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const symbol = currencySymbol || "\u20B9";
 
   const { data: transactions = [], isLoading } = useFundTransactions(

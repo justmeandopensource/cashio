@@ -17,14 +17,14 @@ import type { Ledger } from "@/types";
 export const useLedgers = () => {
   return useQuery({
     queryKey: queryKeys.ledgers.all,
-    queryFn: getLedgers,
+    queryFn: ({ signal }) => getLedgers(signal),
   });
 };
 
 export const useLedger = (ledgerId: string | number | undefined) => {
   return useQuery({
     queryKey: queryKeys.ledgers.detail(ledgerId!),
-    queryFn: () => getLedger(ledgerId!),
+    queryFn: ({ signal }) => getLedger(ledgerId!, signal),
     enabled: !!ledgerId,
   });
 };
@@ -46,7 +46,7 @@ export const useCreateLedger = () => {
 export const useAccounts = (ledgerId: string | number | undefined) => {
   return useQuery({
     queryKey: queryKeys.accounts.all(ledgerId!),
-    queryFn: () => getAccounts(ledgerId!),
+    queryFn: ({ signal }) => getAccounts(ledgerId!, signal),
     enabled: !!ledgerId,
   });
 };
@@ -57,7 +57,7 @@ export const useLedgerDetails = (
 ) => {
   return useQuery({
     queryKey: queryKeys.ledgers.details(ledgerId!),
-    queryFn: () => getLedgerDetails(ledgerId!),
+    queryFn: ({ signal }) => getLedgerDetails(ledgerId!, signal),
     enabled: !!ledgerId && enabled,
   });
 };

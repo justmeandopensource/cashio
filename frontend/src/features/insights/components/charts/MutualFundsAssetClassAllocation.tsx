@@ -105,7 +105,7 @@ const toNumber = (value: number | string): number => {
 const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationProps> = ({
   ledgerId,
 }) => {
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const [selectedOwner, setSelectedOwner] = useState<string>("all");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [selectedClassName, setSelectedClassName] = useState<string | null>(null);

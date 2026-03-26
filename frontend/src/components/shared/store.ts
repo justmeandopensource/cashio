@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-interface LedgerState {
+interface LedgerData {
   ledgerId: string | undefined;
   ledgerName: string | undefined;
   currencySymbol: string | undefined;
@@ -10,8 +10,10 @@ interface LedgerState {
   navServiceType: string | undefined;
   createdAt: string | undefined;
   updatedAt: string | undefined;
-   
-  setLedger: (id: string, name: string, symbol: string, description: string, notes: string, navServiceType: string, createdAt: string, updatedAt: string) => void;
+}
+
+interface LedgerState extends LedgerData {
+  setLedger: (data: Partial<LedgerData>) => void;
   clearLedger: () => void;
 }
 
@@ -26,17 +28,7 @@ const useLedgerStore = create<LedgerState>()(
       navServiceType: undefined,
       createdAt: undefined,
       updatedAt: undefined,
-      setLedger: (id, name, symbol, description, notes, navServiceType, createdAt, updatedAt) =>
-        set({
-          ledgerId: id,
-          ledgerName: name,
-          currencySymbol: symbol,
-          description: description,
-          notes: notes,
-          navServiceType: navServiceType,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-        }),
+      setLedger: (data) => set(data),
       clearLedger: () =>
         set({
           ledgerId: undefined,

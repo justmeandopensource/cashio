@@ -37,7 +37,8 @@ export function useEditTransactionForm(
   const [categorySearch, setCategorySearch] = useState<string>("");
   const [isCategoryOpen, setIsCategoryOpen] = useState<boolean>(false);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
 
   const selectedCategory = categories.find((c) => String(c.category_id) === String(categoryId));
   const filteredIncomeCategories = categories.filter(

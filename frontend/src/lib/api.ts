@@ -2,6 +2,32 @@
 import axios from 'axios';
 import config from '@/config';
 
+// In-memory token cache to avoid reading localStorage on every request
+let cachedToken: string | null = null;
+
+export const setAuthToken = (token: string | null) => {
+  cachedToken = token;
+  if (token) {
+    localStorage.setItem('access_token', token);
+  } else {
+    localStorage.removeItem('access_token');
+  }
+};
+
+export const getAuthToken = (): string | null => {
+  if (cachedToken === null) {
+    cachedToken = localStorage.getItem('access_token');
+  }
+  return cachedToken;
+};
+
+// Navigation callback for 401 redirects — set by the app shell
+let onUnauthorized: (() => void) | null = null;
+
+export const setOnUnauthorized = (callback: () => void) => {
+  onUnauthorized = callback;
+};
+
 const api = axios.create({
   baseURL: config.apiBaseUrl,
 });
@@ -9,7 +35,7 @@ const api = axios.create({
 // Request interceptor to add the auth token header to every request
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token');
+    const token = getAuthToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -23,11 +49,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Token is invalid or expired
-      localStorage.removeItem('access_token');
-      // Force a full page reload to redirect to login
-      // This is a simple and effective way to clear all state and redirect
-      window.location.href = '/login';
+      setAuthToken(null);
+      if (onUnauthorized) {
+        onUnauthorized();
+      } else {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

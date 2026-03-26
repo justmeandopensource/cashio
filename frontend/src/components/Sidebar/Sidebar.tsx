@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Box,
   VStack,
@@ -51,7 +51,8 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
   );
   const navigate = useNavigate();
   const location = useLocation();
-  const { ledgerId, ledgerName } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const ledgerName = useLedgerStore((s) => s.ledgerName);
 
   // -- Color tokens --
   const sidebarBg = useColorModeValue("white", "gray.900");
@@ -77,7 +78,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
   const collapseButtonHoverBg = useColorModeValue("gray.100", "gray.700");
   const brandBgLight = useColorModeValue("brand.50", "rgba(53, 169, 163, 0.12)");
 
-  const navColors: NavItemColorTokens = {
+  const navColors: NavItemColorTokens = useMemo(() => ({
     activeBg,
     activeColor,
     activeIconColor,
@@ -86,7 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
     inactiveIconColor,
     hoverBg,
     hoverColor,
-  };
+  }), [activeBg, activeColor, activeIconColor, accentColor, inactiveColor, inactiveIconColor, hoverBg, hoverColor]);
 
   const isActivePath = (path: string) => {
     if (path === "/") return location.pathname === "/";

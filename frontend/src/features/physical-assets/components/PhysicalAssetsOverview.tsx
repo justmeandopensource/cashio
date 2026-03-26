@@ -74,7 +74,7 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
   filters,
   onFiltersChange,
 }) => {
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
 
   const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
   const iconColor = useColorModeValue("brand.500", "brand.300");

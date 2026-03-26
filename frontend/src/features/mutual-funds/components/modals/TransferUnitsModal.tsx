@@ -71,7 +71,8 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
   mutualFunds,
   onSuccess,
 }) => {
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState<FormData>({

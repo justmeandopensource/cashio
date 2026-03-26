@@ -24,7 +24,7 @@ import { notify } from "@/components/shared/notify";
 
 const useUpdateAssetTransactionNotes = () => {
   const queryClient = useQueryClient();
-  const { ledgerId } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
 
   return useMutation({
     mutationFn: ({

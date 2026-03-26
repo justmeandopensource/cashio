@@ -67,7 +67,7 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
     currentNotes ?? account.notes ?? ""
   );
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
 
   const subtypeOptions = getSubtypesForType(account.type);
 

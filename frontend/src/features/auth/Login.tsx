@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { Box, Flex, useColorModeValue } from "@chakra-ui/react";
 import LoginForm from "@features/auth/components/LoginForm";
-import api from "@/lib/api";
+import api, { setAuthToken } from "@/lib/api";
 import { notify } from "@/components/shared/notify";
 
 interface LoginResponse {
@@ -23,7 +23,7 @@ const Login: React.FC = () => {
   const usernameInputRef = useRef<HTMLInputElement>(null as any);
 
   useEffect(() => {
-    localStorage.removeItem("access_token");
+    setAuthToken(null);
     usernameInputRef.current?.focus();
   }, []);
 
@@ -35,7 +35,7 @@ const Login: React.FC = () => {
         },
       }),
     onSuccess: (response: AxiosResponse<LoginResponse>) => {
-      localStorage.setItem("access_token", response.data.access_token);
+      setAuthToken(response.data.access_token);
       navigate("/");
     },
     onError: (error: AxiosError<ErrorResponse>) => {

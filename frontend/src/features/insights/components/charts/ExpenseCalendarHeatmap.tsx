@@ -42,7 +42,7 @@ interface ExpenseCalendarHeatmapProps {
 const ExpenseCalendarHeatmap: React.FC<ExpenseCalendarHeatmapProps> = ({ ledgerId }) => {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const navigate = useNavigate();
   const { colorMode } = useColorMode();
 

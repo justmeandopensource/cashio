@@ -13,14 +13,12 @@ import Layout from "../../components/Layout";
 import UpdateProfileForm from "./UpdateProfileForm";
 import ChangePasswordForm from "./ChangePasswordForm";
 import SystemBackup from "./SystemBackup";
-import { useNavigate } from "react-router-dom";
 import PageContainer from "@components/shared/PageContainer";
 import PageHeader from "@components/shared/PageHeader";
 import { User, Lock, Database } from "lucide-react";
+import { useLogout } from "@/lib/useLogout";
 
 const Profile: React.FC = () => {
-  const navigate = useNavigate();
-
   const cardBg = useColorModeValue("white", "cardDarkBg");
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const selectedTabColor = useColorModeValue("brand.700", "brand.200");
@@ -32,10 +30,7 @@ const Profile: React.FC = () => {
   const tabIconColor = useColorModeValue("gray.400", "gray.500");
   const tabSelectedIconColor = useColorModeValue("brand.500", "brand.300");
 
-  const handleLogout = (): void => {
-    localStorage.removeItem("access_token");
-    navigate("/login");
-  };
+  const handleLogout = useLogout();
 
   const tabs = [
     { label: "Account", icon: User },

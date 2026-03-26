@@ -82,7 +82,7 @@ const ExpenseByStore: React.FC<ExpenseByStoreProps> = ({ ledgerId }) => {
   const [periodType, setPeriodType] = useState<string>("all_time");
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [selectedStoreName, setSelectedStoreName] = useState<string | null>(null);
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
 
   // Color modes
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");

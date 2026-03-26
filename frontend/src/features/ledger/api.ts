@@ -9,13 +9,13 @@ export interface CreateLedgerData {
   nav_service_type: string;
 }
 
-export const getLedgers = async (): Promise<Ledger[]> => {
-  const response = await api.get("/ledger/list");
+export const getLedgers = async (signal?: AbortSignal): Promise<Ledger[]> => {
+  const response = await api.get("/ledger/list", { signal });
   return response.data;
 };
 
-export const getLedger = async (ledgerId: string | number): Promise<Ledger> => {
-  const response = await api.get(`/ledger/${ledgerId}`);
+export const getLedger = async (ledgerId: string | number, signal?: AbortSignal): Promise<Ledger> => {
+  const response = await api.get(`/ledger/${ledgerId}`, { signal });
   return response.data;
 };
 
@@ -24,8 +24,8 @@ export const createLedger = async (data: CreateLedgerData): Promise<Ledger> => {
   return response.data;
 };
 
-export const getAccounts = async (ledgerId: string | number): Promise<Account[]> => {
-  const response = await api.get(`/ledger/${ledgerId}/accounts`);
+export const getAccounts = async (ledgerId: string | number, signal?: AbortSignal): Promise<Account[]> => {
+  const response = await api.get(`/ledger/${ledgerId}/accounts`, { signal });
   return response.data;
 };
 
@@ -34,8 +34,8 @@ export const getTransactionsCount = async (ledgerId: string | number): Promise<n
   return response.data;
 };
 
-export const getLedgerDetails = async (ledgerId: string | number): Promise<Ledger> => {
-  const response = await api.get(`/ledger/${ledgerId}`);
+export const getLedgerDetails = async (ledgerId: string | number, signal?: AbortSignal): Promise<Ledger> => {
+  const response = await api.get(`/ledger/${ledgerId}`, { signal });
   return response.data;
 };
 

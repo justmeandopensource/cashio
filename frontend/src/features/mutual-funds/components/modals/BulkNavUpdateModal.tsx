@@ -58,7 +58,8 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
   mutualFunds,
   onSuccess,
 }) => {
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const queryClient = useQueryClient();
   const [selectedFunds, setSelectedFunds] = useState<Set<number>>(new Set());
   const [results, setResults] = useState<Map<string, NavFetchResult>>(

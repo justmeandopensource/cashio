@@ -42,7 +42,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
   onTransferFunds,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const [accountType, setAccountType] = useState<"asset" | "liability">("asset");
   const [showZeroBalanceAssets, setShowZeroBalanceAssets] = useState(false);
   const [showZeroBalanceLiabilities, setShowZeroBalanceLiabilities] = useState(false);

@@ -76,7 +76,7 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
   currentNavServiceType,
   onUpdateCompleted,
 }) => {
-  const { ledgerId } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
   const [ledgerName, setLedgerName] = useState<string>(currentLedgerName);
   const [selectedCurrency, setSelectedCurrency] = useState<string>(
     currentCurrencySymbol,

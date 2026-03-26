@@ -22,20 +22,19 @@ import { useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { notify } from "@/components/shared/notify";
 import { useLedger } from "./hooks";
+import { useLogout } from "@/lib/useLogout";
 
 const Ledger = () => {
   const navigate = useNavigate();
-  const {
-    ledgerId,
-    ledgerName,
-    currencySymbol,
-    description,
-    notes,
-    navServiceType,
-    createdAt,
-    updatedAt,
-    setLedger,
-  } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const ledgerName = useLedgerStore((s) => s.ledgerName);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
+  const description = useLedgerStore((s) => s.description);
+  const notes = useLedgerStore((s) => s.notes);
+  const navServiceType = useLedgerStore((s) => s.navServiceType);
+  const createdAt = useLedgerStore((s) => s.createdAt);
+  const updatedAt = useLedgerStore((s) => s.updatedAt);
+  const setLedger = useLedgerStore((s) => s.setLedger);
   const queryClient = useQueryClient();
 
   // Fetch ledger details to ensure store has correct navServiceType
@@ -43,16 +42,16 @@ const Ledger = () => {
 
   useEffect(() => {
     if (ledgerData) {
-      setLedger(
-        ledgerData.ledger_id || ledgerId || "",
-        ledgerData.name,
-        ledgerData.currency_symbol,
-        ledgerData.description ?? "",
-        ledgerData.notes ?? "",
-        ledgerData.nav_service_type ?? "",
-        ledgerData.created_at ?? "",
-        ledgerData.updated_at ?? "",
-      );
+      setLedger({
+        ledgerId: ledgerData.ledger_id || ledgerId || "",
+        ledgerName: ledgerData.name,
+        currencySymbol: ledgerData.currency_symbol,
+        description: ledgerData.description ?? "",
+        notes: ledgerData.notes ?? "",
+        navServiceType: ledgerData.nav_service_type ?? "",
+        createdAt: ledgerData.created_at ?? "",
+        updatedAt: ledgerData.updated_at ?? "",
+      });
     }
   }, [ledgerData]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -140,23 +139,20 @@ const Ledger = () => {
     updated_at: string;
   }) => {
     if (ledgerId) {
-      setLedger(
+      setLedger({
         ledgerId,
-        data.name,
-        data.currency_symbol,
-        data.description,
-        data.notes,
-        data.nav_service_type,
-        data.created_at,
-        data.updated_at,
-      );
+        ledgerName: data.name,
+        currencySymbol: data.currency_symbol,
+        description: data.description,
+        notes: data.notes,
+        navServiceType: data.nav_service_type,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+      });
     }
   };
 
-  const handleLogout = (): void => {
-    localStorage.removeItem("access_token");
-    navigate("/login");
-  };
+  const handleLogout = useLogout();
 
   return (
     <Layout handleLogout={handleLogout}>

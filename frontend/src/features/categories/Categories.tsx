@@ -1,20 +1,14 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import Layout from "@components/Layout";
 import CategoriesMain from "@features/categories/components/CategoriesMain";
 import PageContainer from "@components/shared/PageContainer";
 import PageHeader from "@components/shared/PageHeader";
 import { Bookmark } from "lucide-react";
 import { Box, Button, Flex } from "@chakra-ui/react";
+import { useLogout } from "@/lib/useLogout";
 
 const Categories: React.FC = () => {
-  const navigate = useNavigate();
-
-  // handle logout
-  const handleLogout = (): void => {
-    localStorage.removeItem("access_token");
-    navigate("/login");
-  };
+  const handleLogout = useLogout();
 
   // Handle create category
   const handleCreateCategory = (type: "income" | "expense") => {

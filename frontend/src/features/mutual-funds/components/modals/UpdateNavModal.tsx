@@ -55,8 +55,8 @@ const UpdateNavModal: FC<UpdateNavModalProps> = ({
   fund,
   onSuccess,
 }) => {
-  const { ledgerId } = useLedgerStore();
-  const { currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState<FormData>({ nav: "" });

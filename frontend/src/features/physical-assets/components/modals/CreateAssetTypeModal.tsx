@@ -48,7 +48,7 @@ const CreateAssetTypeModal: FC<CreateAssetTypeModalProps> = ({
   onClose,
   onAssetTypeCreated,
 }) => {
-  const { ledgerId } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
   const [formData, setFormData] = useState<FormData>({
     name: "",
     unit_name: "",

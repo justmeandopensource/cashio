@@ -97,7 +97,8 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
   const [periodType, setPeriodType] = useState<string>("last_12_months");
   const [hiddenSubcategories, setHiddenSubcategories] = useState<Set<string>>(new Set());
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
 
   // Color modes
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");

@@ -52,7 +52,8 @@ const formatPeriod = (period: string) => {
 };
 
 const AccountInsights: React.FC<AccountInsightsProps> = ({ accountId }) => {
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
 
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
   const sectionBorderColor = useColorModeValue("gray.100", "gray.700");

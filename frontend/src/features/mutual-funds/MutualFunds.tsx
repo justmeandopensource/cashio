@@ -72,7 +72,7 @@ interface MutualFundsProps {
 
 const MutualFunds: FC<MutualFundsProps> = (props) => {
   const { onAccountDataChange, filters, onFiltersChange } = props;
-  const { ledgerId } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
   const queryClient = useQueryClient();
   const [subTabIndex, setSubTabIndex] = useState(0);
   const [selectedFundFilter, setSelectedFundFilter] = useState<string>("all");

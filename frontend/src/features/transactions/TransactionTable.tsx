@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { formatDate } from "@/components/shared/utils";
 import {
   Table,
@@ -19,23 +19,15 @@ import {
   Flex,
   Icon,
   useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  Button,
   Badge,
   Link as ChakraLink,
-  useBreakpointValue,
   useColorModeValue,
   HStack,
   VStack,
   Divider,
 } from "@chakra-ui/react";
 import { Trash2, Edit, Copy, ArrowDown } from "lucide-react";
+import DeleteTransactionModal from "./DeleteTransactionModal";
 import { splitCurrencyForDisplay } from "../mutual-funds/utils";
 import { Link } from "react-router-dom";
 import { SplitTransactionSkeleton, TransferDetailsSkeleton } from "./Skeletons";
@@ -79,22 +71,8 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
     string | null
   >(null);
 
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
 
-  // Responsive modal settings
-  const modalSize = useBreakpointValue({ base: "full", md: "md" });
-  const isMobile = useBreakpointValue({ base: true, md: false });
-
-  // Handle delete confirmation
-  const handleDelete = async () => {
-    if (!selectedTransactionId) return;
-    try {
-      await onDeleteTransaction(selectedTransactionId);
-      onClose();
-    } catch (error) {
-      console.error("Error deleting transaction:", error);
-    }
-  };
 
   const hoverBg = useColorModeValue("gray.50", "whiteAlpha.50");
   const tableBorderColor = useColorModeValue("gray.100", "gray.600");
@@ -119,8 +97,17 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   const transferTooltipLabelColor = useColorModeValue("gray.400", "gray.500");
   const transferTooltipAccountColor = useColorModeValue("gray.800", "gray.100");
   const transferTooltipLedgerColor = useColorModeValue("gray.500", "gray.400");
-  const modalBg = useColorModeValue("white", "gray.800");
-  const modalBorderColor = useColorModeValue("gray.100", "gray.700");
+  const sortedTransactions = useMemo(
+    () =>
+      [...transactions].sort((a, b) => {
+        const dateComparison = new Date(b.date).getTime() - new Date(a.date).getTime();
+        if (dateComparison === 0) {
+          return parseInt(b.transaction_id) - parseInt(a.transaction_id);
+        }
+        return dateComparison;
+      }),
+    [transactions]
+  );
 
   return (
     <>
@@ -148,15 +135,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
             </Tr>
           </Thead>
           <Tbody>
-             {transactions
-               .sort((a, b) => {
-                 const dateComparison = new Date(b.date).getTime() - new Date(a.date).getTime();
-                 if (dateComparison === 0) {
-                   return parseInt(b.transaction_id) - parseInt(a.transaction_id);
-                 }
-                 return dateComparison;
-               })
-              .map((transaction) => {
+             {sortedTransactions.map((transaction) => {
                 const displayCredit = transaction.filter_matched_split?.credit ?? transaction.credit;
                 const displayDebit = transaction.filter_matched_split?.debit ?? transaction.debit;
                 const displayCategoryName = transaction.filter_matched_split?.category_name ?? transaction.category_name;
@@ -595,38 +574,12 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
         </Table>
       </Box>
 
-      {/* Delete Confirmation Modal */}
-      <Modal
+      <DeleteTransactionModal
         isOpen={isOpen}
-        returnFocusOnClose={false}
         onClose={onClose}
-        size={modalSize}
-        motionPreset="slideInBottom"
-      >
-        <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-        <ModalContent
-          margin={isMobile ? 0 : "auto"}
-          borderRadius={isMobile ? 0 : "xl"}
-          bg={modalBg}
-          border="1px solid"
-          borderColor={modalBorderColor}
-          boxShadow="2xl"
-        >
-          <ModalHeader fontWeight="800" letterSpacing="-0.02em">Delete Transaction</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            Are you sure you want to delete this transaction?
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onClose} borderRadius="lg">
-              Cancel
-            </Button>
-            <Button colorScheme="red" onClick={handleDelete} leftIcon={<Trash2 size={18} />} borderRadius="lg" fontWeight="bold">
-              Delete
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+        onDelete={onDeleteTransaction}
+        transactionId={selectedTransactionId}
+      />
     </>
   );
 };

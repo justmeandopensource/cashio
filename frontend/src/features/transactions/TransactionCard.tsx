@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Box,
   Flex,
@@ -13,20 +13,13 @@ import {
   Tag,
   TagLabel,
   useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
   Button,
   IconButton,
-  useBreakpointValue,
   Link as ChakraLink,
   useColorModeValue,
 } from "@chakra-ui/react";
 import { Calendar, Tag as TagIcon, Info, CreditCard, Trash2, MessageSquare, Edit, Copy } from "lucide-react";
+import DeleteTransactionModal from "./DeleteTransactionModal";
 import { Link } from "react-router-dom";
 import {
   formatAmount,
@@ -74,7 +67,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
   onCopyTransaction,
   showAccountName = false,
 }) => {
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const displayCredit = transaction.filter_matched_split?.credit ?? transaction.credit;
   const displayDebit = transaction.filter_matched_split?.debit ?? transaction.debit;
   const displayCategoryName = transaction.filter_matched_split?.category_name ?? transaction.category_name;
@@ -82,21 +75,6 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
   const amountValue = displayCredit !== 0 ? displayCredit : displayDebit;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const modalSize = useBreakpointValue({ base: "full", md: "md" });
-  const isMobile = useBreakpointValue({ base: true, md: false });
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleDelete = async () => {
-    try {
-      setIsDeleting(true);
-      await onDeleteTransaction(transaction.transaction_id);
-      onClose();
-    } catch (error) {
-      console.error("Error deleting transaction:", error);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
 
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
   const cardBorder = useColorModeValue("gray.100", "gray.600");
@@ -112,9 +90,6 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
   const storeTagBorderColor = useColorModeValue("brand.200", "brand.600");
   const splitBg = useColorModeValue("splitBg", "splitBg");
   const transferBg = useColorModeValue("transferBg", "transferBg");
-  const modalBg = useColorModeValue("white", "gray.800");
-  const modalBorderColor = useColorModeValue("gray.100", "gray.700");
-  const modalDetailBg = useColorModeValue("gray.50", "gray.700");
   const expandedSectionBorder = useColorModeValue("gray.100", "gray.600");
 
   return (
@@ -489,58 +464,15 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
         )}
       </Box>
 
-      {/* Delete Confirmation Modal */}
-      <Modal
+      <DeleteTransactionModal
         isOpen={isOpen}
-        returnFocusOnClose={false}
         onClose={onClose}
-        size={modalSize}
-        motionPreset="slideInBottom"
-      >
-        <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-        <ModalContent
-          margin={isMobile ? 0 : "auto"}
-          borderRadius={isMobile ? 0 : "xl"}
-          bg={modalBg}
-          border="1px solid"
-          borderColor={modalBorderColor}
-          boxShadow="2xl"
-        >
-          <ModalHeader fontWeight="800" letterSpacing="-0.02em">Delete Transaction</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Text>Are you sure you want to delete this transaction?</Text>
-            <Box mt={4} p={3} bg={modalDetailBg} borderRadius="xl" border="1px solid" borderColor={modalBorderColor}>
-              <Text fontWeight="bold">{transaction.category_name}</Text>
-              <Text fontSize="sm" color="secondaryTextColor">{formatDate(transaction.date)}</Text>
-                <HStack spacing={0} align="baseline" mt={1}>
-                  <Text fontWeight="bold" color={amount.color}>
-                    {splitCurrencyForDisplay(amountValue, currencySymbol || "₹").main}
-                  </Text>
-                  <Text fontSize="xs" color={amount.color} opacity={0.6}>
-                    {splitCurrencyForDisplay(amountValue, currencySymbol || "₹").decimals}
-                  </Text>
-                </HStack>
-            </Box>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onClose} isDisabled={isDeleting} borderRadius="lg">
-              Cancel
-            </Button>
-            <Button
-              colorScheme="red"
-              onClick={handleDelete}
-              isLoading={isDeleting}
-              loadingText="Deleting"
-              leftIcon={<Trash2 size={16} />}
-              borderRadius="lg"
-              fontWeight="bold"
-            >
-              Delete
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+        onDelete={onDeleteTransaction}
+        transaction={transaction}
+        currencySymbol={currencySymbol || "₹"}
+        amountColor={amount.color}
+        amountValue={amountValue}
+      />
     </>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLogout } from "@/lib/useLogout";
 import Layout from "@components/Layout";
 import AccountMain from "@features/account/components/AccountMain";
 import PageContainer from "@components/shared/PageContainer";
@@ -22,7 +23,8 @@ import { useAccount } from "./hooks";
 const Account: React.FC = () => {
   const navigate = useNavigate();
   const { accountId } = useParams<{ accountId: string }>();
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const queryClient = useQueryClient();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
@@ -95,11 +97,7 @@ const Account: React.FC = () => {
     }
   };
 
-  // handle logout
-  const handleLogout = (): void => {
-    localStorage.removeItem("access_token");
-    navigate("/login");
-  };
+  const handleLogout = useLogout();
 
   // Fetch account
   const { data: account, isError } = useAccount(ledgerId || "", accountId || "");

@@ -98,7 +98,7 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
   preselectedAmcId,
 }) => {
   const initialRef = useRef(null);
-  const { ledgerId } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
   const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState<FormData>({

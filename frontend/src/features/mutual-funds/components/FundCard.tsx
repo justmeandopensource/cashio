@@ -49,7 +49,7 @@ const FundCard: FC<FundCardProps> = ({
   onUpdateNav,
   onCloseFund,
 }) => {
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const cardBg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.100", "gray.700");
   const expandedBorder = useColorModeValue("brand.200", "brand.600");

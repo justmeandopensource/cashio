@@ -25,7 +25,7 @@ import { MfTransaction } from "../types";
 
 const useUpdateMfTransactionNotes = () => {
   const queryClient = useQueryClient();
-  const { ledgerId } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
 
   return useMutation({
     mutationFn: ({

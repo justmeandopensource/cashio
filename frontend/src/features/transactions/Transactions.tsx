@@ -56,7 +56,7 @@ const Transactions: React.FC<TransactionsProps> = ({
   onEditTransfer,
   shouldFetch = true,
 }) => {
-  const { ledgerId } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
   const queryClient = useQueryClient();
 
   const [splitTransactions, setSplitTransactions] = useState<

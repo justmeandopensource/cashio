@@ -70,7 +70,8 @@ const MfTransactions: FC<MfTransactionsProps> = ({
   onAccountDataChange,
   initialFundFilter,
 }) => {
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
   const mutedColor = useColorModeValue("secondaryTextColor", "secondaryTextColor");
   const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");

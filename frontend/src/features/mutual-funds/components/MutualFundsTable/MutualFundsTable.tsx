@@ -69,7 +69,7 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
   filters,
   onFiltersChange,
 }) => {
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const mutedColor = useColorModeValue("gray.600", "gray.400");
   const tableHoverBg = useColorModeValue("secondaryBg", "secondaryBg");
   const isMobile = useBreakpointValue({ base: true, md: false });

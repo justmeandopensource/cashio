@@ -40,7 +40,8 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   onClose,
   accountType,
 }) => {
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const [accountName, setAccountName] = useState<string>("");
   const [subtype, setSubtype] = useState<string>("");
   const [owner, setOwner] = useState<string>("");

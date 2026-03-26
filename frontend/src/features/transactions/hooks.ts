@@ -14,13 +14,13 @@ export const useTransactions = (
 ) => {
   return useQuery<TransactionsResponse>({
     queryKey: queryKeys.transactions.list(ledgerId, accountId, page, filters),
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       getTransactions(ledgerId, {
         page,
         per_page: 50,
         account_id: accountId,
         filters,
-      }),
+      }, signal),
     enabled,
     staleTime: 5 * 60 * 1000,
   });

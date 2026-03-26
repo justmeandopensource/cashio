@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import Layout from "@components/Layout";
 import InsightsMain from "./components/InsightsMain";
 import PageContainer from "@components/shared/PageContainer";
@@ -8,6 +8,7 @@ import { Box, Flex, FormControl, Select, Text, useColorModeValue } from "@chakra
 import React, { useState, useEffect } from "react";
 import useLedgerStore from "@/components/shared/store";
 import { useLedgers } from "@features/ledger/hooks";
+import { useLogout } from "@/lib/useLogout";
 
 const visualizationOptions = [
   {
@@ -57,9 +58,9 @@ const visualizationOptions = [
 ];
 
 const Insights = () => {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { ledgerId, setLedger } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const setLedger = useLedgerStore((s) => s.setLedger);
   const [selectedLedgerId, setSelectedLedgerId] = useState<string | undefined>(
     ledgerId,
   );
@@ -88,16 +89,16 @@ const Insights = () => {
       (ledger) => ledger.ledger_id == newLedgerId,
     );
     if (selectedLedger) {
-      setLedger(
-        selectedLedger.ledger_id,
-        selectedLedger.name,
-        selectedLedger.currency_symbol,
-        selectedLedger.description || "",
-        selectedLedger.notes || "",
-        "",
-        selectedLedger.created_at || "",
-        selectedLedger.updated_at || "",
-      );
+      setLedger({
+        ledgerId: selectedLedger.ledger_id,
+        ledgerName: selectedLedger.name,
+        currencySymbol: selectedLedger.currency_symbol,
+        description: selectedLedger.description || "",
+        notes: selectedLedger.notes || "",
+        navServiceType: "",
+        createdAt: selectedLedger.created_at || "",
+        updatedAt: selectedLedger.updated_at || "",
+      });
     }
     setSelectedLedgerId(newLedgerId);
   };
@@ -114,10 +115,7 @@ const Insights = () => {
   const selectColor = useColorModeValue("gray.700", "gray.200");
   const labelColor = useColorModeValue("gray.400", "gray.500");
 
-  const handleLogout = (): void => {
-    localStorage.removeItem("access_token");
-    navigate("/login");
-  };
+  const handleLogout = useLogout();
 
   return (
     <Layout handleLogout={handleLogout}>

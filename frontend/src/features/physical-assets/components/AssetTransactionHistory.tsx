@@ -64,8 +64,8 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
   onDataChange,
   initialAssetFilter,
 }) => {
-  const { currencySymbol } = useLedgerStore();
-  const { ledgerId } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
   const [expandedCardId, setExpandedCardId] = useState<number | null>(null);

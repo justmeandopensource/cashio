@@ -85,7 +85,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
   filters,
   onFiltersChange,
 }) => {
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const [isBulkNavModalOpen, setIsBulkNavModalOpen] = useState(false);
   const [showChangeModal, setShowChangeModal] = useState(false);
   const [oldStats, setOldStats] = useState<{totalValue: number, totalUnrealizedPnL: number} | null>(null);

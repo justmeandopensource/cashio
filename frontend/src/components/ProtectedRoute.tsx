@@ -1,8 +1,9 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
+import { getAuthToken } from '@/lib/api';
 
 const ProtectedRoute: React.FC = () => {
-  const token = localStorage.getItem('access_token');
+  const token = getAuthToken();
 
   if (!token) {
     // If no token, redirect to the login page

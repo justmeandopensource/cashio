@@ -88,7 +88,7 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
   ledgerId,
 }) => {
   const [periodType, setPeriodType] = useState<string>("last_12_months");
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
 
   // Color modes
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");

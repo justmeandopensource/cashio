@@ -31,7 +31,7 @@ export const LedgerAccountRowDesktop: React.FC<LedgerAccountCardProps> = ({
   onTransferFunds,
   getOwnerInitials,
 }) => {
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const balance = account.net_balance || 0;
   const tertiaryTextColor = useColorModeValue("tertiaryTextColor", "tertiaryTextColor");
   const iconColor = useColorModeValue("brand.500", "brand.300");
@@ -125,7 +125,7 @@ export const LedgerAccountCardMobile: React.FC<LedgerAccountCardProps> = ({
   onTransferFunds,
   getOwnerInitials,
 }) => {
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const balance = account.net_balance || 0;
   const tertiaryTextColor = useColorModeValue("tertiaryTextColor", "tertiaryTextColor");
   const dividerColor = useColorModeValue("gray.100", "gray.700");

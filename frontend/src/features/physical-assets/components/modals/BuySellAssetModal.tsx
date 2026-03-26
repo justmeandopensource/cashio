@@ -67,7 +67,8 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
   asset,
   onTransactionCompleted,
 }) => {
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const [tabIndex, setTabIndex] = useState(0);
   const [formData, setFormData] = useState<TransactionFormData>({
     quantity: "",

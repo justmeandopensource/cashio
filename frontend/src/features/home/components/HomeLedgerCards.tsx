@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -30,28 +31,27 @@ const floatKeyframes = keyframes`
 
 const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
   const navigate = useNavigate();
-  const { setLedger } = useLedgerStore();
+  const setLedger = useLedgerStore((s) => s.setLedger);
 
-  const handleLedgerClick = (
-    ledgerId: string,
-    ledgerName: string,
-    currencySymbol: string,
-    description: string,
-    notes: string,
-    navServiceType: string,
-    createdAt: string,
-    updatedAt: string
-  ) => {
-    setLedger(
-      ledgerId,
-      ledgerName,
-      currencySymbol,
-      description,
-      notes,
-      navServiceType,
-      createdAt,
-      updatedAt
-    );
+  const handleLedgerClick = (ledger: {
+    ledger_id: string;
+    name: string;
+    currency_symbol: string;
+    description?: string;
+    notes?: string;
+    created_at?: string;
+    updated_at?: string;
+  }) => {
+    setLedger({
+      ledgerId: ledger.ledger_id,
+      ledgerName: ledger.name,
+      currencySymbol: ledger.currency_symbol,
+      description: ledger.description ?? "",
+      notes: ledger.notes ?? "",
+      navServiceType: "",
+      createdAt: ledger.created_at ?? "",
+      updatedAt: ledger.updated_at ?? "",
+    });
     navigate(`/ledger`);
   };
 
@@ -65,7 +65,7 @@ const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
   const isDark = useColorModeValue(false, true);
 
   // Per-card glow shadows matching accent colors
-  const hoverShadows = [
+  const hoverShadows = useMemo(() => [
     isDark
       ? "0 12px 32px -4px rgba(78,194,188,0.15), 0 4px 12px -2px rgba(0,0,0,0.3)"
       : "0 12px 32px -4px rgba(53,169,163,0.12), 0 4px 12px -2px rgba(0,0,0,0.06)",
@@ -81,7 +81,7 @@ const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
     isDark
       ? "0 12px 32px -4px rgba(244,114,182,0.18), 0 4px 12px -2px rgba(0,0,0,0.3)"
       : "0 12px 32px -4px rgba(219,39,119,0.14), 0 4px 12px -2px rgba(0,0,0,0.06)",
-  ];
+  ], [isDark]);
 
   const emptyIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.12)");
   const emptyTitleColor = useColorModeValue("gray.800", "gray.100");
@@ -100,22 +100,24 @@ const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
   };
 
   // Rich gradients for currency badges — deeper, more saturated
-  const gradients = [
+  const gradients = useMemo(() => [
     "linear(135deg, #2dd4bf, #0d9488)",
     "linear(135deg, #a78bfa, #7c3aed)",
     "linear(135deg, #38bdf8, #0284c7)",
     "linear(135deg, #fb923c, #ea580c)",
     "linear(135deg, #f472b6, #db2777)",
-  ];
+  ], []);
 
   // Solid accent colors matching gradients
-  const accentColors = [
-    useColorModeValue("teal.400", "teal.300"),
-    useColorModeValue("purple.400", "purple.300"),
-    useColorModeValue("blue.400", "blue.300"),
-    useColorModeValue("orange.400", "orange.300"),
-    useColorModeValue("pink.400", "pink.300"),
-  ];
+  const accentTeal = useColorModeValue("teal.400", "teal.300");
+  const accentPurple = useColorModeValue("purple.400", "purple.300");
+  const accentBlue = useColorModeValue("blue.400", "blue.300");
+  const accentOrange = useColorModeValue("orange.400", "orange.300");
+  const accentPink = useColorModeValue("pink.400", "pink.300");
+  const accentColors = useMemo(
+    () => [accentTeal, accentPurple, accentBlue, accentOrange, accentPink],
+    [accentTeal, accentPurple, accentBlue, accentOrange, accentPink]
+  );
 
   if (ledgers.length === 0) {
     return (
@@ -236,18 +238,7 @@ const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
               cursor="pointer"
               role="group"
               position="relative"
-              onClick={() =>
-                handleLedgerClick(
-                  ledger.ledger_id,
-                  ledger.name,
-                  ledger.currency_symbol,
-                  ledger.description ?? "",
-                  ledger.notes ?? "",
-                  "",
-                  ledger.created_at ?? "",
-                  ledger.updated_at ?? ""
-                )
-              }
+              onClick={() => handleLedgerClick(ledger)}
               _hover={{
                 borderColor: accent,
                 boxShadow: glow,

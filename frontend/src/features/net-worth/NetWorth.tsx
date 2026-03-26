@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@components/Layout";
 import useLedgerStore from "@/components/shared/store";
 import { getNetWorth } from "./api";
 import NetWorthMain from "./components/NetWorthMain";
 import { useLedgers } from "@features/ledger/hooks";
+import { useLogout } from "@/lib/useLogout";
 
 const NetWorth: React.FC = () => {
-  const navigate = useNavigate();
-  const { ledgerId, currencySymbol, setLedger } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
+  const setLedger = useLedgerStore((s) => s.setLedger);
   const [selectedLedgerId, setSelectedLedgerId] = useState<string | undefined>(ledgerId);
 
   // Keep local selection in sync when Zustand changes (e.g. user switches ledger elsewhere)
@@ -32,24 +33,21 @@ const NetWorth: React.FC = () => {
     const newId = e.target.value;
     const selected = ledgers?.find((l) => l.ledger_id == newId);
     if (selected) {
-      setLedger(
-        selected.ledger_id,
-        selected.name,
-        selected.currency_symbol,
-        selected.description || "",
-        selected.notes || "",
-        selected.nav_service_type || "",
-        selected.created_at || "",
-        selected.updated_at || "",
-      );
+      setLedger({
+        ledgerId: selected.ledger_id,
+        ledgerName: selected.name,
+        currencySymbol: selected.currency_symbol,
+        description: selected.description || "",
+        notes: selected.notes || "",
+        navServiceType: selected.nav_service_type || "",
+        createdAt: selected.created_at || "",
+        updatedAt: selected.updated_at || "",
+      });
     }
     setSelectedLedgerId(newId || undefined);
   };
 
-  const handleLogout = (): void => {
-    localStorage.removeItem("access_token");
-    navigate("/login");
-  };
+  const handleLogout = useLogout();
 
   const selectedCurrencySymbol = ledgers?.find((l) => l.ledger_id === selectedLedgerId)?.currency_symbol ?? currencySymbol ?? "";
 

@@ -49,7 +49,7 @@ interface ChartPoint {
 const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
   ledgerId,
 }) => {
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const [selectedOwner, setSelectedOwner] = useState<string>("all");
   const [selectedGranularity, setSelectedGranularity] = useState<string>("monthly");
 

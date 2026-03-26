@@ -29,7 +29,7 @@ const TransactionFilterStats: React.FC<TransactionFilterStatsProps> = ({
   totalDebit,
   netAmount,
 }) => {
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
 
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
   const sectionBorderColor = useColorModeValue("gray.100", "gray.700");

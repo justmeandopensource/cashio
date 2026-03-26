@@ -13,7 +13,8 @@ export function useBuySellForm({
   fund,
   onSuccess,
 }: BuySellMfModalProps) {
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const queryClient = useQueryClient();
   const [tabIndex, setTabIndex] = useState(0);
 

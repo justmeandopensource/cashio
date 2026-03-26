@@ -57,7 +57,7 @@ export const SubtypeGroupSection: React.FC<SubtypeGroupSectionProps> = ({
   onAddTransaction,
   onTransferFunds,
 }) => {
-  const { currencySymbol } = useLedgerStore();
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const SubtypeIcon = getSubtypeIcon(group.subtype);
   const sectionKey = `${type}-${group.subtype}`;
   const balanceColor = getBalanceColor(group.totalBalance, type, true);

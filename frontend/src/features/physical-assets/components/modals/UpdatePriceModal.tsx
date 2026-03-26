@@ -46,7 +46,8 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
   asset,
   onPriceUpdated,
 }) => {
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const [newPrice, setNewPrice] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 

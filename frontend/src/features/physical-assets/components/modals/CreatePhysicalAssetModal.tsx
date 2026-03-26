@@ -49,7 +49,7 @@ const CreatePhysicalAssetModal: FC<CreatePhysicalAssetModalProps> = ({
   onAssetCreated,
   assetTypeId,
 }) => {
-  const { ledgerId } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
   const [formData, setFormData] = useState<FormData>({
     name: "",
     asset_type_id: assetTypeId ? assetTypeId.toString() : "",

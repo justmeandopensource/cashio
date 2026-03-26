@@ -15,7 +15,7 @@ import {
 export const useCurrentMonthOverview = (ledgerId?: number | string) => {
   return useQuery({
     queryKey: queryKeys.insights.currentMonth(ledgerId),
-    queryFn: () => getCurrentMonthOverview(ledgerId!),
+    queryFn: ({ signal }) => getCurrentMonthOverview(ledgerId!, signal),
     enabled: !!ledgerId,
     staleTime: 5 * 60 * 1000,
   });
@@ -27,7 +27,7 @@ export const useIncomeExpenseTrend = (
 ) => {
   return useQuery({
     queryKey: queryKeys.insights.incomeExpense(ledgerId, periodType),
-    queryFn: () => getIncomeExpenseTrend(ledgerId, periodType),
+    queryFn: ({ signal }) => getIncomeExpenseTrend(ledgerId, periodType, signal),
     enabled: !!ledgerId,
     staleTime: 5 * 60 * 1000,
   });
@@ -44,7 +44,7 @@ export const useCategoryTrend = (
       String(categoryId),
       periodType,
     ),
-    queryFn: () => getCategoryTrend(ledgerId!, categoryId!, periodType!),
+    queryFn: ({ signal }) => getCategoryTrend(ledgerId!, categoryId!, periodType!, signal),
     enabled: !!ledgerId && !!categoryId && !!periodType,
     staleTime: 5 * 60 * 1000,
   });
@@ -58,7 +58,7 @@ export const useTagTrend = (
   const tagKey = tagNames?.join(",") ?? "";
   return useQuery({
     queryKey: queryKeys.insights.tagTrend(ledgerId, tagKey),
-    queryFn: () => getTagTrend(ledgerId!, tagNames!),
+    queryFn: ({ signal }) => getTagTrend(ledgerId!, tagNames!, signal),
     enabled:
       !!ledgerId &&
       !!tagNames &&
@@ -74,7 +74,7 @@ export const useExpenseByStore = (
 ) => {
   return useQuery({
     queryKey: queryKeys.insights.expenseByStore(ledgerId, periodType),
-    queryFn: () => getExpenseByStore(ledgerId, periodType),
+    queryFn: ({ signal }) => getExpenseByStore(ledgerId, periodType, signal),
     enabled: !!ledgerId,
     staleTime: 5 * 60 * 1000,
   });
@@ -91,7 +91,7 @@ export const useStoreCategoryBreakdown = (
       storeName,
       periodType,
     ),
-    queryFn: () => getStoreCategoryBreakdown(ledgerId, storeName, periodType),
+    queryFn: ({ signal }) => getStoreCategoryBreakdown(ledgerId, storeName, periodType, signal),
     enabled: !!ledgerId && !!storeName,
     staleTime: 5 * 60 * 1000,
   });
@@ -103,7 +103,7 @@ export const useExpenseByLocation = (
 ) => {
   return useQuery({
     queryKey: queryKeys.insights.expenseByLocation(ledgerId, periodType),
-    queryFn: () => getExpenseByLocation(ledgerId, periodType),
+    queryFn: ({ signal }) => getExpenseByLocation(ledgerId, periodType, signal),
     enabled: !!ledgerId,
     staleTime: 5 * 60 * 1000,
   });
@@ -120,8 +120,8 @@ export const useLocationCategoryBreakdown = (
       locationName,
       periodType,
     ),
-    queryFn: () =>
-      getLocationCategoryBreakdown(ledgerId, locationName, periodType),
+    queryFn: ({ signal }) =>
+      getLocationCategoryBreakdown(ledgerId, locationName, periodType, signal),
     enabled: !!ledgerId && !!locationName,
     staleTime: 5 * 60 * 1000,
   });
@@ -133,7 +133,7 @@ export const useExpenseCalendar = (
 ) => {
   return useQuery({
     queryKey: queryKeys.insights.calendarHeatmap(ledgerId, year),
-    queryFn: () => getExpenseCalendar(ledgerId, year!),
+    queryFn: ({ signal }) => getExpenseCalendar(ledgerId, year!, signal),
     enabled: !!ledgerId && !!year,
     staleTime: 5 * 60 * 1000,
   });

@@ -4,6 +4,7 @@ import { AxiosError } from "axios";
 import api from "@/lib/api";
 import useLedgerStore from "../../shared/store";
 import { notify } from "@/components/shared/notify";
+import { invalidateTransactionRelated } from "@/lib/queryKeys";
 import type { Ledger, Transaction, TransferEditData } from "@/types";
 import type { Account, Category } from "./types";
 
@@ -80,7 +81,8 @@ export function useTransferFundsForm({
   const isEditMode = !!editTransferData;
 
   const queryClient = useQueryClient();
-  const { ledgerId, currencySymbol } = useLedgerStore();
+  const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const currencySymbol = useLedgerStore((s) => s.currencySymbol);
 
   function formatCurrency(value: number) {
     const locale = currencySymbol === "\u20B9" ? "en-IN" : "en-US";
@@ -589,7 +591,12 @@ export function useTransferFundsForm({
       } else {
         await api.post(`/ledger/${ledgerId}/transaction/transfer`, payload);
       }
-      await queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      // Invalidate source ledger
+      invalidateTransactionRelated(queryClient, ledgerId as string);
+      // Invalidate destination ledger for cross-ledger transfers
+      if (isDifferentLedger && destinationLedgerId) {
+        invalidateTransactionRelated(queryClient, destinationLedgerId);
+      }
 
       notify({
         description: isEditMode
