@@ -4,7 +4,7 @@ from sqlalchemy import and_
 from uuid import UUID
 from fastapi import HTTPException, status
 
-from app.models.model import MfTransaction, Transaction, Account, Category
+from app.models.model import MfTransaction, Transaction, TransactionSplit, Account, Category
 from app.repositories import transaction_crud, account_crud
 from app.schemas import mutual_funds_schema
 
@@ -81,36 +81,16 @@ def create_mf_transaction(
                         detail=f"Insufficient units in fund. Available: {fund.total_units}, Requested: {transaction_data.units}",
                     )
 
-            # Create main financial transaction for amount_excluding_charges
-            transaction_type_financial = "debit" if transaction_data.transaction_type == "buy" else "credit"
+            # Create single financial transaction (with splits if charges exist)
+            has_charges = other_charges > 0
             financial_transaction_notes = ""
             if transaction_data.transaction_type == "buy":
                 financial_transaction_notes = f"MF Buy: {fund.name} {transaction_data.units:.3f} units at NAV {nav_per_unit:.4f}"
             elif transaction_data.transaction_type == "sell":
                 financial_transaction_notes = f"MF Sell: {fund.name} {transaction_data.units:.3f} units at NAV {nav_per_unit:.4f}"
 
-            financial_transaction = Transaction(
-                account_id=transaction_data.account_id,
-                credit=amount_excluding_charges if transaction_type_financial == "credit" else 0,
-                debit=amount_excluding_charges if transaction_type_financial == "debit" else 0,
-                date=transaction_data.transaction_date,
-                notes=financial_transaction_notes,
-                is_mf_transaction=True,
-            )
-            db.add(financial_transaction)
-            db.commit()
-            db.refresh(financial_transaction)
-            financial_transaction_id = financial_transaction.transaction_id
-
-            # Update account balance for main transaction
-            account_amount_change = amount_excluding_charges if transaction_type_financial == "credit" else -amount_excluding_charges
-            account.balance = account.balance + account_amount_change  # type: ignore
-            account.net_balance = account.net_balance + account_amount_change  # type: ignore
-
-            # Create charges transaction if other_charges > 0
-            linked_charge_transaction_id = None
-            if other_charges > 0:
-                # Validate category exists and is expense type
+            # Validate expense category if charges exist
+            if has_charges:
                 category = db.query(Category).filter(
                     Category.category_id == transaction_data.expense_category_id,
                     Category.user_id == fund.ledger.user_id,
@@ -122,26 +102,71 @@ def create_mf_transaction(
                         detail="Invalid expense category for charges",
                     )
 
-                charge_transaction_type = "debit"  # Charges are always debited (expenses)
-                charge_notes = f"MF {transaction_data.transaction_type.title()} Charges"
+            if transaction_data.transaction_type == "buy":
+                # BUY: total debit = amount + charges
+                transaction_debit = amount_excluding_charges + other_charges
+                transaction_credit = Decimal("0")
+                account_amount_change = -transaction_debit
+            else:
+                # SELL: net credit = amount - charges
+                transaction_credit = amount_excluding_charges - other_charges
+                transaction_debit = Decimal("0")
+                account_amount_change = transaction_credit
 
-                charge_transaction = Transaction(
-                    account_id=transaction_data.account_id,
-                    credit=0,
-                    debit=other_charges,
-                    category_id=transaction_data.expense_category_id,
-                    date=transaction_data.transaction_date,
-                    notes=charge_notes,
-                    is_mf_transaction=True,
-                )
-                db.add(charge_transaction)
-                db.commit()
-                db.refresh(charge_transaction)
-                linked_charge_transaction_id = charge_transaction.transaction_id
+            financial_transaction = Transaction(
+                account_id=transaction_data.account_id,
+                credit=transaction_credit,
+                debit=transaction_debit,
+                date=transaction_data.transaction_date,
+                notes=financial_transaction_notes,
+                is_mf_transaction=True,
+                is_split=has_charges,
+            )
+            db.add(financial_transaction)
+            db.commit()
+            db.refresh(financial_transaction)
+            financial_transaction_id = financial_transaction.transaction_id
 
-                # Update account balance for charges
-                account.balance = account.balance - other_charges  # type: ignore
-                account.net_balance = account.net_balance - other_charges  # type: ignore
+            # Create splits if charges exist
+            if has_charges:
+                if transaction_data.transaction_type == "buy":
+                    # Split 1: MF purchase amount
+                    db.add(TransactionSplit(
+                        transaction_id=financial_transaction_id,
+                        category_id=None,
+                        credit=Decimal("0"),
+                        debit=amount_excluding_charges,
+                        notes="MF purchase",
+                    ))
+                    # Split 2: Charges
+                    db.add(TransactionSplit(
+                        transaction_id=financial_transaction_id,
+                        category_id=transaction_data.expense_category_id,
+                        credit=Decimal("0"),
+                        debit=other_charges,
+                        notes="Charges",
+                    ))
+                else:
+                    # Split 1: MF redemption amount
+                    db.add(TransactionSplit(
+                        transaction_id=financial_transaction_id,
+                        category_id=None,
+                        credit=amount_excluding_charges,
+                        debit=Decimal("0"),
+                        notes="MF redemption",
+                    ))
+                    # Split 2: Charges
+                    db.add(TransactionSplit(
+                        transaction_id=financial_transaction_id,
+                        category_id=transaction_data.expense_category_id,
+                        credit=Decimal("0"),
+                        debit=other_charges,
+                        notes="Charges",
+                    ))
+
+            # Update account balance once with total/net amount
+            account.balance = account.balance + account_amount_change  # type: ignore
+            account.net_balance = account.net_balance + account_amount_change  # type: ignore
 
             db.commit()
 

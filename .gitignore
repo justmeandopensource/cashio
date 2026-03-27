@@ -9,4 +9,5 @@ certs/
 .DS_Store
 .env
 .python-version
+backend/backups/**
 .claude

@@ -726,7 +726,7 @@ const MfTransactions: FC<MfTransactionsProps> = ({
                   </HStack>
                   {Number(transactionToDelete.other_charges) > 0 && (
                     <Text fontSize="xs" color={deleteIconColor} fontWeight="medium">
-                      +{currencySymbol || "₹"}{splitCurrencyForDisplay(Number(transactionToDelete.other_charges), currencySymbol || "₹").main}{splitCurrencyForDisplay(Number(transactionToDelete.other_charges), currencySymbol || "₹").decimals} charges
+                      +{splitCurrencyForDisplay(Number(transactionToDelete.other_charges), currencySymbol || "₹").main}{splitCurrencyForDisplay(Number(transactionToDelete.other_charges), currencySymbol || "₹").decimals} charges
                     </Text>
                   )}
                 </VStack>

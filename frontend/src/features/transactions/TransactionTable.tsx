@@ -202,7 +202,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                  </Td>
                  <Td width="6%" borderBottomColor={tableBorderColor}>
                    <Flex gap={1} flexWrap="nowrap">
-                     {transaction.is_split && !transaction.is_transfer && (
+                     {transaction.is_split && !transaction.is_transfer && !transaction.is_mf_transaction && (
                        <Popover
                          trigger="hover"
                          openDelay={250}
@@ -288,7 +288,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                          </PopoverContent>
                        </Popover>
                      )}
-                     {transaction.is_transfer && transaction.is_split && (
+                     {(transaction.is_transfer || transaction.is_mf_transaction) && transaction.is_split && (
                        <Popover
                          trigger="hover"
                          openDelay={250}
@@ -339,7 +339,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                                      letterSpacing="wider"
                                      color={transferTooltipLabelColor}
                                    >
-                                     Transfer Fee
+                                     {transaction.is_mf_transaction ? "MF Charges" : "Transfer Fee"}
                                    </Text>
                                  </Box>
                                  <Divider borderColor={transferTooltipBorderColor} />

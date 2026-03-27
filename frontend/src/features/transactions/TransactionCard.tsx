@@ -122,7 +122,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               {/* Transaction type indicators */}
               {(transaction.is_split || transaction.is_transfer || transaction.is_asset_transaction || transaction.is_mf_transaction) && (
                 <HStack spacing={1}>
-                  {transaction.is_split && !transaction.is_transfer && (
+                  {transaction.is_split && !transaction.is_transfer && !transaction.is_mf_transaction && (
                     <Tooltip label="Split Transaction">
                       <Square size="7px" bg={splitColor} borderRadius="sm" />
                     </Tooltip>
@@ -132,8 +132,8 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                       <Square size="7px" bg={transferColor} borderRadius="sm" />
                     </Tooltip>
                   )}
-                  {transaction.is_transfer && transaction.is_split && (
-                    <Tooltip label="Transfer Fee">
+                  {(transaction.is_transfer || transaction.is_mf_transaction) && transaction.is_split && (
+                    <Tooltip label={transaction.is_mf_transaction ? "MF Charges" : "Transfer Fee"}>
                       <Square size="7px" bg="orange.400" borderRadius="sm" />
                     </Tooltip>
                   )}
@@ -230,8 +230,8 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               </Box>
             )}
 
-            {/* Split transaction details (non-transfer splits only) */}
-            {transaction.is_split && !transaction.is_transfer && (
+            {/* Split transaction details (non-transfer, non-MF splits only) */}
+            {transaction.is_split && !transaction.is_transfer && !transaction.is_mf_transaction && (
               <Box mt={3}>
                 <Button
                   size="xs"
@@ -313,8 +313,8 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               </Box>
             )}
 
-            {/* Transfer fee details */}
-            {transaction.is_transfer && transaction.is_split && (
+            {/* Transfer fee / MF charges details */}
+            {(transaction.is_transfer || transaction.is_mf_transaction) && transaction.is_split && (
               <Box mt={3}>
                 <Button
                   size="xs"
@@ -329,7 +329,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                   borderRadius="lg"
                   fontWeight="bold"
                 >
-                  View Fee Details
+                  {transaction.is_mf_transaction ? "View Charge Details" : "View Fee Details"}
                 </Button>
 
                 {isSplitLoading ? (
