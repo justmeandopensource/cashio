@@ -11,8 +11,8 @@ export const queryKeys = {
     forFilter: (ledgerId: string | number) =>
       ["accounts", ledgerId, "transaction-filter"] as const,
     detail: (accountId: string | number) => ["account", accountId] as const,
-    summary: (accountId: string | number) => ["account-summary", accountId] as const,
-    insights: (accountId: string | number) => ["account-insights", accountId] as const,
+    summary: (accountId: string | number) => ["account-summary", String(accountId)] as const,
+    insights: (accountId: string | number) => ["account-insights", String(accountId)] as const,
   },
   transactions: {
     all: ["transactions"] as const,

@@ -107,47 +107,25 @@ const Account: React.FC = () => {
   };
 
   const refreshTransactionsData = async (): Promise<void> => {
-    await queryClient.invalidateQueries({
-      queryKey: ["transactions"],
-    });
-    // Invalidate accounts query to update balances in ledger page
-    await queryClient.invalidateQueries({
-      queryKey: ["accounts", ledgerId],
-    });
-    // Invalidate insights queries to refresh charts after transaction changes
-    await queryClient.invalidateQueries({
-      queryKey: ["current-month-overview"],
-    });
-    await queryClient.invalidateQueries({
-      queryKey: ["insights"],
-    });
-    await queryClient.invalidateQueries({
-      queryKey: ["categoryTrend"],
-    });
-    await queryClient.invalidateQueries({
-      queryKey: ["tag-trend"],
-    });
-    // Invalidate budget queries to refresh spent amounts after transaction changes
-    await queryClient.invalidateQueries({
-      queryKey: ["budgets"],
-    });
-    // Invalidate account summary and insights
-    await queryClient.invalidateQueries({
-      queryKey: ["account-summary", accountId],
-    });
-    await queryClient.invalidateQueries({
-      queryKey: ["account-insights", accountId],
-    });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["transactions"] }),
+      queryClient.invalidateQueries({ queryKey: ["accounts", ledgerId] }),
+      queryClient.invalidateQueries({ queryKey: ["current-month-overview"] }),
+      queryClient.invalidateQueries({ queryKey: ["insights"] }),
+      queryClient.invalidateQueries({ queryKey: ["categoryTrend"] }),
+      queryClient.invalidateQueries({ queryKey: ["tag-trend"] }),
+      queryClient.invalidateQueries({ queryKey: ["budgets"] }),
+      queryClient.invalidateQueries({ queryKey: ["account-summary", accountId] }),
+      queryClient.invalidateQueries({ queryKey: ["account-insights", accountId] }),
+    ]);
   };
 
   const handleTransactionDeleted = async (): Promise<void> => {
-    await refreshAccountData();
-    await refreshTransactionsData();
+    await Promise.all([refreshAccountData(), refreshTransactionsData()]);
   };
 
   const handleTransactionUpdated = async (): Promise<void> => {
-    await refreshAccountData();
-    await refreshTransactionsData();
+    await Promise.all([refreshAccountData(), refreshTransactionsData()]);
   };
 
   if (isError) {
