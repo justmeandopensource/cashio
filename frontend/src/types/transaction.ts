@@ -9,6 +9,7 @@ export interface Transaction {
   account_name?: string;
   is_split: boolean;
   is_transfer: boolean;
+  is_cross_ledger_transfer?: boolean;
   is_asset_transaction?: boolean;
   is_mf_transaction?: boolean;
   notes?: string;

@@ -94,6 +94,7 @@ class Transaction(BaseModel, str_strip_whitespace=True):
     location: Optional[str]
     is_split: bool
     is_transfer: bool
+    is_cross_ledger_transfer: bool = False
     is_asset_transaction: bool
     is_mf_transaction: bool
     transfer_id: Optional[str]

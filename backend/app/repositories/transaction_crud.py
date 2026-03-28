@@ -31,6 +31,29 @@ def get_transactions_for_account_id(
     if not transactions:
         return []
 
+    # Batch-detect cross-ledger transfers
+    transfer_ids = [
+        t.transfer_id for t in transactions if t.is_transfer and t.transfer_id
+    ]
+    cross_ledger_transfer_ids: set = set()
+    if transfer_ids:
+        # Get both sides of each transfer with their account's ledger_id
+        transfer_rows = (
+            db.query(
+                Transaction.transfer_id,
+                Account.ledger_id,
+            )
+            .join(Account, Transaction.account_id == Account.account_id)
+            .filter(Transaction.transfer_id.in_(transfer_ids))
+            .all()
+        )
+        ledgers_by_transfer: dict = {}
+        for row in transfer_rows:
+            ledgers_by_transfer.setdefault(row.transfer_id, set()).add(row.ledger_id)
+        cross_ledger_transfer_ids = {
+            tid for tid, ledger_ids in ledgers_by_transfer.items() if len(ledger_ids) > 1
+        }
+
     # Format the response to include category name
     formatted_transactions = []
     for transaction in transactions:
@@ -49,6 +72,7 @@ def get_transactions_for_account_id(
             "location": transaction.location,
             "is_split": transaction.is_split,
             "is_transfer": transaction.is_transfer,
+            "is_cross_ledger_transfer": transaction.transfer_id in cross_ledger_transfer_ids,
             "is_asset_transaction": transaction.is_asset_transaction,
             "is_mf_transaction": transaction.is_mf_transaction,
             "transfer_id": str(transaction.transfer_id),
@@ -886,6 +910,28 @@ def get_transactions_for_ledger_id(
                     splits_by_tx_raw[tx_id]["notes"] = None
             split_by_tx = splits_by_tx_raw
 
+    # Batch-detect cross-ledger transfers
+    transfer_ids = [
+        t.transfer_id for t in transactions if t.is_transfer and t.transfer_id
+    ]
+    cross_ledger_transfer_ids: set = set()
+    if transfer_ids:
+        transfer_rows = (
+            db.query(
+                Transaction.transfer_id,
+                Account.ledger_id,
+            )
+            .join(Account, Transaction.account_id == Account.account_id)
+            .filter(Transaction.transfer_id.in_(transfer_ids))
+            .all()
+        )
+        ledgers_by_transfer: dict = {}
+        for row in transfer_rows:
+            ledgers_by_transfer.setdefault(row.transfer_id, set()).add(row.ledger_id)
+        cross_ledger_transfer_ids = {
+            tid for tid, ledger_ids in ledgers_by_transfer.items() if len(ledger_ids) > 1
+        }
+
     formatted_transactions = []
     for transaction in transactions:
         matched_split = split_by_tx.get(transaction.transaction_id)
@@ -903,6 +949,7 @@ def get_transactions_for_ledger_id(
             "location": transaction.location,
             "is_split": transaction.is_split,
             "is_transfer": transaction.is_transfer,
+            "is_cross_ledger_transfer": transaction.transfer_id in cross_ledger_transfer_ids,
             "is_asset_transaction": transaction.is_asset_transaction,
             "is_mf_transaction": transaction.is_mf_transaction,
             "transfer_id": str(transaction.transfer_id),

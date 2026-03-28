@@ -407,7 +407,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                     >
                       <PopoverTrigger>
                         <Badge
-                          colorScheme="blue"
+                          colorScheme={transaction.is_cross_ledger_transfer ? "purple" : "blue"}
                           variant="subtle"
                           cursor="default"
                           px={1.5}
