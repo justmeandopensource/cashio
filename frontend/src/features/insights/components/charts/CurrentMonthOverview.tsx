@@ -1,4 +1,4 @@
-import React, { PureComponent, useMemo, useState } from "react";
+import React, { PureComponent, useCallback, useMemo, useState } from "react";
 import {
   Box,
   VStack,
@@ -12,6 +12,7 @@ import {
   GridItem,
   Flex,
 } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ResponsiveContainer, Treemap, Tooltip } from "recharts";
 import { useQuery } from "@tanstack/react-query";
@@ -107,6 +108,7 @@ function assignColorsToCategories(categories: CategoryData[], baseColors: string
 // --- Interfaces ---
 
 interface CategoryData {
+  category_id: number;
   name: string;
   value: number;
   color?: string;
@@ -142,6 +144,7 @@ interface CategoryBarBreakdownProps {
   total: number;
   type: "income" | "expense";
   currencySymbol: string;
+  onCategoryClick: (categoryId: number, type: "income" | "expense") => void;
 }
 
 // --- Treemap content with labels ---
@@ -191,6 +194,7 @@ const CategoryBarBreakdown: React.FC<CategoryBarBreakdownProps> = ({
   total,
   type,
   currencySymbol,
+  onCategoryClick,
 }) => {
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -230,8 +234,11 @@ const CategoryBarBreakdown: React.FC<CategoryBarBreakdownProps> = ({
                 py={2.5}
                 px={3}
                 borderRadius="md"
-                cursor={hasChildren ? "pointer" : "default"}
-                onClick={hasChildren ? () => setExpanded(isExpanded ? null : category.name) : undefined}
+                cursor="pointer"
+                onClick={hasChildren
+                  ? () => setExpanded(isExpanded ? null : category.name)
+                  : () => onCategoryClick(category.category_id, type)
+                }
                 _hover={{ bg: hoverBg }}
                 style={{ transition: "background 0.15s ease" }}
                 initial={false}
@@ -326,6 +333,10 @@ const CategoryBarBreakdown: React.FC<CategoryBarBreakdownProps> = ({
                             gap={3}
                             py={1.5}
                             px={3}
+                            cursor="pointer"
+                            borderRadius="md"
+                            _hover={{ bg: hoverBg }}
+                            onClick={() => onCategoryClick(child.category_id, type)}
                           >
                             <Box
                               w="6px"
@@ -391,6 +402,16 @@ const CurrentMonthOverview: React.FC = () => {
   const baseColors = useColorModeValue(BASE_COLORS_LIGHT, BASE_COLORS_DARK);
   const ledgerId = useLedgerStore((s) => s.ledgerId);
   const currencySymbol = useLedgerStore((s) => s.currencySymbol);
+  const navigate = useNavigate();
+
+  const handleCategoryClick = useCallback((categoryId: number, type: "income" | "expense") => {
+    const now = new Date();
+    const fromDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    const toDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    navigate(
+      `/ledger?tab=transactions&category_id=${categoryId}&transaction_type=${type}&from_date=${fromDate.toISOString()}&to_date=${toDate.toISOString()}`,
+    );
+  }, [navigate]);
 
   const { data, isLoading, isError } = useQuery<CurrentMonthOverviewData>({
     queryKey: ["current-month-overview", ledgerId],
@@ -762,6 +783,7 @@ const CurrentMonthOverview: React.FC = () => {
                   total={data.total_income}
                   type="income"
                   currencySymbol={currencySymbol as string}
+                  onCategoryClick={handleCategoryClick}
                 />
               </MotionBox>
             </GridItem>
@@ -776,6 +798,7 @@ const CurrentMonthOverview: React.FC = () => {
                   total={data.total_expense}
                   type="expense"
                   currencySymbol={currencySymbol as string}
+                  onCategoryClick={handleCategoryClick}
                 />
               </MotionBox>
             </GridItem>

@@ -26,6 +26,7 @@ class IncomeExpenseTrendResponse(BaseModel):
 
 
 class CategoryBreakdown(BaseModel):
+    category_id: int
     name: str
     value: float
     children: Optional[List["CategoryBreakdown"]] = None

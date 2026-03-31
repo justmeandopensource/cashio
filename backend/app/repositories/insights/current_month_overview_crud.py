@@ -165,6 +165,7 @@ def get_current_month_overview(db: Session, ledger_id: int):
                         if child_total > 0:  # type: ignore
                             children.append(
                                 {
+                                    "category_id": child.category_id,
                                     "name": child.name,
                                     "value": float(child_total),  # type: ignore
                                 }
@@ -172,6 +173,7 @@ def get_current_month_overview(db: Session, ledger_id: int):
 
                 breakdown.append(
                     {
+                        "category_id": category.category_id,
                         "name": category.name,
                         "value": float(total),  # type: ignore
                         "children": children if children else None,
