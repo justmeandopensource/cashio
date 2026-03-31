@@ -315,7 +315,7 @@ const CategoryBarBreakdown: React.FC<CategoryBarBreakdownProps> = ({
                       py={1}
                       my={1}
                     >
-                      {category.children?.map((child) => {
+                      {category.children?.slice().sort((a, b) => b.value - a.value).map((child) => {
                         const childPct = category.value > 0
                           ? (child.value / category.value) * 100
                           : 0;
