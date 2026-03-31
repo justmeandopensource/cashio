@@ -7,20 +7,40 @@ from sqlalchemy.orm import Session
 from app.models.model import Account, Category, Transaction, TransactionSplit
 
 
+def _build_split_query(db: Session, ledger_id: int):
+    """Base split query without Category join.
+
+    Matches the pattern used in current_month_overview: query only TransactionSplit,
+    access category via ORM relationship in the processing loop.
+    is_transfer/is_asset/is_mf filters are intentionally omitted so that
+    expense splits on those transactions are included in breakdowns.
+    """
+    return (
+        db.query(TransactionSplit)
+        .join(Transaction, TransactionSplit.transaction_id == Transaction.transaction_id)
+        .join(Account, Transaction.account_id == Account.account_id)
+        .filter(
+            Account.ledger_id == ledger_id,
+            Transaction.is_split == True,
+        )
+    )
+
+
+def _get_start_date(period_type: str):
+    now = datetime.now()
+    if period_type == "this_month":
+        return now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    elif period_type == "last_12_months":
+        return (now - timedelta(days=365)).replace(hour=0, minute=0, second=0, microsecond=0)
+    return None
+
+
 def get_expense_by_store(
     db: Session,
     ledger_id: int,
     period_type: Literal["all_time", "last_12_months", "this_month"],
 ):
-    now = datetime.now()
-
-    # Determine date range based on period_type
-    if period_type == "this_month":
-        start_date = now.replace(day=1)
-    elif period_type == "last_12_months":
-        start_date = now - timedelta(days=365)
-    else:  # all_time
-        start_date = None
+    start_date = _get_start_date(period_type)
 
     # Query for regular expense transactions with store data
     base_regular_query = db.query(Transaction).join(
@@ -38,25 +58,11 @@ def get_expense_by_store(
         Transaction.store != "",
     )
 
-    # Query for split expense transactions with store data
-    base_split_query = db.query(TransactionSplit).join(
-        Transaction, TransactionSplit.transaction_id == Transaction.transaction_id
-    ).join(
-        Account, Transaction.account_id == Account.account_id
-    ).join(
-        Category, TransactionSplit.category_id == Category.category_id
-    ).filter(
-        Account.ledger_id == ledger_id,
-        Transaction.is_split == True,
-        Transaction.is_transfer == False,
-        Transaction.is_asset_transaction == False,
-        Transaction.is_mf_transaction == False,
-        Category.type == "expense",
+    base_split_query = _build_split_query(db, ledger_id).filter(
         Transaction.store.isnot(None),
         Transaction.store != "",
     )
 
-    # Apply date filter if specified
     if start_date:
         base_regular_query = base_regular_query.filter(Transaction.date >= start_date)
         base_split_query = base_split_query.filter(Transaction.date >= start_date)
@@ -64,19 +70,18 @@ def get_expense_by_store(
     # Aggregate results by store
     store_totals = {}
 
-    # Process regular transactions
     for transaction in base_regular_query.all():
         store = transaction.store
         amount = float(transaction.debit - transaction.credit)
         if amount > 0:
             store_totals[store] = store_totals.get(store, 0) + amount
 
-    # Process split transactions
     for split in base_split_query.all():
-        store = split.transaction.store  # Access store from the related transaction
-        amount = float(split.debit - split.credit)
-        if amount > 0:
-            store_totals[store] = store_totals.get(store, 0) + amount
+        if split.category and split.category.type == "expense":
+            store = split.transaction.store
+            amount = float(split.debit - split.credit)
+            if amount > 0:
+                store_totals[store] = store_totals.get(store, 0) + amount
 
     # Convert to list and sort by amount descending, take top 10
     store_data = [
@@ -104,15 +109,7 @@ def get_expense_by_location(
     ledger_id: int,
     period_type: Literal["all_time", "last_12_months", "this_month"],
 ):
-    now = datetime.now()
-
-    # Determine date range based on period_type
-    if period_type == "this_month":
-        start_date = now.replace(day=1)
-    elif period_type == "last_12_months":
-        start_date = now - timedelta(days=365)
-    else:  # all_time
-        start_date = None
+    start_date = _get_start_date(period_type)
 
     # Query for regular expense transactions with location data
     base_regular_query = db.query(Transaction).join(
@@ -130,25 +127,11 @@ def get_expense_by_location(
         Transaction.location != "",
     )
 
-    # Query for split expense transactions with location data
-    base_split_query = db.query(TransactionSplit).join(
-        Transaction, TransactionSplit.transaction_id == Transaction.transaction_id
-    ).join(
-        Account, Transaction.account_id == Account.account_id
-    ).join(
-        Category, TransactionSplit.category_id == Category.category_id
-    ).filter(
-        Account.ledger_id == ledger_id,
-        Transaction.is_split == True,
-        Transaction.is_transfer == False,
-        Transaction.is_asset_transaction == False,
-        Transaction.is_mf_transaction == False,
-        Category.type == "expense",
+    base_split_query = _build_split_query(db, ledger_id).filter(
         Transaction.location.isnot(None),
         Transaction.location != "",
     )
 
-    # Apply date filter if specified
     if start_date:
         base_regular_query = base_regular_query.filter(Transaction.date >= start_date)
         base_split_query = base_split_query.filter(Transaction.date >= start_date)
@@ -156,19 +139,18 @@ def get_expense_by_location(
     # Aggregate results by location
     location_totals = {}
 
-    # Process regular transactions
     for transaction in base_regular_query.all():
         location = transaction.location
         amount = float(transaction.debit - transaction.credit)
         if amount > 0:
             location_totals[location] = location_totals.get(location, 0) + amount
 
-    # Process split transactions
     for split in base_split_query.all():
-        location = split.transaction.location  # Access location from the related transaction
-        amount = float(split.debit - split.credit)
-        if amount > 0:
-            location_totals[location] = location_totals.get(location, 0) + amount
+        if split.category and split.category.type == "expense":
+            location = split.transaction.location
+            amount = float(split.debit - split.credit)
+            if amount > 0:
+                location_totals[location] = location_totals.get(location, 0) + amount
 
     # Convert to list and sort by amount descending, take top 10
     location_data = [
@@ -197,14 +179,7 @@ def get_category_breakdown_by_store(
     store_name: str,
     period_type: Literal["all_time", "last_12_months", "this_month"],
 ):
-    now = datetime.now()
-
-    if period_type == "this_month":
-        start_date = now.replace(day=1)
-    elif period_type == "last_12_months":
-        start_date = now - timedelta(days=365)
-    else:
-        start_date = None
+    start_date = _get_start_date(period_type)
 
     # Regular transactions for this store
     base_regular_query = db.query(Transaction, Category).join(
@@ -221,20 +196,7 @@ def get_category_breakdown_by_store(
         Transaction.store == store_name,
     )
 
-    # Split transactions for this store
-    base_split_query = db.query(TransactionSplit, Category).join(
-        Transaction, TransactionSplit.transaction_id == Transaction.transaction_id
-    ).join(
-        Account, Transaction.account_id == Account.account_id
-    ).join(
-        Category, TransactionSplit.category_id == Category.category_id
-    ).filter(
-        Account.ledger_id == ledger_id,
-        Transaction.is_split == True,
-        Transaction.is_transfer == False,
-        Transaction.is_asset_transaction == False,
-        Transaction.is_mf_transaction == False,
-        Category.type == "expense",
+    base_split_query = _build_split_query(db, ledger_id).filter(
         Transaction.store == store_name,
     )
 
@@ -242,24 +204,30 @@ def get_category_breakdown_by_store(
         base_regular_query = base_regular_query.filter(Transaction.date >= start_date)
         base_split_query = base_split_query.filter(Transaction.date >= start_date)
 
-    category_totals = {}
+    category_totals: dict[int, dict] = {}
 
     for transaction, category in base_regular_query.all():
         amount = float(transaction.debit - transaction.credit)
         if amount > 0:
-            cat_name = category.name
-            category_totals[cat_name] = category_totals.get(cat_name, 0) + amount
+            cid = category.category_id
+            if cid not in category_totals:
+                category_totals[cid] = {"category_id": cid, "category": category.name, "amount": 0.0}
+            category_totals[cid]["amount"] += amount
 
-    for split, category in base_split_query.all():
-        amount = float(split.debit - split.credit)
-        if amount > 0:
-            cat_name = category.name
-            category_totals[cat_name] = category_totals.get(cat_name, 0) + amount
+    for split in base_split_query.all():
+        if split.category and split.category.type == "expense":
+            amount = float(split.debit - split.credit)
+            if amount > 0:
+                cid = split.category.category_id
+                cat_name = split.category.name
+                if cid not in category_totals:
+                    category_totals[cid] = {"category_id": cid, "category": cat_name, "amount": 0.0}
+                category_totals[cid]["amount"] += amount
 
     category_data = [
-        {"category": cat, "amount": amount, "percentage": 0.0}
-        for cat, amount in category_totals.items()
-        if amount > 0
+        {**entry, "percentage": 0.0}
+        for entry in category_totals.values()
+        if entry["amount"] > 0
     ]
     category_data.sort(key=lambda x: x["amount"], reverse=True)
 
@@ -281,14 +249,7 @@ def get_category_breakdown_by_location(
     location_name: str,
     period_type: Literal["all_time", "last_12_months", "this_month"],
 ):
-    now = datetime.now()
-
-    if period_type == "this_month":
-        start_date = now.replace(day=1)
-    elif period_type == "last_12_months":
-        start_date = now - timedelta(days=365)
-    else:
-        start_date = None
+    start_date = _get_start_date(period_type)
 
     # Regular transactions for this location
     base_regular_query = db.query(Transaction, Category).join(
@@ -305,20 +266,7 @@ def get_category_breakdown_by_location(
         Transaction.location == location_name,
     )
 
-    # Split transactions for this location
-    base_split_query = db.query(TransactionSplit, Category).join(
-        Transaction, TransactionSplit.transaction_id == Transaction.transaction_id
-    ).join(
-        Account, Transaction.account_id == Account.account_id
-    ).join(
-        Category, TransactionSplit.category_id == Category.category_id
-    ).filter(
-        Account.ledger_id == ledger_id,
-        Transaction.is_split == True,
-        Transaction.is_transfer == False,
-        Transaction.is_asset_transaction == False,
-        Transaction.is_mf_transaction == False,
-        Category.type == "expense",
+    base_split_query = _build_split_query(db, ledger_id).filter(
         Transaction.location == location_name,
     )
 
@@ -326,24 +274,30 @@ def get_category_breakdown_by_location(
         base_regular_query = base_regular_query.filter(Transaction.date >= start_date)
         base_split_query = base_split_query.filter(Transaction.date >= start_date)
 
-    category_totals = {}
+    category_totals: dict[int, dict] = {}
 
     for transaction, category in base_regular_query.all():
         amount = float(transaction.debit - transaction.credit)
         if amount > 0:
-            cat_name = category.name
-            category_totals[cat_name] = category_totals.get(cat_name, 0) + amount
+            cid = category.category_id
+            if cid not in category_totals:
+                category_totals[cid] = {"category_id": cid, "category": category.name, "amount": 0.0}
+            category_totals[cid]["amount"] += amount
 
-    for split, category in base_split_query.all():
-        amount = float(split.debit - split.credit)
-        if amount > 0:
-            cat_name = category.name
-            category_totals[cat_name] = category_totals.get(cat_name, 0) + amount
+    for split in base_split_query.all():
+        if split.category and split.category.type == "expense":
+            amount = float(split.debit - split.credit)
+            if amount > 0:
+                cid = split.category.category_id
+                cat_name = split.category.name
+                if cid not in category_totals:
+                    category_totals[cid] = {"category_id": cid, "category": cat_name, "amount": 0.0}
+                category_totals[cid]["amount"] += amount
 
     category_data = [
-        {"category": cat, "amount": amount, "percentage": 0.0}
-        for cat, amount in category_totals.items()
-        if amount > 0
+        {**entry, "percentage": 0.0}
+        for entry in category_totals.values()
+        if entry["amount"] > 0
     ]
     category_data.sort(key=lambda x: x["amount"], reverse=True)
 

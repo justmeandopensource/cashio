@@ -28,6 +28,7 @@ class ExpenseByLocationResponse(BaseModel):
 
 
 class CategoryExpenseData(BaseModel):
+    category_id: int
     category: str
     amount: float
     percentage: float

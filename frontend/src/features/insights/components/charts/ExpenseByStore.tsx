@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   VStack,
@@ -56,6 +57,7 @@ interface ExpenseByStoreResponse {
 }
 
 interface CategoryExpenseData {
+  category_id: number;
   category: string;
   amount: number;
   percentage: number;
@@ -83,6 +85,27 @@ const ExpenseByStore: React.FC<ExpenseByStoreProps> = ({ ledgerId }) => {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [selectedStoreName, setSelectedStoreName] = useState<string | null>(null);
   const currencySymbol = useLedgerStore((s) => s.currencySymbol);
+  const navigate = useNavigate();
+
+  const handleCategoryClick = useCallback((categoryId: number, storeName: string) => {
+    const params = new URLSearchParams();
+    params.set("tab", "transactions");
+    params.set("transaction_type", "expense");
+    params.set("store", storeName);
+    params.set("category_id", String(categoryId));
+    if (periodType === "this_month") {
+      const now = new Date();
+      params.set("from_date", new Date(now.getFullYear(), now.getMonth(), 1).toISOString());
+      params.set("to_date", new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999).toISOString());
+    } else if (periodType === "last_12_months") {
+      const now = new Date();
+      const from = new Date(now);
+      from.setFullYear(from.getFullYear() - 1);
+      params.set("from_date", from.toISOString());
+      params.set("to_date", now.toISOString());
+    }
+    navigate(`/ledger?${params.toString()}`);
+  }, [navigate, periodType]);
 
   // Color modes
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
@@ -610,8 +633,11 @@ const ExpenseByStore: React.FC<ExpenseByStoreProps> = ({ ledgerId }) => {
                             align="center"
                             px={3}
                             py={2}
+                            cursor="pointer"
+                            borderRadius="md"
                             _hover={{ bg: legendHoverBg }}
                             transition="background 0.15s ease"
+                            onClick={() => handleCategoryClick(cat.category_id, selectedStoreName!)}
                           >
                             <Flex flex={1} align="center" gap={2} minW={0}>
                               <Box w={2} h={2} borderRadius="sm" bg={CATEGORY_COLORS[idx % CATEGORY_COLORS.length]} flexShrink={0} />
@@ -641,6 +667,8 @@ const ExpenseByStore: React.FC<ExpenseByStoreProps> = ({ ledgerId }) => {
                             py={2.5}
                             borderTop={idx > 0 ? "1px solid" : "none"}
                             borderColor={sectionBorderColor}
+                            cursor="pointer"
+                            onClick={() => handleCategoryClick(cat.category_id, selectedStoreName!)}
                           >
                             <Flex align="center" gap={2} mb={1}>
                               <Box w={2} h={2} borderRadius="sm" bg={CATEGORY_COLORS[idx % CATEGORY_COLORS.length]} flexShrink={0} />
