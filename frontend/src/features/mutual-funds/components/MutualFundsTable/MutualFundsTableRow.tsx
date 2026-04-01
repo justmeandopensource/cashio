@@ -337,8 +337,9 @@ const MobileFundCard: React.FC<MobileFundCardProps> = ({
   onCloseFund,
   onViewTransactions,
   onViewAnalytics,
+  defaultExpanded = false,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const boxBg = useColorModeValue("gray.50", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const cardBg = useColorModeValue("white", "cardDarkBg");
@@ -376,6 +377,7 @@ const MobileFundCard: React.FC<MobileFundCardProps> = ({
       overflow="hidden"
       bg={cardBg}
       boxShadow="md"
+      data-fund-id={fund.mutual_fund_id}
     >
       <Box p={4}>
         <Flex justify="space-between" align="start">

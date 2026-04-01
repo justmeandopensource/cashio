@@ -74,6 +74,7 @@ export interface MobileFundCardProps {
   onCloseFund: (fundId: number) => void;
   onViewTransactions: (fundId: number) => void;
   onViewAnalytics: (fund: MutualFund) => void;
+  defaultExpanded?: boolean;
 }
 
 export interface MutualFundsTableProps {

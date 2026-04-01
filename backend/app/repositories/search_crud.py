@@ -144,6 +144,8 @@ def search(
         subtitle_parts = []
         if amc_name:
             subtitle_parts.append(amc_name)
+        if mf.owner:
+            subtitle_parts.append(mf.owner)
         if mf.plan:
             subtitle_parts.append(mf.plan)
         if mf.code:

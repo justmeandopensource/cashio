@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   Box,
   VStack,
@@ -49,7 +49,18 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
     _handleLogout();
   };
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { isOpen: isSearchOpen, onOpen: onSearchOpen, onClose: onSearchClose } = useDisclosure();
+  const { isOpen: isSearchOpen, onOpen: _onSearchOpen, onClose: _onSearchClose } = useDisclosure();
+  const [isSearchTooltipDisabled, setIsSearchTooltipDisabled] = useState(false);
+  const onSearchOpen = useCallback(() => {
+    (document.activeElement as HTMLElement)?.blur();
+    setIsSearchTooltipDisabled(true);
+    _onSearchOpen();
+  }, [_onSearchOpen]);
+  const onSearchClose = useCallback(() => {
+    _onSearchClose();
+    // Keep tooltip suppressed briefly so hover doesn't re-trigger it
+    setTimeout(() => setIsSearchTooltipDisabled(false), 300);
+  }, [_onSearchClose]);
   const [isCollapsed, setIsCollapsed] = useState(
     () => localStorage.getItem("sidebar-collapsed") !== "false"
   );
@@ -363,7 +374,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
         {/* Search Button */}
         <Box px={isCollapsed ? 2 : 3} pt={3} pb={1}>
           {isCollapsed ? (
-            <Tooltip label="Search (⌘K)" placement="right" hasArrow openDelay={200}>
+            <Tooltip label="Search (⌘K)" placement="right" hasArrow openDelay={200} isDisabled={isSearchTooltipDisabled}>
               <Box
                 as="button"
                 display="flex"

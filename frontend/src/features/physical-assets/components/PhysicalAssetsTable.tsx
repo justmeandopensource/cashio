@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   Table,
   Thead,
@@ -55,6 +55,7 @@ import {
 
 // Helper function to convert string|number to number
 const toNumber = (value: number | string): number => typeof value === 'string' ? parseFloat(value) : value;
+import { useSearchParams } from "react-router-dom";
 import { useAssetTransactions } from "../api";
 import useLedgerStore from "../../../components/shared/store";
 
@@ -286,6 +287,23 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
 
   // State for expanded rows
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [searchParams] = useSearchParams();
+  const highlightHandled = useRef(false);
+
+  // Auto-expand and scroll to an asset when navigated from global search
+  useEffect(() => {
+    if (highlightHandled.current) return;
+    const highlightId = searchParams.get("assetId");
+    if (!highlightId) return;
+    const assetId = Number(highlightId);
+    if (!assetId) return;
+    highlightHandled.current = true;
+    setExpandedRows(new Set([assetId]));
+    setTimeout(() => {
+      const el = document.querySelector(`[data-asset-id="${assetId}"]`);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 300);
+  }, [searchParams]);
 
   // Prepare data with asset type names
   const assetsWithType = useMemo(() => {
@@ -439,12 +457,13 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
   };
 
   const MobileAssetCard: React.FC<{ asset: typeof sortedAssets[0] }> = ({ asset }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
+    const defaultExpanded = asset.physical_asset_id === Number(searchParams.get("assetId"));
+    const [isExpanded, setIsExpanded] = useState(defaultExpanded);
     const boxBg = useColorModeValue("gray.50", "gray.800");
     const borderColor = useColorModeValue("gray.200", "gray.700");
 
     return (
-      <Box borderWidth="1px" borderRadius="lg" overflow="hidden" bg={useColorModeValue("white", "cardDarkBg")} boxShadow="md">
+      <Box borderWidth="1px" borderRadius="lg" overflow="hidden" bg={useColorModeValue("white", "cardDarkBg")} boxShadow="md" data-asset-id={asset.physical_asset_id}>
         <Box p={4} onClick={() => setIsExpanded(!isExpanded)} cursor="pointer">
           <Flex justify="space-between" align="start">
             <Box maxW="80%">
@@ -673,6 +692,7 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
                    <Tr
                      _hover={{ bg: tableHoverBg, cursor: "pointer" }}
                      onClick={() => toggleRowExpansion(asset.physical_asset_id)}
+                     data-asset-id={asset.physical_asset_id}
                    >
                     <Td>
                       <IconButton

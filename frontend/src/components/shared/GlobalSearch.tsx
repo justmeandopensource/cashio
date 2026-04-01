@@ -158,10 +158,10 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
           break;
         }
         case "mutual_fund":
-          switchToLedgerAndNavigate(item, "/ledger?tab=mutual-funds");
+          switchToLedgerAndNavigate(item, `/ledger?tab=mutual-funds&fundId=${item.id}`);
           break;
         case "physical_asset":
-          switchToLedgerAndNavigate(item, "/ledger?tab=physical-assets");
+          switchToLedgerAndNavigate(item, `/ledger?tab=physical-assets&assetId=${item.id}`);
           break;
       }
     },

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   Table,
   Thead,
@@ -32,6 +32,7 @@ import {
   ArrowDown,
   Search,
 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { MutualFund, Amc } from "../../types";
 import {
   calculateFundPnL,
@@ -160,6 +161,24 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
 
   // State for expanded rows
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [searchParams] = useSearchParams();
+  const highlightHandled = useRef(false);
+
+  // Auto-expand and scroll to a fund when navigated from global search
+  useEffect(() => {
+    if (highlightHandled.current) return;
+    const highlightId = searchParams.get("fundId");
+    if (!highlightId) return;
+    const fundId = Number(highlightId);
+    if (!fundId) return;
+    highlightHandled.current = true;
+    setExpandedRows(new Set([fundId]));
+    // Wait for render + collapse animation, then scroll
+    setTimeout(() => {
+      const el = document.querySelector(`[data-fund-id="${fundId}"]`);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 300);
+  }, [searchParams]);
 
   // Prepare data with AMC names
   const fundsWithAmc: FundWithAmc[] = useMemo(() => {
@@ -537,6 +556,7 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
               onCloseFund={onCloseFund}
               onViewTransactions={onViewTransactions}
               onViewAnalytics={onViewAnalytics}
+              defaultExpanded={fund.mutual_fund_id === Number(searchParams.get("fundId"))}
             />
           ))}
         </VStack>
@@ -667,7 +687,7 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
             <Tbody>
               {sortedFunds.map((fund) => (
                 <React.Fragment key={fund.mutual_fund_id}>
-                  <Tr _hover={{ bg: tableHoverBg }}>
+                  <Tr _hover={{ bg: tableHoverBg }} data-fund-id={fund.mutual_fund_id}>
                     <Td>
                       <IconButton
                         icon={

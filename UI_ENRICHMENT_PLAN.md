@@ -409,10 +409,9 @@
 
 These apply across the entire application.
 
-### 11.1 Global Search
+### ~~11.1 Global Search~~ DONE
 
-- A search bar in the header/sidebar that searches across transactions (by notes, store, location), accounts (by name), categories (by name), mutual funds (by name, code), and physical assets (by name).
-- **Backend changes:** New endpoint: `GET /search?q=term` that queries across multiple tables and returns categorized results.
+Implemented. `GET /search?q=term` endpoint searches across all user's ledgers. Command-palette style modal (`GlobalSearch.tsx`) accessible via sidebar search button, mobile header, and `⌘K` shortcut. Searches accounts (name, owner), transactions (notes, store, location), mutual funds (name, code, owner), and physical assets (name). Results grouped by type with ledger name badges. Clicking a result switches ledger context and navigates directly: accounts open the account page, transactions filter to matching results, mutual funds and physical assets auto-expand and scroll to the specific item.
 
 ### ~~11.2 Breadcrumb Navigation~~ DONE
 
@@ -493,7 +492,7 @@ Ordered by value-to-effort ratio. Items near the top deliver the most visible im
 | #   | Item                                                   | Section    | Backend Needed?    |
 | --- | ------------------------------------------------------ | ---------- | ------------------ |
 | 11  | Net worth trend over time                              | 7.1        | Yes (new endpoint) |
-| 12  | Global search                                          | 11.1       | Yes (new endpoint) |
+| ~~12~~ | ~~Global search~~                                   | ~~11.1~~   | ~~DONE~~           |
 | 13  | Chart-to-transactions drill-down                       | 8.5        | No                 |
 | 14  | MF portfolio summary + asset class pie inline          | 9.1, 9.2   | No                 |
 | 15  | MF fund comparison table                               | 9.6        | No                 |
@@ -550,7 +549,7 @@ New backend work required for advanced features:
 | Endpoint                                               | Purpose                                    | Used By       |
 | ------------------------------------------------------ | ------------------------------------------ | ------------- |
 | `GET /ledger/{id}/net-worth/history`                   | Monthly net worth snapshots over time      | 7.1, 7.4      |
-| `GET /search?q=term`                                   | Global cross-entity search                 | 11.1          |
+| ~~`GET /search?q=term`~~                               | ~~Global cross-entity search~~             | ~~11.1 DONE~~ |
 | `GET /ledger/{id}/account/{id}/balance-history`        | Running balance over time                  | 3.2           |
 | `GET /ledger/{id}/account/{id}/recurring-transactions` | Detected recurring patterns                | 3.3           |
 | `GET /ledger/{id}/budgets?compare_previous=true`       | Budget with previous period data           | 6.2           |

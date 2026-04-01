@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -45,6 +45,16 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds, on
     if (tab === "mutual-funds") return 3;
     return 0;
   });
+  // Sync tab index when URL search params change externally (e.g. from global search)
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    const newIndex = tab === "transactions" ? 1
+      : tab === "physical-assets" ? 2
+      : tab === "mutual-funds" ? 3
+      : 0;
+    setTabIndex(newIndex);
+  }, [searchParams]);
+
   const [mutualFundsFilters, setMutualFundsFilters] = useState({
     selectedAmc: "all",
     selectedOwner: "all",
