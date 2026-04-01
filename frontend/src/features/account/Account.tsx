@@ -13,6 +13,7 @@ import { formatNumberAsCurrency } from "@components/shared/utils";
 import { getSubtypeLabel } from "@/features/ledger/constants/accountSubtypes";
 import api from "@/lib/api";
 import useLedgerStore from "@/components/shared/store";
+import type { BreadcrumbEntry } from "@/components/shared/Breadcrumbs";
 import UpdateAccountModal from "@components/modals/UpdateAccountModal";
 import CreateTransactionModal from "@components/modals/CreateTransactionModal";
 const TransferFundsModal = lazy(() => import("@components/modals/TransferFundsModal"));
@@ -24,6 +25,7 @@ const Account: React.FC = () => {
   const navigate = useNavigate();
   const { accountId } = useParams<{ accountId: string }>();
   const ledgerId = useLedgerStore((s) => s.ledgerId);
+  const ledgerName = useLedgerStore((s) => s.ledgerName);
   const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const queryClient = useQueryClient();
 
@@ -194,6 +196,10 @@ const Account: React.FC = () => {
         icon={account?.type === "asset" ? Building : ShieldAlert}
         backIcon={ChevronLeft}
         backOnClick={() => navigate("/ledger")}
+        breadcrumbs={[
+          { label: ledgerName || "Ledger", path: "/ledger" },
+          { label: account?.name || "Account" },
+        ] as BreadcrumbEntry[]}
         actions={
           <HStack spacing={2} w={{ base: "100%", md: "auto" }}>
             <Button

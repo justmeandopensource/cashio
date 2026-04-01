@@ -9,6 +9,7 @@ import {
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import React, { FC, ReactNode } from "react";
+import Breadcrumbs, { type BreadcrumbEntry } from "./Breadcrumbs";
 
 const MotionFlex = motion(Flex);
 
@@ -20,9 +21,10 @@ interface PageHeaderProps {
   headerContent?: ReactNode;
   backIcon?: React.ElementType;
   backOnClick?: () => void;
+  breadcrumbs?: BreadcrumbEntry[];
 }
 
-const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, headerContent, backIcon, backOnClick }) => {
+const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, headerContent, backIcon, backOnClick, breadcrumbs }) => {
   const borderColor = useColorModeValue("gray.100", "gray.700");
   const titleColor = useColorModeValue("gray.900", "gray.50");
   const subtitleColor = useColorModeValue("gray.500", "gray.400");
@@ -45,9 +47,16 @@ const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, heade
         bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
       />
 
+      {breadcrumbs && breadcrumbs.length > 0 && (
+        <Box px={{ base: 5, md: 8 }} pt={{ base: 2, md: 3 }}>
+          <Breadcrumbs items={breadcrumbs} />
+        </Box>
+      )}
+
       <MotionFlex
         px={{ base: 5, md: 8 }}
-        py={{ base: 3, md: 6 }}
+        pt={breadcrumbs && breadcrumbs.length > 0 ? { base: 1, md: 2 } : { base: 3, md: 6 }}
+        pb={{ base: 3, md: 6 }}
         justifyContent="space-between"
         align={{ base: "flex-start", md: "center" }}
         flexDirection={{ base: "column", md: "row" }}

@@ -171,6 +171,9 @@ const Ledger = () => {
         icon={BookText}
         backIcon={ChevronLeft}
         backOnClick={() => navigate("/")}
+        breadcrumbs={[
+          { label: ledgerName || "Ledger" },
+        ]}
         actions={
           <HStack spacing={2} w={{ base: "100%", md: "auto" }}>
             <Button

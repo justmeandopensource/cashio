@@ -56,6 +56,7 @@ const Categories: React.FC = () => {
         subtitle="Manage your expense categories"
         icon={Bookmark}
         actions={categoryButtons}
+        breadcrumbs={[{ label: "Categories" }]}
       />
       <Box flex={1} overflowY="auto">
         <PageContainer>

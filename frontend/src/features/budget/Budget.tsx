@@ -82,6 +82,7 @@ const Budget: React.FC = () => {
         title="Budget"
         subtitle="Track spending against targets"
         icon={Target}
+        breadcrumbs={[{ label: "Budget" }]}
         headerContent={
           <Box>
             <Text

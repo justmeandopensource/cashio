@@ -64,6 +64,7 @@ const NetWorthMain: React.FC<NetWorthMainProps> = ({
         title="Net Worth"
         subtitle="Consolidated view of all your assets and liabilities"
         icon={TrendingUp}
+        breadcrumbs={[{ label: "Net Worth" }]}
         headerContent={
           <Flex align="flex-end" gap={3}>
             {/* Ledger dropdown */}

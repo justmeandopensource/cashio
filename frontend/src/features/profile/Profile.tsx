@@ -44,6 +44,7 @@ const Profile: React.FC = () => {
         title="User Profile"
         subtitle="Manage your account details and security"
         icon={User}
+        breadcrumbs={[{ label: "Profile" }]}
       />
       <Box flex={1} overflowY="auto">
         <PageContainer>

@@ -123,6 +123,7 @@ const Insights = () => {
         title="Insights"
         subtitle="Visualize your financial data"
         icon={PieChart}
+        breadcrumbs={[{ label: "Insights" }]}
         headerContent={
           <Flex
             direction={{ base: "column", lg: "row" }}
