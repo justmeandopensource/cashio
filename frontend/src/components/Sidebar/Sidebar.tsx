@@ -11,6 +11,7 @@ import {
   Text,
   HStack,
   Tooltip,
+  Kbd,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 
@@ -25,6 +26,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  Search,
 } from "lucide-react";
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -33,6 +35,7 @@ import useLedgerStore from "@/components/shared/store";
 import { MobileHeader } from "./MobileHeader";
 import MobileDrawer from "./MobileDrawer";
 import { NavItem, NavSubItem, type NavItemColorTokens } from "./SidebarNavItem";
+import GlobalSearch from "../shared/GlobalSearch";
 
 const MotionBox = motion(Box);
 
@@ -46,6 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
     _handleLogout();
   };
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isSearchOpen, onOpen: onSearchOpen, onClose: onSearchClose } = useDisclosure();
   const [isCollapsed, setIsCollapsed] = useState(
     () => localStorage.getItem("sidebar-collapsed") !== "false"
   );
@@ -77,6 +81,22 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
   const collapseButtonBg = useColorModeValue("gray.50", "gray.800");
   const collapseButtonHoverBg = useColorModeValue("gray.100", "gray.700");
   const brandBgLight = useColorModeValue("brand.50", "rgba(53, 169, 163, 0.12)");
+  const searchBg = useColorModeValue("gray.50", "gray.800");
+  const searchHoverBg = useColorModeValue("gray.100", "gray.700");
+  const searchColor = useColorModeValue("gray.400", "gray.500");
+  const searchKbdBg = useColorModeValue("gray.100", "gray.700");
+
+  // Global keyboard shortcut: Ctrl/Cmd + K to open search
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        onSearchOpen();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onSearchOpen]);
 
   const navColors: NavItemColorTokens = useMemo(() => ({
     activeBg,
@@ -270,7 +290,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
   return (
     <>
       {/* Mobile Header */}
-      <MobileHeader onMenuOpen={onOpen} title={getCurrentPageTitle()} />
+      <MobileHeader onMenuOpen={onOpen} onSearchOpen={onSearchOpen} title={getCurrentPageTitle()} />
 
       {/* Desktop Sidebar */}
       <MotionBox
@@ -339,6 +359,58 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
 
         {/* Divider */}
         <Box mx={isCollapsed ? 2 : 4} h="1px" bg={borderColor} />
+
+        {/* Search Button */}
+        <Box px={isCollapsed ? 2 : 3} pt={3} pb={1}>
+          {isCollapsed ? (
+            <Tooltip label="Search (⌘K)" placement="right" hasArrow openDelay={200}>
+              <Box
+                as="button"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                w="full"
+                py={2}
+                borderRadius="lg"
+                bg={searchBg}
+                color={searchColor}
+                _hover={{ bg: searchHoverBg }}
+                transition="all 0.2s ease"
+                onClick={onSearchOpen}
+              >
+                <Icon as={Search} boxSize={4} />
+              </Box>
+            </Tooltip>
+          ) : (
+            <Box
+              as="button"
+              display="flex"
+              alignItems="center"
+              gap={3}
+              w="full"
+              py={2}
+              px={3}
+              borderRadius="lg"
+              bg={searchBg}
+              color={searchColor}
+              fontSize="sm"
+              _hover={{ bg: searchHoverBg }}
+              transition="all 0.2s ease"
+              onClick={onSearchOpen}
+            >
+              <Icon as={Search} boxSize={4} flexShrink={0} />
+              <Text flex={1} textAlign="left">Search...</Text>
+              <Kbd
+                fontSize="2xs"
+                bg={searchKbdBg}
+                borderColor={borderColor}
+                px={1.5}
+              >
+                ⌘K
+              </Kbd>
+            </Box>
+          )}
+        </Box>
 
         {/* Navigation */}
         <Box flex="1" px={isCollapsed ? 2 : 3} py={4}>
@@ -462,6 +534,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
         isOpen={isOpen}
         onClose={onClose}
         handleLogout={handleLogout}
+        onSearchOpen={onSearchOpen}
         renderNavItems={renderNavItems}
         sidebarBg={sidebarBg}
         borderColor={borderColor}
@@ -477,6 +550,9 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
         logoutHoverColor={logoutHoverColor}
         cardBg={cardBg}
       />
+
+      {/* Global Search Modal */}
+      <GlobalSearch isOpen={isSearchOpen} onClose={onSearchClose} />
     </>
   );
 };

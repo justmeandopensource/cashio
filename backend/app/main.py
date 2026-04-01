@@ -16,6 +16,7 @@ from app.routers.ledger_router import ledger_router
 from app.routers.mutual_funds_router import mutual_funds_router
 from app.routers.net_worth_router import net_worth_router
 from app.routers.physical_assets_router import physical_assets_router
+from app.routers.search_router import search_router
 from app.routers.system_router import system_router
 from app.routers.tag_router import tag_router
 from app.routers.transaction_router import transaction_router
@@ -52,6 +53,7 @@ app.include_router(physical_assets_router)
 app.include_router(mutual_funds_router)
 app.include_router(net_worth_router)
 app.include_router(budget_router)
+app.include_router(search_router)
 app.include_router(system_router)
 
 if __name__ == "__main__":

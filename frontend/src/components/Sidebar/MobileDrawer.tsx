@@ -13,14 +13,16 @@ import {
   Button,
   Text,
   HStack,
+  useColorModeValue,
 } from "@chakra-ui/react";
-import { Wallet, X, LogOut } from "lucide-react";
+import { Wallet, X, LogOut, Search } from "lucide-react";
 import UserProfileDisplay from "../shared/UserProfileDisplay";
 
 interface MobileDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   handleLogout: () => void;
+  onSearchOpen: () => void;
   renderNavItems: (onAfterNavigate?: () => void, forceExpanded?: boolean) => React.ReactNode;
   // Color tokens
   sidebarBg: string;
@@ -42,6 +44,7 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({
   isOpen,
   onClose,
   handleLogout,
+  onSearchOpen,
   renderNavItems,
   sidebarBg,
   borderColor,
@@ -57,6 +60,10 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({
   logoutHoverColor,
   cardBg,
 }) => {
+  const searchBg = useColorModeValue("gray.50", "gray.800");
+  const searchHoverBg = useColorModeValue("gray.100", "gray.700");
+  const searchColor = useColorModeValue("gray.400", "gray.500");
+
   return (
     <Drawer isOpen={isOpen} placement="left" onClose={onClose} size="sm">
       <DrawerOverlay
@@ -116,6 +123,31 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({
         <DrawerBody px={0} py={5}>
           <Flex direction="column" justify="space-between" h="full">
             <Box px={5}>
+              {/* Search Button */}
+              <Box
+                as="button"
+                display="flex"
+                alignItems="center"
+                gap={3}
+                w="full"
+                py={2}
+                px={3}
+                mb={3}
+                borderRadius="lg"
+                bg={searchBg}
+                color={searchColor}
+                fontSize="sm"
+                _hover={{ bg: searchHoverBg }}
+                transition="all 0.2s ease"
+                onClick={() => {
+                  onClose();
+                  onSearchOpen();
+                }}
+              >
+                <Icon as={Search} boxSize={4} flexShrink={0} />
+                <Text flex={1} textAlign="left">Search...</Text>
+              </Box>
+
               {renderNavItems(onClose, true)}
             </Box>
 

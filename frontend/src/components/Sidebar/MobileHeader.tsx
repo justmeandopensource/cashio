@@ -7,12 +7,13 @@ import {
   Icon,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { Menu } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 
 export const MobileHeader: React.FC<{
   onMenuOpen: () => void;
+  onSearchOpen: () => void;
   title?: string;
-}> = ({ onMenuOpen, title = "Dashboard" }) => {
+}> = ({ onMenuOpen, onSearchOpen, title = "Dashboard" }) => {
   const headerBg = useColorModeValue("white", "gray.900");
   const borderColor = useColorModeValue("gray.100", "gray.800");
   const brandColor = useColorModeValue("brand.500", "brand.400");
@@ -53,8 +54,17 @@ export const MobileHeader: React.FC<{
           {title}
         </Heading>
 
-        {/* Invisible spacer for balance */}
-        <Box w="40px" />
+        <Button
+          onClick={onSearchOpen}
+          variant="ghost"
+          size="sm"
+          borderRadius="lg"
+          color={brandColor}
+          _hover={{ bg: useColorModeValue("brand.50", "whiteAlpha.100") }}
+          _active={{ bg: useColorModeValue("brand.100", "whiteAlpha.200") }}
+        >
+          <Icon as={Search} boxSize={5} />
+        </Button>
       </Flex>
     </Box>
   );

@@ -108,6 +108,9 @@ export const queryKeys = {
     allTransactions: (ledgerId: number) =>
       ["all-asset-transactions", ledgerId] as const,
   },
+  search: {
+    global: (query: string) => ["search", query] as const,
+  },
   netWorth: {
     forLedger: (ledgerId: string | number) =>
       ["net-worth", ledgerId] as const,
