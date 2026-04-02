@@ -31,6 +31,7 @@ import {
   calculateTotalUnrealizedPnLPercentage,
 } from "../utils";
 import useLedgerStore from "../../../components/shared/store";
+import FinancialTooltip from "@/components/shared/FinancialTooltip";
 import PhysicalAssetsTable from "./PhysicalAssetsTable";
 
 const MotionBox = motion(Box);
@@ -132,6 +133,7 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
     {
       icon: Wallet,
       label: "Total Invested",
+      tooltipTerm: "total_invested" as const,
       accentColor: investedAccentColor,
       valueMain: splitCurrencyForDisplay(totalInvested, currencySymbol || "₹").main,
       valueDecimals: splitCurrencyForDisplay(totalInvested, currencySymbol || "₹").decimals,
@@ -140,6 +142,7 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
     {
       icon: TrendingUp,
       label: "Total Value",
+      tooltipTerm: "current_value" as const,
       accentColor: valueAccentColor,
       valueMain: splitCurrencyForDisplay(totalCurrentValue, currencySymbol || "₹").main,
       valueDecimals: splitCurrencyForDisplay(totalCurrentValue, currencySymbol || "₹").decimals,
@@ -148,6 +151,7 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
     {
       icon: Activity,
       label: "Total Unrealized P&L",
+      tooltipTerm: "unrealized_pnl" as const,
       accentColor: pnlAccentColor,
       valueMain: (totalUnrealizedPnL >= 0 ? "+" : "−") + splitCurrencyForDisplay(Math.abs(totalUnrealizedPnL), currencySymbol || "₹").main,
       valueDecimals: splitCurrencyForDisplay(Math.abs(totalUnrealizedPnL), currencySymbol || "₹").decimals,
@@ -175,6 +179,7 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
     {
       icon: Package,
       label: "Total Assets",
+      tooltipTerm: null as any,
       accentColor: countAccentColor,
       valueMain: String(filteredAssets.filter(asset => toNumber(asset.total_quantity) > 0).length),
       valueDecimals: "",
@@ -254,7 +259,7 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
                 visible: { transition: { staggerChildren: 0.06 } },
               }}
             >
-              {summaryCards.map(({ icon, label, accentColor, valueMain, valueDecimals, color, extra }) => (
+              {summaryCards.map(({ icon, label, tooltipTerm, accentColor, valueMain, valueDecimals, color, extra }) => (
                 <MotionBox
                   key={label}
                   variants={{
@@ -312,6 +317,7 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
                         color={labelIconColor}
                       >
                         {label}
+                        {tooltipTerm && <FinancialTooltip term={tooltipTerm} />}
                       </Text>
                     </Flex>
                     <VStack align="start" spacing={0}>

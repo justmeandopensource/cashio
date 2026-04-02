@@ -7,6 +7,7 @@ import {
 import { motion } from "framer-motion";
 import React from "react";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
+import FinancialTooltip from "@/components/shared/FinancialTooltip";
 import BudgetProgressBar from "./BudgetProgressBar";
 import { getBudgetStatusColor } from "../utils";
 
@@ -66,6 +67,7 @@ const BudgetSummaryCard: React.FC<BudgetSummaryCardProps> = ({
           <Box minW="0">
             <Text fontSize="xs" color={labelColor} mb={0.5} letterSpacing="0.02em">
               Budgeted
+              <FinancialTooltip term="budgeted" />
             </Text>
             <Text
               fontSize={{ base: "lg", md: "xl" }}
@@ -79,6 +81,7 @@ const BudgetSummaryCard: React.FC<BudgetSummaryCardProps> = ({
           <Box minW="0">
             <Text fontSize="xs" color={labelColor} mb={0.5} letterSpacing="0.02em">
               Spent
+              <FinancialTooltip term="actual_spend" />
             </Text>
             <Text
               fontSize={{ base: "lg", md: "xl" }}
@@ -92,6 +95,7 @@ const BudgetSummaryCard: React.FC<BudgetSummaryCardProps> = ({
           <Box minW="0">
             <Text fontSize="xs" color={labelColor} mb={0.5} letterSpacing="0.02em">
               Remaining
+              <FinancialTooltip term="remaining" />
             </Text>
             <Text
               fontSize={{ base: "lg", md: "xl" }}

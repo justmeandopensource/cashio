@@ -29,6 +29,7 @@ import {
   splitPercentageForDisplay,
 } from "../utils";
 import useLedgerStore from "../../../components/shared/store";
+import FinancialTooltip from "@/components/shared/FinancialTooltip";
 import { notify } from "@/components/shared/notify";
 import MutualFundsTable from "./MutualFundsTable";
 import BulkNavUpdateModal from "./modals/BulkNavUpdateModal";
@@ -210,6 +211,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
     {
       icon: Wallet,
       label: "Total Invested",
+      tooltipTerm: "total_invested" as const,
       accentColor: investedAccentColor,
       valueMain: splitCurrencyForDisplay(totalInvested, currencySymbol || "₹").main,
       valueDecimals: splitCurrencyForDisplay(totalInvested, currencySymbol || "₹").decimals,
@@ -218,6 +220,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
     {
       icon: TrendingUp,
       label: "Total Value",
+      tooltipTerm: "current_value" as const,
       accentColor: valueAccentColor,
       valueMain: splitCurrencyForDisplay(totalCurrentValue, currencySymbol || "₹").main,
       valueDecimals: splitCurrencyForDisplay(totalCurrentValue, currencySymbol || "₹").decimals,
@@ -226,6 +229,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
     {
       icon: BadgeCheck,
       label: "Total Realized Gain",
+      tooltipTerm: "realized_gain" as const,
       accentColor: realizedAccentColor,
       valueMain: (totalRealizedGain >= 0 ? "+" : "−") + splitCurrencyForDisplay(Math.abs(totalRealizedGain), currencySymbol || "₹").main,
       valueDecimals: splitCurrencyForDisplay(Math.abs(totalRealizedGain), currencySymbol || "₹").decimals,
@@ -234,6 +238,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
     {
       icon: Activity,
       label: "Total Unrealized P&L",
+      tooltipTerm: "unrealized_pnl" as const,
       accentColor: unrealizedAccentColor,
       valueMain: (totalUnrealizedPnL >= 0 ? "+" : "−") + splitCurrencyForDisplay(Math.abs(totalUnrealizedPnL), currencySymbol || "₹").main,
       valueDecimals: splitCurrencyForDisplay(Math.abs(totalUnrealizedPnL), currencySymbol || "₹").decimals,
@@ -269,6 +274,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
     {
       icon: PieChart,
       label: "Total Funds",
+      tooltipTerm: null as any,
       accentColor: fundsAccentColor,
       valueMain: String(filteredMutualFunds.filter(fund => toNumber(fund.total_units) > 0).length),
       valueDecimals: "",
@@ -376,7 +382,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                  visible: { transition: { staggerChildren: 0.06 } },
                }}
              >
-               {summaryCards.map(({ icon, label, accentColor, valueMain, valueDecimals, color, extra }) => (
+               {summaryCards.map(({ icon, label, tooltipTerm, accentColor, valueMain, valueDecimals, color, extra }) => (
                  <MotionBox
                    key={label}
                    variants={{
@@ -434,6 +440,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                          color={labelIconColor}
                        >
                          {label}
+                         {tooltipTerm && <FinancialTooltip term={tooltipTerm} />}
                        </Text>
                      </Flex>
                      <VStack align="start" spacing={0}>

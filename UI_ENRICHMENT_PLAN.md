@@ -422,20 +422,17 @@ Implemented. `Breadcrumbs.tsx` shared component integrated into `PageHeader`. Al
 - Power-user shortcuts: `T` for new transaction, `S` or `/` for search, `B` for budgets, `Esc` to close modals, arrow keys for navigation.
 - **Backend changes:** None. Frontend keyboard event handling.
 
-### 11.4 Tooltips and Help Text
+### ~~11.4 Tooltips and Help Text~~ DONE
 
-- Add informational tooltips to financial terms: hover over "XIRR" to see "Extended Internal Rate of Return -- annualized return accounting for the timing of cash flows". Hover over "Net Worth" to see "Total assets minus total liabilities".
-- **Backend changes:** None. Static tooltip content.
+Implemented. `FinancialTooltip.tsx` shared component with a dictionary of 18 financial term definitions. Tooltips added to summary card labels across: Net Worth page (Net Worth, Total Assets, Total Liabilities), Ledger Accounts tab (Assets, Liabilities, Net Worth), Account Detail page (Total Income, Total Expenses), Budget Summary Card (Budgeted, Spent, Remaining), Mutual Funds Overview (Total Invested, Total Value, Realized Gain, Unrealized P&L), Physical Assets Overview (Total Invested, Total Value, Unrealized P&L), and MF Table headers (NAV). Uses Chakra UI Tooltip with consistent dark/light theme styling, arrow, and 200ms open delay.
 
-### 11.5 Empty State Guidance
+### ~~11.5 Empty State Guidance~~ DONE
 
-- Every section should have a helpful empty state explaining what it does and guiding the user. The app already does this well for ledgers (floating book icon + "Create your first ledger"). Extend this pattern to: accounts, transactions, categories, budgets, mutual funds, physical assets, and insights.
-- **Backend changes:** None. Frontend only.
+Implemented. Extended the floating icon + title + description + CTA pattern to all sections. Enhanced empty states in: Budget page (no ledger selected), Budget list (no budgets), Ledger Account sections (no assets/liabilities), Insights page (no ledger selected, visualization not found), and Net Worth page (no ledger selected). All use the consistent `floatKeyframes` animation (translateY 0 → -6px → 0 over 3s), brand-colored icon backgrounds, descriptive guidance text, and clear call-to-action buttons.
 
-### 11.6 Loading Skeletons
+### ~~11.6 Loading Skeletons~~ DONE
 
-- Replace any loading spinners with content-shaped skeleton placeholders (Chakra UI has a `Skeleton` component). This makes the app feel faster and less jumpy.
-- **Backend changes:** None.
+Implemented. Replaced all `Spinner` loading indicators with content-shaped `Skeleton` placeholders matching the actual content layout. Updated in: Categories page (two-column card skeleton with header + text lines), Budget list (summary card + item skeletons), Ledger Accounts tab (3 summary card skeletons + 2 account section skeletons), Mutual Funds Overview tab (header + 5 summary cards + table skeleton), Mutual Funds Transactions tab (filter bar + row skeletons), Physical Assets Transactions tab (filter bar + row skeletons), and Insights chart Suspense fallback (title + chart area skeleton).
 
 ### 11.7 Notification / Alert System
 
@@ -509,9 +506,9 @@ Ordered by value-to-effort ratio. Items near the top deliver the most visible im
 | 21     | Sparklines on ledger cards                        | 1.6      | No              |
 | ~~22~~ | ~~Breadcrumb navigation~~                         | ~~11.2~~ | ~~DONE~~        |
 | 23     | Store/location chips + tag badges in transactions | 4.2, 4.3 | No              |
-| 24     | Tooltips and help text                            | 11.4     | No              |
-| 25     | Loading skeletons                                 | 11.6     | No              |
-| 26     | Empty state guidance (extend to all sections)     | 11.5     | No              |
+| ~~24~~ | ~~Tooltips and help text~~                        | ~~11.4~~ | ~~DONE~~        |
+| ~~25~~ | ~~Loading skeletons~~                             | ~~11.6~~ | ~~DONE~~        |
+| ~~26~~ | ~~Empty state guidance (extend to all sections)~~ | ~~11.5~~ | ~~DONE~~        |
 | 27     | "Similar transactions" links                      | 4.4      | No              |
 | 28     | Anomaly highlighting in insights                  | 8.4      | No              |
 | 29     | Insights key metrics banner                       | 8.2      | No              |

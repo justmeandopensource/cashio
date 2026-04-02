@@ -17,7 +17,9 @@ import {
   ModalCloseButton,
   Button,
   Text,
-  Spinner,
+  Skeleton,
+  SimpleGrid,
+  VStack,
   useBreakpointValue,
   Badge,
   Flex,
@@ -343,9 +345,15 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
            <TabPanel p={{ base: 2, md: 4 }}>
              {subTabIndex === 0 &&
                (isLoading ? (
-                 <Box display="flex" justifyContent="center" py={10}>
-                   <Spinner size="xl" color="brand.500" />
-                 </Box>
+                 <VStack spacing={4} align="stretch">
+                   <Skeleton height="40px" borderRadius="lg" />
+                   <SimpleGrid columns={{ base: 2, sm: 3, lg: 5 }} spacing={{ base: 3, md: 4 }}>
+                     {[0, 1, 2, 3, 4].map((i) => (
+                       <Skeleton key={i} height="100px" borderRadius="xl" />
+                     ))}
+                   </SimpleGrid>
+                   <Skeleton height="300px" borderRadius="xl" />
+                 </VStack>
                ) : (
                      <MutualFundsOverview
                        amcs={amcs}
@@ -366,9 +374,12 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
            <TabPanel p={{ base: 2, md: 4 }}>
              {subTabIndex === 1 && (
                isLoading ? (
-                 <Box display="flex" justifyContent="center" py={10}>
-                   <Spinner size="xl" color="brand.500" />
-                 </Box>
+                 <VStack spacing={3} align="stretch">
+                   <Skeleton height="40px" borderRadius="lg" />
+                   {[0, 1, 2, 3, 4].map((i) => (
+                     <Skeleton key={i} height="56px" borderRadius="lg" />
+                   ))}
+                 </VStack>
                ) : (
                   <MfTransactions
                     amcs={amcs}

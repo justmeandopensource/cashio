@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -11,7 +11,6 @@ import {
   Box,
   Text,
   HStack,
-  VStack,
   Icon,
   Spinner,
   Badge,
@@ -71,7 +70,7 @@ type PaletteItem =
 const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
   const [inputValue, setInputValue] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const resultsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -136,16 +135,19 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
 
   // Group search results by type
   const showSearchResults = debouncedQuery.length >= 2;
-  const groupedSearchResults = showSearchResults
-    ? SEARCH_TYPE_ORDER.reduce(
-        (acc, type) => {
-          const items = data?.results.filter((r) => r.type === type) ?? [];
-          if (items.length > 0) acc.push({ type, items });
-          return acc;
-        },
-        [] as { type: SearchResultItem["type"]; items: SearchResultItem[] }[]
-      )
-    : [];
+  const groupedSearchResults = useMemo(() =>
+    showSearchResults
+      ? SEARCH_TYPE_ORDER.reduce(
+          (acc, type) => {
+            const items = data?.results.filter((r) => r.type === type) ?? [];
+            if (items.length > 0) acc.push({ type, items });
+            return acc;
+          },
+          [] as { type: SearchResultItem["type"]; items: SearchResultItem[] }[]
+        )
+      : [],
+    [showSearchResults, data?.results]
+  );
 
   // Group commands by category
   const groupedCommands = CATEGORY_ORDER.reduce(
@@ -158,14 +160,14 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
   );
 
   // Build unified flat list for keyboard navigation
-  const flatItems: PaletteItem[] = [
+  const flatItems: PaletteItem[] = useMemo(() => [
     ...groupedCommands.flatMap((g) =>
       g.items.map((cmd): PaletteItem => ({ kind: "command", command: cmd }))
     ),
     ...groupedSearchResults.flatMap((g) =>
       g.items.map((item): PaletteItem => ({ kind: "search", item }))
     ),
-  ];
+  ], [groupedCommands, groupedSearchResults]);
 
   const switchToLedgerAndNavigate = useCallback(
     (item: SearchResultItem, path: string) => {
@@ -244,7 +246,6 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
   }, [selectedIndex]);
 
   const hasCommands = groupedCommands.length > 0;
-  const hasSearchResults = groupedSearchResults.length > 0;
   const hasAnyResults = flatItems.length > 0;
 
   let flatIndex = 0;

@@ -2,6 +2,7 @@ import React from "react";
 import {
   Flex,
   Box,
+  Button,
   Text,
   Icon,
   IconButton,
@@ -10,14 +11,21 @@ import {
   Badge,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { keyframes } from "@emotion/react";
 import {
   Plus,
   Eye,
   EyeOff,
   ChevronDown,
   ChevronUp,
+  BookOpen,
   LucideIcon,
 } from "lucide-react";
+
+const floatAnimation = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+`;
 import useLedgerStore from "@/components/shared/store";
 import { splitCurrencyForDisplay } from "../../mutual-funds/utils";
 import { getSubtypeIcon } from "../constants/accountSubtypes";
@@ -317,23 +325,44 @@ const EmptyState: React.FC<{
   message: string;
   buttonText: string;
   onClick: () => void;
-}> = ({ title, message, buttonText, onClick }) => (
-  <Box textAlign="center" py={8} px={4}>
-    <Text fontSize="lg" fontWeight="semibold" mb={2} letterSpacing="-0.01em">
-      {title}
-    </Text>
-    <Text color="secondaryTextColor" mb={5} fontSize="sm">
-      {message}
-    </Text>
-    <IconButton
-      icon={<Plus />}
-      onClick={onClick}
-      size="sm"
-      colorScheme="brand"
-      borderRadius="lg"
-      aria-label={buttonText}
-    />
-  </Box>
-);
+}> = ({ title, message, buttonText, onClick }) => {
+  const emptyIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.12)");
+  const titleColor = useColorModeValue("gray.800", "gray.100");
+  const subColor = useColorModeValue("gray.500", "gray.400");
+
+  return (
+    <Box textAlign="center" py={10} px={4}>
+      <Box
+        w="56px"
+        h="56px"
+        borderRadius="2xl"
+        bg={emptyIconBg}
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        mx="auto"
+        mb={4}
+        css={{ animation: `${floatAnimation} 3s ease-in-out infinite` }}
+      >
+        <Icon as={BookOpen} boxSize={6} color="brand.400" />
+      </Box>
+      <Heading fontSize="md" fontWeight="bold" color={titleColor} mb={2} letterSpacing="-0.01em">
+        {title}
+      </Heading>
+      <Text color={subColor} mb={5} fontSize="sm" maxW="260px" mx="auto" lineHeight="tall">
+        {message}
+      </Text>
+      <Button
+        leftIcon={<Plus size={16} />}
+        onClick={onClick}
+        size="sm"
+        colorScheme="brand"
+        borderRadius="lg"
+      >
+        {buttonText}
+      </Button>
+    </Box>
+  );
+};
 
 export default LedgerAccountSection;

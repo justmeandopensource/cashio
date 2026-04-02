@@ -1,6 +1,12 @@
 import { lazy, Suspense } from "react";
-import { Text, Box, Center, Heading, Icon, useColorModeValue } from "@chakra-ui/react";
+import { Text, Box, Center, Heading, Icon, Skeleton, VStack, useColorModeValue } from "@chakra-ui/react";
+import { keyframes } from "@emotion/react";
 import { BarChart2 } from "lucide-react";
+
+const floatAnimation = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+`;
 
 const IncomeExpenseTrend = lazy(() => import("./charts/IncomeExpenseTrend"));
 const CurrentMonthOverview = lazy(() => import("./charts/CurrentMonthOverview"));
@@ -23,8 +29,6 @@ const InsightsMainCharts = ({
   ledgerId,
   visualization,
 }: InsightsMainChartsProps) => {
-  const cardBg = useColorModeValue("white", "gray.700");
-  const tertiaryTextColor = useColorModeValue("gray.600", "gray.400");
   const emptyTitleColor = useColorModeValue("gray.700", "gray.200");
   const emptySubColor = useColorModeValue("gray.500", "gray.400");
   const emptyIconBg = useColorModeValue("brand.100", "rgba(116, 207, 202, 0.15)");
@@ -41,14 +45,15 @@ const InsightsMainCharts = ({
           alignItems="center"
           justifyContent="center"
           mb={5}
+          css={{ animation: `${floatAnimation} 3s ease-in-out infinite` }}
         >
           <Icon as={BarChart2} boxSize={8} color="brand.500" />
         </Box>
         <Heading fontSize="xl" fontWeight="bold" color={emptyTitleColor} mb={2}>
           No ledger selected
         </Heading>
-        <Text fontSize="sm" color={emptySubColor} maxW="320px">
-          Choose a ledger from the dropdown above to view your insights dashboard.
+        <Text fontSize="sm" color={emptySubColor} maxW="320px" lineHeight="tall">
+          Choose a ledger from the dropdown above to explore 11 different visualizations of your financial data, including spending trends, category breakdowns, and calendar heatmaps.
         </Text>
       </Center>
     );
@@ -80,23 +85,37 @@ const InsightsMainCharts = ({
         return <ExpenseCalendarHeatmap ledgerId={ledgerId} />;
       default:
         return (
-          <Box
-            bg={cardBg}
-            p={6}
-            borderRadius="lg"
-            boxShadow="md"
-            textAlign="center"
-          >
-            <Text fontSize="lg" color={tertiaryTextColor}>
+          <Center flexDirection="column" py={16} px={6} textAlign="center">
+            <Box
+              w="64px"
+              h="64px"
+              borderRadius="2xl"
+              bg={emptyIconBg}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              mb={4}
+            >
+              <Icon as={BarChart2} boxSize={7} color="brand.500" />
+            </Box>
+            <Heading fontSize="lg" fontWeight="bold" color={emptyTitleColor} mb={2}>
               Visualization not found
+            </Heading>
+            <Text fontSize="sm" color={emptySubColor} maxW="300px">
+              The selected chart type could not be loaded. Try choosing a different visualization from the dropdown above.
             </Text>
-          </Box>
+          </Center>
         );
     }
   };
 
   return (
-    <Suspense fallback={<Box textAlign="center" py={8}><Text>Loading chart...</Text></Box>}>
+    <Suspense fallback={
+      <VStack spacing={4} align="stretch" py={4}>
+        <Skeleton height="40px" borderRadius="lg" w="200px" />
+        <Skeleton height="340px" borderRadius="xl" />
+      </VStack>
+    }>
       <Box>{renderVisualization()}</Box>
     </Suspense>
   );

@@ -15,7 +15,13 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
+import { keyframes } from "@emotion/react";
 import { RefreshCw, TrendingUp, BookOpen } from "lucide-react";
+
+const floatAnimation = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+`;
 import PageHeader from "@components/shared/PageHeader";
 import PageContainer from "@components/shared/PageContainer";
 import { NetWorthResponse } from "../types";
@@ -142,6 +148,7 @@ const NetWorthMain: React.FC<NetWorthMainProps> = ({
               alignItems="center"
               justifyContent="center"
               mb={5}
+              css={{ animation: `${floatAnimation} 3s ease-in-out infinite` }}
             >
               <Icon as={BookOpen} boxSize={8} color="brand.400" />
             </Box>
@@ -149,7 +156,7 @@ const NetWorthMain: React.FC<NetWorthMainProps> = ({
               No ledger selected
             </Heading>
             <Text fontSize="sm" color={emptySubColor} maxW="340px" lineHeight="tall">
-              Choose a ledger from the dropdown above to view your consolidated net worth dashboard.
+              Choose a ledger from the dropdown above to view your consolidated net worth, asset allocation, and portfolio composition.
             </Text>
           </MotionCenter>
         ) : (

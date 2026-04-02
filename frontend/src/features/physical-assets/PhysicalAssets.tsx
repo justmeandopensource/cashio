@@ -23,7 +23,7 @@ import {
   ModalBody,
   ModalFooter,
   ModalCloseButton,
-  Spinner,
+  Skeleton,
   Tab,
   TabList,
   TabPanel,
@@ -299,14 +299,12 @@ const PhysicalAssets: FC = () => {
           <TabPanel p={{ base: 2, md: 4 }}>
             {tabIndex === 1 && (
               assetsLoading ? (
-                <Box p={8} textAlign="center">
-                  <VStack spacing={4}>
-                    <Spinner size="lg" color="brand.500" />
-                    <Text color={tabColor} fontSize="lg">
-                      Loading transaction history...
-                    </Text>
-                  </VStack>
-                </Box>
+                <VStack spacing={3} align="stretch" p={{ base: 2, md: 4 }}>
+                  <Skeleton height="40px" borderRadius="lg" />
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <Skeleton key={i} height="56px" borderRadius="lg" />
+                  ))}
+                </VStack>
               ) : assets.length === 0 ? (
                 <EmptyStateTransactions />
               ) : (

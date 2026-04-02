@@ -594,7 +594,9 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
                   isNumeric
                   display={{ base: "none", lg: "table-cell" }}
                 >
-                  NAV
+                  <Tooltip label="Net Asset Value — the per-unit market price of a mutual fund" fontSize="xs">
+                    <Text as="span">NAV</Text>
+                  </Tooltip>
                 </Th>
                 <Th
                   width="8%"

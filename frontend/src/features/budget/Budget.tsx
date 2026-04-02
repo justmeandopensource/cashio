@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
+  Center,
   Flex,
   FormControl,
+  Heading,
   Icon,
   Select,
   SimpleGrid,
@@ -11,6 +13,12 @@ import {
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
+import { keyframes } from "@emotion/react";
+
+const floatAnimation = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+`;
 import { Target, Plus, Calendar, CalendarDays } from "lucide-react";
 import Layout from "@components/Layout";
 import PageHeader from "@components/shared/PageHeader";
@@ -66,8 +74,9 @@ const Budget: React.FC = () => {
   const columnHeaderBg = useColorModeValue("gray.50", "gray.800");
   const periodTitleColor = useColorModeValue("gray.700", "gray.200");
   const periodIconColor = useColorModeValue("brand.500", "brand.400");
-  const emptyColor = useColorModeValue("gray.400", "gray.500");
-  const emptyIconColor = useColorModeValue("gray.200", "gray.600");
+  const emptyIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.12)");
+  const emptyTitleColor = useColorModeValue("gray.700", "gray.200");
+  const emptySubColor = useColorModeValue("gray.500", "gray.400");
 
   const activeCurrencySymbol =
     currencySymbol ||
@@ -203,12 +212,27 @@ const Budget: React.FC = () => {
             </SimpleGrid>
           </PageContainer>
         ) : (
-          <Flex direction="column" align="center" justify="center" py={16} gap={3}>
-            <Icon as={Target} boxSize={10} color={emptyIconColor} strokeWidth={1.5} />
-            <Text color={emptyColor} fontSize="sm">
-              Select a ledger to manage budgets.
+          <Center flexDirection="column" py={20} px={6} textAlign="center">
+            <Box
+              w="72px"
+              h="72px"
+              borderRadius="2xl"
+              bg={emptyIconBg}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              mb={5}
+              css={{ animation: `${floatAnimation} 3s ease-in-out infinite` }}
+            >
+              <Icon as={Target} boxSize={8} color="brand.400" strokeWidth={1.5} />
+            </Box>
+            <Heading fontSize="xl" fontWeight="bold" color={emptyTitleColor} mb={2}>
+              No ledger selected
+            </Heading>
+            <Text fontSize="sm" color={emptySubColor} maxW="320px" lineHeight="tall">
+              Choose a ledger from the dropdown above to set up monthly and yearly spending budgets for your categories.
             </Text>
-          </Flex>
+          </Center>
         )}
       </Box>
 

@@ -7,7 +7,7 @@ import {
   useDisclosure,
   SimpleGrid,
   HStack,
-  Spinner,
+  Skeleton,
   useColorModeValue,
   Select,
 } from "@chakra-ui/react";
@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import CreateAccountModal from "@components/modals/CreateAccountModal";
 import useLedgerStore from "@/components/shared/store";
+import FinancialTooltip from "@/components/shared/FinancialTooltip";
 import { splitCurrencyForDisplay } from "../../mutual-funds/utils";
 import { ACCOUNT_SUBTYPES, getSubtypeLabel } from "../constants/accountSubtypes";
 import LedgerAccountSection, { type SubtypeGroup } from "./LedgerAccountSection";
@@ -138,8 +139,23 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
 
   if (isLoading) {
     return (
-      <Box textAlign="center" py={10}>
-        <Spinner size="xl" color="brand.500" />
+      <Box p={{ base: 2, md: 4 }}>
+        {/* Summary cards skeleton */}
+        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 3, md: 4 }} mb={{ base: 4, md: 6 }}>
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} height="90px" borderRadius="xl" />
+          ))}
+        </SimpleGrid>
+        {/* Account sections skeleton */}
+        <SimpleGrid columns={{ base: 1, md: 1, lg: 2 }} spacing={{ base: 4, md: 6 }}>
+          {[0, 1].map((i) => (
+            <Box key={i}>
+              <Skeleton height="48px" borderRadius="lg" mb={2} />
+              <Skeleton height="48px" borderRadius="lg" mb={2} />
+              <Skeleton height="48px" borderRadius="lg" />
+            </Box>
+          ))}
+        </SimpleGrid>
       </Box>
     );
   }
@@ -148,6 +164,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
     {
       icon: Building,
       label: "Assets",
+      tooltipTerm: "total_assets" as const,
       value: totalAssets,
       accentColor: assetAccentColor,
       colorFn: () => (totalAssets >= 0 ? positiveColor : negativeColor),
@@ -155,6 +172,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
     {
       icon: ShieldAlert,
       label: "Liabilities",
+      tooltipTerm: "total_liabilities" as const,
       value: totalLiabilities,
       accentColor: liabilityAccentColor,
       colorFn: () => getBalanceColor(totalLiabilities, "liability", false),
@@ -162,6 +180,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
     {
       icon: TrendingUp,
       label: "Net Worth",
+      tooltipTerm: "net_worth" as const,
       value: netWorth,
       accentColor: netWorth >= 0 ? netWorthPositiveAccentColor : netWorthNegativeAccentColor,
       colorFn: () => (netWorth >= 0 ? positiveColor : negativeColor),
@@ -202,7 +221,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
           visible: { transition: { staggerChildren: 0.08 } },
         }}
       >
-        {summaryCards.map(({ icon, label, value, accentColor, colorFn }) => (
+        {summaryCards.map(({ icon, label, tooltipTerm, value, accentColor, colorFn }) => (
           <MotionBox
             key={label}
             variants={{
@@ -250,6 +269,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
                   color={columnHeaderColor}
                 >
                   {label}
+                  <FinancialTooltip term={tooltipTerm} />
                 </Text>
               </Flex>
               <HStack spacing={0} align="baseline">

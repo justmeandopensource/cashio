@@ -11,6 +11,7 @@ import {
 import { motion } from "framer-motion";
 import { TrendingUp, Building, ShieldAlert, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { splitCurrencyForDisplay } from "@/features/mutual-funds/utils";
+import FinancialTooltip from "@/components/shared/FinancialTooltip";
 
 const MotionBox = motion(Box);
 
@@ -50,6 +51,7 @@ const NetWorthSummary: React.FC<NetWorthSummaryProps> = ({
     {
       icon: Building,
       label: "Total Assets",
+      tooltipTerm: "total_assets" as const,
       display: taDisplay,
       accentColor: useColorModeValue("brand.400", "brand.300"),
       valueColor: positiveColor,
@@ -58,6 +60,7 @@ const NetWorthSummary: React.FC<NetWorthSummaryProps> = ({
     {
       icon: ShieldAlert,
       label: "Total Liabilities",
+      tooltipTerm: "total_liabilities" as const,
       display: tlDisplay,
       accentColor: useColorModeValue("orange.400", "orange.300"),
       valueColor: tl <= 0 ? positiveColor : negativeColor,
@@ -90,6 +93,7 @@ const NetWorthSummary: React.FC<NetWorthSummaryProps> = ({
             color={heroLabelColor}
           >
             Net Worth
+            <FinancialTooltip term="net_worth" />
           </Text>
         </Flex>
 
@@ -140,7 +144,7 @@ const NetWorthSummary: React.FC<NetWorthSummaryProps> = ({
       </MotionBox>
 
       {/* Secondary cards — assets & liabilities */}
-      {secondaryCards.map(({ icon, label, display, accentColor, valueColor }, idx) => (
+      {secondaryCards.map(({ icon, label, tooltipTerm, display, accentColor, valueColor }, idx) => (
         <MotionBox
           key={label}
           initial={{ opacity: 0, y: 12 }}
@@ -185,6 +189,7 @@ const NetWorthSummary: React.FC<NetWorthSummaryProps> = ({
               color={labelColor}
             >
               {label}
+              <FinancialTooltip term={tooltipTerm} />
             </Text>
           </Flex>
 

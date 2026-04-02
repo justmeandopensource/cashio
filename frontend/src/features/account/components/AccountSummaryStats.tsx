@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Hash, Calendar } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
+import FinancialTooltip from "@/components/shared/FinancialTooltip";
 import { useAccountSummary } from "../hooks";
 
 const MotionBox = motion(Box);
@@ -53,6 +54,7 @@ const AccountSummaryStats: React.FC<AccountSummaryStatsProps> = ({
     {
       icon: TrendingUp,
       label: "Total Income",
+      tooltipTerm: "total_income",
       value: formatNumberAsCurrency(data.total_credit, currencySymbol || "$"),
       accentColor: incomeAccentColor,
       valueColor: positiveColor,
@@ -60,6 +62,7 @@ const AccountSummaryStats: React.FC<AccountSummaryStatsProps> = ({
     {
       icon: TrendingDown,
       label: "Total Expenses",
+      tooltipTerm: "total_expenses",
       value: formatNumberAsCurrency(data.total_debit, currencySymbol || "$"),
       accentColor: expenseAccentColor,
       valueColor: expenseValueColor,
@@ -67,6 +70,7 @@ const AccountSummaryStats: React.FC<AccountSummaryStatsProps> = ({
     {
       icon: Hash,
       label: "Transactions",
+      tooltipTerm: null,
       value: data.transaction_count.toLocaleString(),
       accentColor: countAccentColor,
       valueColor: primaryTextColor,
@@ -74,6 +78,7 @@ const AccountSummaryStats: React.FC<AccountSummaryStatsProps> = ({
     {
       icon: Calendar,
       label: "Active Since",
+      tooltipTerm: null,
       value: data.first_transaction_date
         ? formatActiveSince(data.first_transaction_date)
         : "—",
@@ -94,7 +99,7 @@ const AccountSummaryStats: React.FC<AccountSummaryStatsProps> = ({
         visible: { transition: { staggerChildren: 0.08 } },
       }}
     >
-      {cards.map(({ icon, label, value, accentColor, valueColor }) => (
+      {cards.map(({ icon, label, tooltipTerm, value, accentColor, valueColor }) => (
         <MotionBox
           key={label}
           variants={{
@@ -155,6 +160,7 @@ const AccountSummaryStats: React.FC<AccountSummaryStatsProps> = ({
                 color={columnHeaderColor}
               >
                 {label}
+                {tooltipTerm && <FinancialTooltip term={tooltipTerm} />}
               </Text>
             </Flex>
 

@@ -13,7 +13,8 @@ import {
   Icon,
   useDisclosure,
   SimpleGrid,
-  Spinner,
+  Skeleton,
+  SkeletonText,
   Link as ChakraLink,
   Heading,
   HStack,
@@ -178,9 +179,27 @@ const CategoriesMain: React.FC = () => {
   if (isCategoriesLoading) {
     return (
       <Box bg={loadingBg} p={{ base: 3, md: 4, lg: 6 }} borderRadius="lg">
-        <Box textAlign="center" py={10}>
-          <Spinner size="xl" color="brand.500" />
-        </Box>
+        <SimpleGrid columns={{ base: 1, md: 1, lg: 2 }} spacing={{ base: 4, md: 6 }}>
+          {[0, 1].map((i) => (
+            <Box
+              key={i}
+              bg={cardBg}
+              p={{ base: 3, md: 4 }}
+              borderRadius="md"
+              boxShadow="md"
+              border="1px solid"
+              borderColor={sectionBorderColor}
+              borderTopWidth="3px"
+              borderTopColor={i === 0 ? incomeTopAccent : expenseTopAccent}
+            >
+              <HStack mb={4}>
+                <Skeleton h="20px" w="20px" borderRadius="md" />
+                <Skeleton h="20px" w="160px" borderRadius="md" />
+              </HStack>
+              <SkeletonText noOfLines={5} spacing={4} skeletonHeight="14px" />
+            </Box>
+          ))}
+        </SimpleGrid>
       </Box>
     );
   }
