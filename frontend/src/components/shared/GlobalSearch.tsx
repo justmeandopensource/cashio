@@ -25,19 +25,28 @@ import {
   ArrowLeftRight,
   TrendingUp,
   Gem,
+  CornerDownLeft,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { queryKeys } from "@/lib/queryKeys";
 import { globalSearch, type SearchResultItem } from "@/features/search/api";
 import useLedgerStore from "@/components/shared/store";
+import {
+  useCommandPalette,
+  filterCommands,
+  CATEGORY_ORDER,
+  CATEGORY_LABELS,
+  type PaletteCommand,
+  type CommandCategory,
+} from "@/components/shared/useCommandPalette";
 
 interface GlobalSearchProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const TYPE_CONFIG: Record<
+const SEARCH_TYPE_CONFIG: Record<
   SearchResultItem["type"],
   { label: string; icon: React.ElementType }
 > = {
@@ -47,12 +56,17 @@ const TYPE_CONFIG: Record<
   physical_asset: { label: "Physical Assets", icon: Gem },
 };
 
-const TYPE_ORDER: SearchResultItem["type"][] = [
+const SEARCH_TYPE_ORDER: SearchResultItem["type"][] = [
   "account",
   "mutual_fund",
   "physical_asset",
   "transaction",
 ];
+
+// Unified item type for keyboard navigation
+type PaletteItem =
+  | { kind: "command"; command: PaletteCommand }
+  | { kind: "search"; item: SearchResultItem };
 
 const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
   const [inputValue, setInputValue] = useState("");
@@ -62,6 +76,10 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
   const resultsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const setLedger = useLedgerStore((s) => s.setLedger);
+
+  // Command palette
+  const commands = useCommandPalette(onClose);
+  const filteredCommands = filterCommands(commands, inputValue);
 
   const modalBg = useColorModeValue("white", "gray.800");
   const inputBg = useColorModeValue("gray.50", "gray.700");
@@ -73,6 +91,8 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
   const emptyColor = useColorModeValue("gray.400", "gray.500");
   const badgeBg = useColorModeValue("gray.100", "gray.600");
   const badgeColor = useColorModeValue("gray.600", "gray.200");
+  const cmdIconColor = useColorModeValue("gray.400", "gray.500");
+  const footerBg = useColorModeValue("gray.50", "gray.750");
 
   const { data, isFetching } = useQuery({
     queryKey: queryKeys.search.global(debouncedQuery),
@@ -114,18 +134,38 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
     };
   }, []);
 
-  // Group results by type, preserving order
-  const groupedResults = TYPE_ORDER.reduce(
-    (acc, type) => {
-      const items = data?.results.filter((r) => r.type === type) ?? [];
-      if (items.length > 0) acc.push({ type, items });
+  // Group search results by type
+  const showSearchResults = debouncedQuery.length >= 2;
+  const groupedSearchResults = showSearchResults
+    ? SEARCH_TYPE_ORDER.reduce(
+        (acc, type) => {
+          const items = data?.results.filter((r) => r.type === type) ?? [];
+          if (items.length > 0) acc.push({ type, items });
+          return acc;
+        },
+        [] as { type: SearchResultItem["type"]; items: SearchResultItem[] }[]
+      )
+    : [];
+
+  // Group commands by category
+  const groupedCommands = CATEGORY_ORDER.reduce(
+    (acc, category) => {
+      const items = filteredCommands.filter((c) => c.category === category);
+      if (items.length > 0) acc.push({ category, items });
       return acc;
     },
-    [] as { type: SearchResultItem["type"]; items: SearchResultItem[] }[]
+    [] as { category: CommandCategory; items: PaletteCommand[] }[]
   );
 
-  // Flat list for keyboard navigation
-  const flatResults = groupedResults.flatMap((g) => g.items);
+  // Build unified flat list for keyboard navigation
+  const flatItems: PaletteItem[] = [
+    ...groupedCommands.flatMap((g) =>
+      g.items.map((cmd): PaletteItem => ({ kind: "command", command: cmd }))
+    ),
+    ...groupedSearchResults.flatMap((g) =>
+      g.items.map((item): PaletteItem => ({ kind: "search", item }))
+    ),
+  ];
 
   const switchToLedgerAndNavigate = useCallback(
     (item: SearchResultItem, path: string) => {
@@ -142,7 +182,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
     [navigate, onClose, setLedger]
   );
 
-  const navigateToResult = useCallback(
+  const navigateToSearchResult = useCallback(
     (item: SearchResultItem) => {
       switch (item.type) {
         case "account":
@@ -168,20 +208,31 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
     [switchToLedgerAndNavigate]
   );
 
+  const executeItem = useCallback(
+    (paletteItem: PaletteItem) => {
+      if (paletteItem.kind === "command") {
+        paletteItem.command.execute();
+      } else {
+        navigateToSearchResult(paletteItem.item);
+      }
+    },
+    [navigateToSearchResult]
+  );
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSelectedIndex((prev) => Math.min(prev + 1, flatResults.length - 1));
+        setSelectedIndex((prev) => Math.min(prev + 1, flatItems.length - 1));
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setSelectedIndex((prev) => Math.max(prev - 1, 0));
-      } else if (e.key === "Enter" && flatResults[selectedIndex]) {
+      } else if (e.key === "Enter" && flatItems[selectedIndex]) {
         e.preventDefault();
-        navigateToResult(flatResults[selectedIndex]);
+        executeItem(flatItems[selectedIndex]);
       }
     },
-    [flatResults, selectedIndex, navigateToResult]
+    [flatItems, selectedIndex, executeItem]
   );
 
   // Scroll selected item into view
@@ -192,8 +243,9 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
     }
   }, [selectedIndex]);
 
-  const showResults = debouncedQuery.length >= 2;
-  const hasResults = flatResults.length > 0;
+  const hasCommands = groupedCommands.length > 0;
+  const hasSearchResults = groupedSearchResults.length > 0;
+  const hasAnyResults = flatItems.length > 0;
 
   let flatIndex = 0;
 
@@ -221,7 +273,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
                 )}
               </InputLeftElement>
               <Input
-                placeholder="Search accounts, transactions, categories..."
+                placeholder="Search or jump to..."
                 value={inputValue}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
@@ -247,34 +299,83 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
           <Box
             ref={resultsRef}
             overflowY="auto"
-            maxH={{ base: "calc(90vh - 80px)", md: "calc(70vh - 80px)" }}
+            maxH={{ base: "calc(90vh - 120px)", md: "calc(70vh - 120px)" }}
           >
-            {showResults && !isFetching && !hasResults && (
-              <Box px={6} py={8} textAlign="center">
-                <Text color={emptyColor} fontSize="sm">
-                  No results found for &ldquo;{debouncedQuery}&rdquo;
-                </Text>
-              </Box>
-            )}
-
-            {!showResults && (
-              <Box px={6} py={8} textAlign="center">
-                <VStack spacing={2}>
-                  <Text color={emptyColor} fontSize="sm">
-                    Type at least 2 characters to search
+            {/* Command sections */}
+            {groupedCommands.map((group) => (
+              <Box key={group.category} py={2}>
+                <HStack px={4} py={1.5} spacing={2}>
+                  <Text
+                    fontSize="xs"
+                    fontWeight="bold"
+                    textTransform="uppercase"
+                    letterSpacing="0.05em"
+                    color={sectionColor}
+                  >
+                    {CATEGORY_LABELS[group.category]}
                   </Text>
-                  <HStack spacing={1}>
-                    <Kbd>Esc</Kbd>
-                    <Text fontSize="xs" color={emptyColor}>
-                      to close
-                    </Text>
-                  </HStack>
-                </VStack>
+                </HStack>
+                {group.items.map((cmd) => {
+                  const currentIndex = flatIndex++;
+                  const isSelected = currentIndex === selectedIndex;
+                  return (
+                    <Box
+                      key={cmd.id}
+                      data-index={currentIndex}
+                      px={4}
+                      py={2.5}
+                      mx={2}
+                      borderRadius="lg"
+                      cursor="pointer"
+                      bg={isSelected ? selectedBg : "transparent"}
+                      _hover={{ bg: isSelected ? selectedBg : hoverBg }}
+                      transition="background 0.1s ease"
+                      onClick={() => cmd.execute()}
+                      onMouseEnter={() => setSelectedIndex(currentIndex)}
+                    >
+                      <HStack justify="space-between" align="center">
+                        <HStack flex={1} minW={0} spacing={3}>
+                          <Icon
+                            as={cmd.icon}
+                            boxSize={4}
+                            color={cmdIconColor}
+                            flexShrink={0}
+                          />
+                          <Box flex={1} minW={0}>
+                            <Text fontSize="sm" fontWeight="500" noOfLines={1}>
+                              {cmd.title}
+                            </Text>
+                            {cmd.subtitle && (
+                              <Text
+                                fontSize="xs"
+                                color={subtitleColor}
+                                noOfLines={1}
+                                mt={0.5}
+                              >
+                                {cmd.subtitle}
+                              </Text>
+                            )}
+                          </Box>
+                        </HStack>
+                        {isSelected && (
+                          <Icon
+                            as={CornerDownLeft}
+                            boxSize={3.5}
+                            color={sectionColor}
+                            flexShrink={0}
+                            ml={2}
+                          />
+                        )}
+                      </HStack>
+                    </Box>
+                  );
+                })}
               </Box>
-            )}
+            ))}
 
-            {groupedResults.map((group) => {
-              const config = TYPE_CONFIG[group.type];
+            {/* Search result sections */}
+            {groupedSearchResults.map((group) => {
+              const config = SEARCH_TYPE_CONFIG[group.type];
               return (
                 <Box key={group.type} py={2}>
                   <HStack px={4} py={1.5} spacing={2}>
@@ -308,7 +409,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
                         bg={isSelected ? selectedBg : "transparent"}
                         _hover={{ bg: isSelected ? selectedBg : hoverBg }}
                         transition="background 0.1s ease"
-                        onClick={() => navigateToResult(item)}
+                        onClick={() => navigateToSearchResult(item)}
                         onMouseEnter={() => setSelectedIndex(currentIndex)}
                       >
                         <HStack justify="space-between" align="center">
@@ -354,6 +455,54 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
                 </Box>
               );
             })}
+
+            {/* Empty state: no results at all when searching */}
+            {showSearchResults && !isFetching && !hasAnyResults && (
+              <Box px={6} py={8} textAlign="center">
+                <Text color={emptyColor} fontSize="sm">
+                  No results found for &ldquo;{debouncedQuery}&rdquo;
+                </Text>
+              </Box>
+            )}
+
+            {/* Empty state: commands filtered to zero, but search hasn't run yet */}
+            {!showSearchResults && !hasCommands && inputValue.length > 0 && (
+              <Box px={6} py={8} textAlign="center">
+                <Text color={emptyColor} fontSize="sm">
+                  No matching commands. Type more to search...
+                </Text>
+              </Box>
+            )}
+          </Box>
+
+          {/* Footer with keyboard hints */}
+          <Box
+            borderTop="1px solid"
+            borderColor={borderColor}
+            px={4}
+            py={2}
+            bg={footerBg}
+          >
+            <HStack spacing={4} justify="center">
+              <HStack spacing={1}>
+                <Kbd size="sm" fontSize="2xs">&#8593;&#8595;</Kbd>
+                <Text fontSize="2xs" color={sectionColor}>
+                  navigate
+                </Text>
+              </HStack>
+              <HStack spacing={1}>
+                <Kbd size="sm" fontSize="2xs">&#9166;</Kbd>
+                <Text fontSize="2xs" color={sectionColor}>
+                  select
+                </Text>
+              </HStack>
+              <HStack spacing={1}>
+                <Kbd size="sm" fontSize="2xs">esc</Kbd>
+                <Text fontSize="2xs" color={sectionColor}>
+                  close
+                </Text>
+              </HStack>
+            </HStack>
           </Box>
         </ModalBody>
       </ModalContent>

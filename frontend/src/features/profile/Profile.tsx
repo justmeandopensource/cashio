@@ -9,6 +9,7 @@ import {
   Icon,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { useSearchParams } from "react-router-dom";
 import Layout from "../../components/Layout";
 import UpdateProfileForm from "./UpdateProfileForm";
 import ChangePasswordForm from "./ChangePasswordForm";
@@ -17,6 +18,8 @@ import PageContainer from "@components/shared/PageContainer";
 import PageHeader from "@components/shared/PageHeader";
 import { User, Lock, Database } from "lucide-react";
 import { useLogout } from "@/lib/useLogout";
+
+const TAB_KEYS = ["account", "security", "backups"] as const;
 
 const Profile: React.FC = () => {
   const cardBg = useColorModeValue("white", "cardDarkBg");
@@ -30,7 +33,20 @@ const Profile: React.FC = () => {
   const tabIconColor = useColorModeValue("gray.400", "gray.500");
   const tabSelectedIconColor = useColorModeValue("brand.500", "brand.300");
 
+  const [searchParams, setSearchParams] = useSearchParams();
   const handleLogout = useLogout();
+
+  const tabFromUrl = searchParams.get("tab");
+  const tabIndex = TAB_KEYS.indexOf(tabFromUrl as typeof TAB_KEYS[number]);
+  const currentTabIndex = tabIndex >= 0 ? tabIndex : 0;
+
+  const handleTabChange = (index: number) => {
+    if (index === 0) {
+      setSearchParams({});
+    } else {
+      setSearchParams({ tab: TAB_KEYS[index] });
+    }
+  };
 
   const tabs = [
     { label: "Account", icon: User },
@@ -56,7 +72,7 @@ const Profile: React.FC = () => {
             overflow="hidden"
             shadow="sm"
           >
-            <Tabs variant="unstyled" size="md" isLazy>
+            <Tabs variant="unstyled" size="md" isLazy index={currentTabIndex} onChange={handleTabChange}>
               <Box
                 px={{ base: 2, md: 4 }}
                 pt={{ base: 2, md: 3 }}

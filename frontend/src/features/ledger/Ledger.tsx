@@ -23,6 +23,7 @@ import api from "@/lib/api";
 import { notify } from "@/components/shared/notify";
 import { useLedger } from "./hooks";
 import { useLogout } from "@/lib/useLogout";
+import useCommandPaletteStore from "@/components/shared/commandPaletteStore";
 
 const Ledger = () => {
   const navigate = useNavigate();
@@ -54,6 +55,20 @@ const Ledger = () => {
       });
     }
   }, [ledgerData]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Handle quick actions triggered from the command palette
+  const pendingAction = useCommandPaletteStore((s) => s.pendingAction);
+  const clearPendingAction = useCommandPaletteStore((s) => s.setPendingAction);
+
+  useEffect(() => {
+    if (pendingAction === "add-transaction") {
+      clearPendingAction(null);
+      setIsCreateModalOpen(true);
+    } else if (pendingAction === "transfer-funds") {
+      clearPendingAction(null);
+      setIsTransferModalOpen(true);
+    }
+  }, [pendingAction, clearPendingAction]);
 
   const {
     isOpen: isUpdateLedgerModalOpen,
