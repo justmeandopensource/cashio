@@ -13,6 +13,7 @@ export const queryKeys = {
     detail: (accountId: string | number) => ["account", accountId] as const,
     summary: (accountId: string | number) => ["account-summary", String(accountId)] as const,
     insights: (accountId: string | number) => ["account-insights", String(accountId)] as const,
+    balanceHistory: (accountId: string | number) => ["account-balance-history", String(accountId)] as const,
   },
   transactions: {
     all: ["transactions"] as const,

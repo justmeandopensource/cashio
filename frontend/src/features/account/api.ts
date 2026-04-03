@@ -42,6 +42,15 @@ export interface AccountInsightsData {
   };
 }
 
+export interface BalanceDataPoint {
+  date: string;
+  balance: number;
+}
+
+export interface AccountBalanceHistoryData {
+  data_points: BalanceDataPoint[];
+}
+
 export const getAccount = async (
   ledgerId: string | number,
   accountId: string | number,
@@ -70,6 +79,18 @@ export const getAccountInsights = async (
 ): Promise<AccountInsightsData> => {
   const response = await api.get(
     `/ledger/${ledgerId}/account/${accountId}/insights`,
+    { signal }
+  );
+  return response.data;
+};
+
+export const getAccountBalanceHistory = async (
+  ledgerId: string | number,
+  accountId: string | number,
+  signal?: AbortSignal
+): Promise<AccountBalanceHistoryData> => {
+  const response = await api.get(
+    `/ledger/${ledgerId}/account/${accountId}/balance-history`,
     { signal }
   );
   return response.data;

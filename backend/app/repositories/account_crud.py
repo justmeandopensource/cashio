@@ -313,3 +313,56 @@ def get_account_insights(db: Session, account_id: int):
             "avg_expense": avg_expense,
         },
     }
+
+
+def get_account_balance_history(db: Session, account_id: int):
+    """Compute daily running balance for the last 12 months."""
+    account = db.query(Account).filter(Account.account_id == account_id).first()
+    if not account:
+        return {"data_points": []}
+
+    opening_balance = float(account.opening_balance)  # type: ignore
+    is_liability = account.type == "liability"  # type: ignore
+    cutoff = datetime.now() - timedelta(days=365)
+
+    # For assets: balance += credit - debit
+    # For liabilities: balance += debit - credit (spending increases debt, payments reduce it)
+    if is_liability:
+        net_expr = Transaction.debit - Transaction.credit
+    else:
+        net_expr = Transaction.credit - Transaction.debit
+
+    # Get the balance at the cutoff date by summing all transactions before it
+    pre_sum = (
+        db.query(func.coalesce(func.sum(net_expr), 0))
+        .filter(Transaction.account_id == account_id, Transaction.date < cutoff)
+        .scalar()
+    )
+    starting_balance = Decimal(str(opening_balance)) + Decimal(str(pre_sum or 0))
+
+    # Get daily net flow for the last 12 months
+    daily_nets = (
+        db.query(
+            func.date(Transaction.date).label("day"),
+            func.sum(net_expr).label("daily_net"),
+        )
+        .filter(Transaction.account_id == account_id, Transaction.date >= cutoff)
+        .group_by(func.date(Transaction.date))
+        .order_by(func.date(Transaction.date))
+        .all()
+    )
+
+    if not daily_nets:
+        return {"data_points": []}
+
+    # Compute running balance
+    data_points = []
+    running = starting_balance
+    for row in daily_nets:
+        running += Decimal(str(row.daily_net or 0))
+        data_points.append({
+            "date": str(row.day),
+            "balance": float(running),
+        })
+
+    return {"data_points": data_points}

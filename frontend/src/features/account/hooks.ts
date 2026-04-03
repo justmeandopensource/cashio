@@ -4,8 +4,9 @@ import {
   getAccount,
   getAccountSummary,
   getAccountInsights,
+  getAccountBalanceHistory,
 } from "./api";
-import type { AccountData, AccountSummaryData, AccountInsightsData } from "./api";
+import type { AccountData, AccountSummaryData, AccountInsightsData, AccountBalanceHistoryData } from "./api";
 
 export const useAccount = (
   ledgerId: string | number,
@@ -37,6 +38,18 @@ export const useAccountInsights = (
   return useQuery<AccountInsightsData>({
     queryKey: queryKeys.accounts.insights(accountId),
     queryFn: ({ signal }) => getAccountInsights(ledgerId, accountId, signal),
+    enabled: !!ledgerId && !!accountId,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useAccountBalanceHistory = (
+  ledgerId: string | number,
+  accountId: string | number
+) => {
+  return useQuery<AccountBalanceHistoryData>({
+    queryKey: queryKeys.accounts.balanceHistory(accountId),
+    queryFn: ({ signal }) => getAccountBalanceHistory(ledgerId, accountId, signal),
     enabled: !!ledgerId && !!accountId,
     staleTime: 5 * 60 * 1000,
   });

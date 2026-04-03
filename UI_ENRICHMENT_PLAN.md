@@ -10,31 +10,14 @@
 
 ## Table of Contents
 
-2. [Account Detail Page](#3-account-detail-page)
 3. [Transactions](#4-transactions)
-4. [Categories Page](#5-categories-page)
-5. [Budget Page](#6-budget-page)
-6. [Net Worth Page](#7-net-worth-page)
-7. [Insights Page](#8-insights-page)
-8. [Mutual Funds](#9-mutual-funds)
-9. [Physical Assets](#10-physical-assets)
-10. [Global / Cross-Cutting Improvements](#11-global--cross-cutting-improvements)
-11. [Priority Ranking](#12-priority-ranking)
-
----
-
-## 3. Account Detail Page
-
-**Current state:** The account detail page (`frontend/src/features/account/`) shows a header with account name, balance badge, type/subtype, and owner. Below that: summary stats cards (total credit, total debit, transaction count, first/last transaction dates), insights charts (income/expense trend, top categories), and transaction list.
-
-**Key files:** `Account.tsx`, `AccountMain.tsx`, `AccountSummaryStats.tsx`, `AccountInsights.tsx`, `AccountMainTransactions.tsx`
-
-**Recommendations:**
-
-### 3.2 Running Balance Chart
-
-- A line chart showing the account balance over time (cumulative). This is different from the income/expense trend -- it shows the actual balance progression.
-- **Backend changes:** New endpoint needed: `GET /ledger/{ledgerId}/account/{accountId}/balance-history` returning `[{date, balance}]` computed by cumulating transactions chronologically from opening_balance.
+4. [Budget Page](#6-budget-page)
+5. [Net Worth Page](#7-net-worth-page)
+6. [Insights Page](#8-insights-page)
+7. [Mutual Funds](#9-mutual-funds)
+8. [Physical Assets](#10-physical-assets)
+9. [Global / Cross-Cutting Improvements](#11-global--cross-cutting-improvements)
+10. [Priority Ranking](#12-priority-ranking)
 
 ---
 
@@ -72,44 +55,6 @@
 - Allow toggling between the list/table view and a calendar heatmap view directly within the transactions page. The calendar heatmap data already exists.
 - **API available:** `GET /ledger/{ledgerId}/insights/expense-calendar` returns `[{date, amount}]`.
 - **Backend changes:** None. The chart component `ExpenseCalendarHeatmap.tsx` already exists in insights -- reuse it.
-
----
-
-## 5. Categories Page
-
-**Current state:** The categories page (`frontend/src/features/categories/`) shows two columns: income categories and expense categories. Each displayed as a hierarchical tree with indentation. Only management operations (create, create subcategory) are available. No financial data shown.
-
-**Key files:** `Categories.tsx`, `CategoriesMain.tsx`
-
-**Recommendations:**
-
-### 5.1 Spending Totals Per Category
-
-- Next to each category name, show: "This month: $X | All time: $Y".
-- **API available:** `GET /ledger/{ledgerId}/insights/current-month-overview` returns per-category breakdowns. For all-time, could use `GET /ledger/{ledgerId}/insights/category-trend?period_type=all_time`.
-- **Backend changes:** May need a lightweight endpoint that returns total spend per category for a given period. Could also compute from existing endpoints.
-
-### 5.2 Category Trend Sparkline
-
-- A tiny inline sparkline chart next to each category showing spending trend for the last 6 months.
-- **API available:** `GET /ledger/{ledgerId}/insights/category-trend` returns trend data, but for a single selected category. Would need to call per category or get a batch endpoint.
-- **Backend changes:** Consider a batch endpoint returning monthly totals for all categories in one call.
-
-### 5.3 Percentage of Total Spend
-
-- Show each expense category's percentage of total expenses: "Groceries: 23% of total expenses".
-- **API available:** `current-month-overview` returns values per category. Compute percentages client-side.
-- **Backend changes:** None.
-
-### 5.4 Click-to-Filter Navigation
-
-- Clicking on a category name navigates to the transactions page filtered by that category: `/ledger?tab=transactions&category_id=XXX`.
-- **Backend changes:** None. Just navigation with query params.
-
-### 5.5 Unused Category Indicator
-
-- Flag categories that have zero transactions with a subtle "No transactions" label or a dimmed style. Helps users clean up unused categories.
-- **Backend changes:** Need category usage counts. Could be a new endpoint or added to the category list response.
 
 ---
 

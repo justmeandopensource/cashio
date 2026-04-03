@@ -97,3 +97,12 @@ class AccountInsights(BaseModel):
     trend_data: list[AccountTrendItem]
     top_categories: list[AccountCategoryItem]
     summary: dict
+
+
+class BalanceDataPoint(BaseModel):
+    date: str
+    balance: float
+
+
+class AccountBalanceHistory(BaseModel):
+    data_points: list[BalanceDataPoint]
