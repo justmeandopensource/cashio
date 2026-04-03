@@ -112,7 +112,16 @@ const Transactions: React.FC<TransactionsProps> = ({
 
   const handleResetFilters = () => {
     setPagination((prev) => ({ ...prev, current_page: 1 }));
-    setSearchParams({});
+    const tab = searchParams.get("tab");
+    setSearchParams(tab ? { tab } : {});
+  };
+
+  const handleQuickFilter = (field: string, value: string) => {
+    setPagination((prev) => ({ ...prev, current_page: 1 }));
+    const newParams: Record<string, string> = { [field]: value };
+    const tab = searchParams.get("tab");
+    if (tab) newParams.tab = tab;
+    setSearchParams(newParams);
   };
 
   const handleEditTransaction = (transaction: Transaction) => {
@@ -166,8 +175,8 @@ const Transactions: React.FC<TransactionsProps> = ({
 
       Object.entries(filtersFromKey).forEach(([key, value]) => {
         if (key === "tags" && Array.isArray(value)) {
-          value.forEach((tag) => {
-            params.append("tags", tag);
+          value.forEach((tag: any) => {
+            params.append("tags", tag.name ?? tag);
           });
         } else if (value !== null && value !== undefined && value !== "") {
           params.append(key, value as string);
@@ -467,6 +476,7 @@ const Transactions: React.FC<TransactionsProps> = ({
               onDeleteTransaction={handleDeleteTransaction}
               onEditTransaction={handleEditTransaction}
               onCopyTransaction={onCopyTransaction}
+              onQuickFilter={handleQuickFilter}
               showAccountName={!accountId}
             />
           </Box>
@@ -503,6 +513,7 @@ const Transactions: React.FC<TransactionsProps> = ({
                      onDeleteTransaction={handleDeleteTransaction}
                      onEditTransaction={handleEditTransaction}
                      onCopyTransaction={onCopyTransaction}
+                     onQuickFilter={handleQuickFilter}
                      showAccountName={!accountId}
                    />
                  </MotionBox>

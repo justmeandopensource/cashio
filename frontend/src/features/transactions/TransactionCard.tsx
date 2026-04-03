@@ -49,6 +49,7 @@ interface TransactionCardProps {
   onEditTransaction: (transaction: Transaction) => void;
    
   onCopyTransaction: (transaction: Transaction) => void;
+  onQuickFilter?: (field: string, value: string) => void;
   showAccountName?: boolean;
 }
 
@@ -65,12 +66,14 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
   onDeleteTransaction,
   onEditTransaction,
   onCopyTransaction,
+  onQuickFilter,
   showAccountName = false,
 }) => {
   const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const displayCredit = transaction.filter_matched_split?.credit ?? transaction.credit;
   const displayDebit = transaction.filter_matched_split?.debit ?? transaction.debit;
   const displayCategoryName = transaction.filter_matched_split?.category_name ?? transaction.category_name;
+  const displayCategoryId = transaction.filter_matched_split?.category_id ?? transaction.category_id;
   const amount = formatAmount(displayCredit, displayDebit, currencySymbol as string);
   const amountValue = displayCredit !== 0 ? displayCredit : displayDebit;
 
@@ -151,7 +154,20 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               )}
             </HStack>
 
-            <Text fontWeight="semibold" fontSize="md">{displayCategoryName}</Text>
+            {onQuickFilter && displayCategoryId ? (
+              <Text
+                fontWeight="semibold"
+                fontSize="md"
+                color={accountLinkColor}
+                cursor="pointer"
+                _hover={{ textDecoration: "underline" }}
+                onClick={(e) => { e.stopPropagation(); onQuickFilter("category_id", displayCategoryId); }}
+              >
+                {displayCategoryName}
+              </Text>
+            ) : (
+              <Text fontWeight="semibold" fontSize="md">{displayCategoryName}</Text>
+            )}
 
             {/* Notes section - visible by default */}
             {transaction.notes && (
@@ -169,22 +185,42 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
 
             {/* Store and Location - displayed at bottom of visible area */}
             {(transaction.store || transaction.location) && (
-              <Box mt={1}>
-                <Tag
-                  size="sm"
-                  borderRadius="full"
-                  bg={storeTagBg}
-                  color={storeTagColor}
-                  border="1px solid"
-                  borderColor={storeTagBorderColor}
-                  fontSize="xs"
-                  fontWeight="medium"
-                >
-                  <TagLabel>
-                    {[transaction.store, transaction.location].filter(Boolean).join(", ")}
-                  </TagLabel>
-                </Tag>
-              </Box>
+              <HStack mt={1} spacing={1.5}>
+                {transaction.store && (
+                  <Tag
+                    size="sm"
+                    borderRadius="full"
+                    bg={storeTagBg}
+                    color={storeTagColor}
+                    border="1px solid"
+                    borderColor={storeTagBorderColor}
+                    fontSize="xs"
+                    fontWeight="medium"
+                    cursor={onQuickFilter ? "pointer" : undefined}
+                    _hover={onQuickFilter ? { opacity: 0.8 } : undefined}
+                    onClick={onQuickFilter ? (e) => { e.stopPropagation(); onQuickFilter("store", transaction.store!); } : undefined}
+                  >
+                    <TagLabel>{transaction.store}</TagLabel>
+                  </Tag>
+                )}
+                {transaction.location && (
+                  <Tag
+                    size="sm"
+                    borderRadius="full"
+                    bg={storeTagBg}
+                    color={storeTagColor}
+                    border="1px solid"
+                    borderColor={storeTagBorderColor}
+                    fontSize="xs"
+                    fontWeight="medium"
+                    cursor={onQuickFilter ? "pointer" : undefined}
+                    _hover={onQuickFilter ? { opacity: 0.8 } : undefined}
+                    onClick={onQuickFilter ? (e) => { e.stopPropagation(); onQuickFilter("location", transaction.location!); } : undefined}
+                  >
+                    <TagLabel>{transaction.location}</TagLabel>
+                  </Tag>
+                )}
+              </HStack>
             )}
            </VStack>
 
@@ -221,6 +257,9 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                         borderRadius="md"
                         variant="subtle"
                         colorScheme="brand"
+                        cursor={onQuickFilter ? "pointer" : undefined}
+                        _hover={onQuickFilter ? { opacity: 0.8 } : undefined}
+                        onClick={onQuickFilter ? (e) => { e.stopPropagation(); onQuickFilter("tags", tag.name); } : undefined}
                       >
                         <TagLabel>{tag.name}</TagLabel>
                       </Tag>

@@ -50,6 +50,7 @@ interface TransactionTableProps {
   onEditTransaction: (transaction: Transaction) => void;
    
   onCopyTransaction: (transaction: Transaction) => void;
+  onQuickFilter?: (field: string, value: string) => void;
   showAccountName?: boolean;
 }
 
@@ -64,6 +65,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   onDeleteTransaction,
   onEditTransaction,
   onCopyTransaction,
+  onQuickFilter,
   showAccountName = false,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -139,6 +141,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                 const displayCredit = transaction.filter_matched_split?.credit ?? transaction.credit;
                 const displayDebit = transaction.filter_matched_split?.debit ?? transaction.debit;
                 const displayCategoryName = transaction.filter_matched_split?.category_name ?? transaction.category_name;
+                const displayCategoryId = transaction.filter_matched_split?.category_id ?? transaction.category_id;
                 return (
               <Tr
                 key={transaction.transaction_id}
@@ -151,7 +154,22 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                 }}
               >
                 <Td width="8%" borderBottomColor={tableBorderColor}><Text color={tertiaryTextColor} fontSize="sm">{formatDate(transaction.date)}</Text></Td>
-                <Td width="15%" borderBottomColor={tableBorderColor}><Text color={tertiaryTextColor} isTruncated title={displayCategoryName} fontSize="sm">{displayCategoryName}</Text></Td>
+                <Td width="15%" borderBottomColor={tableBorderColor}>
+                  {onQuickFilter && displayCategoryId ? (
+                    <ChakraLink
+                      color={accountLinkColor}
+                      isTruncated
+                      display="block"
+                      title={displayCategoryName}
+                      fontSize="sm"
+                      onClick={() => onQuickFilter("category_id", displayCategoryId)}
+                    >
+                      {displayCategoryName}
+                    </ChakraLink>
+                  ) : (
+                    <Text color={tertiaryTextColor} isTruncated title={displayCategoryName} fontSize="sm">{displayCategoryName}</Text>
+                  )}
+                </Td>
                 {showAccountName && (
                   <Td width="12%" borderBottomColor={tableBorderColor}>
                     {transaction.account_name && transaction.account_id && (
@@ -168,7 +186,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                          {transaction.notes}
                        </Text>
                      )}
-                     {(transaction.store || transaction.location) && (
+                     {transaction.store && (
                        <Tag
                          size="sm"
                          borderRadius="full"
@@ -179,10 +197,29 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                          fontSize="xs"
                          fontWeight="medium"
                          flexShrink={0}
+                         cursor={onQuickFilter ? "pointer" : undefined}
+                         _hover={onQuickFilter ? { opacity: 0.8 } : undefined}
+                         onClick={onQuickFilter ? () => onQuickFilter("store", transaction.store!) : undefined}
                        >
-                         <TagLabel>
-                           {[transaction.store, transaction.location].filter(Boolean).join(", ")}
-                         </TagLabel>
+                         <TagLabel>{transaction.store}</TagLabel>
+                       </Tag>
+                     )}
+                     {transaction.location && (
+                       <Tag
+                         size="sm"
+                         borderRadius="full"
+                         bg={storeTagBg}
+                         color={storeTagColor}
+                         border="1px solid"
+                         borderColor={storeTagBorderColor}
+                         fontSize="xs"
+                         fontWeight="medium"
+                         flexShrink={0}
+                         cursor={onQuickFilter ? "pointer" : undefined}
+                         _hover={onQuickFilter ? { opacity: 0.8 } : undefined}
+                         onClick={onQuickFilter ? () => onQuickFilter("location", transaction.location!) : undefined}
+                       >
+                         <TagLabel>{transaction.location}</TagLabel>
                        </Tag>
                      )}
                      {transaction.tags && transaction.tags.map((tag) => (
@@ -194,6 +231,9 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                          color={tagColor}
                          flexShrink={0}
                          fontSize="xs"
+                         cursor={onQuickFilter ? "pointer" : undefined}
+                         _hover={onQuickFilter ? { opacity: 0.8 } : undefined}
+                         onClick={onQuickFilter ? () => onQuickFilter("tags", tag.name) : undefined}
                        >
                          <TagLabel>{tag.name}</TagLabel>
                        </Tag>
