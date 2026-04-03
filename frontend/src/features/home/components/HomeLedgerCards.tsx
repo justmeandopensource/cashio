@@ -15,6 +15,7 @@ import { Plus, ArrowRight, Calendar, BookOpen, Star } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
 import { useSetDefaultLedger } from "@/features/profile/hooks";
 import { notify } from "@/components/shared/notify";
+import LedgerSparkline from "./LedgerSparkline";
 
 const MotionBox = motion(Box);
 
@@ -349,7 +350,7 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
                         transition="all 0.15s ease"
                         color={setDefaultColor}
                         _hover={{ color: setDefaultHoverColor }}
-                        onClick={(e: React.MouseEvent) => {
+                        onClick={(e) => {
                           e.stopPropagation();
                           setDefaultLedger(Number(ledger.ledger_id), {
                             onSuccess: () => {
@@ -370,6 +371,10 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
                       </HStack>
                     )}
                   </HStack>
+                  <LedgerSparkline
+                    ledgerId={String(ledger.ledger_id)}
+                    currencySymbol={ledger.currency_symbol}
+                  />
                 </Box>
 
                 {/* Arrow */}

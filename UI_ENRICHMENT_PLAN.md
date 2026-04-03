@@ -10,63 +10,17 @@
 
 ## Table of Contents
 
-1. [Home Page Dashboard](#1-home-page-dashboard)
-2. [Ledger Accounts Tab](#2-ledger-accounts-tab)
-3. [Account Detail Page](#3-account-detail-page)
-4. [Transactions](#4-transactions)
-5. [Categories Page](#5-categories-page)
-6. [Budget Page](#6-budget-page)
-7. [Net Worth Page](#7-net-worth-page)
-8. [Insights Page](#8-insights-page)
-9. [Mutual Funds](#9-mutual-funds)
-10. [Physical Assets](#10-physical-assets)
-11. [Global / Cross-Cutting Improvements](#11-global--cross-cutting-improvements)
-12. [Priority Ranking](#12-priority-ranking)
-
----
-
-## 1. Home Page Dashboard
-
-**Current state:** The home page (`frontend/src/features/home/`) shows only a grid of ledger cards. Each card displays the ledger name, currency symbol badge, description, and creation date. There is no financial data shown.
-
-**Key files:** `Home.tsx`, `HomeMain.tsx`, `HomeLedgerCards.tsx`, `HomeMainHeader.tsx`
-
-**Recommendations:**
-
-### 1.1 Net Worth Summary Banner
-
-- Display a banner at the top of the home page showing total assets, total liabilities, and net worth across the user's primary ledger (or a selected one).
-- **API available:** `GET /ledger/{ledgerId}/net-worth` returns `net_worth`, `total_assets`, `total_liabilities`.
-- **Backend changes:** None required. Frontend needs to call net-worth endpoint on home page load for the user's default/first ledger.
-
-### 1.2 Current Month Snapshot
-
-- Show a card with: total income this month, total expenses this month, net savings, and savings rate percentage.
-- **API available:** `GET /ledger/{ledgerId}/insights/current-month-overview` returns `total_income`, `total_expense`, and category breakdowns.
-- **Backend changes:** None. The data exists. Frontend needs to call this endpoint and display a summary card.
-
-### 1.3 Recent Transactions List
-
-- Show the last 5-10 transactions as a compact list below the summary, with date, category, amount, and account name. Each item links to the full transaction view.
-- **API available:** `GET /ledger/{ledgerId}/transactions?page=1&per_page=10` returns paginated transactions.
-- **Backend changes:** None.
-
-### 1.4 Budget Alerts
-
-- Show a small alert section listing any budget categories that are over budget or approaching their limit (e.g., >=80% used).
-- **API available:** `GET /ledger/{ledgerId}/budgets?period=monthly` returns budgets with `amount` and `actual_spend` fields.
-- **Backend changes:** None. Frontend filters budgets where `actual_spend / amount >= 0.8`.
-
-### 1.5 Quick Action Buttons
-
-- Add prominent "Add Transaction" and "Transfer Funds" buttons directly on the home page so users don't have to navigate into a ledger first.
-- **Backend changes:** None. These modals already exist as shared components (`CreateTransactionModal`, `TransferFundsModal`).
-
-### 1.6 Sparkline Mini-Charts on Ledger Cards
-
-- On each ledger card, show a tiny sparkline (last 6 months income vs expense trend).
-- **API available:** `GET /ledger/{ledgerId}/insights/income-expense-trend?period_type=last_12_months` returns `trend_data` array of `{period, income, expense}`.
-- **Backend changes:** None. Frontend needs to call this per ledger and render a small SVG sparkline or use a lightweight chart lib.
+1. [Ledger Accounts Tab](#2-ledger-accounts-tab)
+2. [Account Detail Page](#3-account-detail-page)
+3. [Transactions](#4-transactions)
+4. [Categories Page](#5-categories-page)
+5. [Budget Page](#6-budget-page)
+6. [Net Worth Page](#7-net-worth-page)
+7. [Insights Page](#8-insights-page)
+8. [Mutual Funds](#9-mutual-funds)
+9. [Physical Assets](#10-physical-assets)
+10. [Global / Cross-Cutting Improvements](#11-global--cross-cutting-improvements)
+11. [Priority Ranking](#12-priority-ranking)
 
 ---
 
@@ -409,30 +363,10 @@
 
 These apply across the entire application.
 
-### ~~11.1 Global Search~~ DONE
-
-Implemented. `GET /search?q=term` endpoint searches across all user's ledgers. Command-palette style modal (`GlobalSearch.tsx`) accessible via sidebar search button, mobile header, and `⌘K` shortcut. Searches accounts (name, owner), transactions (notes, store, location), mutual funds (name, code, owner), and physical assets (name). Results grouped by type with ledger name badges. Clicking a result switches ledger context and navigates directly: accounts open the account page, transactions filter to matching results, mutual funds and physical assets auto-expand and scroll to the specific item.
-
-### ~~11.2 Breadcrumb Navigation~~ DONE
-
-Implemented. `Breadcrumbs.tsx` shared component integrated into `PageHeader`. All pages show contextual breadcrumbs (e.g., Home > Ledger Name > Account Name).
-
 ### 11.3 Keyboard Shortcuts
 
 - Power-user shortcuts: `T` for new transaction, `S` or `/` for search, `B` for budgets, `Esc` to close modals, arrow keys for navigation.
 - **Backend changes:** None. Frontend keyboard event handling.
-
-### ~~11.4 Tooltips and Help Text~~ DONE
-
-Implemented. `FinancialTooltip.tsx` shared component with a dictionary of 18 financial term definitions. Tooltips added to summary card labels across: Net Worth page (Net Worth, Total Assets, Total Liabilities), Ledger Accounts tab (Assets, Liabilities, Net Worth), Account Detail page (Total Income, Total Expenses), Budget Summary Card (Budgeted, Spent, Remaining), Mutual Funds Overview (Total Invested, Total Value, Realized Gain, Unrealized P&L), Physical Assets Overview (Total Invested, Total Value, Unrealized P&L), and MF Table headers (NAV). Uses Chakra UI Tooltip with consistent dark/light theme styling, arrow, and 200ms open delay.
-
-### ~~11.5 Empty State Guidance~~ DONE
-
-Implemented. Extended the floating icon + title + description + CTA pattern to all sections. Enhanced empty states in: Budget page (no ledger selected), Budget list (no budgets), Ledger Account sections (no assets/liabilities), Insights page (no ledger selected, visualization not found), and Net Worth page (no ledger selected). All use the consistent `floatKeyframes` animation (translateY 0 → -6px → 0 over 3s), brand-colored icon backgrounds, descriptive guidance text, and clear call-to-action buttons.
-
-### ~~11.6 Loading Skeletons~~ DONE
-
-Implemented. Replaced all `Spinner` loading indicators with content-shaped `Skeleton` placeholders matching the actual content layout. Updated in: Categories page (two-column card skeleton with header + text lines), Budget list (summary card + item skeletons), Ledger Accounts tab (3 summary card skeletons + 2 account section skeletons), Mutual Funds Overview tab (header + 5 summary cards + table skeleton), Mutual Funds Transactions tab (filter bar + row skeletons), Physical Assets Transactions tab (filter bar + row skeletons), and Insights chart Suspense fallback (title + chart area skeleton).
 
 ### 11.7 Notification / Alert System
 
@@ -471,33 +405,31 @@ Ordered by value-to-effort ratio. Items near the top deliver the most visible im
 
 ### Tier 1: High Value, Moderate Effort (Implement First)
 
-| #   | Item                                                                     | Section               | Backend Needed? |
-| --- | ------------------------------------------------------------------------ | --------------------- | --------------- |
-| 1   | Home page dashboard (net worth + monthly snapshot + recent transactions) | 1.1, 1.2, 1.3         | No              |
-| 2   | Summary cards/banners on every list page                                 | 11.10, 6.1, 9.1, 10.1 | No              |
-| 3   | Insights page multi-chart dashboard layout                               | 8.1                   | No              |
-| 4   | Category spending totals on categories page                              | 5.1, 5.3              | No              |
-| 5   | Transaction stats bar                                                    | 4.1                   | No              |
-| 6   | Budget alerts on home page                                               | 1.4                   | No              |
-| 7   | Budget sort by urgency + projected spend                                 | 6.5, 6.3              | No              |
-| 8   | Enhanced budget summary card                                             | 6.1                   | No              |
-| 9   | Unbudgeted spending alert                                                | 6.4                   | No              |
-| 10  | Account group summaries                                                  | 2.1                   | No              |
+| #   | Item                                        | Section               | Backend Needed? |
+| --- | ------------------------------------------- | --------------------- | --------------- |
+| 1   | Summary cards/banners on every list page    | 11.10, 6.1, 9.1, 10.1 | No              |
+| 2   | Insights page multi-chart dashboard layout  | 8.1                   | No              |
+| 3   | Category spending totals on categories page | 5.1, 5.3              | No              |
+| 4   | Transaction stats bar                       | 4.1                   | No              |
+| 5   | Budget sort by urgency + projected spend    | 6.5, 6.3              | No              |
+| 6   | Enhanced budget summary card                | 6.1                   | No              |
+| 7   | Unbudgeted spending alert                   | 6.4                   | No              |
+| 8   | Account group summaries                     | 2.1                   | No              |
 
 ### Tier 2: High Value, Higher Effort
 
-| #   | Item                                                   | Section    | Backend Needed?    |
-| --- | ------------------------------------------------------ | ---------- | ------------------ |
-| 11  | Net worth trend over time                              | 7.1        | Yes (new endpoint) |
-| ~~12~~ | ~~Global search~~                                   | ~~11.1~~   | ~~DONE~~           |
-| 13  | Chart-to-transactions drill-down                       | 8.5        | No                 |
-| 14  | MF portfolio summary + asset class pie inline          | 9.1, 9.2   | No                 |
-| 15  | MF fund comparison table                               | 9.6        | No                 |
-| 16  | Calendar view toggle in transactions                   | 4.5        | No                 |
-| 17  | Click-to-filter in categories                          | 5.4        | No                 |
-| 18  | Period comparison in insights                          | 8.3        | No                 |
-| 19  | Account subtype icons                                  | 2.2        | No                 |
-| 20  | Physical assets portfolio summary + stale price alerts | 10.1, 10.4 | No                 |
+| #      | Item                                                   | Section    | Backend Needed?    |
+| ------ | ------------------------------------------------------ | ---------- | ------------------ |
+| 11     | Net worth trend over time                              | 7.1        | Yes (new endpoint) |
+| ~~12~~ | ~~Global search~~                                      | ~~11.1~~   | ~~DONE~~           |
+| 13     | Chart-to-transactions drill-down                       | 8.5        | No                 |
+| 14     | MF portfolio summary + asset class pie inline          | 9.1, 9.2   | No                 |
+| 15     | MF fund comparison table                               | 9.6        | No                 |
+| 16     | Calendar view toggle in transactions                   | 4.5        | No                 |
+| 17     | Click-to-filter in categories                          | 5.4        | No                 |
+| 18     | Period comparison in insights                          | 8.3        | No                 |
+| 19     | Account subtype icons                                  | 2.2        | No                 |
+| 20     | Physical assets portfolio summary + stale price alerts | 10.1, 10.4 | No                 |
 
 ### Tier 3: Nice to Have, Meaningful Polish
 
@@ -546,7 +478,6 @@ New backend work required for advanced features:
 | Endpoint                                               | Purpose                                    | Used By       |
 | ------------------------------------------------------ | ------------------------------------------ | ------------- |
 | `GET /ledger/{id}/net-worth/history`                   | Monthly net worth snapshots over time      | 7.1, 7.4      |
-| ~~`GET /search?q=term`~~                               | ~~Global cross-entity search~~             | ~~11.1 DONE~~ |
 | `GET /ledger/{id}/account/{id}/balance-history`        | Running balance over time                  | 3.2           |
 | `GET /ledger/{id}/account/{id}/recurring-transactions` | Detected recurring patterns                | 3.3           |
 | `GET /ledger/{id}/budgets?compare_previous=true`       | Budget with previous period data           | 6.2           |
