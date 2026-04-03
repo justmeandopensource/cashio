@@ -12,6 +12,7 @@ export interface Account {
   net_balance?: number;
   description?: string;
   notes?: string;
+  last_transaction_date?: string;
   created_at?: string;
   updated_at?: string;
 }

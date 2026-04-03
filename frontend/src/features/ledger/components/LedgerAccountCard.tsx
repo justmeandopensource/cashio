@@ -6,6 +6,7 @@ import {
   HStack,
   IconButton,
   Link as ChakraLink,
+  Tooltip,
   useColorModeValue,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
@@ -14,6 +15,22 @@ import useLedgerStore from "@/components/shared/store";
 import { splitCurrencyForDisplay } from "../../mutual-funds/utils";
 
 import type { Account } from "@/types";
+
+function formatTimeAgo(dateStr?: string): string | null {
+  if (!dateStr) return null;
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "today";
+  if (diffDays === 1) return "1d ago";
+  if (diffDays < 30) return `${diffDays}d ago`;
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) return `${diffMonths}mo ago`;
+  const diffYears = Math.floor(diffDays / 365);
+  return `${diffYears}y ago`;
+}
 
 interface LedgerAccountCardProps {
   account: Account;
@@ -37,6 +54,9 @@ export const LedgerAccountRowDesktop: React.FC<LedgerAccountCardProps> = ({
   const iconColor = useColorModeValue("brand.500", "brand.300");
   const hoverIconColor = useColorModeValue("brand.600", "brand.400");
   const accountHoverBg = useColorModeValue("gray.50", "whiteAlpha.50");
+  const timeAgoColor = useColorModeValue("gray.400", "gray.500");
+
+  const timeAgo = formatTimeAgo(account.last_transaction_date);
 
   return (
     <Flex
@@ -70,6 +90,13 @@ export const LedgerAccountRowDesktop: React.FC<LedgerAccountCardProps> = ({
           <Text as="span" fontSize="xs" color="gray.500">
             [{getOwnerInitials(account.owner)}]
           </Text>
+        )}
+        {timeAgo && (
+          <Tooltip label={`Last transaction: ${new Date(account.last_transaction_date!).toLocaleDateString()}`} placement="top" hasArrow>
+            <Text fontSize="2xs" color={timeAgoColor} flexShrink={0}>
+              {timeAgo}
+            </Text>
+          </Tooltip>
         )}
       </HStack>
       <Flex align="center" gap={3}>
@@ -129,6 +156,9 @@ export const LedgerAccountCardMobile: React.FC<LedgerAccountCardProps> = ({
   const balance = account.net_balance || 0;
   const tertiaryTextColor = useColorModeValue("tertiaryTextColor", "tertiaryTextColor");
   const dividerColor = useColorModeValue("gray.100", "gray.700");
+  const timeAgoColor = useColorModeValue("gray.400", "gray.500");
+
+  const timeAgo = formatTimeAgo(account.last_transaction_date);
 
   return (
     <Flex
@@ -158,6 +188,11 @@ export const LedgerAccountCardMobile: React.FC<LedgerAccountCardProps> = ({
         {getOwnerInitials(account.owner) && (
           <Text as="span" fontSize="xs" color="gray.500">
             [{getOwnerInitials(account.owner)}]
+          </Text>
+        )}
+        {timeAgo && (
+          <Text fontSize="2xs" color={timeAgoColor} flexShrink={0}>
+            {timeAgo}
           </Text>
         )}
       </HStack>

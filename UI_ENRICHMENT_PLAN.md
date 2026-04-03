@@ -10,7 +10,6 @@
 
 ## Table of Contents
 
-1. [Ledger Accounts Tab](#2-ledger-accounts-tab)
 2. [Account Detail Page](#3-account-detail-page)
 3. [Transactions](#4-transactions)
 4. [Categories Page](#5-categories-page)
@@ -24,39 +23,6 @@
 
 ---
 
-## 2. Ledger Accounts Tab
-
-**Current state:** The accounts tab (`frontend/src/features/ledger/components/LedgerMainAccounts.tsx`) groups accounts by type (asset/liability) and shows each account as a row with name, owner initials, balance, and hover action icons (add transaction, transfer).
-
-**Key files:** `LedgerMainAccounts.tsx`, `LedgerAccountSection.tsx`, `LedgerAccountCard.tsx`
-
-**Recommendations:**
-
-### 2.1 Summary Row Per Account Group
-
-- At the top of each account group (Assets, Liabilities), show a summary: "Assets: 5 accounts | Total: $XX,XXX" and "Liabilities: 3 accounts | Total: $YY,YYY".
-- **API available:** `GET /ledger/{ledgerId}/accounts` returns all accounts with `net_balance`. Sum client-side per type.
-- **Backend changes:** None.
-
-### 2.2 Account Subtype Icons
-
-- Add small icons to visually distinguish account subtypes: a credit card icon for credit_card, a piggy bank for savings_account, a building for fixed_deposit, a banknote for cash, etc. Currently all accounts look the same visually.
-- The account `subtype` field is already returned by the API. Use lucide-react icons mapped to each subtype.
-- **Backend changes:** None.
-
-### 2.3 Last Activity Indicator
-
-- Show how recently the account had a transaction. Display as "3d ago", "2mo ago" or a colored dot (green = active in last 30 days, yellow = 30-90 days, gray = 90+ days).
-- **API available:** `GET /ledger/{ledgerId}/account/{accountId}/summary` returns `last_transaction_date`. However, calling this per account would be N+1 queries.
-- **Backend changes:** Consider adding `last_transaction_date` to the accounts list endpoint response to avoid N+1 calls. Alternatively, create a batch summary endpoint.
-
-### 2.4 Mini Balance Trend Indicator
-
-- Show a tiny up/down arrow or sparkline next to the balance indicating the balance direction vs last month.
-- **Backend changes:** Would need a lightweight endpoint or field returning balance change delta. Could compute from recent transactions.
-
----
-
 ## 3. Account Detail Page
 
 **Current state:** The account detail page (`frontend/src/features/account/`) shows a header with account name, balance badge, type/subtype, and owner. Below that: summary stats cards (total credit, total debit, transaction count, first/last transaction dates), insights charts (income/expense trend, top categories), and transaction list.
@@ -65,29 +31,10 @@
 
 **Recommendations:**
 
-### 3.1 Monthly Average Spend/Income
-
-- Derive from existing summary data: total_credit / number_of_months_active and total_debit / number_of_months_active. Display as "Avg monthly income: $X | Avg monthly expense: $Y".
-- **API available:** `AccountSummary` already returns `total_credit`, `total_debit`, `first_transaction_date`, `last_transaction_date`. Compute months from date range.
-- **Backend changes:** None. Pure frontend calculation.
-
 ### 3.2 Running Balance Chart
 
 - A line chart showing the account balance over time (cumulative). This is different from the income/expense trend -- it shows the actual balance progression.
 - **Backend changes:** New endpoint needed: `GET /ledger/{ledgerId}/account/{accountId}/balance-history` returning `[{date, balance}]` computed by cumulating transactions chronologically from opening_balance.
-
-### 3.3 Top Recurring Transactions
-
-- Detect repeated patterns: same store + same category + similar amount appearing monthly. Surface as "Recurring: Netflix ($15/mo), Rent ($2,000/mo)".
-- **Backend changes:** New endpoint or computation needed. Could analyze transactions server-side for store+category+amount patterns with monthly frequency. Alternatively, do client-side analysis of loaded transactions.
-
-### 3.4 Account Health Indicator
-
-- Contextual per account subtype:
-  - **Credit card:** Utilization % (balance / credit limit if tracked, or just show balance with a warning color if high)
-  - **Savings:** Growth rate (% change over last 3 months)
-  - **Loan:** Payoff progress (original amount vs current balance, if opening_balance is set)
-- **Backend changes:** Minimal. Most can be derived from existing data. Credit limit would need a new field on the account model.
 
 ---
 

@@ -65,6 +65,7 @@ class Account(BaseModel, str_strip_whitespace=True):
     net_balance: Optional[float] = None
     description: Optional[str] = None
     notes: Optional[str] = None
+    last_transaction_date: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 

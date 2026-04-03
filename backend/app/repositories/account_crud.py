@@ -59,6 +59,23 @@ def get_accounts_by_ledger_id(
     query = query.order_by(Account.name.asc())
 
     accounts = query.all()
+
+    # Fetch last transaction date per account in a single query
+    if accounts:
+        account_ids = [a.account_id for a in accounts]
+        last_dates = (
+            db.query(
+                Transaction.account_id,
+                func.max(Transaction.date).label("last_transaction_date"),
+            )
+            .filter(Transaction.account_id.in_(account_ids))
+            .group_by(Transaction.account_id)
+            .all()
+        )
+        date_map = {row.account_id: row.last_transaction_date for row in last_dates}
+        for account in accounts:
+            account.last_transaction_date = date_map.get(account.account_id)  # type: ignore
+
     return accounts
 
 
