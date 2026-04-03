@@ -119,6 +119,7 @@ const Account: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["budgets"] }),
       queryClient.invalidateQueries({ queryKey: ["account-summary", accountId] }),
       queryClient.invalidateQueries({ queryKey: ["account-insights", accountId] }),
+      queryClient.invalidateQueries({ queryKey: ["account-balance-history", accountId] }),
     ]);
   };
 

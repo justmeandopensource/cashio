@@ -150,7 +150,7 @@ const HomeRecentTransactions: React.FC<HomeRecentTransactionsProps> = ({
                       color={textColor}
                       noOfLines={1}
                     >
-                      {tx.category_name || "Uncategorized"}
+                      {tx.category_name || (tx.is_transfer ? "Fund Transfer" : "Uncategorized")}
                     </Text>
                     {tx.is_split && !tx.is_transfer && (
                       <Box w="5px" h="5px" borderRadius="sm" bg={splitColor} flexShrink={0} title="Split" />

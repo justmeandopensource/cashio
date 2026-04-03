@@ -152,6 +152,9 @@ export const invalidateTransactionRelated = (
     queryClient.invalidateQueries({
       queryKey: queryKeys.accounts.insights(accountId),
     });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.accounts.balanceHistory(accountId),
+    });
   }
 };
 
