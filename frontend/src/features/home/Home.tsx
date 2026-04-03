@@ -5,16 +5,18 @@ import HomeLedgerCardsSkeleton from "./components/HomeLedgercardsSkeleton";
 import { notify } from "@/components/shared/notify";
 import { useLedgers, useCreateLedger } from "@features/ledger/hooks";
 import { useLogout } from "@/lib/useLogout";
+import { useUserProfile } from "@/features/profile/hooks";
 
 const Home = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  // Fetch ledgers
+  // Fetch ledgers and user profile
   const {
     data: ledgers,
     isLoading: isFetchingLedgers,
     isError: isLedgersError,
   } = useLedgers();
+  const { data: userProfile } = useUserProfile();
 
   // Create ledger mutation
   const createLedgerMutation = useCreateLedger();
@@ -68,6 +70,7 @@ const Home = () => {
     <Layout handleLogout={handleLogout}>
       <HomeMain
         ledgers={ledgers || []}
+        defaultLedgerId={userProfile?.default_ledger_id ?? null}
         onOpen={onOpen}
         isOpen={isOpen}
         onClose={onClose}

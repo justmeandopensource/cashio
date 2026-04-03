@@ -32,6 +32,7 @@ class UserProfile(BaseModel):
     full_name: str
     email: str
     username: str
+    default_ledger_id: int | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -47,3 +48,7 @@ class UserUpdate(BaseModel):
 class ChangePassword(BaseModel):
     current_password: str
     new_password: str
+
+
+class SetDefaultLedger(BaseModel):
+    ledger_id: int | None = None

@@ -3,7 +3,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Optional
 
-from app.models.model import Ledger
+from app.models.model import Ledger, User
 from app.repositories.user_crud import get_user_by_username
 from app.schemas.ledger_schema import LedgerCreate, LedgerUpdate
 
@@ -33,6 +33,13 @@ def create_ledger(db: Session, user_id: int, ledger: LedgerCreate):
     db.add(db_ledger)
     db.commit()
     db.refresh(db_ledger)
+
+    # Auto-set as default ledger if user has no default set
+    db_user = db.query(User).filter(User.user_id == user_id).first()
+    if db_user and db_user.default_ledger_id is None:
+        db_user.default_ledger_id = db_ledger.ledger_id
+        db.commit()
+
     return db_ledger
 
 

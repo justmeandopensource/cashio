@@ -5,6 +5,7 @@ export interface UserProfile {
   full_name: string;
   email: string;
   username: string;
+  default_ledger_id: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -33,6 +34,15 @@ export const updateUserProfile = async (
 
 export const changePassword = async (data: ChangePassword): Promise<void> => {
   await api.put("/user/change-password", data);
+};
+
+export const setDefaultLedger = async (
+  ledgerId: number | null
+): Promise<UserProfile> => {
+  const response = await api.put("/user/default-ledger", {
+    ledger_id: ledgerId,
+  });
+  return response.data;
 };
 
 // Backup and Restore APIs

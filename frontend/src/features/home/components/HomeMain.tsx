@@ -9,6 +9,7 @@ import type { Ledger } from "@/types";
 
 interface HomeMainProps {
   ledgers?: Ledger[];
+  defaultLedgerId: number | null;
   onOpen: () => void;
   isOpen: boolean;
   onClose: () => void;
@@ -18,6 +19,7 @@ interface HomeMainProps {
 
 const HomeMain = ({
   ledgers = [],
+  defaultLedgerId,
   onOpen,
   isOpen,
   onClose,
@@ -28,7 +30,7 @@ const HomeMain = ({
       <HomeMainHeader onCreateLedger={onOpen} />
       <Box flex={1} overflowY="auto">
         <PageContainer>
-          <HomeLedgerCards ledgers={ledgers} onOpen={onOpen} />
+          <HomeLedgerCards ledgers={ledgers} defaultLedgerId={defaultLedgerId} onOpen={onOpen} />
         </PageContainer>
       </Box>
       <Suspense fallback={<div>Loading...</div>}>

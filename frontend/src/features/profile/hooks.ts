@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getUserProfile, updateUserProfile, changePassword, UserUpdate, ChangePassword } from "./api";
+import { getUserProfile, updateUserProfile, changePassword, setDefaultLedger, UserUpdate, ChangePassword } from "./api";
 
 export const useUserProfile = () => {
   return useQuery({
@@ -22,5 +22,15 @@ export const useUpdateUserProfile = () => {
 export const useChangePassword = () => {
   return useMutation({
     mutationFn: (data: ChangePassword) => changePassword(data),
+  });
+};
+
+export const useSetDefaultLedger = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ledgerId: number | null) => setDefaultLedger(ledgerId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+    },
   });
 };

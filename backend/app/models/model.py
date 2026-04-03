@@ -27,10 +27,13 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(100), nullable=False)
+    default_ledger_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("ledgers.ledger_id", ondelete="SET NULL"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
 
-    ledgers = relationship("Ledger", back_populates="user")
+    ledgers = relationship("Ledger", back_populates="user", foreign_keys="[Ledger.user_id]")
     categories = relationship("Category", back_populates="user")
     tags = relationship("Tag", back_populates="user")
 
@@ -48,7 +51,7 @@ class Ledger(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
 
-    user = relationship("User", back_populates="ledgers")
+    user = relationship("User", back_populates="ledgers", foreign_keys=[user_id])
     accounts = relationship("Account", back_populates="ledger")
     asset_types = relationship("AssetType", back_populates="ledger")
     physical_assets = relationship("PhysicalAsset", back_populates="ledger")

@@ -11,8 +11,10 @@ import {
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { motion } from "framer-motion";
-import { Plus, ArrowRight, Calendar, BookOpen } from "lucide-react";
+import { Plus, ArrowRight, Calendar, BookOpen, Star } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
+import { useSetDefaultLedger } from "@/features/profile/hooks";
+import { notify } from "@/components/shared/notify";
 
 const MotionBox = motion(Box);
 
@@ -20,6 +22,7 @@ import type { Ledger } from "@/types";
 
 interface HomeLedgerCardsProps {
   ledgers?: Ledger[];
+  defaultLedgerId: number | null;
   onOpen: () => void;
 }
 
@@ -29,9 +32,10 @@ const floatKeyframes = keyframes`
   50% { transform: translateY(-6px); }
 `;
 
-const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
+const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCardsProps) => {
   const navigate = useNavigate();
   const setLedger = useLedgerStore((s) => s.setLedger);
+  const { mutate: setDefaultLedger } = useSetDefaultLedger();
 
   const handleLedgerClick = (ledger: {
     ledger_id: string;
@@ -61,6 +65,10 @@ const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
   const descColor = useColorModeValue("gray.500", "gray.400");
   const dateColor = useColorModeValue("gray.400", "gray.500");
   const arrowColor = useColorModeValue("gray.300", "gray.600");
+  const defaultBadgeBg = useColorModeValue("orange.50", "rgba(237,137,54,0.12)");
+  const defaultStarColor = useColorModeValue("orange.500", "orange.300");
+  const setDefaultColor = useColorModeValue("gray.400", "gray.500");
+  const setDefaultHoverColor = useColorModeValue("orange.500", "orange.300");
 
   const isDark = useColorModeValue(false, true);
 
@@ -217,6 +225,8 @@ const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
         const gradient = gradients[index % gradients.length];
         const accent = accentColors[index % accentColors.length];
         const glow = hoverShadows[index % hoverShadows.length];
+        const isDefault = defaultLedgerId != null && String(defaultLedgerId) === String(ledger.ledger_id);
+        const showSetDefault = ledgers.length > 1 && !isDefault;
         return (
           <MotionBox
             key={ledger.ledger_id}
@@ -306,11 +316,59 @@ const HomeLedgerCards = ({ ledgers = [], onOpen }: HomeLedgerCardsProps) => {
                       No description
                     </Text>
                   )}
-                  <HStack spacing={1.5} mt={2.5}>
-                    <Icon as={Calendar} boxSize={3} color={dateColor} />
-                    <Text fontSize="xs" color={dateColor} letterSpacing="0.02em">
-                      {formatDate(ledger.created_at ?? "")}
-                    </Text>
+                  <HStack spacing={1.5} mt={2.5} justify="space-between">
+                    <HStack spacing={1.5}>
+                      <Icon as={Calendar} boxSize={3} color={dateColor} />
+                      <Text fontSize="xs" color={dateColor} letterSpacing="0.02em">
+                        {formatDate(ledger.created_at ?? "")}
+                      </Text>
+                    </HStack>
+                    {isDefault && (
+                      <HStack
+                        spacing={1}
+                        px={2}
+                        py={0.5}
+                        borderRadius="full"
+                        bg={defaultBadgeBg}
+                      >
+                        <Icon as={Star} boxSize={2.5} color={defaultStarColor} fill="currentColor" />
+                        <Text fontSize="2xs" fontWeight="700" color={defaultStarColor} letterSpacing="0.03em">
+                          DEFAULT
+                        </Text>
+                      </HStack>
+                    )}
+                    {showSetDefault && (
+                      <HStack
+                        as="button"
+                        spacing={1}
+                        px={2}
+                        py={0.5}
+                        borderRadius="full"
+                        opacity={0}
+                        _groupHover={{ opacity: 1 }}
+                        transition="all 0.15s ease"
+                        color={setDefaultColor}
+                        _hover={{ color: setDefaultHoverColor }}
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          setDefaultLedger(Number(ledger.ledger_id), {
+                            onSuccess: () => {
+                              notify({
+                                title: "Default ledger updated",
+                                description: `${ledger.name} is now your default ledger.`,
+                                status: "success",
+                                duration: 3000,
+                              });
+                            },
+                          });
+                        }}
+                      >
+                        <Icon as={Star} boxSize={2.5} />
+                        <Text fontSize="2xs" fontWeight="600" letterSpacing="0.03em">
+                          Set as default
+                        </Text>
+                      </HStack>
+                    )}
                   </HStack>
                 </Box>
 

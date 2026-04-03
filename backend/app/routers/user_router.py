@@ -86,6 +86,25 @@ async def update_user_profile(
     return updated_user
 
 
+@user_router.put("/default-ledger", response_model=user_schema.UserProfile, tags=["users"])
+async def set_default_ledger(
+    data: user_schema.SetDefaultLedger,
+    current_user: user_schema.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if data.ledger_id is not None:
+        from app.repositories import ledger_crud
+        ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=data.ledger_id)
+        if not ledger or ledger.user_id != current_user.user_id:
+            raise HTTPException(status_code=404, detail="Ledger not found")
+    updated_user = user_crud.set_default_ledger(
+        db=db, user_id=current_user.user_id, ledger_id=data.ledger_id
+    )
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return updated_user
+
+
 @user_router.put("/change-password", tags=["users"])
 async def change_password(
     password_data: user_schema.ChangePassword,

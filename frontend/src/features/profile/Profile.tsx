@@ -14,12 +14,13 @@ import Layout from "../../components/Layout";
 import UpdateProfileForm from "./UpdateProfileForm";
 import ChangePasswordForm from "./ChangePasswordForm";
 import SystemBackup from "./SystemBackup";
+import PreferencesForm from "./PreferencesForm";
 import PageContainer from "@components/shared/PageContainer";
 import PageHeader from "@components/shared/PageHeader";
-import { User, Lock, Database } from "lucide-react";
+import { User, Lock, Database, Settings } from "lucide-react";
 import { useLogout } from "@/lib/useLogout";
 
-const TAB_KEYS = ["account", "security", "backups"] as const;
+const TAB_KEYS = ["account", "security", "preferences", "backups"] as const;
 
 const Profile: React.FC = () => {
   const cardBg = useColorModeValue("white", "cardDarkBg");
@@ -51,6 +52,7 @@ const Profile: React.FC = () => {
   const tabs = [
     { label: "Account", icon: User },
     { label: "Security", icon: Lock },
+    { label: "Preferences", icon: Settings },
     { label: "Backups", icon: Database },
   ];
 
@@ -136,6 +138,9 @@ const Profile: React.FC = () => {
                 </TabPanel>
                 <TabPanel p={{ base: 0, md: 0 }}>
                   <ChangePasswordForm />
+                </TabPanel>
+                <TabPanel p={{ base: 0, md: 0 }}>
+                  <PreferencesForm />
                 </TabPanel>
                 <TabPanel p={{ base: 0, md: 0 }}>
                   <SystemBackup />

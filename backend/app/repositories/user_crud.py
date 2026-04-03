@@ -50,3 +50,13 @@ def update_password(db: Session, user_id: int, new_password: str):
         db.commit()
         db.refresh(db_user)
     return db_user
+
+
+def set_default_ledger(db: Session, user_id: int, ledger_id: int | None):
+    db_user = db.query(User).filter(User.user_id == user_id).first()
+    if db_user:
+        db_user.default_ledger_id = ledger_id  # type: ignore[reportAttributeAccessIssue]
+        db_user.updated_at = datetime.now()  # type: ignore[reportAttributeAccessIssue]
+        db.commit()
+        db.refresh(db_user)
+    return db_user

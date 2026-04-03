@@ -17,6 +17,7 @@ import {
   Repeat,
   PieChart,
   LogOut,
+  Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useLedgerStore from "@/components/shared/store";
@@ -178,6 +179,15 @@ export function useCommandPalette(onClose: () => void) {
       icon: Lock,
       keywords: ["password", "security", "credentials"],
       execute: () => nav("/profile?tab=security"),
+    });
+    cmds.push({
+      id: "nav:preferences",
+      title: "Preferences",
+      subtitle: "Default ledger & app settings",
+      category: "navigation",
+      icon: Settings,
+      keywords: ["preferences", "settings", "configuration", "config", "default ledger"],
+      execute: () => nav("/profile?tab=preferences"),
     });
     cmds.push({
       id: "nav:backup",
