@@ -16,11 +16,13 @@ import {
   Plus,
   Repeat,
   PieChart,
+  LogOut,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useLedgerStore from "@/components/shared/store";
 import { useLedgers } from "@/features/ledger/hooks";
 import useCommandPaletteStore from "@/components/shared/commandPaletteStore";
+import { useLogout } from "@/lib/useLogout";
 import type { Ledger } from "@/types/ledger";
 
 export type CommandCategory =
@@ -75,6 +77,7 @@ export function useCommandPalette(onClose: () => void) {
   const setLedger = useLedgerStore((s) => s.setLedger);
   const { data: ledgers } = useLedgers();
   const setPendingAction = useCommandPaletteStore((s) => s.setPendingAction);
+  const logout = useLogout();
 
   const commands = useMemo(() => {
     const cmds: PaletteCommand[] = [];
@@ -185,6 +188,18 @@ export function useCommandPalette(onClose: () => void) {
       keywords: ["backup", "restore", "export", "import", "data"],
       execute: () => nav("/profile?tab=backups"),
     });
+    cmds.push({
+      id: "action:logout",
+      title: "Log Out",
+      subtitle: "Sign out of your account",
+      category: "quick-action",
+      icon: LogOut,
+      keywords: ["logout", "log out", "sign out", "signout", "exit", "quit"],
+      execute: () => {
+        onClose();
+        logout();
+      },
+    });
 
     // --- Ledger-specific pages (only when ledger selected) ---
     if (ledgerId) {
@@ -282,7 +297,7 @@ export function useCommandPalette(onClose: () => void) {
     });
 
     return cmds;
-  }, [ledgerId, ledgerName, ledgers, navigate, onClose, setLedger, setPendingAction]);
+  }, [ledgerId, ledgerName, ledgers, logout, navigate, onClose, setLedger, setPendingAction]);
 
   return commands;
 }
