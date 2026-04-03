@@ -8,12 +8,67 @@ from sqlalchemy.orm import Session
 from app.models.model import Account, Category, Ledger, Transaction, TransactionSplit
 
 
+def _get_month_range(year: int, month: int):
+    """Return (first_day, last_day) datetime range for a given year/month."""
+    first_day = datetime(year, month, 1, 0, 0, 0, 0)
+    last_day = (first_day + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+    last_day = last_day.replace(hour=23, minute=59, second=59, microsecond=999999)
+    return first_day, last_day
+
+
+def _calculate_totals_for_range(db: Session, ledger_id: int, first_day: datetime, last_day: datetime):
+    """Calculate total income and expense for a given date range."""
+    income = expense = Decimal(0)
+
+    # Regular transactions (excluding transfers)
+    transactions = (
+        db.query(Transaction)
+        .join(Account, Transaction.account_id == Account.account_id)
+        .filter(
+            Account.ledger_id == ledger_id,
+            Transaction.date >= first_day,
+            Transaction.date <= last_day,
+            Transaction.is_transfer == False,
+            Transaction.is_split == False,
+        )
+        .all()
+    )
+    for t in transactions:
+        if t.category and t.category.type == "income":
+            income += t.credit
+        elif t.category and t.category.type == "expense":
+            expense += t.debit - t.credit
+
+    # Split transactions (includes fee splits on transfers)
+    splits = (
+        db.query(TransactionSplit)
+        .join(Transaction, TransactionSplit.transaction_id == Transaction.transaction_id)
+        .join(Account, Transaction.account_id == Account.account_id)
+        .filter(
+            Account.ledger_id == ledger_id,
+            Transaction.date >= first_day,
+            Transaction.date <= last_day,
+            Transaction.is_split == True,
+        )
+        .all()
+    )
+    for s in splits:
+        if s.category and s.category.type == "income":
+            income += s.credit
+        elif s.category and s.category.type == "expense":
+            expense += s.debit - s.credit
+
+    return float(income), float(expense)  # type: ignore
+
+
 def get_current_month_overview(db: Session, ledger_id: int):
     # Get first and last day of current month
     today = datetime.now()
-    first_day = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    last_day = (first_day + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-    last_day = last_day.replace(hour=23, minute=59, second=59, microsecond=999999)
+    first_day, last_day = _get_month_range(today.year, today.month)
+
+    # Previous month range
+    prev_month = (first_day - timedelta(days=1))
+    prev_first_day, prev_last_day = _get_month_range(prev_month.year, prev_month.month)
 
     # Base query for transactions in current month (excluding transfers)
     base_transaction_query = (
@@ -185,12 +240,17 @@ def get_current_month_overview(db: Session, ledger_id: int):
         return breakdown
 
     total_income, total_expense = calculate_totals()
+    prev_month_income, prev_month_expense = _calculate_totals_for_range(
+        db, ledger_id, prev_first_day, prev_last_day
+    )
     income_breakdown = get_category_breakdown("income")
     expense_breakdown = get_category_breakdown("expense")
 
     return {
         "total_income": total_income,
         "total_expense": total_expense,
+        "prev_month_total_income": prev_month_income,
+        "prev_month_total_expense": prev_month_expense,
         "income_categories_breakdown": income_breakdown,
         "expense_categories_breakdown": expense_breakdown,
     }

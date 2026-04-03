@@ -25,6 +25,8 @@ import {
   ChevronRight,
   ChevronDown,
   Wallet,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import api from "@/lib/api";
 import useLedgerStore from "@/components/shared/store";
@@ -118,6 +120,8 @@ interface CategoryData {
 interface CurrentMonthOverviewData {
   total_income: number;
   total_expense: number;
+  prev_month_total_income: number;
+  prev_month_total_expense: number;
   income_categories_breakdown: CategoryData[];
   expense_categories_breakdown: CategoryData[];
 }
@@ -398,6 +402,10 @@ const CurrentMonthOverview: React.FC = () => {
   const savingsNegativeColor = useColorModeValue("orange.500", "orange.300");
   const savingsTopAccent = useColorModeValue("brand.400", "brand.400");
   const savingsNegativeTopAccent = useColorModeValue("orange.400", "orange.400");
+  const changeGoodColor = useColorModeValue("green.600", "green.300");
+  const changeBadColor = useColorModeValue("red.500", "red.300");
+  const changeBgGood = useColorModeValue("green.50", "rgba(72,187,120,0.1)");
+  const changeBgBad = useColorModeValue("red.50", "rgba(245,101,101,0.1)");
 
   const baseColors = useColorModeValue(BASE_COLORS_LIGHT, BASE_COLORS_DARK);
   const ledgerId = useLedgerStore((s) => s.ledgerId);
@@ -446,6 +454,48 @@ const CurrentMonthOverview: React.FC = () => {
     ? (netSavings / data.total_income) * 100
     : 0;
   const isPositiveSavings = netSavings >= 0;
+
+  const pctChange = (current: number, previous: number): number | null => {
+    if (previous === 0 && current === 0) return null;
+    if (previous === 0) return null;
+    return ((current - previous) / previous) * 100;
+  };
+
+  const incomeChange = pctChange(data?.total_income ?? 0, data?.prev_month_total_income ?? 0);
+  const expenseChange = pctChange(data?.total_expense ?? 0, data?.prev_month_total_expense ?? 0);
+  const prevNetSavings = (data?.prev_month_total_income ?? 0) - (data?.prev_month_total_expense ?? 0);
+  const savingsChange = pctChange(netSavings, prevNetSavings);
+
+  const ChangeIndicator = ({ change, positiveIsGood }: { change: number | null; positiveIsGood: boolean }) => {
+    if (change === null) return null;
+    const isUp = change > 0;
+    const isDown = change < 0;
+    const isGood = positiveIsGood ? isUp : isDown;
+    return (
+      <HStack
+        spacing={0.5}
+        px={1.5}
+        py={0.5}
+        borderRadius="md"
+        bg={isGood ? changeBgGood : changeBgBad}
+        display="inline-flex"
+      >
+        <Icon
+          as={isUp ? ArrowUp : ArrowDown}
+          boxSize={2.5}
+          color={isGood ? changeGoodColor : changeBadColor}
+        />
+        <Text
+          fontSize="xs"
+          fontWeight="600"
+          color={isGood ? changeGoodColor : changeBadColor}
+          lineHeight="1"
+        >
+          {Math.abs(change).toFixed(1)}%
+        </Text>
+      </HStack>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -580,14 +630,17 @@ const CurrentMonthOverview: React.FC = () => {
                   Income
                 </Text>
               </Flex>
-              <Text
-                fontSize={{ base: "md", md: "xl" }}
-                fontWeight="bold"
-                color={positiveColor}
-                lineHeight="short"
-              >
-                {formatNumberAsCurrency(data.total_income, currencySymbol as string)}
-              </Text>
+              <Flex align="baseline" justify="space-between" gap={2}>
+                <Text
+                  fontSize={{ base: "md", md: "xl" }}
+                  fontWeight="bold"
+                  color={positiveColor}
+                  lineHeight="short"
+                >
+                  {formatNumberAsCurrency(data.total_income, currencySymbol as string)}
+                </Text>
+                <ChangeIndicator change={incomeChange} positiveIsGood={true} />
+              </Flex>
             </Box>
           </GridItem>
 
@@ -626,14 +679,17 @@ const CurrentMonthOverview: React.FC = () => {
                   Expenses
                 </Text>
               </Flex>
-              <Text
-                fontSize={{ base: "md", md: "xl" }}
-                fontWeight="bold"
-                color={expenseColor}
-                lineHeight="short"
-              >
-                {formatNumberAsCurrency(data.total_expense, currencySymbol as string)}
-              </Text>
+              <Flex align="baseline" justify="space-between" gap={2}>
+                <Text
+                  fontSize={{ base: "md", md: "xl" }}
+                  fontWeight="bold"
+                  color={expenseColor}
+                  lineHeight="short"
+                >
+                  {formatNumberAsCurrency(data.total_expense, currencySymbol as string)}
+                </Text>
+                <ChangeIndicator change={expenseChange} positiveIsGood={false} />
+              </Flex>
             </Box>
           </GridItem>
 
@@ -672,15 +728,18 @@ const CurrentMonthOverview: React.FC = () => {
                   Net Savings
                 </Text>
               </Flex>
-              <Text
-                fontSize={{ base: "md", md: "xl" }}
-                fontWeight="bold"
-                color={isPositiveSavings ? savingsPositiveColor : savingsNegativeColor}
-                lineHeight="short"
-              >
-                {isPositiveSavings ? "+" : ""}
-                {formatNumberAsCurrency(netSavings, currencySymbol as string)}
-              </Text>
+              <Flex align="baseline" justify="space-between" gap={2}>
+                <Text
+                  fontSize={{ base: "md", md: "xl" }}
+                  fontWeight="bold"
+                  color={isPositiveSavings ? savingsPositiveColor : savingsNegativeColor}
+                  lineHeight="short"
+                >
+                  {isPositiveSavings ? "+" : ""}
+                  {formatNumberAsCurrency(netSavings, currencySymbol as string)}
+                </Text>
+                <ChangeIndicator change={savingsChange} positiveIsGood={true} />
+              </Flex>
               {data.total_income > 0 && (
                 <Text fontSize="xs" color={secondaryTextColor} mt={0.5}>
                   {savingsRate.toFixed(1)}% savings rate

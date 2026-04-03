@@ -35,5 +35,7 @@ class CategoryBreakdown(BaseModel):
 class MonthOverviewResponse(BaseModel):
     total_income: float
     total_expense: float
+    prev_month_total_income: float
+    prev_month_total_expense: float
     income_categories_breakdown: List[CategoryBreakdown]
     expense_categories_breakdown: List[CategoryBreakdown]

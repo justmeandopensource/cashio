@@ -17,6 +17,8 @@ import {
   TrendingDown,
   Wallet,
   PiggyBank,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentMonthOverview } from "@/features/insights/api";
@@ -34,6 +36,8 @@ interface HomeMonthSnapshotProps {
 interface MonthOverviewData {
   total_income: number;
   total_expense: number;
+  prev_month_total_income: number;
+  prev_month_total_expense: number;
 }
 
 const HomeMonthSnapshot: React.FC<HomeMonthSnapshotProps> = ({
@@ -66,6 +70,12 @@ const HomeMonthSnapshot: React.FC<HomeMonthSnapshotProps> = ({
   const rateAccent = useColorModeValue("purple.400", "purple.400");
   const rateBg = useColorModeValue("purple.50", "rgba(128,90,213,0.12)");
   const rateColor = useColorModeValue("purple.600", "purple.300");
+  const changeGoodColor = useColorModeValue("green.600", "green.300");
+  const changeBadColor = useColorModeValue("red.500", "red.300");
+  const changeNeutralColor = useColorModeValue("gray.400", "gray.500");
+  const changeBgGood = useColorModeValue("green.50", "rgba(72,187,120,0.1)");
+  const changeBgBad = useColorModeValue("red.50", "rgba(245,101,101,0.1)");
+  const changeBgNeutral = useColorModeValue("gray.50", "rgba(160,174,192,0.1)");
   const monthLabel = new Date().toLocaleString("en-US", {
     month: "long",
     year: "numeric",
@@ -88,6 +98,19 @@ const HomeMonthSnapshot: React.FC<HomeMonthSnapshotProps> = ({
       ? (netSavings / data.total_income) * 100
       : 0;
 
+  const prevNetSavings = data.prev_month_total_income - data.prev_month_total_expense;
+
+  // Calculate percentage change: null means no previous data to compare
+  const pctChange = (current: number, previous: number): number | null => {
+    if (previous === 0 && current === 0) return null;
+    if (previous === 0) return null;
+    return ((current - previous) / previous) * 100;
+  };
+
+  const incomeChange = pctChange(data.total_income, data.prev_month_total_income);
+  const expenseChange = pctChange(data.total_expense, data.prev_month_total_expense);
+  const savingsChange = pctChange(netSavings, prevNetSavings);
+
   const stats = [
     {
       icon: TrendingUp,
@@ -96,6 +119,8 @@ const HomeMonthSnapshot: React.FC<HomeMonthSnapshotProps> = ({
       color: incomeColor,
       accent: incomeAccent,
       delay: 0,
+      change: incomeChange,
+      positiveIsGood: true,
     },
     {
       icon: TrendingDown,
@@ -104,6 +129,8 @@ const HomeMonthSnapshot: React.FC<HomeMonthSnapshotProps> = ({
       color: expenseColor,
       accent: expenseAccent,
       delay: 0.05,
+      change: expenseChange,
+      positiveIsGood: false,
     },
     {
       icon: Wallet,
@@ -112,6 +139,8 @@ const HomeMonthSnapshot: React.FC<HomeMonthSnapshotProps> = ({
       color: isPositive ? savingsPositiveColor : savingsNegativeColor,
       accent: isPositive ? savingsAccent : expenseAccent,
       delay: 0.1,
+      change: savingsChange,
+      positiveIsGood: true,
     },
   ];
 
@@ -132,56 +161,89 @@ const HomeMonthSnapshot: React.FC<HomeMonthSnapshotProps> = ({
       </HStack>
 
       <SimpleGrid columns={2} spacing={2.5}>
-        {stats.map(({ icon, label, value, color, accent, delay }) => (
-          <MotionBox
-            key={label}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay }}
-            bg={cardBg}
-            px={3}
-            py={2.5}
-            borderRadius="lg"
-            border="1px solid"
-            borderColor={borderColor}
-            position="relative"
-            overflow="hidden"
-            cursor="pointer"
-            onClick={() => navigate("/insights?visualization=current-month-overview")}
-            _hover={{ borderColor: accent, transition: "border-color 0.2s" }}
-          >
-            <Box
-              position="absolute"
-              top={0}
-              left={0}
-              right={0}
-              h="2px"
-              bg={accent}
-              opacity={0.6}
-            />
-            <Flex align="center" gap={1} mb={1}>
-              <Icon as={icon} boxSize={3} color={labelColor} />
-              <Text
-                fontSize="2xs"
-                fontWeight="semibold"
-                textTransform="uppercase"
-                letterSpacing="wider"
-                color={labelColor}
-              >
-                {label}
-              </Text>
-            </Flex>
-            <Text
-              fontSize="md"
-              fontWeight="bold"
-              color={color}
-              lineHeight="short"
-              letterSpacing="-0.01em"
+        {stats.map(({ icon, label, value, color, accent, delay, change, positiveIsGood }) => {
+          const isUp = change !== null && change > 0;
+          const isDown = change !== null && change < 0;
+          const isGood = positiveIsGood ? isUp : isDown;
+          const isBad = positiveIsGood ? isDown : isUp;
+
+          return (
+            <MotionBox
+              key={label}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay }}
+              bg={cardBg}
+              px={3}
+              py={2.5}
+              borderRadius="lg"
+              border="1px solid"
+              borderColor={borderColor}
+              position="relative"
+              overflow="hidden"
+              cursor="pointer"
+              onClick={() => navigate("/insights?visualization=current-month-overview")}
+              _hover={{ borderColor: accent, transition: "border-color 0.2s" }}
             >
-              {value}
-            </Text>
-          </MotionBox>
-        ))}
+              <Box
+                position="absolute"
+                top={0}
+                left={0}
+                right={0}
+                h="2px"
+                bg={accent}
+                opacity={0.6}
+              />
+              <Flex align="center" gap={1} mb={1}>
+                <Icon as={icon} boxSize={3} color={labelColor} />
+                <Text
+                  fontSize="2xs"
+                  fontWeight="semibold"
+                  textTransform="uppercase"
+                  letterSpacing="wider"
+                  color={labelColor}
+                >
+                  {label}
+                </Text>
+              </Flex>
+              <Flex align="baseline" justify="space-between" gap={1}>
+                <Text
+                  fontSize="md"
+                  fontWeight="bold"
+                  color={color}
+                  lineHeight="short"
+                  letterSpacing="-0.01em"
+                >
+                  {value}
+                </Text>
+                {change !== null && (
+                  <HStack
+                    spacing={0.5}
+                    px={1}
+                    py={0.5}
+                    borderRadius="md"
+                    bg={isGood ? changeBgGood : isBad ? changeBgBad : changeBgNeutral}
+                    flexShrink={0}
+                  >
+                    <Icon
+                      as={isUp ? ArrowUp : ArrowDown}
+                      boxSize={2}
+                      color={isGood ? changeGoodColor : isBad ? changeBadColor : changeNeutralColor}
+                    />
+                    <Text
+                      fontSize="2xs"
+                      fontWeight="600"
+                      color={isGood ? changeGoodColor : isBad ? changeBadColor : changeNeutralColor}
+                      lineHeight="1"
+                    >
+                      {Math.abs(change).toFixed(1)}%
+                    </Text>
+                  </HStack>
+                )}
+              </Flex>
+            </MotionBox>
+          );
+        })}
 
         {/* Savings Rate Card */}
         <MotionBox
