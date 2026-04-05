@@ -60,11 +60,6 @@ Analysis date: 2026-04-05
 - **Problem:** Modal data props typed as `any` — breaks type safety.
 - **Fix:** Create discriminated union types for modal data (e.g., `TransactionModalData = { mode: 'edit', tx: Transaction } | { mode: 'copy', tx: Transaction } | null`).
 
-### 15. Double DB Query on Every Authenticated Request
-- **File:** `backend/app/security/user_security.py`
-- **Problem:** `verify_token()` queries user by username (line ~46), then `get_current_user()` queries again (lines ~68-70). 2-3 DB queries per request just for auth.
-- **Fix:** Combine into a single query. Cache the user object from `verify_token` and pass it through, or store minimal user info in the JWT payload itself.
-
 ### 16. No React Error Boundaries
 - **File:** `frontend/src/App.tsx`
 - **Problem:** No error boundaries around feature routes. A crash in one feature unmounts the whole app.
