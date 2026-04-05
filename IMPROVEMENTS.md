@@ -110,11 +110,6 @@ Analysis date: 2026-04-05
 - **Problem:** `version: "18.3"` but package.json has React 19.0.0.
 - **Fix:** Update to `version: "19.0"`.
 
-### 19. Unpinned PostgreSQL Docker Image
-- **File:** `docker-compose.yaml` (line ~3)
-- **Problem:** Uses `postgres:latest` — non-deterministic builds, potential breaking changes on pull.
-- **Fix:** Pin to `postgres:17-alpine` (or whatever major version you're on). Alpine variant saves ~100-200MB.
-
 ### 20. Outdated/Abandoned Python Dependencies
 - **File:** `backend/requirements.txt`
 - **Problem:** `passlib==1.7.4` (2017, deprecated) — you already import `bcrypt` directly, passlib may be redundant. `python-jose==3.3.0` — abandoned, no security patches.
