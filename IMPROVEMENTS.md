@@ -41,11 +41,6 @@ Analysis date: 2026-04-05
 - **Problem:** Uses `float` for credit/debit/amount fields. Floating-point arithmetic causes precision loss with currency values.
 - **Fix:** Change to `Decimal` type in all financial Pydantic schemas. Add proper serialization config for JSON responses.
 
-### 11. Separate COUNT Query for Pagination
-- **File:** `backend/app/repositories/transaction_crud.py` (lines ~42-44)
-- **Problem:** Calls `get_transactions_count_for_account_id()` as a separate query for pagination totals.
-- **Fix:** Use `func.count().over()` window function in the main query to get total count in the same round trip.
-
 ---
 
 ## MEDIUM

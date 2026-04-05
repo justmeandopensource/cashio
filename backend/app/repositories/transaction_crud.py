@@ -18,8 +18,11 @@ from app.schemas.transaction_schema import (TransactionCreate,
 def get_transactions_for_account_id(
     db: Session, account_id: int, offset: Optional[int] = 0, limit: Optional[int] = 50
 ):
-    transactions = (
-        db.query(Transaction)
+    # Window function to get total count in the same query
+    total_count = func.count(Transaction.transaction_id).over().label("total_count")
+
+    rows = (
+        db.query(Transaction, total_count)
         .options(joinedload(Transaction.category), joinedload(Transaction.tags))
         .filter(Transaction.account_id == account_id)
         .order_by(Transaction.date.desc())
@@ -28,8 +31,11 @@ def get_transactions_for_account_id(
         .all()
     )
 
-    if not transactions:
-        return []
+    if not rows:
+        return [], 0
+
+    transactions = [row[0] for row in rows]
+    total = rows[0][1]
 
     # Batch-detect cross-ledger transfers
     transfer_ids = [
@@ -85,11 +91,7 @@ def get_transactions_for_account_id(
         }
         formatted_transactions.append(formatted_transaction)
 
-    return formatted_transactions
-
-
-def get_transactions_count_for_account_id(db: Session, account_id: int):
-    return db.query(Transaction).filter(Transaction.account_id == account_id).count()
+    return formatted_transactions, total
 
 
 def get_transaction_by_id(db: Session, transaction_id: int):

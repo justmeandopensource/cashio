@@ -35,12 +35,8 @@ def get_transactions_by_account(
 
     offset = (page - 1) * per_page
 
-    transactions = transaction_crud.get_transactions_for_account_id(
+    transactions, total_transactions = transaction_crud.get_transactions_for_account_id(
         db=db, account_id=account_id, offset=offset, limit=per_page
-    )
-
-    total_transactions = transaction_crud.get_transactions_count_for_account_id(
-        db=db, account_id=account_id
     )
 
     total_pages = (total_transactions + per_page - 1) // per_page
