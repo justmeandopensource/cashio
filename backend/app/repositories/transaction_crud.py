@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, contains_eager, joinedload
 
 from app.models.model import (Account, Category, Ledger, Tag, Transaction,
                               TransactionSplit, TransactionTag)
@@ -815,7 +815,11 @@ def get_transactions_for_ledger_id(
         db.query(Transaction)
         .join(Account, Transaction.account_id == Account.account_id)
         .filter(Account.ledger_id == ledger_id)
-        .options(joinedload(Transaction.category), joinedload(Transaction.tags))
+        .options(
+            contains_eager(Transaction.account),
+            joinedload(Transaction.category),
+            joinedload(Transaction.tags),
+        )
     )
 
     if from_date:

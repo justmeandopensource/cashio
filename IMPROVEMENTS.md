@@ -6,13 +6,6 @@ Analysis date: 2026-04-05
 
 ## CRITICAL
 
-### 1. N+1 Query Problem in Transaction Loading
-
-- **Files:** `backend/app/repositories/transaction_crud.py`
-- **Problem:** `get_transactions_for_account_id()` loads transactions but accessing `tag.tag_id`, `tag.user_id`, `tag.name` (lines ~81-84) triggers separate queries per tag per transaction. Also `transaction.account.name` (line ~940-943) without eager load.
-- **Fix:** Add `joinedload(Transaction.tags)`, `joinedload(Transaction.account)` to all transaction queries that access these relationships. Same pattern needed in other crud files accessing relationships without eager loading.
-- **Impact:** 50 transactions x 3 tags = 150+ extra queries per page load.
-
 ### 5. Broken Datetime Defaults in Models
 
 - **File:** `backend/app/models/model.py` (line ~33)
