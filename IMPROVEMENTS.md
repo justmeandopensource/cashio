@@ -26,11 +26,6 @@ Analysis date: 2026-04-05
 - **Problem:** Ships both `@nivo/*` (5 packages) and `recharts` — ~700KB combined bundle weight.
 - **Fix:** Audit which charts use which library. Consolidate to one. Migrate the minority usage to the majority library, then remove the other.
 
-### 7. Nginx Missing Gzip, Cache Headers, Security Headers
-- **File:** `frontend/nginx.conf.template`
-- **Problem:** No gzip compression, no Cache-Control for hashed assets (Vite outputs `*.hash.js`), no security headers.
-- **Fix:** Add gzip config (types: js, css, json, xml; comp_level 6; min_length 1024). Add `Cache-Control: public, max-age=31536000, immutable` for `/assets/*.[hash].*`. Add headers: X-Content-Type-Options nosniff, X-Frame-Options SAMEORIGIN, Strict-Transport-Security, Referrer-Policy.
-
 ### 8. No List Virtualization for Large Tables
 - **Files:** `frontend/src/features/transactions/TransactionTable.tsx`, `frontend/src/features/mutual-funds/MutualFundsTable.tsx`, `frontend/src/features/physical-assets/PhysicalAssetsTable.tsx`
 - **Problem:** All render full page of items directly to DOM. Slow with 50+ rows, especially with popover hover triggers.
