@@ -14,6 +14,7 @@ export const queryKeys = {
     summary: (accountId: string | number) => ["account-summary", String(accountId)] as const,
     insights: (accountId: string | number) => ["account-insights", String(accountId)] as const,
     balanceHistory: (accountId: string | number) => ["account-balance-history", String(accountId)] as const,
+    fundsFlow: (accountId: string | number) => ["account-funds-flow", String(accountId)] as const,
   },
   transactions: {
     all: ["transactions"] as const,
@@ -157,6 +158,9 @@ export const invalidateTransactionRelated = (
     });
     queryClient.invalidateQueries({
       queryKey: queryKeys.accounts.balanceHistory(accountId),
+    });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.accounts.fundsFlow(accountId),
     });
   }
 };

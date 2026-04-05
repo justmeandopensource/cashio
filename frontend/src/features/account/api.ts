@@ -95,3 +95,34 @@ export const getAccountBalanceHistory = async (
   );
   return response.data;
 };
+
+export interface FundsFlowCounterparty {
+  account_id: number;
+  account_name: string;
+  amount: number;
+}
+
+export interface FundsFlowMonth {
+  month: string;
+  inflow: number;
+  outflow: number;
+  inflow_counterparties: FundsFlowCounterparty[];
+  outflow_counterparties: FundsFlowCounterparty[];
+}
+
+export interface AccountFundsFlowData {
+  months: FundsFlowMonth[];
+  has_data: boolean;
+}
+
+export const getAccountFundsFlow = async (
+  ledgerId: string | number,
+  accountId: string | number,
+  signal?: AbortSignal
+): Promise<AccountFundsFlowData> => {
+  const response = await api.get(
+    `/ledger/${ledgerId}/account/${accountId}/funds-flow`,
+    { signal }
+  );
+  return response.data;
+};

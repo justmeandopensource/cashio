@@ -61,7 +61,6 @@ const AccountBalanceChart: React.FC<AccountBalanceChartProps> = ({ accountId }) 
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      mb={{ base: 4, md: 5 }}
     >
       <Box
         bg={cardBg}
@@ -69,6 +68,7 @@ const AccountBalanceChart: React.FC<AccountBalanceChartProps> = ({ accountId }) 
         borderRadius="xl"
         border="1px solid"
         borderColor={sectionBorderColor}
+        h="full"
       >
         <Flex align="center" gap={2} mb={4}>
           <Icon as={TrendingUp} boxSize={4} color={iconColor} />

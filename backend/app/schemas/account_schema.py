@@ -106,3 +106,22 @@ class BalanceDataPoint(BaseModel):
 
 class AccountBalanceHistory(BaseModel):
     data_points: list[BalanceDataPoint]
+
+
+class FundsFlowCounterparty(BaseModel):
+    account_id: int
+    account_name: str
+    amount: float
+
+
+class FundsFlowMonth(BaseModel):
+    month: str
+    inflow: float
+    outflow: float
+    inflow_counterparties: list[FundsFlowCounterparty]
+    outflow_counterparties: list[FundsFlowCounterparty]
+
+
+class AccountFundsFlow(BaseModel):
+    months: list[FundsFlowMonth]
+    has_data: bool

@@ -194,6 +194,28 @@ def get_account_balance_history(
     return account_crud.get_account_balance_history(db=db, account_id=account_id)
 
 
+@account_router.get(
+    "/{ledger_id}/account/{account_id}/funds-flow",
+    response_model=account_schema.AccountFundsFlow,
+    tags=["accounts"],
+)
+def get_account_funds_flow(
+    ledger_id: int,
+    account_id: int,
+    user: user_schema.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
+    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
+        raise HTTPException(status_code=404, detail="Ledger not found")
+
+    account = account_crud.get_account_by_id(db=db, account_id=account_id)
+    if account is None or account.ledger_id != ledger_id:  # type: ignore
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    return account_crud.get_account_funds_flow(db=db, account_id=account_id)
+
+
 @account_router.put(
     "/{ledger_id}/account/{account_id}/update",
     response_model=account_schema.Account,

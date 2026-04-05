@@ -4,7 +4,7 @@ from typing import Optional
 
 from fastapi import HTTPException, status
 from sqlalchemy import and_, func, select, union_all
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 from app.models.model import Account, Category, Transaction, TransactionSplit
 from app.schemas.account_schema import AccountCreate, AccountUpdate
@@ -366,3 +366,108 @@ def get_account_balance_history(db: Session, account_id: int):
         })
 
     return {"data_points": data_points}
+
+
+def get_account_funds_flow(db: Session, account_id: int):
+    """Get monthly fund transfer inflows/outflows for the last 12 months with counterparty details."""
+    cutoff = datetime.now() - timedelta(days=365)
+
+    # Aliases for self-join
+    SrcTx = aliased(Transaction, name="src_tx")
+    DstTx = aliased(Transaction, name="dst_tx")
+    SrcAcct = aliased(Account, name="src_acct")
+    DstAcct = aliased(Account, name="dst_acct")
+
+    # Inflows: this account is the destination, counterparty is the source
+    inflow_rows = (
+        db.query(
+            func.date_trunc("month", DstTx.date).label("month"),
+            SrcAcct.account_id.label("counterparty_id"),
+            SrcAcct.name.label("counterparty_name"),
+            func.sum(DstTx.credit).label("amount"),
+        )
+        .join(SrcTx, DstTx.transfer_id == SrcTx.transfer_id)
+        .join(SrcAcct, SrcTx.account_id == SrcAcct.account_id)
+        .join(DstAcct, DstTx.account_id == DstAcct.account_id)
+        .filter(
+            DstTx.account_id == account_id,
+            DstTx.is_transfer == True,
+            DstTx.transfer_type == "destination",
+            SrcTx.transfer_type == "source",
+            DstTx.date >= cutoff,
+        )
+        .group_by(
+            func.date_trunc("month", DstTx.date),
+            SrcAcct.account_id,
+            SrcAcct.name,
+        )
+        .all()
+    )
+
+    # Outflows: this account is the source, counterparty is the destination
+    outflow_rows = (
+        db.query(
+            func.date_trunc("month", SrcTx.date).label("month"),
+            DstAcct.account_id.label("counterparty_id"),
+            DstAcct.name.label("counterparty_name"),
+            func.sum(SrcTx.debit).label("amount"),
+        )
+        .join(DstTx, SrcTx.transfer_id == DstTx.transfer_id)
+        .join(DstAcct, DstTx.account_id == DstAcct.account_id)
+        .join(SrcAcct, SrcTx.account_id == SrcAcct.account_id)
+        .filter(
+            SrcTx.account_id == account_id,
+            SrcTx.is_transfer == True,
+            SrcTx.transfer_type == "source",
+            DstTx.transfer_type == "destination",
+            SrcTx.date >= cutoff,
+        )
+        .group_by(
+            func.date_trunc("month", SrcTx.date),
+            DstAcct.account_id,
+            DstAcct.name,
+        )
+        .all()
+    )
+
+    if not inflow_rows and not outflow_rows:
+        return {"months": [], "has_data": False}
+
+    # Merge into months
+    months: dict[str, dict] = {}
+
+    for row in inflow_rows:
+        key = row.month.strftime("%Y-%m")
+        if key not in months:
+            months[key] = {"inflow": 0, "outflow": 0, "inflow_cp": {}, "outflow_cp": {}}
+        amt = float(row.amount or 0)
+        months[key]["inflow"] += amt
+        cp_id = row.counterparty_id
+        if cp_id not in months[key]["inflow_cp"]:
+            months[key]["inflow_cp"][cp_id] = {"account_id": cp_id, "account_name": row.counterparty_name, "amount": 0}
+        months[key]["inflow_cp"][cp_id]["amount"] += amt
+
+    for row in outflow_rows:
+        key = row.month.strftime("%Y-%m")
+        if key not in months:
+            months[key] = {"inflow": 0, "outflow": 0, "inflow_cp": {}, "outflow_cp": {}}
+        amt = float(row.amount or 0)
+        months[key]["outflow"] += amt
+        cp_id = row.counterparty_id
+        if cp_id not in months[key]["outflow_cp"]:
+            months[key]["outflow_cp"][cp_id] = {"account_id": cp_id, "account_name": row.counterparty_name, "amount": 0}
+        months[key]["outflow_cp"][cp_id]["amount"] += amt
+
+    sorted_months = sorted(months.items())
+    result = [
+        {
+            "month": month_key,
+            "inflow": round(data["inflow"], 2),
+            "outflow": round(data["outflow"], 2),
+            "inflow_counterparties": sorted(data["inflow_cp"].values(), key=lambda x: x["amount"], reverse=True),
+            "outflow_counterparties": sorted(data["outflow_cp"].values(), key=lambda x: x["amount"], reverse=True),
+        }
+        for month_key, data in sorted_months
+    ]
+
+    return {"months": result, "has_data": True}

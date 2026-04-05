@@ -5,8 +5,9 @@ import {
   getAccountSummary,
   getAccountInsights,
   getAccountBalanceHistory,
+  getAccountFundsFlow,
 } from "./api";
-import type { AccountData, AccountSummaryData, AccountInsightsData, AccountBalanceHistoryData } from "./api";
+import type { AccountData, AccountSummaryData, AccountInsightsData, AccountBalanceHistoryData, AccountFundsFlowData } from "./api";
 
 export const useAccount = (
   ledgerId: string | number,
@@ -50,6 +51,18 @@ export const useAccountBalanceHistory = (
   return useQuery<AccountBalanceHistoryData>({
     queryKey: queryKeys.accounts.balanceHistory(accountId),
     queryFn: ({ signal }) => getAccountBalanceHistory(ledgerId, accountId, signal),
+    enabled: !!ledgerId && !!accountId,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useAccountFundsFlow = (
+  ledgerId: string | number,
+  accountId: string | number
+) => {
+  return useQuery<AccountFundsFlowData>({
+    queryKey: queryKeys.accounts.fundsFlow(accountId),
+    queryFn: ({ signal }) => getAccountFundsFlow(ledgerId, accountId, signal),
     enabled: !!ledgerId && !!accountId,
     staleTime: 5 * 60 * 1000,
   });
