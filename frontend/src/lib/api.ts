@@ -30,6 +30,7 @@ export const setOnUnauthorized = (callback: () => void) => {
 
 const api = axios.create({
   baseURL: config.apiBaseUrl,
+  timeout: 30000,
 });
 
 // Request interceptor to add the auth token header to every request

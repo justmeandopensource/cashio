@@ -105,11 +105,6 @@ Analysis date: 2026-04-05
 - **Problem:** No error boundaries around feature routes. A crash in one feature unmounts the whole app.
 - **Fix:** Add `react-error-boundary` package. Wrap each lazy-loaded route in an ErrorBoundary with a fallback UI and reset capability.
 
-### 17. No Axios Request Timeout
-- **File:** `frontend/src/lib/api.ts`
-- **Problem:** Axios instance has no timeout configured. Requests can hang indefinitely.
-- **Fix:** Add `timeout: 30000` (30s) to the axios instance config. Consider adding retry with exponential backoff for network errors.
-
 ### 18. ESLint React Version Mismatch
 - **File:** `frontend/eslint.config.js` (line ~23)
 - **Problem:** `version: "18.3"` but package.json has React 19.0.0.
@@ -140,10 +135,6 @@ Analysis date: 2026-04-05
 ### 23. No CI/CD Pipeline
 - **Problem:** No GitHub Actions or equivalent.
 - **Fix:** Add workflows for lint, type-check, test, build, and optionally Docker image push.
-
-### 24. No Health Check Endpoint
-- **File:** `backend/app/main.py`
-- **Fix:** Add `GET /health` that checks DB connectivity. Use for Docker healthcheck and load balancer probes.
 
 ### 25. No Rate Limiting on Auth Endpoints
 - **File:** `backend/app/routers/user_router.py`
