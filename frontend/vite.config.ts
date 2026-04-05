@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, type UserConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import fs from "fs";
@@ -56,6 +56,37 @@ export default defineConfig({
     port: httpsConfig ? 443 : 3000,
     https: httpsConfig,
     allowedHosts: ["cashio.test", "cashio.local"],
+  },
+  build: {
+    sourcemap: false,
+    reportCompressedSize: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-ui": [
+            "@chakra-ui/react",
+            "@emotion/react",
+            "@emotion/styled",
+            "framer-motion",
+          ],
+          "vendor-data": [
+            "@tanstack/react-query",
+            "axios",
+            "zustand",
+            "react-hook-form",
+          ],
+          "charts-nivo": [
+            "@nivo/core",
+            "@nivo/bar",
+            "@nivo/line",
+            "@nivo/pie",
+            "@nivo/tooltip",
+          ],
+          "charts-recharts": ["recharts"],
+        },
+      },
+    },
   },
   resolve: {
     alias: {

@@ -79,10 +79,6 @@ Analysis date: 2026-04-05
 
 ## LOW
 
-### 21. No Vite Build Optimization Config
-- **File:** `frontend/vite.config.ts`
-- **Fix:** Add explicit `build` config — `manualChunks` for vendor/charts splitting, `sourcemap: false` for prod, `reportCompressedSize: false` for faster builds.
-
 ### 22. No Tests
 - **Problem:** No pytest (backend), no vitest/testing-library (frontend).
 - **Fix:** Add test infrastructure. Start with critical paths — transaction creation, auth flow, balance calculations.
