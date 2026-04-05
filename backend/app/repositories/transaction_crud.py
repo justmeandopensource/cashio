@@ -124,6 +124,28 @@ def create_transaction(db: Session, transaction: TransactionCreate):
         else Decimal("0.00")
     )
 
+    # Validate splits up-front before any DB writes
+    if transaction.is_split and transaction.splits:
+        total_split_credit = sum(
+            Decimal(str(split.credit)) if split.credit is not None else Decimal("0.00")
+            for split in transaction.splits
+        )
+        total_split_debit = sum(
+            Decimal(str(split.debit)) if split.debit is not None else Decimal("0.00")
+            for split in transaction.splits
+        )
+
+        if transaction.type == "income" and total_split_credit != credit:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Sum of split credits ({total_split_credit}) does not match main transaction credit ({credit})",
+            )
+        elif transaction.type == "expense" and total_split_debit != debit:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Sum of split debits ({total_split_debit}) does not match main transaction debit ({debit})",
+            )
+
     # Create the main transaction
     db_transaction = Transaction(
         account_id=transaction.account_id,
@@ -142,8 +164,7 @@ def create_transaction(db: Session, transaction: TransactionCreate):
         created_at=datetime.now(),
     )
     db.add(db_transaction)
-    db.commit()
-    db.refresh(db_transaction)
+    db.flush()
 
     # Update account balance based on account type
     if "asset" in account.type:
@@ -159,35 +180,9 @@ def create_transaction(db: Session, transaction: TransactionCreate):
 
     account.net_balance = account.opening_balance + account.balance  # type: ignore
     account.updated_at = datetime.now()  # type: ignore
-    db.commit()
-    db.refresh(account)
 
-    # If this is a split transaction, create the splits
+    # Create splits
     if transaction.is_split and transaction.splits:
-        # Validate that the sum of splits matches the main transaction amount
-        total_split_credit = sum(
-            Decimal(str(split.credit)) if split.credit is not None else Decimal("0.00")
-            for split in transaction.splits
-        )
-        total_split_debit = sum(
-            Decimal(str(split.debit)) if split.debit is not None else Decimal("0.00")
-            for split in transaction.splits
-        )
-
-        # Check if the total of splits matches the main transaction
-        if transaction.type == "income" and total_split_credit != credit:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Sum of split credits ({total_split_credit}) does not match main transaction credit ({credit})",
-            )
-        elif transaction.type == "expense" and total_split_debit != debit:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Sum of split debits ({total_split_debit}) does not match main transaction debit ({debit})",
-            )
-
         for split in transaction.splits:
             split_credit = (
                 Decimal(str(split.credit))
@@ -207,9 +202,8 @@ def create_transaction(db: Session, transaction: TransactionCreate):
                 notes=split.notes,
             )
             db.add(db_split)
-        db.commit()
-        db.refresh(db_transaction)
 
+    # Create/link tags
     if transaction.tags:
         for tag in transaction.tags:
             db_tag = (
@@ -220,14 +214,15 @@ def create_transaction(db: Session, transaction: TransactionCreate):
             if not db_tag:
                 db_tag = Tag(name=tag.name, user_id=account.ledger.user_id)
                 db.add(db_tag)
-                db.commit()
-                db.refresh(db_tag)
+                db.flush()
             db_transaction_tag = TransactionTag(
                 transaction_id=db_transaction.transaction_id, tag_id=db_tag.tag_id
             )
             db.add(db_transaction_tag)
-        db.commit()
-        db.refresh(db_transaction)
+
+    # Single commit for the entire operation
+    db.commit()
+    db.refresh(db_transaction)
 
     return db_transaction
 
@@ -337,7 +332,7 @@ def create_transfer_transaction(db: Session, transfer: TransferCreate, user_id: 
             credit=Decimal("0.00"),
             notes="Transfer fee",
         ))
-        db.commit()
+        db.flush()
 
     # Create income transaction on destination account
     transferIn = TransactionCreate(
@@ -627,13 +622,13 @@ def update_transfer_transaction(
                     )
                 )
 
-    db.commit()
-    db.refresh(source_tx)
-    db.refresh(destination_tx)
-
     # Apply new balances
     update_account_balance(db, source_tx)
     update_account_balance(db, destination_tx)
+
+    db.commit()
+    db.refresh(source_tx)
+    db.refresh(destination_tx)
 
     return {"message": "Transfer updated successfully"}
 
@@ -740,8 +735,6 @@ def update_account_balance(
 
     account.net_balance = account.opening_balance + account.balance  # type: ignore
     account.updated_at = datetime.now()  # type: ignore
-    db.commit()
-    db.refresh(account)
 
 
 def get_transaction_notes_suggestions(
@@ -1205,10 +1198,10 @@ def update_transaction(
                 TransactionTag(transaction_id=transaction_id, tag_id=tag.tag_id)
             )
 
-    db.commit()
-    db.refresh(db_transaction)
-
     # Apply the impact of the updated transaction on the account balance
     update_account_balance(db, db_transaction)
+
+    db.commit()
+    db.refresh(db_transaction)
 
     return db_transaction

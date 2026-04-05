@@ -12,11 +12,6 @@ Analysis date: 2026-04-05
 - **Fix:** Add `joinedload(Transaction.tags)`, `joinedload(Transaction.account)` to all transaction queries that access these relationships. Same pattern needed in other crud files accessing relationships without eager loading.
 - **Impact:** 50 transactions x 3 tags = 150+ extra queries per page load.
 
-### 2. Multiple DB Commits in create_transaction
-- **File:** `backend/app/repositories/transaction_crud.py`, `create_transaction()` (lines ~107-232)
-- **Problem:** 5 separate `db.commit()` calls — after main transaction insert, after splits, after tags, etc. Failure between commits leaves DB inconsistent.
-- **Fix:** Remove intermediate commits. Use a single `db.commit()` at the end after all operations (inserts, splits, tags, balance updates) are staged. Use `db.flush()` where needed to get generated IDs mid-operation.
-
 ### 5. Broken Datetime Defaults in Models
 - **File:** `backend/app/models/model.py` (line ~33)
 - **Problem:** `default=datetime.now(timezone.utc)` evaluates once at module import time. Every row gets the server start timestamp.
