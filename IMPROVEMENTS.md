@@ -22,21 +22,6 @@ Analysis date: 2026-04-05
 - **Problem:** `_get_descendant_categories()` recursively queries DB for each child category. Exponential queries for deep hierarchies.
 - **Fix:** Replace with a single `WITH RECURSIVE` CTE query that fetches the entire subtree in one round trip.
 
-### 4. No DB Connection Pooling
-- **File:** `backend/app/database/connection.py` (line ~7)
-- **Problem:** `create_engine(settings.SQLALCHEMY_DATABASE_URL)` uses all SQLAlchemy defaults — pool_size=5, no pre_ping, no recycle, no timeouts.
-- **Fix:** Add explicit pool config:
-  ```python
-  engine = create_engine(
-      settings.SQLALCHEMY_DATABASE_URL,
-      pool_size=20,
-      max_overflow=10,
-      pool_pre_ping=True,
-      pool_recycle=1800,
-      connect_args={"connect_timeout": 10},
-  )
-  ```
-
 ### 5. Broken Datetime Defaults in Models
 - **File:** `backend/app/models/model.py` (line ~33)
 - **Problem:** `default=datetime.now(timezone.utc)` evaluates once at module import time. Every row gets the server start timestamp.
