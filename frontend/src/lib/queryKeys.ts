@@ -76,6 +76,8 @@ export const queryKeys = {
       ["locationCategoryBreakdown", ledgerId, locationName, periodType] as const,
     calendarHeatmap: (ledgerId: string | number, year?: number) =>
       ["expenseCalendar", ledgerId, year] as const,
+    fundFlow: (periodType: string) =>
+      ["fund-flow", periodType] as const,
   },
   budgets: {
     all: ["budgets"] as const,
@@ -139,6 +141,7 @@ export const invalidateTransactionRelated = (
   queryClient.invalidateQueries({ queryKey: ["categoryTrend"] });
   queryClient.invalidateQueries({ queryKey: ["tag-trend"] });
   queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
+  queryClient.invalidateQueries({ queryKey: ["fund-flow"] });
   queryClient.invalidateQueries({
     queryKey: queryKeys.accounts.all(ledgerId),
   });

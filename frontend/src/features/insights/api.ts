@@ -98,6 +98,17 @@ export const getLocationCategoryBreakdown = async (
   return response.data;
 };
 
+export const getFundFlow = async (
+  periodType: string,
+  signal?: AbortSignal,
+) => {
+  const response = await api.get(
+    `/insights/fund-flow?period_type=${periodType}`,
+    { signal },
+  );
+  return response.data;
+};
+
 export const getExpenseCalendar = async (
   ledgerId: number | string,
   year: number,

@@ -9,6 +9,7 @@ import PageContainer from "@components/shared/PageContainer";
 import HomeMainHeader from "./HomeMainHeader";
 import { Box, Divider, Grid, GridItem, HStack, Icon, Text, useColorModeValue } from "@chakra-ui/react";
 import { LayoutDashboard } from "lucide-react";
+import { HomeFundFlow } from "./fund-flow";
 import useLedgerStore from "@/components/shared/store";
 
 import type { Ledger } from "@/types";
@@ -129,6 +130,11 @@ const HomeMain = ({
                   />
                 </GridItem>
               </Grid>
+
+              {/* Fund Flow Map — cross-ledger transfer visualization */}
+              <Box mt={6}>
+                <HomeFundFlow />
+              </Box>
             </Box>
           )}
         </PageContainer>

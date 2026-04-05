@@ -10,6 +10,7 @@ from app.models import model
 from app.repositories.settings import settings
 from app.routers.account_router import account_router
 from app.routers.budget_router import budget_router
+from app.routers.fund_flow_router import fund_flow_router
 from app.routers.category_router import category_router
 from app.routers.insights_router import insights_router
 from app.routers.ledger_router import ledger_router
@@ -54,6 +55,7 @@ app.include_router(mutual_funds_router)
 app.include_router(net_worth_router)
 app.include_router(budget_router)
 app.include_router(search_router)
+app.include_router(fund_flow_router)
 app.include_router(system_router)
 
 if __name__ == "__main__":

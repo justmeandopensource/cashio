@@ -10,6 +10,7 @@ import {
   getExpenseByLocation,
   getLocationCategoryBreakdown,
   getExpenseCalendar,
+  getFundFlow,
 } from "./api";
 
 export const useCurrentMonthOverview = (ledgerId?: number | string) => {
@@ -123,6 +124,14 @@ export const useLocationCategoryBreakdown = (
     queryFn: ({ signal }) =>
       getLocationCategoryBreakdown(ledgerId, locationName, periodType, signal),
     enabled: !!ledgerId && !!locationName,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useFundFlow = (periodType: string) => {
+  return useQuery({
+    queryKey: queryKeys.insights.fundFlow(periodType),
+    queryFn: ({ signal }) => getFundFlow(periodType, signal),
     staleTime: 5 * 60 * 1000,
   });
 };
