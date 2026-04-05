@@ -206,13 +206,17 @@ const HomeFundFlow: React.FC = () => {
     [flowData?.links],
   );
 
-  // Global max for consistent bar scaling across all sections
-  const maxAmount = useMemo(() => {
-    const links = flowData?.links ?? [];
-    return links.length > 0
-      ? Math.max(...links.map((l) => l.total_amount))
-      : 0;
-  }, [flowData?.links]);
+  // Per-section max for proportional bar scaling within each section
+  const sectionMaxAmounts = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const section of sections) {
+      const max = section.links.length > 0
+        ? Math.max(...section.links.map((l) => l.total_amount))
+        : 0;
+      map.set(section.title, max);
+    }
+    return map;
+  }, [sections]);
 
   if (isLoading) {
     return (
@@ -380,7 +384,7 @@ const HomeFundFlow: React.FC = () => {
                       <CorridorRow
                         key={`${link.source_account_id}-${link.target_account_id}`}
                         link={link}
-                        maxAmount={maxAmount}
+                        maxAmount={sectionMaxAmounts.get(section.title) ?? 0}
                         index={rowIndex++}
                         isCrossLedger={isCross}
                       />
