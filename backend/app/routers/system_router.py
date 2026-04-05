@@ -8,9 +8,11 @@ from typing import List
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status, UploadFile, File
 from fastapi.responses import FileResponse
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.version import __version__
+from app.database.connection import SessionLocal
 from app.security.user_security import get_current_user
 from app.schemas.user_schema import User
 from app.repositories.settings import settings
@@ -111,6 +113,20 @@ def run_restore(db_settings: dict, backup_filepath: str):
         logger.error(f"A subprocess error occurred during restore setup: {e.stderr.decode()}")
     except Exception as e:
         logger.error(f"An exception occurred during restore: {e}")
+
+
+@system_router.get("/health", tags=["system"])
+async def health():
+    try:
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db.close()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database unreachable",
+        )
+    return {"status": "healthy"}
 
 
 @system_router.get("/sysinfo", tags=["system"])
