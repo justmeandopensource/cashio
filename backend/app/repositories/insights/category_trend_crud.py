@@ -26,8 +26,7 @@ def get_category_trend(
     # Get all descendant categories if it's a group
     all_category_ids = [category_id]
     if category.is_group is True:
-        descendant_categories = _get_descendant_categories(db, category_id)
-        all_category_ids.extend([c.category_id for c in descendant_categories])
+        all_category_ids.extend(_get_descendant_category_ids(db, category_id))
 
     # Determine date range based on period type
     now = datetime.now()
@@ -74,27 +73,19 @@ def get_category_trend(
     }
 
 
-def _get_descendant_categories(db: Session, parent_id: int):
-    """Recursively get all descendant categories."""
-    direct_children = (
-        db.query(Category).filter(Category.parent_category_id == parent_id).all()
+def _get_descendant_category_ids(db: Session, parent_id: int) -> List[int]:
+    """Get all descendant category IDs using a recursive CTE (single query)."""
+    cte = (
+        db.query(Category.category_id)
+        .filter(Category.parent_category_id == parent_id)
+        .cte(name="descendants", recursive=True)
     )
-
-    all_descendants = list(direct_children)
-    for child in direct_children:
-        if child.is_group is True:
-            all_descendants.extend(
-                _get_descendant_categories(
-                    db,
-                    (
-                        child.category_id
-                        if isinstance(child.category_id, int)
-                        else getattr(child, "category_id")
-                    ),
-                )
-            )
-
-    return all_descendants
+    cte = cte.union_all(
+        db.query(Category.category_id).filter(
+            Category.parent_category_id == cte.c.category_id
+        )
+    )
+    return [row[0] for row in db.query(cte.c.category_id).all()]
 
 
 def _get_transaction_data(
