@@ -4,16 +4,6 @@ Analysis date: 2026-04-05
 
 ---
 
-## CRITICAL
-
-### 5. Broken Datetime Defaults in Models
-
-- **File:** `backend/app/models/model.py` (line ~33)
-- **Problem:** `default=datetime.now(timezone.utc)` evaluates once at module import time. Every row gets the server start timestamp.
-- **Fix:** Change to `default=func.now()` (server-side) or `default=lambda: datetime.now(timezone.utc)` (client-side). Apply to all timestamp default fields across all models.
-
----
-
 ## HIGH
 
 ### 6. Duplicate Charting Libraries (Nivo + Recharts)

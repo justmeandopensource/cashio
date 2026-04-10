@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -13,6 +13,7 @@ from sqlalchemy import (
     Numeric,
     String,
     UniqueConstraint,
+    func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -30,8 +31,8 @@ class User(Base):
     default_ledger_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("ledgers.ledger_id", ondelete="SET NULL"), nullable=True
     )
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
     ledgers = relationship("Ledger", back_populates="user", foreign_keys="[Ledger.user_id]")
     categories = relationship("Category", back_populates="user")
@@ -48,8 +49,8 @@ class Ledger(Base):
     currency_symbol: Mapped[str] = mapped_column(String(10), nullable=False)
     notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
     nav_service_type: Mapped[str] = mapped_column(Enum("india", "uk", name="nav_service_type"), default="india", nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
     user = relationship("User", back_populates="ledgers", foreign_keys=[user_id])
     accounts = relationship("Account", back_populates="ledger")
@@ -87,8 +88,8 @@ class Account(Base):
     balance: Mapped[Decimal] = mapped_column(Numeric(15, 2), default=0.00, nullable=False)
     net_balance: Mapped[Decimal] = mapped_column(Numeric(15, 2), default=0.00, nullable=False)
     notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
     ledger = relationship("Ledger", back_populates="accounts")
     transactions = relationship("Transaction", back_populates="account")
@@ -143,7 +144,7 @@ class Transaction(Base):
     transfer_type: Mapped[str | None] = mapped_column(
         Enum("source", "destination", name="transfer_type"), nullable=True
     )
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
     account = relationship("Account", back_populates="transactions")
     category = relationship("Category")
@@ -224,7 +225,7 @@ class AssetType(Base):
     unit_name: Mapped[str] = mapped_column(String(50), nullable=False)  # "grams", "kilograms", "ounces"
     unit_symbol: Mapped[str] = mapped_column(String(10), nullable=False)  # "g", "kg", "oz"
     description: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
     ledger = relationship("Ledger", back_populates="asset_types")
     physical_assets = relationship("PhysicalAsset", back_populates="asset_type")
@@ -258,8 +259,8 @@ class PhysicalAsset(Base):
         Numeric(15, 2), default=0, nullable=False
     )  # Auto-calculated: quantity * latest_price
     notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
     ledger = relationship("Ledger", back_populates="physical_assets")
     asset_type = relationship("AssetType", back_populates="physical_assets")
@@ -294,7 +295,7 @@ class AssetTransaction(Base):
     )
     transaction_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
     ledger = relationship("Ledger", back_populates="asset_transactions")
     physical_asset = relationship("PhysicalAsset", back_populates="asset_transactions")
@@ -309,8 +310,8 @@ class Amc(Base):
     ledger_id: Mapped[int] = mapped_column(Integer, ForeignKey("ledgers.ledger_id"), nullable=False)
     name: Mapped[str] = mapped_column(String(100), nullable=False)  # "HDFC", "ICICI", "SBI"
     notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
     ledger = relationship("Ledger", back_populates="amcs")
     mutual_funds = relationship("MutualFund", back_populates="amc")
@@ -358,8 +359,8 @@ class MutualFund(Base):
     asset_class: Mapped[str | None] = mapped_column(String(50), nullable=True)  # Equity, Debt, Hybrid, Others
     asset_sub_class: Mapped[str | None] = mapped_column(String(50), nullable=True)  # Sub-classification within asset class
     notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
     ledger = relationship("Ledger", back_populates="mutual_funds")
     amc = relationship("Amc", back_populates="mutual_funds")
@@ -385,8 +386,8 @@ class Budget(Base):
     category_id: Mapped[int] = mapped_column(Integer, ForeignKey("categories.category_id", ondelete="CASCADE"), nullable=False)
     period: Mapped[str] = mapped_column(Enum("monthly", "yearly", name="budget_period"), nullable=False)
     amount: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
     user = relationship("User")
     ledger = relationship("Ledger")
@@ -425,7 +426,7 @@ class MfTransaction(Base):
     linked_charge_transaction_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("transactions.transaction_id"), nullable=True)
     transaction_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     linked_transaction_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     realized_gain: Mapped[Decimal | None] = mapped_column(Numeric(15, 2), nullable=True)
     cost_basis_of_units_sold: Mapped[Decimal | None] = mapped_column(Numeric(15, 2), nullable=True)
