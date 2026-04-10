@@ -119,8 +119,10 @@ def run_restore(db_settings: dict, backup_filepath: str):
 async def health():
     try:
         db = SessionLocal()
-        db.execute(text("SELECT 1"))
-        db.close()
+        try:
+            db.execute(text("SELECT 1"))
+        finally:
+            db.close()
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
