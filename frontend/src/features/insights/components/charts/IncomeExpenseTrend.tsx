@@ -383,8 +383,7 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
                 pointBorderColor={{ from: "serieColor" }}
                 enableArea={true}
                 areaOpacity={0.12}
-                useMesh={true}
-                enableCrosshair={true}
+                enableSlices="x"
                 axisBottom={{
                   tickSize: 5,
                   tickPadding: 5,
@@ -403,38 +402,32 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
                     return `${sym}${v}`;
                   },
                 }}
-                tooltip={({ point }) => {
-                  const isIncome = point.seriesId === "Income";
-                  const color = isIncome ? INCOME_COLOR : EXPENSE_COLOR;
-                  return (
-                    <Box
-                      bg={tooltipBg}
-                      border="1px solid"
-                      borderColor={tooltipBorder}
-                      borderRadius="md"
-                      px={3}
-                      py={2}
-                      boxShadow="lg"
-                      fontSize="xs"
-                      minW="160px"
-                      whiteSpace="nowrap"
-                    >
-                      <Text fontWeight="bold" color={textColor} mb={0.5}>
-                        {formatPeriod(point.data.xFormatted as string)}
-                      </Text>
-                      <Flex align="center" gap={2}>
-                        <Box w={2} h={2} borderRadius="full" bg={color} flexShrink={0} />
-                        <Flex justify="space-between" flex={1} gap={3}>
-                          <Text color={textColor} opacity={0.7}>{point.seriesId}</Text>
-                          <Text fontWeight="600" color={color}>
-                            {splitCurrencyForDisplay(Number(point.data.y), sym).main}
-                            {splitCurrencyForDisplay(Number(point.data.y), sym).decimals}
-                          </Text>
-                        </Flex>
+                sliceTooltip={({ slice }) => (
+                  <Box
+                    bg={tooltipBg}
+                    border="1px solid"
+                    borderColor={tooltipBorder}
+                    borderRadius="md"
+                    px={3}
+                    py={2}
+                    boxShadow="lg"
+                    fontSize="xs"
+                    whiteSpace="nowrap"
+                  >
+                    <Text fontWeight="bold" color={textColor} mb={1}>
+                      {formatPeriod(slice.points[0].data.xFormatted as string)}
+                    </Text>
+                    {[...slice.points].sort((a, b) => Number(b.data.y) - Number(a.data.y)).map(point => (
+                      <Flex key={point.id} align="center" gap={2} mb={0.5}>
+                        <Box w={2} h={2} borderRadius="full" bg={point.seriesColor} flexShrink={0} />
+                        <Text fontWeight="600" color={point.seriesColor}>
+                          {splitCurrencyForDisplay(Number(point.data.y), sym).main}
+                          {splitCurrencyForDisplay(Number(point.data.y), sym).decimals}
+                        </Text>
                       </Flex>
-                    </Box>
-                  );
-                }}
+                    ))}
+                  </Box>
+                )}
                 theme={{
                   axis: {
                     ticks: { text: { fill: textColor, fontSize: 11 } },

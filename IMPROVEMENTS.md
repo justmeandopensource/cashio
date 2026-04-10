@@ -4,28 +4,6 @@ Analysis date: 2026-04-05
 
 ---
 
-## HIGH
-
-### 6. Duplicate Charting Libraries (Nivo + Recharts)
-
-- **File:** `frontend/package.json`
-- **Problem:** Ships both `@nivo/*` (5 packages) and `recharts` — ~700KB combined bundle weight.
-- **Fix:** Audit which charts use which library. Consolidate to one. Migrate the minority usage to the majority library, then remove the other.
-
-### 8. No List Virtualization for Large Tables
-
-- **Files:** `frontend/src/features/transactions/TransactionTable.tsx`, `frontend/src/features/mutual-funds/MutualFundsTable.tsx`, `frontend/src/features/physical-assets/PhysicalAssetsTable.tsx`
-- **Problem:** All render full page of items directly to DOM. Slow with 50+ rows, especially with popover hover triggers.
-- **Fix:** Add `@tanstack/react-virtual` for row virtualization. Only render visible rows + buffer.
-
-### 9. Missing Database Indexes
-
-- **File:** `backend/app/models/model.py`
-- **Problem:** No index on `User.email`, `User.username` (login full-scans). No index on `Transaction.transfer_id`. No composite index on `Transaction(account_id, date)`.
-- **Fix:** Add `index=True` to User.email, User.username. Add index to Transaction.transfer_id. Add composite `Index('ix_transaction_account_date', 'account_id', 'date')`.
-
----
-
 ## MEDIUM
 
 ### 12. Repeated Ledger Ownership Validation

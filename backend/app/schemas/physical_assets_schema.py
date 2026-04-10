@@ -1,5 +1,5 @@
 from datetime import datetime
-from decimal import Decimal
+from app.schemas import JsonDecimal as Decimal
 from typing import Literal, Optional
 
 from pydantic import BaseModel, Field

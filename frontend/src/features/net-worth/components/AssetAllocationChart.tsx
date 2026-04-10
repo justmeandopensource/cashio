@@ -9,7 +9,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { ResponsivePie } from "@nivo/pie";
 import { PieChart as PieChartIcon } from "lucide-react";
 import { AssetAllocationItem } from "../types";
 import { splitCurrencyForDisplay } from "@/features/mutual-funds/utils";
@@ -39,9 +39,12 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
   const emptyStateBg = useColorModeValue("gray.50", "whiteAlpha.50");
   const sym = currencySymbol || "₹";
 
-  const chartData = allocation.map((item) => ({
-    ...item,
+  const chartData = allocation.map((item, idx) => ({
+    id: item.label,
+    label: item.label,
     value: Number(item.value),
+    percentage: item.percentage,
+    color: ALLOCATION_COLORS[idx % ALLOCATION_COLORS.length],
   }));
 
   const hoveredItem = hoveredIdx !== null ? chartData[hoveredIdx] : null;
@@ -106,37 +109,24 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
             minH="200px"
             flex={{ xl: 1 }}
           >
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius="55%"
-                  outerRadius="82%"
-                  dataKey="value"
-                  labelLine={false}
-                  label={false}
-                  onMouseEnter={(_, idx) => setHoveredIdx(idx)}
-                  onMouseLeave={() => setHoveredIdx(null)}
-                  strokeWidth={0}
-                  cornerRadius={3}
-                  paddingAngle={2}
-                >
-                  {chartData.map((_, idx) => (
-                    <Cell
-                      key={`cell-${idx}`}
-                      fill={ALLOCATION_COLORS[idx % ALLOCATION_COLORS.length]}
-                      opacity={hoveredIdx === null || hoveredIdx === idx ? 1 : 0.25}
-                      style={{
-                        filter: hoveredIdx === idx ? "brightness(1.1)" : "none",
-                        transition: "opacity 0.2s ease, filter 0.2s ease",
-                      }}
-                    />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
+            <ResponsivePie
+              data={chartData}
+              margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+              innerRadius={0.55}
+              padAngle={2}
+              cornerRadius={3}
+              colors={{ datum: "data.color" }}
+              borderWidth={0}
+              enableArcLinkLabels={false}
+              enableArcLabels={false}
+              motionConfig="gentle"
+              onMouseEnter={(datum) => {
+                const idx = chartData.findIndex(d => d.id === datum.id);
+                setHoveredIdx(idx >= 0 ? idx : null);
+              }}
+              onMouseLeave={() => setHoveredIdx(null)}
+              tooltip={() => <></>}
+            />
 
             {/* Center label */}
             <Center

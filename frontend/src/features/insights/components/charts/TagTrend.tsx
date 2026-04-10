@@ -17,7 +17,7 @@ import {
   HStack,
   Spinner,
 } from "@chakra-ui/react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { ResponsivePie } from "@nivo/pie";
 import { useQuery } from "@tanstack/react-query";
 import { BarChart, RefreshCw, PieChart as PieChartIcon, AlertCircle, Tag } from "lucide-react";
 import api from "@/lib/api";
@@ -123,29 +123,23 @@ const TagTrendAnalysis: React.FC<TagTrendAnalysisProps> = () => {
     setSelectedTags([]);
   };
 
-  // Custom tooltip for pie charts
-  const renderCustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const name = payload[0].name;
-      const value = payload[0].value;
-      const percentage = (
-        (value / (data?.summary.total_amount || 0)) *
-        100
-      ).toFixed(1);
+  const tagChartData = data
+    ? data.tag_breakdown.map((item, idx) => ({
+        id: item.tag,
+        label: item.tag,
+        value: item.amount,
+        color: PIE_COLORS[idx % PIE_COLORS.length],
+      }))
+    : [];
 
-      return (
-        <Box p={2} bg={customTooltipColor} borderRadius="md" boxShadow="md">
-          <Text fontWeight="bold">{name}</Text>
-          <Text>
-            {formatNumberAsCurrency(value, currencySymbol as string)} (
-            {percentage}%)
-          </Text>
-        </Box>
-      );
-    }
-
-    return null;
-  };
+  const categoryChartData = data
+    ? data.category_breakdown.map((item, idx) => ({
+        id: item.category,
+        label: item.category,
+        value: item.amount,
+        color: PIE_COLORS[(idx + 5) % PIE_COLORS.length],
+      }))
+    : [];
 
   return (
     <Box bg={bgColor} borderRadius="lg" p={{ base: 4, md: 6 }} boxShadow="lg">
@@ -297,28 +291,29 @@ const TagTrendAnalysis: React.FC<TagTrendAnalysisProps> = () => {
                 <Heading size="sm" mb={4} textAlign="center">
                   Tag Breakdown
                 </Heading>
-                {data.tag_breakdown.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="90%">
-                    <PieChart>
-                      <Pie
-                        data={data.tag_breakdown}
-                        dataKey="amount"
-                        nameKey="tag"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius="70%"
-                        labelLine={false}
-                      >
-                        {data.tag_breakdown.map((_, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={PIE_COLORS[index % PIE_COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip content={renderCustomTooltip} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                {tagChartData.length > 0 ? (
+                  <Box width="100%" height="90%">
+                    <ResponsivePie
+                      data={tagChartData}
+                      margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+                      innerRadius={0}
+                      padAngle={1}
+                      cornerRadius={3}
+                      colors={{ datum: "data.color" }}
+                      borderWidth={0}
+                      enableArcLinkLabels={false}
+                      enableArcLabels={false}
+                      tooltip={({ datum }) => (
+                        <Box p={2} bg={customTooltipColor} borderRadius="md" boxShadow="md">
+                          <Text fontWeight="bold">{datum.label}</Text>
+                          <Text>
+                            {formatNumberAsCurrency(datum.value, currencySymbol as string)} (
+                            {((datum.value / (data?.summary.total_amount || 1)) * 100).toFixed(1)}%)
+                          </Text>
+                        </Box>
+                      )}
+                    />
+                  </Box>
                 ) : (
                   <Center height="100%">
                     <Text color={secondaryTextColor}>
@@ -342,28 +337,29 @@ const TagTrendAnalysis: React.FC<TagTrendAnalysisProps> = () => {
                 <Heading size="sm" mb={4} textAlign="center">
                   Category Breakdown
                 </Heading>
-                {data.category_breakdown.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="90%">
-                    <PieChart>
-                      <Pie
-                        data={data.category_breakdown}
-                        dataKey="amount"
-                        nameKey="category"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius="70%"
-                        labelLine={false}
-                      >
-                        {data.category_breakdown.map((_, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={PIE_COLORS[(index + 5) % PIE_COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip content={renderCustomTooltip} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                {categoryChartData.length > 0 ? (
+                  <Box width="100%" height="90%">
+                    <ResponsivePie
+                      data={categoryChartData}
+                      margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+                      innerRadius={0}
+                      padAngle={1}
+                      cornerRadius={3}
+                      colors={{ datum: "data.color" }}
+                      borderWidth={0}
+                      enableArcLinkLabels={false}
+                      enableArcLabels={false}
+                      tooltip={({ datum }) => (
+                        <Box p={2} bg={customTooltipColor} borderRadius="md" boxShadow="md">
+                          <Text fontWeight="bold">{datum.label}</Text>
+                          <Text>
+                            {formatNumberAsCurrency(datum.value, currencySymbol as string)} (
+                            {((datum.value / (data?.summary.total_amount || 1)) * 100).toFixed(1)}%)
+                          </Text>
+                        </Box>
+                      )}
+                    />
+                  </Box>
                 ) : (
                   <Center height="100%">
                     <Text color={secondaryTextColor}>

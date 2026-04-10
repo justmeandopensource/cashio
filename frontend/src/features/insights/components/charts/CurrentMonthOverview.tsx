@@ -1,4 +1,4 @@
-import React, { PureComponent, useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Box,
   VStack,
@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ResponsiveContainer, Treemap, Tooltip } from "recharts";
+import { ResponsiveTreeMap } from "@nivo/treemap";
 import { useQuery } from "@tanstack/react-query";
 import {
   Calendar,
@@ -126,69 +126,12 @@ interface CurrentMonthOverviewData {
   expense_categories_breakdown: CategoryData[];
 }
 
-interface CustomizedTreemapContentProps {
-  root?: { name?: string; value?: number; children?: any[] };
-  depth?: number;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  index?: number;
-  name?: string;
-  value?: number;
-  color?: string;
-  colors: string[];
-  strokeColor: string;
-  textColor: string;
-  currencySymbol: string;
-}
-
 interface CategoryBarBreakdownProps {
   categories: CategoryData[];
   total: number;
   type: "income" | "expense";
   currencySymbol: string;
   onCategoryClick: (categoryId: number, type: "income" | "expense") => void;
-}
-
-// --- Treemap content with labels ---
-
-class CustomizedTreemapContent extends PureComponent<CustomizedTreemapContentProps> {
-  render() {
-    const {
-      root,
-      depth = 0,
-      x = 0,
-      y = 0,
-      width = 0,
-      height = 0,
-      index = 0,
-      color,
-      colors,
-      strokeColor,
-    } = this.props;
-
-    const fallbackColor = colors[Math.floor((index / (root?.children?.length || 1)) * colors.length)];
-    const fillColor = color ?? (depth < 2 ? fallbackColor : "#ffffff00");
-
-    return (
-      <g>
-        <rect
-          x={x}
-          y={y}
-          width={width}
-          height={height}
-          style={{
-            fill: fillColor,
-            stroke: strokeColor,
-            strokeWidth: 2 / (depth + 1e-10),
-            strokeOpacity: 1 / (depth + 1e-10),
-          }}
-          rx={depth === 1 ? 3 : 0}
-        />
-      </g>
-    );
-  }
 }
 
 // --- Category bar breakdown ---
@@ -391,7 +334,6 @@ const CurrentMonthOverview: React.FC = () => {
   const secondaryTextColor = useColorModeValue("gray.500", "gray.400");
   const tooltipBorderColor = useColorModeValue("gray.200", "gray.600");
   const treemapStrokeColor = useColorModeValue("#fff", "#2D3748");
-  const treemapTextColor = useColorModeValue("#fff", "#fff");
   const sectionBorderColor = useColorModeValue("gray.200", "gray.600");
   const columnHeaderColor = useColorModeValue("gray.400", "gray.500");
   const positiveColor = useColorModeValue("green.500", "green.300");
@@ -448,6 +390,38 @@ const CurrentMonthOverview: React.FC = () => {
     ),
     [data?.expense_categories_breakdown, baseColors],
   );
+
+  const incomeTreemapData = useMemo(() => ({
+    name: "income",
+    children: coloredIncomeData.map(cat => ({
+      name: cat.name,
+      color: cat.color,
+      ...(cat.children?.length ? {
+        children: cat.children.map(child => ({
+          name: child.name,
+          value: child.value,
+          color: child.color,
+          parent: cat.name,
+        })),
+      } : { value: cat.value }),
+    })),
+  }), [coloredIncomeData]);
+
+  const expenseTreemapData = useMemo(() => ({
+    name: "expense",
+    children: coloredExpenseData.map(cat => ({
+      name: cat.name,
+      color: cat.color,
+      ...(cat.children?.length ? {
+        children: cat.children.map(child => ({
+          name: child.name,
+          value: child.value,
+          color: child.color,
+          parent: cat.name,
+        })),
+      } : { value: cat.value }),
+    })),
+  }), [coloredExpenseData]);
 
   const netSavings = (data?.total_income ?? 0) - (data?.total_expense ?? 0);
   const savingsRate = data?.total_income && data.total_income > 0
@@ -515,45 +489,6 @@ const CurrentMonthOverview: React.FC = () => {
       </VStack>
     );
   }
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const d = payload[0].payload;
-      const totalValue = d.root?.value || d.value;
-      const parentName = d.root?.name;
-      const pct = totalValue > 0 ? ((d.value / totalValue) * 100).toFixed(1) : "0";
-      return (
-        <Box
-          bg={bgColor}
-          px={3}
-          py={2.5}
-          borderRadius="lg"
-          boxShadow="lg"
-          border="1px solid"
-          borderColor={tooltipBorderColor}
-          minW="140px"
-        >
-          <Text fontWeight="bold" fontSize="sm" color={primaryTextColor} mb={0.5}>
-            {d.name}
-          </Text>
-          {parentName && (
-            <Text fontSize="xs" color={secondaryTextColor} mb={1}>
-              {parentName}
-            </Text>
-          )}
-          <Flex justify="space-between" align="baseline" gap={4}>
-            <Text fontWeight="bold" color={primaryTextColor}>
-              {formatNumberAsCurrency(d.value, currencySymbol as string)}
-            </Text>
-            <Text fontSize="xs" fontWeight="medium" color={secondaryTextColor}>
-              {pct}%
-            </Text>
-          </Flex>
-        </Box>
-      );
-    }
-    return null;
-  };
 
   const stagger = {
     hidden: {},
@@ -772,24 +707,56 @@ const CurrentMonthOverview: React.FC = () => {
                   Income Breakdown
                 </Heading>
                 <Box height="280px" width="full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <Treemap
-                      data={coloredIncomeData}
-                      dataKey="value"
-                      aspectRatio={4 / 3}
-                      stroke={treemapStrokeColor}
-                      content={
-                        <CustomizedTreemapContent
-                          colors={baseColors}
-                          strokeColor={treemapStrokeColor}
-                          textColor={treemapTextColor}
-                          currencySymbol={currencySymbol as string}
-                        />
-                      }
-                    >
-                      <Tooltip content={<CustomTooltip />} />
-                    </Treemap>
-                  </ResponsiveContainer>
+                  <ResponsiveTreeMap
+                    data={incomeTreemapData}
+                    identity="name"
+                    value="value"
+                    tile="squarify"
+                    leavesOnly={true}
+                    innerPadding={3}
+                    outerPadding={3}
+                    borderWidth={2}
+                    borderColor={treemapStrokeColor}
+                    colors={(node) => node.data.color || baseColors[0]}
+                    labelSkipSize={40}
+                    label={(node) => node.id}
+                    labelTextColor="#fff"
+                    parentLabelTextColor="#fff"
+                    enableParentLabel={false}
+                    tooltip={({ node }) => {
+                      const pct = data.total_income > 0 ? (node.value / data.total_income) * 100 : 0;
+                      const parentName = node.data?.parent;
+                      return (
+                        <Box
+                          bg={bgColor}
+                          px={3}
+                          py={2.5}
+                          borderRadius="lg"
+                          boxShadow="lg"
+                          border="1px solid"
+                          borderColor={tooltipBorderColor}
+                          minW="140px"
+                        >
+                          <Text fontWeight="bold" fontSize="sm" color={primaryTextColor} mb={0.5}>
+                            {node.id}
+                          </Text>
+                          {parentName && (
+                            <Text fontSize="xs" color={secondaryTextColor} mb={1}>
+                              {parentName}
+                            </Text>
+                          )}
+                          <Flex justify="space-between" align="baseline" gap={4}>
+                            <Text fontWeight="bold" color={primaryTextColor}>
+                              {formatNumberAsCurrency(node.value, currencySymbol as string)}
+                            </Text>
+                            <Text fontSize="xs" fontWeight="medium" color={secondaryTextColor}>
+                              {pct.toFixed(1)}%
+                            </Text>
+                          </Flex>
+                        </Box>
+                      );
+                    }}
+                  />
                 </Box>
               </MotionBox>
             </GridItem>
@@ -810,24 +777,56 @@ const CurrentMonthOverview: React.FC = () => {
                   Expense Breakdown
                 </Heading>
                 <Box height="280px" width="full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <Treemap
-                      data={coloredExpenseData}
-                      dataKey="value"
-                      aspectRatio={4 / 3}
-                      stroke={treemapStrokeColor}
-                      content={
-                        <CustomizedTreemapContent
-                          colors={baseColors}
-                          strokeColor={treemapStrokeColor}
-                          textColor={treemapTextColor}
-                          currencySymbol={currencySymbol as string}
-                        />
-                      }
-                    >
-                      <Tooltip content={<CustomTooltip />} />
-                    </Treemap>
-                  </ResponsiveContainer>
+                  <ResponsiveTreeMap
+                    data={expenseTreemapData}
+                    identity="name"
+                    value="value"
+                    tile="squarify"
+                    leavesOnly={true}
+                    innerPadding={3}
+                    outerPadding={3}
+                    borderWidth={2}
+                    borderColor={treemapStrokeColor}
+                    colors={(node) => node.data.color || baseColors[0]}
+                    labelSkipSize={40}
+                    label={(node) => node.id}
+                    labelTextColor="#fff"
+                    parentLabelTextColor="#fff"
+                    enableParentLabel={false}
+                    tooltip={({ node }) => {
+                      const pct = data.total_expense > 0 ? (node.value / data.total_expense) * 100 : 0;
+                      const parentName = node.data?.parent;
+                      return (
+                        <Box
+                          bg={bgColor}
+                          px={3}
+                          py={2.5}
+                          borderRadius="lg"
+                          boxShadow="lg"
+                          border="1px solid"
+                          borderColor={tooltipBorderColor}
+                          minW="140px"
+                        >
+                          <Text fontWeight="bold" fontSize="sm" color={primaryTextColor} mb={0.5}>
+                            {node.id}
+                          </Text>
+                          {parentName && (
+                            <Text fontSize="xs" color={secondaryTextColor} mb={1}>
+                              {parentName}
+                            </Text>
+                          )}
+                          <Flex justify="space-between" align="baseline" gap={4}>
+                            <Text fontWeight="bold" color={primaryTextColor}>
+                              {formatNumberAsCurrency(node.value, currencySymbol as string)}
+                            </Text>
+                            <Text fontSize="xs" fontWeight="medium" color={secondaryTextColor}>
+                              {pct.toFixed(1)}%
+                            </Text>
+                          </Flex>
+                        </Box>
+                      );
+                    }}
+                  />
                 </Box>
               </MotionBox>
             </GridItem>

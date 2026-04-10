@@ -1,22 +1,14 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Box,
   Flex,
   Heading,
   Icon,
+  Text,
   useColorModeValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
-} from "recharts";
+import { ResponsiveLine } from "@nivo/line";
 import { TrendingUp } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
@@ -43,12 +35,30 @@ const AccountBalanceChart: React.FC<AccountBalanceChartProps> = ({ accountId }) 
   const gridStroke = useColorModeValue("#e2e8f0", "#2d3748");
   const axisTickColor = useColorModeValue("#718096", "#cbd5e0");
   const tooltipBg = useColorModeValue("#fff", "#2d3748");
+  const tooltipBorder = useColorModeValue("#e2e8f0", "#4a5568");
   const iconColor = useColorModeValue("brand.500", "brand.300");
   const lineColor = useColorModeValue("#3182ce", "#63b3ed");
   const fillColor = useColorModeValue("#3182ce", "#63b3ed");
   const zeroLineColor = useColorModeValue("#e2e8f0", "#4a5568");
 
   const { data } = useAccountBalanceHistory(ledgerId || "", accountId);
+
+  const lineData = useMemo(() => {
+    if (!data?.data_points?.length) return [];
+    return [{
+      id: "Balance",
+      data: data.data_points.map(p => ({ x: p.date, y: p.balance })),
+    }];
+  }, [data]);
+
+  const tickValues = useMemo(() => {
+    if (!data?.data_points?.length) return undefined;
+    const xValues = data.data_points.map(p => p.date);
+    const maxLabels = 6;
+    if (xValues.length <= maxLabels) return xValues;
+    const step = Math.floor(xValues.length / maxLabels);
+    return xValues.filter((_, i) => i % step === 0).slice(0, maxLabels);
+  }, [data]);
 
   if (!data || data.data_points.length === 0) {
     return null;
@@ -83,70 +93,72 @@ const AccountBalanceChart: React.FC<AccountBalanceChartProps> = ({ accountId }) 
         </Flex>
 
         <Box height={{ base: "220px", md: "280px" }} width="full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={data.data_points}
-              margin={{ top: 10, right: 10, left: -10, bottom: 10 }}
-            >
-              <defs>
-                <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={fillColor} stopOpacity={0.25} />
-                  <stop offset="95%" stopColor={fillColor} stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
-              <XAxis
-                dataKey="date"
-                tickFormatter={formatDate}
-                tick={{ fontSize: "0.65rem", fill: axisTickColor }}
-                interval="preserveStartEnd"
-                minTickGap={40}
-              />
-              <YAxis
-                tickFormatter={(value) => {
-                  if (value === 0) return "";
-                  const sym = currencySymbol || "$";
-                  const abs = Math.abs(value);
-                  if (abs >= 100000)
-                    return `${sym}${(value / 100000).toFixed(1)}L`;
-                  if (abs >= 1000)
-                    return `${sym}${(value / 1000).toFixed(1)}K`;
-                  return `${sym}${value}`;
-                }}
-                tick={{ fontSize: "0.65rem", fill: axisTickColor }}
-              />
-              <Tooltip
-                formatter={(value: number) => [
-                  formatNumberAsCurrency(value, currencySymbol as string),
-                  "Balance",
-                ]}
-                labelFormatter={(label: string) => {
-                  const d = new Date(label + "T00:00:00");
-                  return d.toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  });
-                }}
-                contentStyle={{
-                  backgroundColor: tooltipBg,
-                  borderRadius: "10px",
-                }}
-              />
-              {hasNegative && (
-                <ReferenceLine y={0} stroke={zeroLineColor} strokeDasharray="4 4" />
-              )}
-              <Area
-                type="monotone"
-                dataKey="balance"
-                stroke={lineColor}
-                strokeWidth={2}
-                fill="url(#balanceGradient)"
-                dot={false}
-                activeDot={{ r: 4, strokeWidth: 2 }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <ResponsiveLine
+            data={lineData}
+            margin={{ top: 10, right: 20, bottom: 40, left: 60 }}
+            xScale={{ type: "point" }}
+            yScale={{ type: "linear", min: "auto", max: "auto" }}
+            curve="monotoneX"
+            colors={[lineColor]}
+            lineWidth={2}
+            enablePoints={false}
+            enableArea={true}
+            areaOpacity={0.15}
+            useMesh={true}
+            enableCrosshair={true}
+            enableGridX={false}
+            gridYValues={5}
+            defs={[{
+              id: "balanceGradient",
+              type: "linearGradient",
+              colors: [
+                { offset: 0, color: fillColor, opacity: 0.25 },
+                { offset: 100, color: fillColor, opacity: 0.02 },
+              ],
+            }]}
+            fill={[{ match: "*", id: "balanceGradient" }]}
+            axisBottom={{
+              tickSize: 5,
+              tickPadding: 5,
+              format: formatDate,
+              tickValues,
+            }}
+            axisLeft={{
+              tickSize: 5,
+              tickPadding: 5,
+              tickValues: 5,
+              format: (value) => {
+                if (value === 0) return "";
+                const sym = currencySymbol || "$";
+                const abs = Math.abs(Number(value));
+                if (abs >= 100000) return `${sym}${(Number(value) / 100000).toFixed(1)}L`;
+                if (abs >= 1000) return `${sym}${(Number(value) / 1000).toFixed(1)}K`;
+                return `${sym}${value}`;
+              },
+            }}
+            markers={hasNegative ? [{ axis: "y" as const, value: 0, lineStyle: { stroke: zeroLineColor, strokeDasharray: "4 4" } }] : []}
+            tooltip={({ point }) => {
+              const d = new Date(point.data.xFormatted + "T00:00:00");
+              return (
+                <Box bg={tooltipBg} border="1px solid" borderColor={tooltipBorder} borderRadius="md" px={3} py={2} boxShadow="lg" fontSize="xs" whiteSpace="nowrap">
+                  <Text fontWeight="bold" color={axisTickColor}>
+                    {d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  </Text>
+                  <Text color={axisTickColor} mb={0.5}>
+                    {d.toLocaleDateString("en-US", { year: "numeric" })}
+                  </Text>
+                  <Text fontWeight="600" color={lineColor}>
+                    {formatNumberAsCurrency(Number(point.data.y), currencySymbol as string)}
+                  </Text>
+                </Box>
+              );
+            }}
+            theme={{
+              axis: { ticks: { text: { fill: axisTickColor, fontSize: 11 } } },
+              grid: { line: { stroke: gridStroke, strokeWidth: 1 } },
+              crosshair: { line: { stroke: axisTickColor, strokeWidth: 1, strokeOpacity: 0.35 } },
+            }}
+          />
         </Box>
       </Box>
     </MotionBox>

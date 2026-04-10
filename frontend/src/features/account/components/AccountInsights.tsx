@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Box,
   Flex,
@@ -12,16 +12,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
+import { ResponsiveLine } from "@nivo/line";
 import { LineChart, BarChart2 } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
@@ -45,7 +36,7 @@ const formatPeriod = (period: string) => {
     const [year, month] = period.split("-");
     return new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString(
       "en-US",
-      { month: "short", year: "numeric" }
+      { month: "short", year: "2-digit" }
     );
   }
   return period;
@@ -69,6 +60,14 @@ const AccountInsights: React.FC<AccountInsightsProps> = ({ accountId }) => {
   const baseColors = useColorModeValue(BASE_COLORS_LIGHT, BASE_COLORS_DARK);
 
   const { data } = useAccountInsights(ledgerId || "", accountId);
+
+  const lineData = useMemo(() => {
+    if (!data?.trend_data?.length) return [];
+    return [
+      { id: "Income", data: data.trend_data.map(d => ({ x: d.period, y: d.income })) },
+      { id: "Expense", data: data.trend_data.map(d => ({ x: d.period, y: d.expense })) },
+    ];
+  }, [data]);
 
   if (!data || (data.trend_data.length === 0 && data.top_categories.length === 0)) {
     return null;
@@ -116,64 +115,70 @@ const AccountInsights: React.FC<AccountInsightsProps> = ({ accountId }) => {
               </Flex>
 
               <Box height={{ base: "220px", md: "260px" }} width="full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={data.trend_data}
-                    margin={{ top: 10, right: 10, left: -10, bottom: 10 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
-                    <XAxis
-                      dataKey="period"
-                      tickFormatter={formatPeriod}
-                      tick={{ fontSize: "0.65rem", fill: axisTickColor }}
-                    />
-                    <YAxis
-                      tickFormatter={(value) => {
-                        if (value === 0) return "";
-                        const sym = currencySymbol || "$";
-                        const abs = Math.abs(value);
-                        if (abs >= 100000)
-                          return `${sym}${(value / 100000).toFixed(1)}L`;
-                        if (abs >= 1000)
-                          return `${sym}${(value / 1000).toFixed(1)}K`;
-                        return `${sym}${value}`;
-                      }}
-                      tick={{ fontSize: "0.65rem", fill: axisTickColor }}
-                    />
-                    <Tooltip
-                      formatter={(value: number) =>
-                        formatNumberAsCurrency(value, currencySymbol as string)
-                      }
-                      labelFormatter={formatPeriod}
-                      contentStyle={{
-                        backgroundColor: tooltipBg,
-                        borderRadius: "10px",
-                      }}
-                    />
-                    <Legend
-                      verticalAlign="bottom"
-                      height={36}
-                      iconType="circle"
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="income"
-                      stroke="#38B2AC"
-                      fill="#38B2AC"
-                      fillOpacity={0.3}
-                      name="Income"
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="expense"
-                      stroke="#E53E3E"
-                      fill="#E53E3E"
-                      fillOpacity={0.3}
-                      name="Expense"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <ResponsiveLine
+                  data={lineData}
+                  margin={{ top: 10, right: 20, bottom: 40, left: 60 }}
+                  xScale={{ type: "point" }}
+                  yScale={{ type: "linear", min: 0, max: "auto", stacked: false }}
+                  curve="monotoneX"
+                  colors={["#38B2AC", "#E53E3E"]}
+                  lineWidth={2}
+                  enablePoints={data?.trend_data ? data.trend_data.length <= 12 : true}
+                  pointSize={6}
+                  pointColor={{ theme: "background" }}
+                  pointBorderWidth={2}
+                  pointBorderColor={{ from: "serieColor" }}
+                  enableArea={true}
+                  areaOpacity={0.15}
+                  enableSlices="x"
+                  enableGridX={false}
+                  gridYValues={5}
+                  axisBottom={{
+                    tickSize: 5,
+                    tickPadding: 5,
+                    format: formatPeriod,
+                  }}
+                  axisLeft={{
+                    tickSize: 5,
+                    tickPadding: 5,
+                    tickValues: 5,
+                    format: (v) => {
+                      const abs = Math.abs(Number(v));
+                      const sym = currencySymbol || "$";
+                      if (abs === 0) return "";
+                      if (abs >= 100000) return `${sym}${(Number(v) / 100000).toFixed(1)}L`;
+                      if (abs >= 1000) return `${sym}${(Number(v) / 1000).toFixed(1)}K`;
+                      return `${sym}${v}`;
+                    },
+                  }}
+                  sliceTooltip={({ slice }) => (
+                    <Box bg={tooltipBg} borderRadius="10px" px={3} py={2} boxShadow="lg" fontSize="xs" whiteSpace="nowrap">
+                      <Text fontWeight="bold" color={axisTickColor} mb={1}>{formatPeriod(slice.points[0].data.xFormatted as string)}</Text>
+                      {[...slice.points].sort((a, b) => Number(b.data.y) - Number(a.data.y)).map(point => (
+                        <Flex key={point.id} align="center" gap={2} mb={0.5}>
+                          <Box w={2} h={2} borderRadius="full" bg={point.seriesColor} flexShrink={0} />
+                          <Text fontWeight="600" color={point.seriesColor}>{formatNumberAsCurrency(Number(point.data.y), currencySymbol as string)}</Text>
+                        </Flex>
+                      ))}
+                    </Box>
+                  )}
+                  theme={{
+                    axis: { ticks: { text: { fill: axisTickColor, fontSize: 11 } } },
+                    grid: { line: { stroke: gridStroke, strokeWidth: 1 } },
+                    crosshair: { line: { stroke: axisTickColor, strokeWidth: 1, strokeOpacity: 0.35 } },
+                  }}
+                />
               </Box>
+              <Flex gap={4} justify="center" mt={2} wrap="wrap">
+                <Flex align="center" gap={1.5}>
+                  <Box w={3} h={0.5} borderRadius="full" bg="#38B2AC" />
+                  <Text fontSize="xs" color={axisTickColor}>Income</Text>
+                </Flex>
+                <Flex align="center" gap={1.5}>
+                  <Box w={3} h={0.5} borderRadius="full" bg="#E53E3E" />
+                  <Text fontSize="xs" color={axisTickColor}>Expense</Text>
+                </Flex>
+              </Flex>
             </Box>
           </GridItem>
         )}
