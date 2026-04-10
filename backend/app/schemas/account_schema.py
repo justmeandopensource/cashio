@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
@@ -39,7 +40,7 @@ class AccountCreate(BaseModel, str_strip_whitespace=True):
     type: Literal["asset", "liability"]
     subtype: ACCOUNT_SUBTYPE_VALUES
     owner: Optional[str] = Field(None, max_length=100)
-    opening_balance: Optional[float] = None
+    opening_balance: Optional[Decimal] = None
     description: Optional[str] = None
     notes: Optional[str] = None
 
@@ -48,7 +49,7 @@ class AccountUpdate(BaseModel, str_strip_whitespace=True):
     name: Optional[str] = None
     subtype: Optional[ACCOUNT_SUBTYPE_VALUES] = None
     owner: Optional[str] = Field(None, max_length=100)
-    opening_balance: Optional[float] = None
+    opening_balance: Optional[Decimal] = None
     description: Optional[str] = None
     notes: Optional[str] = None
 
@@ -60,9 +61,9 @@ class Account(BaseModel, str_strip_whitespace=True):
     type: Literal["asset", "liability"]
     subtype: ACCOUNT_SUBTYPE_VALUES
     owner: Optional[str] = None
-    opening_balance: Optional[float] = None
-    balance: float
-    net_balance: Optional[float] = None
+    opening_balance: Optional[Decimal] = None
+    balance: Decimal
+    net_balance: Optional[Decimal] = None
     description: Optional[str] = None
     notes: Optional[str] = None
     last_transaction_date: Optional[datetime] = None
@@ -74,8 +75,8 @@ class Account(BaseModel, str_strip_whitespace=True):
 
 
 class AccountSummary(BaseModel):
-    total_credit: float
-    total_debit: float
+    total_credit: Decimal
+    total_debit: Decimal
     transaction_count: int
     first_transaction_date: Optional[datetime] = None
     last_transaction_date: Optional[datetime] = None
@@ -83,14 +84,14 @@ class AccountSummary(BaseModel):
 
 class AccountTrendItem(BaseModel):
     period: str
-    income: float
-    expense: float
+    income: Decimal
+    expense: Decimal
 
 
 class AccountCategoryItem(BaseModel):
     name: str
-    amount: float
-    percentage: float
+    amount: Decimal
+    percentage: Decimal
 
 
 class AccountInsights(BaseModel):
@@ -101,7 +102,7 @@ class AccountInsights(BaseModel):
 
 class BalanceDataPoint(BaseModel):
     date: str
-    balance: float
+    balance: Decimal
 
 
 class AccountBalanceHistory(BaseModel):
@@ -111,13 +112,13 @@ class AccountBalanceHistory(BaseModel):
 class FundsFlowCounterparty(BaseModel):
     account_id: int
     account_name: str
-    amount: float
+    amount: Decimal
 
 
 class FundsFlowMonth(BaseModel):
     month: str
-    inflow: float
-    outflow: float
+    inflow: Decimal
+    outflow: Decimal
     inflow_counterparties: list[FundsFlowCounterparty]
     outflow_counterparties: list[FundsFlowCounterparty]
 

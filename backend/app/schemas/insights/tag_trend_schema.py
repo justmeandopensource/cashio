@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import List
 
 from pydantic import BaseModel
@@ -5,17 +6,17 @@ from pydantic import BaseModel
 
 class TagAmount(BaseModel):
     tag: str
-    amount: float
+    amount: Decimal
 
 
 class CategoryAmount(BaseModel):
     category: str
-    amount: float
+    amount: Decimal
     type: str
 
 
 class TagTrendSummary(BaseModel):
-    total_amount: float
+    total_amount: Decimal
 
 
 class TagTrendResponse(BaseModel):

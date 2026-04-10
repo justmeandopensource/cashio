@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import List
 
 from pydantic import BaseModel
@@ -5,9 +6,9 @@ from pydantic import BaseModel
 
 class ExpenseCalendarData(BaseModel):
     date: str
-    amount: float
+    amount: Decimal
 
 
 class ExpenseCalendarResponse(BaseModel):
     expenses: List[ExpenseCalendarData]
-    total_expense: float
+    total_expense: Decimal

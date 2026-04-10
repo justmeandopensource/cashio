@@ -24,12 +24,6 @@ Analysis date: 2026-04-05
 - **Problem:** No index on `User.email`, `User.username` (login full-scans). No index on `Transaction.transfer_id`. No composite index on `Transaction(account_id, date)`.
 - **Fix:** Add `index=True` to User.email, User.username. Add index to Transaction.transfer_id. Add composite `Index('ix_transaction_account_date', 'account_id', 'date')`.
 
-### 10. Float Instead of Decimal in Pydantic Schemas
-
-- **Files:** `backend/app/schemas/transaction_schema.py` (lines ~12, 45-46), other schema files
-- **Problem:** Uses `float` for credit/debit/amount fields. Floating-point arithmetic causes precision loss with currency values.
-- **Fix:** Change to `Decimal` type in all financial Pydantic schemas. Add proper serialization config for JSON responses.
-
 ---
 
 ## MEDIUM

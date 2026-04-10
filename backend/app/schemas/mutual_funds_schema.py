@@ -82,7 +82,7 @@ class MutualFund(MutualFundCreate, str_strip_whitespace=True):
     total_realized_gain: Decimal
     total_invested_cash: Decimal
     external_cash_invested: Decimal
-    xirr_percentage: Optional[float] = None
+    xirr_percentage: Optional[Decimal] = None
     holding_period_days: Optional[int] = None
 
     # Related data
@@ -196,7 +196,7 @@ class AmcSummary(BaseModel, str_strip_whitespace=True):
 class NavFetchResult(BaseModel, str_strip_whitespace=True):
     scheme_code: str
     fund_name: Optional[str] = None
-    nav_value: Optional[float] = None
+    nav_value: Optional[Decimal] = None
     nav_date: Optional[str] = None
     success: bool
     error_message: Optional[str] = None

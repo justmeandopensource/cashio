@@ -38,7 +38,7 @@ class PhysicalAssetNetWorthItem(BaseModel):
 class AssetAllocationItem(BaseModel):
     label: str
     value: Decimal
-    percentage: float
+    percentage: Decimal
 
 
 class NetWorthResponse(BaseModel):

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel
@@ -5,19 +6,19 @@ from pydantic import BaseModel
 
 class TrendDataPoint(BaseModel):
     period: str
-    income: float
-    expense: float
+    income: Decimal
+    expense: Decimal
 
 
 class HighestAmount(BaseModel):
     period: Optional[str]
-    amount: float
+    amount: Decimal
 
 
 class CategorySummary(BaseModel):
-    total: float
+    total: Decimal
     highest: HighestAmount
-    average: float
+    average: Decimal
 
 
 class IncomeExpenseTrendResponse(BaseModel):
@@ -28,14 +29,14 @@ class IncomeExpenseTrendResponse(BaseModel):
 class CategoryBreakdown(BaseModel):
     category_id: int
     name: str
-    value: float
+    value: Decimal
     children: Optional[List["CategoryBreakdown"]] = None
 
 
 class MonthOverviewResponse(BaseModel):
-    total_income: float
-    total_expense: float
-    prev_month_total_income: float
-    prev_month_total_expense: float
+    total_income: Decimal
+    total_expense: Decimal
+    prev_month_total_income: Decimal
+    prev_month_total_expense: Decimal
     income_categories_breakdown: List[CategoryBreakdown]
     expense_categories_breakdown: List[CategoryBreakdown]

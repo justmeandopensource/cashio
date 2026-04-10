@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel
@@ -8,8 +9,8 @@ from app.schemas.tag_schema import Tag, TagCreate
 
 class TransactionSplitCreate(BaseModel):
     category_id: Optional[int] = None
-    credit: float = 0.00
-    debit: float = 0.00
+    credit: Decimal = Decimal("0")
+    debit: Decimal = Decimal("0")
     notes: Optional[str] = None
 
 
@@ -17,8 +18,8 @@ class TransactionSplit(BaseModel, str_strip_whitespace=True):
     split_id: int
     transaction_id: int
     category_id: Optional[int] = None
-    credit: float
-    debit: float
+    credit: Decimal
+    debit: Decimal
     notes: Optional[str]
 
     class Config:
@@ -33,8 +34,8 @@ class MatchedSplitInfo(BaseModel):
     split_id: int
     category_id: int
     category_name: str
-    debit: float
-    credit: float
+    debit: Decimal
+    credit: Decimal
     notes: Optional[str] = None
 
 
@@ -42,8 +43,8 @@ class TransactionCreate(BaseModel):
     account_id: int
     category_id: Optional[int] = None
     type: Literal["income", "expense"]
-    credit: float = 0.00
-    debit: float = 0.00
+    credit: Decimal = Decimal("0")
+    debit: Decimal = Decimal("0")
     date: datetime
     notes: Optional[str] = None
     store: Optional[str] = None
@@ -59,8 +60,8 @@ class TransactionCreate(BaseModel):
 
 class TransactionSplitUpdate(BaseModel):
     category_id: Optional[int] = None
-    credit: Optional[float] = None
-    debit: Optional[float] = None
+    credit: Optional[Decimal] = None
+    debit: Optional[Decimal] = None
     notes: Optional[str] = None
 
 
@@ -68,8 +69,8 @@ class TransactionUpdate(BaseModel):
     account_id: Optional[int] = None
     category_id: Optional[int] = None
     type: Optional[Literal["income", "expense"]] = None
-    credit: Optional[float] = None
-    debit: Optional[float] = None
+    credit: Optional[Decimal] = None
+    debit: Optional[Decimal] = None
     date: Optional[datetime] = None
     notes: Optional[str] = None
     store: Optional[str] = None
@@ -86,8 +87,8 @@ class Transaction(BaseModel, str_strip_whitespace=True):
     account_name: Optional[str] = None
     category_id: Optional[int] = None
     category_name: Optional[str] = None
-    credit: float
-    debit: float
+    credit: Decimal
+    debit: Decimal
     date: datetime
     notes: Optional[str]
     store: Optional[str]
@@ -113,20 +114,20 @@ class PaginatedTransactionResponse(BaseModel):
     total_pages: int
     current_page: int
     per_page: int
-    total_credit: float = 0
-    total_debit: float = 0
-    net_amount: float = 0
+    total_credit: Decimal = Decimal("0")
+    total_debit: Decimal = Decimal("0")
+    net_amount: Decimal = Decimal("0")
 
 
 class TransferCreate(BaseModel):
     source_account_id: int
     destination_account_id: int
-    source_amount: float
-    destination_amount: Optional[float] = None
+    source_amount: Decimal
+    destination_amount: Optional[Decimal] = None
     date: datetime
     notes: Optional[str] = None
     tags: Optional[List[TagCreate]] = None
-    fee_amount: Optional[float] = None
+    fee_amount: Optional[Decimal] = None
     fee_category_id: Optional[int] = None
 
 
@@ -136,12 +137,12 @@ class TransferCreate(BaseModel):
 class TransferUpdate(BaseModel):
     source_account_id: int
     destination_account_id: int
-    source_amount: float
-    destination_amount: Optional[float] = None
+    source_amount: Decimal
+    destination_amount: Optional[Decimal] = None
     date: datetime
     notes: Optional[str] = None
     tags: Optional[List[TagCreate]] = None
-    fee_amount: Optional[float] = None
+    fee_amount: Optional[Decimal] = None
     fee_category_id: Optional[int] = None
 
 

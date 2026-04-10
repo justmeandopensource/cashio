@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
@@ -40,10 +41,10 @@ class PhysicalAssetBase(BaseModel, str_strip_whitespace=True):
     physical_asset_id: int
     name: str
     asset_type_id: int
-    total_quantity: float
-    average_cost_per_unit: float
-    latest_price_per_unit: float
-    current_value: float
+    total_quantity: Decimal
+    average_cost_per_unit: Decimal
+    latest_price_per_unit: Decimal
+    current_value: Decimal
 
 
 class PhysicalAssetCreate(BaseModel, str_strip_whitespace=True):
@@ -59,17 +60,17 @@ class PhysicalAssetUpdate(BaseModel, str_strip_whitespace=True):
 
 
 class PhysicalAssetPriceUpdate(BaseModel, str_strip_whitespace=True):
-    latest_price_per_unit: float = Field(..., gt=0)
+    latest_price_per_unit: Decimal = Field(..., gt=0)
 
 
 class PhysicalAsset(PhysicalAssetCreate, str_strip_whitespace=True):
     physical_asset_id: int
     ledger_id: int
-    total_quantity: float
-    average_cost_per_unit: float
-    latest_price_per_unit: float
+    total_quantity: Decimal
+    average_cost_per_unit: Decimal
+    latest_price_per_unit: Decimal
     last_price_update: Optional[datetime]
-    current_value: float
+    current_value: Decimal
     created_at: datetime
     updated_at: datetime
 
@@ -85,9 +86,9 @@ class AssetTransactionBase(BaseModel, str_strip_whitespace=True):
     asset_transaction_id: int
     physical_asset_id: int
     transaction_type: Literal["buy", "sell"]
-    quantity: float
-    price_per_unit: float
-    total_amount: float
+    quantity: Decimal
+    price_per_unit: Decimal
+    total_amount: Decimal
     account_id: int
     transaction_date: datetime
 
@@ -95,8 +96,8 @@ class AssetTransactionBase(BaseModel, str_strip_whitespace=True):
 class AssetTransactionCreate(BaseModel, str_strip_whitespace=True):
     physical_asset_id: int = Field(..., gt=0)
     transaction_type: Literal["buy", "sell"]
-    quantity: float = Field(..., gt=0)
-    price_per_unit: float = Field(..., gt=0)
+    quantity: Decimal = Field(..., gt=0)
+    price_per_unit: Decimal = Field(..., gt=0)
     account_id: int = Field(..., gt=0)
     transaction_date: datetime
     notes: Optional[str] = Field(None, max_length=500)
@@ -109,7 +110,7 @@ class AssetTransactionUpdate(BaseModel, str_strip_whitespace=True):
 class AssetTransaction(AssetTransactionCreate, str_strip_whitespace=True):
     asset_transaction_id: int
     ledger_id: int
-    total_amount: float
+    total_amount: Decimal
     created_at: datetime
 
     # Related data
@@ -123,9 +124,9 @@ class AssetTransaction(AssetTransactionCreate, str_strip_whitespace=True):
 # Summary and Analytics Schemas
 class PhysicalAssetSummary(BaseModel, str_strip_whitespace=True):
     total_assets: int
-    total_value: float
-    total_unrealized_pnl: float
-    total_unrealized_pnl_percentage: float
+    total_value: Decimal
+    total_unrealized_pnl: Decimal
+    total_unrealized_pnl_percentage: Decimal
 
 
 class AssetTypeSummary(BaseModel, str_strip_whitespace=True):
@@ -133,9 +134,9 @@ class AssetTypeSummary(BaseModel, str_strip_whitespace=True):
     name: str
     unit_name: str
     unit_symbol: str
-    total_quantity: float
-    average_cost_per_unit: float
-    latest_price_per_unit: float
-    current_value: float
-    unrealized_pnl: float
-    unrealized_pnl_percentage: float
+    total_quantity: Decimal
+    average_cost_per_unit: Decimal
+    latest_price_per_unit: Decimal
+    current_value: Decimal
+    unrealized_pnl: Decimal
+    unrealized_pnl_percentage: Decimal
