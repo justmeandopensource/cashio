@@ -4,7 +4,7 @@ import { Spinner, Center } from "@chakra-ui/react";
 import { ErrorBoundary } from "react-error-boundary";
 import ErrorFallback from "@components/ErrorFallback";
 import ProtectedRoute from "@components/ProtectedRoute";
-import { setOnUnauthorized, setAuthToken } from "@/lib/api";
+import { setOnUnauthorized, setAuthToken, setRefreshToken } from "@/lib/api";
 
 const Login = lazy(() => import("@features/auth/Login"));
 const Register = lazy(() => import("@features/auth/Register"));
@@ -23,6 +23,7 @@ const UnauthorizedHandler: React.FC = () => {
   useEffect(() => {
     setOnUnauthorized(() => {
       setAuthToken(null);
+      setRefreshToken(null);
       navigate("/login");
     });
   }, [navigate]);

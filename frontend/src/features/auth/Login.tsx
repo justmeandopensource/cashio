@@ -4,11 +4,12 @@ import { useMutation } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { Box, Flex, useColorModeValue } from "@chakra-ui/react";
 import LoginForm from "@features/auth/components/LoginForm";
-import api, { setAuthToken } from "@/lib/api";
+import api, { setAuthToken, setRefreshToken } from "@/lib/api";
 import { notify } from "@/components/shared/notify";
 
 interface LoginResponse {
   access_token: string;
+  refresh_token: string;
 }
 
 interface ErrorResponse {
@@ -24,6 +25,7 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     setAuthToken(null);
+    setRefreshToken(null);
     usernameInputRef.current?.focus();
   }, []);
 
@@ -36,6 +38,7 @@ const Login: React.FC = () => {
       }),
     onSuccess: (response: AxiosResponse<LoginResponse>) => {
       setAuthToken(response.data.access_token);
+      setRefreshToken(response.data.refresh_token);
       navigate("/");
     },
     onError: (error: AxiosError<ErrorResponse>) => {

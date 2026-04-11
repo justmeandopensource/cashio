@@ -9,6 +9,11 @@ from app.schemas import general_schema, user_schema
 from app.security.user_security import (
     authenticate_user,
     create_access_token,
+    create_refresh_token,
+    verify_refresh_token,
+    rotate_refresh_token,
+    revoke_refresh_token,
+    revoke_all_refresh_tokens,
     oauth2_scheme,
     verify_token,
     get_current_user,
@@ -32,7 +37,7 @@ def create_user(request: Request, user: user_schema.UserCreate, db: Session = De
     return {"message": "user created successfully"}
 
 
-@user_router.post("/login", tags=["users"])
+@user_router.post("/login", response_model=user_schema.TokenResponse, tags=["users"])
 @limiter.limit("5/minute")
 async def login(
     request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
@@ -45,7 +50,12 @@ async def login(
             headers={"www-Authenticate": "Bearer"},
         )
     access_token = create_access_token(user=user)
-    return {"access_token": access_token, "token_type": "bearer"}
+    refresh_token = create_refresh_token(user_id=user.user_id, db=db)
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+    }
 
 
 @user_router.post("/verify-token", tags=["users"])
@@ -62,6 +72,32 @@ async def verify_user_token(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while verifying the token.",
         )
+
+
+@user_router.post("/refresh", response_model=user_schema.TokenResponse, tags=["users"])
+@limiter.limit("10/minute")
+async def refresh_token(
+    request: Request,
+    body: user_schema.RefreshTokenRequest,
+    db: Session = Depends(get_db),
+):
+    user, db_token = verify_refresh_token(token=body.refresh_token, db=db)
+    new_access_token = create_access_token(user=user)
+    new_refresh_token = rotate_refresh_token(old_token=db_token, db=db)
+    return {
+        "access_token": new_access_token,
+        "refresh_token": new_refresh_token,
+        "token_type": "bearer",
+    }
+
+
+@user_router.post("/logout", tags=["users"])
+async def logout(
+    body: user_schema.RefreshTokenRequest,
+    db: Session = Depends(get_db),
+):
+    revoke_refresh_token(token=body.refresh_token, db=db)
+    return {"message": "Logged out successfully"}
 
 
 @user_router.get("/me", response_model=user_schema.UserProfile, tags=["users"])
@@ -121,4 +157,5 @@ async def change_password(
             detail="Incorrect current password",
         )
     user_crud.update_password(db=db, user_id=current_user.user_id, new_password=password_data.new_password)
+    revoke_all_refresh_tokens(user_id=current_user.user_id, db=db)
     return {"message": "Password updated successfully"}
