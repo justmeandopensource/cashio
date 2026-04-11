@@ -4,8 +4,8 @@ from typing import Any
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
+import jwt
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
@@ -13,12 +13,11 @@ from app.repositories import user_crud
 from app.repositories.settings import settings
 from app.schemas import user_schema
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="user/login")
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
 def create_access_token(user: user_schema.User) -> str:
@@ -49,7 +48,7 @@ def verify_token(token: str = Depends(oauth2_scheme), db: Session = Depends(get_
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found"
             )
         return user
-    except JWTError:
+    except jwt.PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
         )
@@ -59,7 +58,7 @@ def authenticate_user(username: str, password: str, db: Session = Depends(get_db
     user = user_crud.get_user_by_username(db=db, username=username)
     if not user:
         return False
-    if not pwd_context.verify(password, user.hashed_password):
+    if not bcrypt.checkpw(password.encode(), user.hashed_password.encode()):
         return False
     return user
 

@@ -4,16 +4,6 @@ Analysis date: 2026-04-05
 
 ---
 
-## MEDIUM
-
-### 20. Outdated/Abandoned Python Dependencies
-
-- **File:** `backend/requirements.txt`
-- **Problem:** `passlib==1.7.4` (2017, deprecated) — you already import `bcrypt` directly, passlib may be redundant. `python-jose==3.3.0` — abandoned, no security patches.
-- **Fix:** Remove passlib if only used as a bcrypt wrapper (use bcrypt directly). Replace python-jose with `PyJWT` + `cryptography`.
-
----
-
 ## LOW
 
 ### 25. No Rate Limiting on Auth Endpoints
