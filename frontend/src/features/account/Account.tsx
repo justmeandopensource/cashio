@@ -13,6 +13,7 @@ import { formatNumberAsCurrency } from "@components/shared/utils";
 import { getSubtypeLabel } from "@/features/ledger/constants/accountSubtypes";
 import api from "@/lib/api";
 import useLedgerStore from "@/components/shared/store";
+import type { Transaction, TransferEditData } from "@/types";
 import type { BreadcrumbEntry } from "@/components/shared/Breadcrumbs";
 import UpdateAccountModal from "@components/modals/UpdateAccountModal";
 import CreateTransactionModal from "@components/modals/CreateTransactionModal";
@@ -69,14 +70,14 @@ const Account: React.FC = () => {
     onOpen: onDetailsModalOpen,
     onClose: onDetailsModalClose,
   } = useDisclosure();
-  const [transactionToCopy, setTransactionToCopy] = useState<any | undefined>(
+  const [transactionToCopy, setTransactionToCopy] = useState<Transaction | undefined>(
     undefined
   );
-  const [editTransferData, setEditTransferData] = useState<any | undefined>(
+  const [editTransferData, setEditTransferData] = useState<TransferEditData | undefined>(
     undefined
   );
 
-  const handleEditTransfer = async (transaction: any) => {
+  const handleEditTransfer = async (transaction: Transaction) => {
     if (!transaction.transfer_id) return;
     try {
       const response = await api.get(`/ledger/transfer/${transaction.transfer_id}`);
@@ -90,7 +91,7 @@ const Account: React.FC = () => {
     }
   };
 
-  const handleCopyTransaction = async (transaction: any) => {
+  const handleCopyTransaction = async (transaction: Transaction) => {
     setTransactionToCopy(transaction);
     if (transaction.is_transfer) {
       setIsTransferModalOpen(true);

@@ -3,7 +3,7 @@ import { AxiosError } from "axios";
 import api from "@/lib/api";
 import useLedgerStore from "@/components/shared/store";
 import { notify } from "@/components/shared/notify";
-import type { Split, Tag, TransactionCreate } from "@/types";
+import type { Split, Tag, Transaction } from "@/types";
 import type { Category, Account } from "./types";
 
 const roundToTwoDecimals = (value: number): number => {
@@ -13,7 +13,7 @@ const roundToTwoDecimals = (value: number): number => {
 interface UseCreateTransactionFormOptions {
   isOpen: boolean;
   accountId?: string;
-  initialData?: TransactionCreate;
+  initialData?: Transaction;
   onClose: () => void;
   onTransactionAdded: () => void;
 }
@@ -155,7 +155,13 @@ export function useCreateTransactionForm({
         );
         setSelectedAccountId(initialData.account_id || "");
         setIsSplit(initialData.is_split);
-        setSplits(initialData.splits || []);
+        setSplits(
+          (initialData.splits || []).map((s) => ({
+            amount: (s.debit || s.credit || 0).toString(),
+            categoryId: s.category_id || "",
+            notes: s.notes,
+          })),
+        );
         setTags(initialData.tags || []);
       } else {
         resetForm();

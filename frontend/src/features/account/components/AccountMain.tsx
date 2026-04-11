@@ -7,17 +7,15 @@ import AccountInsights from "./AccountInsights";
 import AccountMainTransactions from "./AccountMainTransactions";
 import useLedgerStore from "@/components/shared/store";
 import { useAccountFundsFlow } from "../hooks";
-import type { Account } from "@/types";
+import type { Account, Transaction } from "@/types";
 
 interface AccountMainProps {
   account: Account;
-    
-   onCopyTransaction: (transaction: any) => Promise<void>;
+  onCopyTransaction: (transaction: Transaction) => Promise<void>;
   onAddTransaction: () => void;
   onTransactionDeleted: () => void;
   onTransactionUpdated: () => void;
-   
-  onEditTransfer?: (transaction: any) => void;
+  onEditTransfer?: (transaction: Transaction) => void;
 }
 
 const AccountMain: React.FC<AccountMainProps> = ({

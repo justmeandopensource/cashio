@@ -31,7 +31,7 @@ import { splitCurrencyForDisplay } from "../../mutual-funds/utils";
 import { getSubtypeIcon } from "../constants/accountSubtypes";
 import { LedgerAccountRowDesktop, LedgerAccountCardMobile } from "./LedgerAccountCard";
 
-import type { Account } from "@/types";
+import type { Account, Transaction } from "@/types";
 
 export interface SubtypeGroup {
   subtype: string;
@@ -49,8 +49,8 @@ interface SubtypeGroupSectionProps {
   onToggleExpand: (key: string) => void;
   getBalanceColor: (balance: number, type: "asset" | "liability", isGroupHeader: boolean) => string;
   getOwnerInitials: (owner: string | null | undefined) => string;
-  onAddTransaction: (accountId?: string, transaction?: any) => void;
-  onTransferFunds: (accountId?: string, transaction?: any) => void;
+  onAddTransaction: (accountId?: string, transaction?: Transaction) => void;
+  onTransferFunds: (accountId?: string, transaction?: Transaction) => void;
 }
 
 /** A collapsible group of accounts under a single subtype (e.g. "Savings Accounts") */
@@ -202,8 +202,8 @@ interface LedgerAccountSectionProps {
   onToggleGroupExpansion: (key: string) => void;
   getBalanceColor: (balance: number, type: "asset" | "liability", isGroupHeader: boolean) => string;
   getOwnerInitials: (owner: string | null | undefined) => string;
-  onAddTransaction: (accountId?: string, transaction?: any) => void;
-  onTransferFunds: (accountId?: string, transaction?: any) => void;
+  onAddTransaction: (accountId?: string, transaction?: Transaction) => void;
+  onTransferFunds: (accountId?: string, transaction?: Transaction) => void;
   onCreateAccount: () => void;
 }
 

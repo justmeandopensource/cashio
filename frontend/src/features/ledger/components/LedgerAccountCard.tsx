@@ -14,7 +14,7 @@ import { Plus, Repeat } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
 import { splitCurrencyForDisplay } from "../../mutual-funds/utils";
 
-import type { Account } from "@/types";
+import type { Account, Transaction } from "@/types";
 
 function formatTimeAgo(dateStr?: string): string | null {
   if (!dateStr) return null;
@@ -35,8 +35,8 @@ function formatTimeAgo(dateStr?: string): string | null {
 interface LedgerAccountCardProps {
   account: Account;
   balanceColor: string;
-  onAddTransaction: (accountId?: string, transaction?: any) => void;
-  onTransferFunds: (accountId?: string, transaction?: any) => void;
+  onAddTransaction: (accountId?: string, transaction?: Transaction) => void;
+  onTransferFunds: (accountId?: string, transaction?: Transaction) => void;
   getOwnerInitials: (owner: string | null | undefined) => string;
 }
 

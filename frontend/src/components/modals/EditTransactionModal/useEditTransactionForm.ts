@@ -3,7 +3,7 @@ import api from "@/lib/api";
 import { AxiosError } from "axios";
 import useLedgerStore from "@/components/shared/store";
 import { notify } from "@/components/shared/notify";
-import type { Split, ApiSplit, Tag, InitialTransactionState, Category } from "@/types";
+import type { Split, ApiSplit, Tag, InitialTransactionState, Category, Transaction } from "@/types";
 
 const roundToTwoDecimals = (value: number): number => {
   return Math.round((value + Number.EPSILON) * 100) / 100;
@@ -11,7 +11,7 @@ const roundToTwoDecimals = (value: number): number => {
 
 export function useEditTransactionForm(
   isOpen: boolean,
-  transaction: any,
+  transaction: Transaction,
   onClose: () => void,
   onTransactionUpdated: () => void,
 ) {

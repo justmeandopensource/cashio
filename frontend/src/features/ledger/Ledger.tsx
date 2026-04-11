@@ -23,6 +23,7 @@ import api from "@/lib/api";
 import { notify } from "@/components/shared/notify";
 import { useLedger } from "./hooks";
 import { useLogout } from "@/lib/useLogout";
+import type { Transaction, TransferEditData } from "@/types";
 import useCommandPaletteStore from "@/components/shared/commandPaletteStore";
 
 const Ledger = () => {
@@ -86,13 +87,13 @@ const Ledger = () => {
   const [selectedAccountId, setSelectedAccountId] = useState<
     string | undefined
   >(undefined);
-  const [transactionToCopy, setTransactionToCopy] = useState<any | undefined>(
+  const [transactionToCopy, setTransactionToCopy] = useState<Transaction | undefined>(
     undefined,
   );
-  const [editTransferData, setEditTransferData] = useState<any | undefined>(
+  const [editTransferData, setEditTransferData] = useState<TransferEditData | undefined>(
     undefined,
   );
-  const handleEditTransfer = async (transaction: any) => {
+  const handleEditTransfer = async (transaction: Transaction) => {
     if (!transaction.transfer_id) return;
     try {
       const response = await api.get(`/ledger/transfer/${transaction.transfer_id}`);
@@ -109,13 +110,13 @@ const Ledger = () => {
     }
   };
 
-  const handleAddTransaction = (accountId: string | undefined = undefined, transaction?: any) => {
+  const handleAddTransaction = (accountId: string | undefined = undefined, transaction?: Transaction) => {
     setSelectedAccountId(accountId);
     setTransactionToCopy(transaction);
     setIsCreateModalOpen(true);
   };
 
-  const handleTransferFunds = (accountId: string | undefined = undefined, transaction?: any) => {
+  const handleTransferFunds = (accountId: string | undefined = undefined, transaction?: Transaction) => {
     setSelectedAccountId(accountId);
     setTransactionToCopy(transaction);
     setIsTransferModalOpen(true);

@@ -1,5 +1,5 @@
 import type React from "react";
-import type { Split, Tag, TransactionCreate } from "@/types";
+import type { Split, Tag, Transaction } from "@/types";
 
 export interface Category {
   category_id: string;
@@ -18,7 +18,7 @@ export interface CreateTransactionModalProps {
   onClose: () => void;
   accountId?: string;
   onTransactionAdded: () => void;
-  initialData?: TransactionCreate;
+  initialData?: Transaction;
 }
 
 export interface CreateTransactionFormProps {

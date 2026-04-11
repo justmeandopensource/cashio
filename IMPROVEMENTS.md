@@ -6,12 +6,6 @@ Analysis date: 2026-04-05
 
 ## MEDIUM
 
-### 14. `any` Types in Frontend (~20 instances)
-
-- **Files:** `frontend/src/features/account/Account.tsx` (lines ~72, 75), various modal prop types
-- **Problem:** Modal data props typed as `any` — breaks type safety.
-- **Fix:** Create discriminated union types for modal data (e.g., `TransactionModalData = { mode: 'edit', tx: Transaction } | { mode: 'copy', tx: Transaction } | null`).
-
 ### 20. Outdated/Abandoned Python Dependencies
 
 - **File:** `backend/requirements.txt`

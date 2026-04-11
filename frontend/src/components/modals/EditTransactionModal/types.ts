@@ -1,6 +1,8 @@
+import type { Transaction } from "@/types";
+
 export interface EditTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  transaction: any;
+  transaction: Transaction;
   onTransactionUpdated: () => void;
 }

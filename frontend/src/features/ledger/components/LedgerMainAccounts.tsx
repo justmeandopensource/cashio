@@ -24,7 +24,7 @@ import { splitCurrencyForDisplay } from "../../mutual-funds/utils";
 import { ACCOUNT_SUBTYPES, getSubtypeLabel } from "../constants/accountSubtypes";
 import LedgerAccountSection, { type SubtypeGroup } from "./LedgerAccountSection";
 
-import type { Account } from "@/types";
+import type { Account, Transaction } from "@/types";
 
 const MotionBox = motion(Box);
 const MotionSimpleGrid = motion(SimpleGrid);
@@ -32,8 +32,8 @@ const MotionSimpleGrid = motion(SimpleGrid);
 interface LedgerMainAccountsProps {
   accounts: Account[];
   isLoading: boolean;
-  onAddTransaction: (accountId?: string, transaction?: any) => void;
-  onTransferFunds: (accountId?: string, transaction?: any) => void;
+  onAddTransaction: (accountId?: string, transaction?: Transaction) => void;
+  onTransferFunds: (accountId?: string, transaction?: Transaction) => void;
 }
 
 const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({

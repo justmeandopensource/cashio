@@ -1,17 +1,15 @@
 import React from "react";
 import { Box, useColorModeValue } from "@chakra-ui/react";
 import Transactions from "@/features/transactions/Transactions";
-import type { Account } from "@/types";
+import type { Account, Transaction } from "@/types";
 
 interface AccountMainTransactionsProps {
   account: Account;
   onAddTransaction: () => void;
   onTransactionDeleted: () => void;
   onTransactionUpdated: () => void;
-    
-   onCopyTransaction: (transaction: any) => Promise<void>;
-   
-  onEditTransfer?: (transaction: any) => void;
+  onCopyTransaction: (transaction: Transaction) => Promise<void>;
+  onEditTransfer?: (transaction: Transaction) => void;
 }
 
 const AccountMainTransactions: React.FC<AccountMainTransactionsProps> = ({

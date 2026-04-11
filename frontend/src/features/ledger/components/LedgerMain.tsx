@@ -25,13 +25,12 @@ import { useAccounts } from "../hooks";
 
 const MotionBox = motion(Box);
 
+import type { Transaction } from "@/types";
+
 interface LedgerMainProps {
-   
-  onAddTransaction: (accountId?: string, transaction?: any) => void;
-   
-  onTransferFunds: (accountId?: string, transaction?: any) => void;
-   
-  onEditTransfer?: (transaction: any) => void;
+  onAddTransaction: (accountId?: string, transaction?: Transaction) => void;
+  onTransferFunds: (accountId?: string, transaction?: Transaction) => void;
+  onEditTransfer?: (transaction: Transaction) => void;
 }
 
 const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds, onEditTransfer }) => {
@@ -62,7 +61,7 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds, on
     showZeroBalance: false,
   });
 
-  const handleCopyTransaction = async (transaction: any) => {
+  const handleCopyTransaction = async (transaction: Transaction) => {
     if (transaction.is_transfer) {
       onTransferFunds(undefined, transaction);
     } else {
