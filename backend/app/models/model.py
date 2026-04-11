@@ -14,6 +14,7 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -98,6 +99,7 @@ class Account(Base):
 
     __table_args__ = (
         UniqueConstraint("ledger_id", "name", name="uq_ledger_account_name"),
+        Index("idx_accounts_ledger_subtype", "ledger_id", "subtype"),
     )
 
 
@@ -160,6 +162,8 @@ class Transaction(Base):
         Index("idx_transactions_category_id", "category_id"),
         Index("idx_transactions_date", "date"),
         Index("idx_transactions_account_id_date", "account_id", "date"),
+        Index("idx_transactions_is_asset_transaction", "is_asset_transaction"),
+        Index("idx_transactions_is_mf_transaction", "is_mf_transaction"),
     )
 
 
@@ -302,6 +306,14 @@ class AssetTransaction(Base):
     account = relationship("Account", back_populates="asset_transactions")
     financial_transaction = relationship("Transaction")
 
+    __table_args__ = (
+        Index("idx_asset_transactions_ledger_id", "ledger_id"),
+        Index("idx_asset_transactions_asset_id", "physical_asset_id"),
+        Index("idx_asset_transactions_account_id", "account_id"),
+        Index("idx_asset_transactions_date", "transaction_date"),
+        Index("idx_asset_transactions_financial_transaction_id", "financial_transaction_id"),
+    )
+
 
 class Amc(Base):
     __tablename__ = "amcs"
@@ -374,6 +386,7 @@ class MutualFund(Base):
     __table_args__ = (
         Index("idx_mutual_funds_ledger_id", "ledger_id"),
         Index("idx_mutual_funds_amc_id", "amc_id"),
+        Index("idx_mutual_funds_ledger_name_owner", "ledger_id", "name", text("COALESCE(owner, '')"), unique=True),
     )
 
 
@@ -446,4 +459,5 @@ class MfTransaction(Base):
         Index("idx_mf_transactions_date", "transaction_date"),
         Index("idx_mf_transactions_financial_transaction_id", "financial_transaction_id"),
         Index("idx_mf_transactions_linked_charge_transaction_id", "linked_charge_transaction_id"),
+        Index("idx_mf_transactions_linked_transaction_id", "linked_transaction_id"),
     )
