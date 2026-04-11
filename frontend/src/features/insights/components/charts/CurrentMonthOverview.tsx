@@ -15,6 +15,14 @@ import {
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ResponsiveTreeMap } from "@nivo/treemap";
+
+interface TreemapDatum {
+  name: string;
+  value?: number;
+  color?: string;
+  parent?: string;
+  children?: TreemapDatum[];
+}
 import { useQuery } from "@tanstack/react-query";
 import {
   Calendar,
@@ -707,7 +715,7 @@ const CurrentMonthOverview: React.FC = () => {
                   Income Breakdown
                 </Heading>
                 <Box height="280px" width="full">
-                  <ResponsiveTreeMap
+                  <ResponsiveTreeMap<TreemapDatum>
                     data={incomeTreemapData}
                     identity="name"
                     value="value"
@@ -777,7 +785,7 @@ const CurrentMonthOverview: React.FC = () => {
                   Expense Breakdown
                 </Heading>
                 <Box height="280px" width="full">
-                  <ResponsiveTreeMap
+                  <ResponsiveTreeMap<TreemapDatum>
                     data={expenseTreemapData}
                     identity="name"
                     value="value"
