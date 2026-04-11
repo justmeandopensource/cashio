@@ -6,7 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
-from app.models.model import Account
+from app.dependencies import get_validated_ledger
+from app.models.model import Account, Ledger
 from app.repositories import ledger_crud, transaction_crud
 from app.schemas import transaction_schema, user_schema
 from app.security.user_security import get_current_user
@@ -26,13 +27,9 @@ def get_transactions_by_account(
     per_page: int = Query(
         default=15, ge=1, le=50, description="Number of transactions per page (max 50)"
     ),
-    user: user_schema.User = Depends(get_current_user),
+    ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(status_code=404, detail="Account not found")
-
     offset = (page - 1) * per_page
 
     transactions, total_transactions = transaction_crud.get_transactions_for_account_id(
@@ -58,13 +55,9 @@ def get_transactions_by_account(
 def get_transaction_by_id(
     ledger_id: int,
     transaction_id: int,
-    user: user_schema.User = Depends(get_current_user),
+    ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(status_code=404, detail="Ledger not found")
-
     transaction = transaction_crud.get_transaction_by_id(
         db=db, transaction_id=transaction_id
     )
@@ -180,14 +173,9 @@ def add_transfer_transaction(
 def get_split_transactions(
     ledger_id: int,
     transaction_id: int,
-    user: user_schema.User = Depends(get_current_user),
+    ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    # Ensure the ledger belongs to the user
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(status_code=404, detail="Ledger not found")
-
     # Fetch the split transactions
     splits = transaction_crud.get_split_transactions(
         db=db, transaction_id=transaction_id
@@ -261,6 +249,7 @@ def update_transfer_transaction(
     ledger_id: int,
     transfer_id: str,
     transfer_update: transaction_schema.TransferUpdate,
+    ledger: Ledger = Depends(get_validated_ledger),
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -271,11 +260,6 @@ def update_transfer_transaction(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid transfer_id. It must be a valid UUID.",
         )
-
-    # Ensure the ledger belongs to the user
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(status_code=404, detail="Ledger not found")
 
     try:
         return transaction_crud.update_transfer_transaction(
@@ -298,14 +282,10 @@ def update_transfer_transaction(
 def delete_transaction(
     ledger_id: int,
     transaction_id: int,
+    ledger: Ledger = Depends(get_validated_ledger),
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Ensure the ledger belongs to the user
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(status_code=404, detail="Ledger not found")
-
     # Delete the transaction
     try:
         transaction_crud.delete_transaction(
@@ -326,14 +306,10 @@ def update_transaction(
     ledger_id: int,
     transaction_id: int,
     transaction_update: transaction_schema.TransactionUpdate,
+    ledger: Ledger = Depends(get_validated_ledger),
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Ensure the ledger belongs to the user
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(status_code=404, detail="Ledger not found")
-
     # Update the transaction
     try:
         return transaction_crud.update_transaction(
@@ -358,14 +334,9 @@ def get_note_suggestions(
     search_text: str = Query(
         ..., min_length=3, description="Text to search for in transaction notes"
     ),
-    user: user_schema.User = Depends(get_current_user),
+    ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    # Ensure the ledger belongs to the user
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(status_code=404, detail="Ledger not found")
-
     # Fetch the suggestions
     suggestions = transaction_crud.get_transaction_notes_suggestions(
         db=db, ledger_id=ledger_id, search_text=search_text
@@ -384,14 +355,9 @@ def get_store_suggestions(
     search_text: str = Query(
         ..., min_length=3, description="Text to search for in transaction store"
     ),
-    user: user_schema.User = Depends(get_current_user),
+    ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    # Ensure the ledger belongs to the user
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(status_code=404, detail="Ledger not found")
-
     # Fetch the suggestions
     suggestions = transaction_crud.get_transaction_store_suggestions(
         db=db, ledger_id=ledger_id, search_text=search_text
@@ -410,14 +376,9 @@ def get_location_suggestions(
     search_text: str = Query(
         ..., min_length=3, description="Text to search for in transaction location"
     ),
-    user: user_schema.User = Depends(get_current_user),
+    ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    # Ensure the ledger belongs to the user
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(status_code=404, detail="Ledger not found")
-
     # Fetch the suggestions
     suggestions = transaction_crud.get_transaction_location_suggestions(
         db=db, ledger_id=ledger_id, search_text=search_text
@@ -465,13 +426,9 @@ def get_transactions_by_ledger(
     location: Optional[str] = Query(
         None, description="Filter transactions by location"
     ),
-    user: user_schema.User = Depends(get_current_user),
+    ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(status_code=404, detail="Ledger not found")
-
     offset = (page - 1) * per_page
 
     transactions = transaction_crud.get_transactions_for_ledger_id(

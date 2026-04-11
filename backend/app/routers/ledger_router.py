@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
+from app.dependencies import get_validated_ledger
+from app.models.model import Ledger
 from app.repositories import ledger_crud
 from app.schemas import ledger_schema, user_schema
 from app.schemas.ledger_schema import LedgerUpdate
@@ -52,13 +54,8 @@ def create_ledger(
 )
 def get_ledger(
     ledger_id: int,
-    user: user_schema.User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    ledger: Ledger = Depends(get_validated_ledger),
 ):
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if not ledger or ledger.user_id != user.user_id:
-        raise HTTPException(status_code=404, detail="Ledger not found")
-
     return ledger
 
 

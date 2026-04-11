@@ -6,12 +6,6 @@ Analysis date: 2026-04-05
 
 ## MEDIUM
 
-### 12. Repeated Ledger Ownership Validation
-
-- **Files:** All routers in `backend/app/routers/` (~15 endpoints)
-- **Problem:** Every endpoint manually checks `if ledger.user_id != user.user_id: raise HTTPException(403)`.
-- **Fix:** Create a FastAPI dependency `get_validated_ledger(ledger_id, current_user)` that fetches the ledger and raises 403 if not owned. Use it in all router function signatures.
-
 ### 13. State Bloat in Transactions.tsx
 
 - **File:** `frontend/src/features/transactions/Transactions.tsx`

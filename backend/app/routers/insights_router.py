@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
-from app.models.model import Category, Tag
-from app.repositories import ledger_crud
+from app.dependencies import get_validated_ledger
+from app.models.model import Category, Ledger, Tag
 from app.repositories.insights import (
     category_trend_crud,
     current_month_overview_crud,
@@ -45,15 +45,9 @@ def get_income_expense_trend(
         default="last_12_months",
         description="Type of period to analyze: last_12_months, monthly_since_beginning, or yearly_since_beginning",
     ),
-    user: user_schema.User = Depends(get_current_user),
+    ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Ledger not found"
-        )
-
     try:
         return income_expense_trend_crud.get_income_expense_trend(
             db=db, ledger_id=ledger_id, period_type=period_type
@@ -71,15 +65,9 @@ def get_income_expense_trend(
 )
 def get_current_month_overview(
     ledger_id: int,
-    user: user_schema.User = Depends(get_current_user),
+    ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Ledger not found"
-        )
-
     try:
         return current_month_overview_crud.get_current_month_overview(
             db=db, ledger_id=ledger_id
@@ -104,15 +92,10 @@ def get_category_trend(
         default="last_12_months",
         description="Type of period to analyze: last_12_months, monthly_since_beginning, or yearly_since_beginning",
     ),
+    ledger: Ledger = Depends(get_validated_ledger),
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Ledger not found"
-        )
-
     # Check if category exists and belongs to the user
     category = db.query(Category).filter(Category.category_id == category_id).first()
     if category is None or category.user_id != user.user_id:  # type: ignore
@@ -138,16 +121,10 @@ def get_category_trend(
 def get_tag_trend(
     ledger_id: int,
     tag_names: List[str] = Query(..., description="Names of tags to analyze"),
+    ledger: Ledger = Depends(get_validated_ledger),
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Verify ledger belongs to user
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Ledger not found"
-        )
-
     # Verify that all tags belong to the user and collect their IDs
     tag_ids = []
     for tag_name in tag_names:
@@ -184,15 +161,9 @@ def get_expense_by_store_route(
         default="all_time",
         description="Type of period to analyze: all_time, last_12_months, or this_month",
     ),
-    user: user_schema.User = Depends(get_current_user),
+    ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Ledger not found"
-        )
-
     try:
         return get_expense_by_store(
             db=db, ledger_id=ledger_id, period_type=period_type
@@ -216,15 +187,9 @@ def get_expense_by_location_route(
         default="all_time",
         description="Type of period to analyze: all_time, last_12_months, or this_month",
     ),
-    user: user_schema.User = Depends(get_current_user),
+    ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Ledger not found"
-        )
-
     try:
         return get_expense_by_location(
             db=db, ledger_id=ledger_id, period_type=period_type
@@ -249,15 +214,9 @@ def get_store_category_breakdown_route(
         default="all_time",
         description="Type of period to analyze: all_time, last_12_months, or this_month",
     ),
-    user: user_schema.User = Depends(get_current_user),
+    ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Ledger not found"
-        )
-
     try:
         return get_category_breakdown_by_store(
             db=db, ledger_id=ledger_id, store_name=store_name, period_type=period_type
@@ -282,15 +241,9 @@ def get_location_category_breakdown_route(
         default="all_time",
         description="Type of period to analyze: all_time, last_12_months, or this_month",
     ),
-    user: user_schema.User = Depends(get_current_user),
+    ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Ledger not found"
-        )
-
     try:
         return get_category_breakdown_by_location(
             db=db, ledger_id=ledger_id, location_name=location_name, period_type=period_type
@@ -309,15 +262,9 @@ def get_location_category_breakdown_route(
 def get_expense_calendar_route(
     ledger_id: int,
     year: int = Query(..., description="Year to analyze", ge=2000, le=2100),
-    user: user_schema.User = Depends(get_current_user),
+    ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    ledger = ledger_crud.get_ledger_by_id(db=db, ledger_id=ledger_id)
-    if ledger is None or ledger.user_id != user.user_id:  # type: ignore
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Ledger not found"
-        )
-
     try:
         return get_expense_calendar(
             db=db, ledger_id=ledger_id, year=year
