@@ -3,7 +3,7 @@ from decimal import Decimal
 from app.schemas import JsonDecimal
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 from app.schemas.tag_schema import Tag, TagCreate
 
@@ -13,6 +13,14 @@ class TransactionSplitCreate(BaseModel):
     credit: JsonDecimal = Decimal("0")
     debit: JsonDecimal = Decimal("0")
     notes: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_credit_debit(self):
+        if self.credit < 0 or self.debit < 0:
+            raise ValueError("credit and debit must be non-negative")
+        if self.credit > 0 and self.debit > 0:
+            raise ValueError("credit and debit cannot both be set on the same split")
+        return self
 
 
 class TransactionSplit(BaseModel, str_strip_whitespace=True):
@@ -57,6 +65,16 @@ class TransactionCreate(BaseModel):
     is_asset_transaction: bool = False
     splits: Optional[List[TransactionSplitCreate]] = None
     tags: Optional[List[TagCreate]] = None
+
+    @model_validator(mode="after")
+    def validate_credit_debit(self):
+        if self.credit < 0 or self.debit < 0:
+            raise ValueError("credit and debit must be non-negative")
+        if self.credit > 0 and self.debit > 0:
+            raise ValueError("credit and debit cannot both be set on the same transaction")
+        if self.credit == 0 and self.debit == 0 and not self.is_split:
+            raise ValueError("either credit or debit must be greater than 0")
+        return self
 
 
 class TransactionSplitUpdate(BaseModel):
@@ -131,6 +149,18 @@ class TransferCreate(BaseModel):
     fee_amount: Optional[JsonDecimal] = None
     fee_category_id: Optional[int] = None
 
+    @model_validator(mode="after")
+    def validate_transfer(self):
+        if self.source_account_id == self.destination_account_id:
+            raise ValueError("source and destination accounts must be different")
+        if self.source_amount <= 0:
+            raise ValueError("source_amount must be greater than 0")
+        if self.destination_amount is not None and self.destination_amount <= 0:
+            raise ValueError("destination_amount must be greater than 0")
+        if self.fee_amount is not None and self.fee_amount <= 0:
+            raise ValueError("fee_amount must be greater than 0")
+        return self
+
 
 
 
@@ -145,6 +175,18 @@ class TransferUpdate(BaseModel):
     tags: Optional[List[TagCreate]] = None
     fee_amount: Optional[JsonDecimal] = None
     fee_category_id: Optional[int] = None
+
+    @model_validator(mode="after")
+    def validate_transfer(self):
+        if self.source_account_id == self.destination_account_id:
+            raise ValueError("source and destination accounts must be different")
+        if self.source_amount <= 0:
+            raise ValueError("source_amount must be greater than 0")
+        if self.destination_amount is not None and self.destination_amount <= 0:
+            raise ValueError("destination_amount must be greater than 0")
+        if self.fee_amount is not None and self.fee_amount <= 0:
+            raise ValueError("fee_amount must be greater than 0")
+        return self
 
 
 class TransferTransactionResponse(BaseModel):

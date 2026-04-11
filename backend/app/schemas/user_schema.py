@@ -1,16 +1,16 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class UserBase(BaseModel, str_strip_whitespace=True):
-    full_name: str
-    username: str
+    full_name: str = Field(..., min_length=1)
+    username: str = Field(..., min_length=3, max_length=50)
     email: str
 
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(..., min_length=8)
 
 
 class User(UserBase, str_strip_whitespace=True):
@@ -47,7 +47,7 @@ class UserUpdate(BaseModel):
 
 class ChangePassword(BaseModel):
     current_password: str
-    new_password: str
+    new_password: str = Field(..., min_length=8)
 
 
 class SetDefaultLedger(BaseModel):
