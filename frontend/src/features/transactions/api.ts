@@ -25,8 +25,8 @@ export const getTransactions = async (
 
   Object.entries(filters).forEach(([key, value]) => {
     if (key === "tags" && Array.isArray(value)) {
-      value.forEach((tag) => {
-        searchParams.append("tags", tag);
+      value.forEach((tag: { name: string } | string) => {
+        searchParams.append("tags", typeof tag === "string" ? tag : tag.name);
       });
     } else if (value !== null && value !== undefined && value !== "") {
       searchParams.append(key, value as string);

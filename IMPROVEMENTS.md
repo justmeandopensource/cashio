@@ -6,12 +6,6 @@ Analysis date: 2026-04-05
 
 ## MEDIUM
 
-### 13. State Bloat in Transactions.tsx
-
-- **File:** `frontend/src/features/transactions/Transactions.tsx`
-- **Problem:** 11 separate `useState` calls for filter, pagination, modal, and selection state.
-- **Fix:** Consolidate into `useReducer` with typed actions, or extract into a `useTransactionPageState()` custom hook.
-
 ### 14. `any` Types in Frontend (~20 instances)
 
 - **Files:** `frontend/src/features/account/Account.tsx` (lines ~72, 75), various modal prop types

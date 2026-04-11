@@ -1,6 +1,4 @@
-import React, { useState, lazy, Suspense, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import React, { lazy, Suspense } from "react";
 import {
   Box,
   Text,
@@ -17,15 +15,14 @@ import { keyframes } from "@emotion/react";
 import { motion } from "framer-motion";
 import { Plus, ChevronLeft, ChevronRight, Filter, AlignLeft, BookOpen } from "lucide-react";
 
-import api from "@/lib/api";
 import TransactionCard from "./TransactionCard";
 import TransactionTable from "./TransactionTable";
 import TransactionFilter from "./TransactionFilter";
 import TransactionFilterStats from "./TransactionFilterStats";
-import { AxiosError } from "axios";
-import useLedgerStore from "@/components/shared/store";
+import { useTransactionPageState } from "./hooks";
 import { notify } from "@/components/shared/notify";
-import type { Transaction, TransferDetails, SplitTransaction, TransactionsResponse, Filters, Pagination } from "@/types";
+import type { Transaction } from "@/types";
+
 const EditTransactionModal = lazy(() => import("@components/modals/EditTransactionModal/EditTransactionModal"));
 
 const MotionBox = motion(Box);
@@ -40,9 +37,7 @@ interface TransactionsProps {
   onAddTransaction: () => void;
   onTransactionDeleted?: () => void;
   onTransactionUpdated?: () => void;
-   
   onCopyTransaction: (tx: Transaction) => Promise<void>;
-   
   onEditTransfer?: (tx: Transaction) => void;
   shouldFetch?: boolean;
 }
@@ -56,251 +51,39 @@ const Transactions: React.FC<TransactionsProps> = ({
   onEditTransfer,
   shouldFetch = true,
 }) => {
-  const ledgerId = useLedgerStore((s) => s.ledgerId);
-  const queryClient = useQueryClient();
-
-  const [splitTransactions, setSplitTransactions] = useState<
-    SplitTransaction[]
-  >([]);
-  const [transferDetails, setTransferDetails] =
-    useState<TransferDetails | null>(null);
-  const [expandedTransaction, setExpandedTransaction] = useState<string | null>(
-    null
-  );
-
-  const [isSplitLoading, setIsSplitLoading] = useState(false);
-  const [isTransferLoading, setIsTransferLoading] = useState(false);
-
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(
-    null
-  );
-
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [filters, setFilters] = useState<Filters>({});
-  const [pagination, setPagination] = useState<Pagination>({
-    total_pages: 1,
-    current_page: 1,
-  });
-
-  useEffect(() => {
-    const newFilters: Filters = {};
-    for (const key of searchParams.keys()) {
-        if (key === 'tab') continue;
-        if (key === 'tags') {
-            newFilters.tags = searchParams.getAll('tags').map(t => ({ name: t }));
-        } else {
-            newFilters[key] = searchParams.get(key);
-        }
-    }
-    setFilters(newFilters);
-  }, [searchParams]);
-
-  // Add state to track if filters are active
-  const hasActiveFilters = Object.keys(filters).length > 0;
-
-  const handleApplyFilters = (newFilters: Filters) => {
-    setPagination((prev) => ({ ...prev, current_page: 1 }));
-    const cleanedFilters: { [key: string]: any } = {};
-    Object.entries(newFilters).forEach(([key, value]) => {
-        if (value !== '' && value !== null && (!Array.isArray(value) || value.length > 0)) {
-            cleanedFilters[key] = value;
-        }
-    });
-    setSearchParams(cleanedFilters as any);
-  };
-
-  const handleResetFilters = () => {
-    setPagination((prev) => ({ ...prev, current_page: 1 }));
-    const tab = searchParams.get("tab");
-    setSearchParams(tab ? { tab } : {});
-  };
-
-  const handleQuickFilter = (field: string, value: string) => {
-    setPagination((prev) => ({ ...prev, current_page: 1 }));
-    const newParams: Record<string, string> = { [field]: value };
-    const tab = searchParams.get("tab");
-    if (tab) newParams.tab = tab;
-    setSearchParams(newParams);
-  };
-
-  const handleEditTransaction = (transaction: Transaction) => {
-    if (transaction.is_transfer && onEditTransfer) {
-      onEditTransfer(transaction);
-      return;
-    }
-    setSelectedTransaction(transaction);
-    setIsEditModalOpen(true);
-  };
-
-  const handleTransactionUpdated = () => {
-    setIsEditModalOpen(false);
-    if (onTransactionUpdated) {
-      onTransactionUpdated();
-    }
-    queryClient.invalidateQueries({
-      queryKey: [
-        "transactions",
-        ledgerId,
-        accountId,
-        pagination.current_page,
-        { ...filters },
-      ],
-    });
-    queryClient.refetchQueries({ queryKey: ["account", accountId] });
-    queryClient.invalidateQueries({ queryKey: ["budgets"] });
-  };
-
   const {
-    data: transactionsData,
-    isLoading: isTransactionsLoading,
-    isError: isTransactionsError,
-  } = useQuery<TransactionsResponse>({
-    queryKey: [
-      "transactions",
-      ledgerId,
-      accountId,
-      pagination.current_page,
-      filters,
-    ],
-    queryFn: async ({ queryKey }) => {
-      const [,,,, filtersFromKey] = queryKey as [string, string, string | undefined, number, Filters];
-      const params = new URLSearchParams();
-      params.append("page", pagination.current_page.toString());
-      params.append("per_page", "50");
-
-      if (accountId) {
-        params.append("account_id", accountId);
-      }
-
-      Object.entries(filtersFromKey).forEach(([key, value]) => {
-        if (key === "tags" && Array.isArray(value)) {
-          value.forEach((tag: any) => {
-            params.append("tags", tag.name ?? tag);
-          });
-        } else if (value !== null && value !== undefined && value !== "") {
-          params.append(key, value as string);
-        }
-      });
-
-      const response = await api.get(`/ledger/${ledgerId}/transactions`, { params });
-
-      setPagination({
-        total_pages: response.data.total_pages,
-        current_page: response.data.current_page,
-      });
-      return response.data;
-    },
-    enabled: shouldFetch,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    ledgerId,
+    transactionsData,
+    isTransactionsLoading,
+    isTransactionsError,
+    filters,
+    pagination,
+    hasActiveFilters,
+    handleApplyFilters,
+    handleResetFilters,
+    handleQuickFilter,
+    handlePageChange,
+    expandedTransaction,
+    splitTransactions,
+    transferDetails,
+    isSplitLoading,
+    isTransferLoading,
+    toggleExpand,
+    fetchSplitTransactions,
+    fetchTransferDetails,
+    isEditModalOpen,
+    selectedTransaction,
+    handleEditTransaction,
+    closeEditModal,
+    handleTransactionUpdated,
+    handleDeleteTransaction,
+  } = useTransactionPageState({
+    accountId,
+    shouldFetch,
+    onTransactionDeleted,
+    onTransactionUpdated,
+    onEditTransfer,
   });
-
-  // Optimistic delete mutation
-  const deleteMutation = useMutation({
-    mutationFn: (transactionId: string) =>
-      api.delete(`/ledger/${ledgerId}/transaction/${transactionId}`),
-    onMutate: async (_transactionId) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: ["transactions", ledgerId, accountId, pagination.current_page, { ...filters }],
-      });
-
-      // Snapshot previous value
-      const previousTransactions = queryClient.getQueryData([
-        "transactions",
-        ledgerId,
-        accountId,
-        pagination.current_page,
-        { ...filters },
-      ]);
-
-      // Optimistically remove the transaction
-      queryClient.setQueryData(
-        ["transactions", ledgerId, accountId, pagination.current_page, { ...filters }],
-        (old: TransactionsResponse | undefined) =>
-          old ? { ...old, transactions: old.transactions.filter((t) => t.transaction_id !== _transactionId) } : old
-      );
-
-      // Return context with snapshotted value
-      return { previousTransactions };
-    },
-    onError: (err, _transactionId, context) => {
-      // If mutation fails, use the context to roll back
-      if (context?.previousTransactions) {
-        queryClient.setQueryData(
-          ["transactions", ledgerId, accountId, pagination.current_page, { ...filters }],
-          context.previousTransactions
-        );
-      }
-      const axiosError = err as AxiosError<{ detail: string }>;
-      notify({
-        description: axiosError.response?.data?.detail || "Failed to delete transaction.",
-        status: "error",
-      });
-    },
-    onSuccess: () => {
-      if (onTransactionDeleted) {
-        onTransactionDeleted();
-      }
-      queryClient.invalidateQueries({ queryKey: ["account", accountId] });
-      queryClient.invalidateQueries({ queryKey: ["budgets"] });
-      notify({
-        description: "Transaction deleted",
-        status: "success",
-      });
-    },
-  });
-
-  const handlePageChange = (page: number) => {
-    setPagination((prev) => ({ ...prev, current_page: page }));
-  };
-
-  const toggleExpand = (transactionId: string, e: React.MouseEvent) => {
-    if (
-      e.target instanceof HTMLButtonElement ||
-      (e.target instanceof Element && e.target.closest("button")) ||
-      e.target instanceof SVGElement ||
-      e.target instanceof SVGPathElement
-    ) {
-      return;
-    }
-
-    if (expandedTransaction === transactionId) {
-      setExpandedTransaction(null);
-      setTransferDetails(null);
-      setSplitTransactions([]);
-    } else {
-      setExpandedTransaction(transactionId);
-      setTransferDetails(null);
-      setSplitTransactions([]);
-    }
-  };
-
-  const fetchSplitTransactions = async (transactionId: string) => {
-    setIsSplitLoading(true);
-    try {
-      const response = await api.get(
-        `/ledger/${ledgerId}/transaction/${transactionId}/splits`
-      );
-      setSplitTransactions(response.data);
-    } finally {
-      setIsSplitLoading(false);
-    }
-  };
-
-  const fetchTransferDetails = async (transferId: string) => {
-    setIsTransferLoading(true);
-    try {
-      const response = await api.get(`/ledger/transfer/${transferId}`);
-      setTransferDetails(response.data);
-    } finally {
-      setIsTransferLoading(false);
-    }
-  };
-
-  const handleDeleteTransaction = async (transactionId: string) => {
-    deleteMutation.mutate(transactionId);
-  };
 
   const boxBg = undefined;
   const skeletonBg = useColorModeValue("primaryBg", "primaryBg");
@@ -572,7 +355,7 @@ const Transactions: React.FC<TransactionsProps> = ({
       )}
       {isEditModalOpen && selectedTransaction && (
         <Suspense fallback={<div>Loading...</div>}>
-          <EditTransactionModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} transaction={selectedTransaction} onTransactionUpdated={handleTransactionUpdated} />
+          <EditTransactionModal isOpen={isEditModalOpen} onClose={closeEditModal} transaction={selectedTransaction} onTransactionUpdated={handleTransactionUpdated} />
         </Suspense>
       )}
     </Box>
