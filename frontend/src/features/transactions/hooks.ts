@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -150,6 +150,18 @@ export function useTransactionPageState({
   const [isSplitLoading, setIsSplitLoading] = useState(false);
   const [isTransferLoading, setIsTransferLoading] = useState(false);
 
+  // Caches to avoid re-fetching on repeated hovers (item #27)
+  const splitCache = useRef<Record<string, SplitTransaction[]>>({});
+  const transferCache = useRef<Record<string, TransferDetails>>({});
+  const splitRequestId = useRef<string | null>(null);
+  const transferRequestId = useRef<string | null>(null);
+
+  // Clear caches when the transaction list changes (page, filter, mutation)
+  useEffect(() => {
+    splitCache.current = {};
+    transferCache.current = {};
+  }, [transactionsData]);
+
   // --- Edit-modal state --------------------------------------------------
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] =
@@ -207,24 +219,46 @@ export function useTransactionPageState({
   };
 
   const fetchSplitTransactions = async (transactionId: string) => {
+    if (splitCache.current[transactionId]) {
+      setSplitTransactions(splitCache.current[transactionId]);
+      return;
+    }
+
+    splitRequestId.current = transactionId;
     setIsSplitLoading(true);
     try {
       const res = await api.get(
         `/ledger/${ledgerId}/transaction/${transactionId}/splits`,
       );
-      setSplitTransactions(res.data);
+      splitCache.current[transactionId] = res.data;
+      if (splitRequestId.current === transactionId) {
+        setSplitTransactions(res.data);
+      }
     } finally {
-      setIsSplitLoading(false);
+      if (splitRequestId.current === transactionId) {
+        setIsSplitLoading(false);
+      }
     }
   };
 
   const fetchTransferDetails = async (transferId: string) => {
+    if (transferCache.current[transferId]) {
+      setTransferDetails(transferCache.current[transferId]);
+      return;
+    }
+
+    transferRequestId.current = transferId;
     setIsTransferLoading(true);
     try {
       const res = await api.get(`/ledger/transfer/${transferId}`);
-      setTransferDetails(res.data);
+      transferCache.current[transferId] = res.data;
+      if (transferRequestId.current === transferId) {
+        setTransferDetails(res.data);
+      }
     } finally {
-      setIsTransferLoading(false);
+      if (transferRequestId.current === transferId) {
+        setIsTransferLoading(false);
+      }
     }
   };
 

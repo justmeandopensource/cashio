@@ -16,12 +16,6 @@ Analysis date: 2026-04-05
 - **File:** `backend/app/security/user_security.py`
 - **Fix:** Implement refresh token flow — short-lived access token (15-30min) + long-lived refresh token. Avoids constant re-login.
 
-### 27. Popover Hover Request Storms in TransactionTable
-
-- **File:** `frontend/src/features/transactions/TransactionTable.tsx`
-- **Problem:** Popover triggers on hover with 250ms delay. 20 rows x 3 popovers = 60 potential requests on mouse movement.
-- **Fix:** Batch-prefetch details on page load, or use intersection observer, or fetch on click instead of hover.
-
 ### 31. Raw SQL Migrations Without Alembic
 
 - **Files:** `backend/migrations/`, `backend/run_migrations.py`
