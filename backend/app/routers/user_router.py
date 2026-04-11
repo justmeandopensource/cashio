@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
+from app.rate_limit import limiter
 from app.repositories import user_crud
 from app.schemas import general_schema, user_schema
 from app.security.user_security import (
@@ -19,7 +20,8 @@ user_router = APIRouter(prefix="/user")
 @user_router.post(
     "/create", response_model=general_schema.RegisterResponse, tags=["users"]
 )
-def create_user(user: user_schema.UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("3/minute")
+def create_user(request: Request, user: user_schema.UserCreate, db: Session = Depends(get_db)):
     db_user = user_crud.get_user_by_username(db=db, username=user.username)
     if db_user:
         raise HTTPException(
@@ -31,8 +33,9 @@ def create_user(user: user_schema.UserCreate, db: Session = Depends(get_db)):
 
 
 @user_router.post("/login", tags=["users"])
+@limiter.limit("5/minute")
 async def login(
-    form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
+    request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
 ):
     user = authenticate_user(form_data.username, form_data.password, db)
     if not user:

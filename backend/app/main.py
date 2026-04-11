@@ -7,12 +7,15 @@ import uvicorn
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from sqlalchemy.exc import IntegrityError, OperationalError
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.database.connection import Base, engine
 from app.logging_config import configure_logging
 from app.models import model
+from app.rate_limit import limiter
 from app.repositories.settings import settings
 
 configure_logging(
@@ -63,6 +66,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(version=__version__, lifespan=lifespan)
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(

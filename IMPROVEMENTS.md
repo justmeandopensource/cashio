@@ -6,11 +6,6 @@ Analysis date: 2026-04-05
 
 ## LOW
 
-### 25. No Rate Limiting on Auth Endpoints
-
-- **File:** `backend/app/routers/user_router.py`
-- **Fix:** Add rate limiting middleware (e.g., `slowapi`) on login/register endpoints to prevent brute force.
-
 ### 26. No JWT Refresh Token Mechanism
 
 - **File:** `backend/app/security/user_security.py`
