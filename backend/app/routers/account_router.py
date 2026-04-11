@@ -63,18 +63,9 @@ def create_account(
     ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    try:
-        new_account = account_crud.create_account(
-            db=db, ledger_id=ledger_id, account=account
-        )
-        return new_account
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating account: {str(e)}",
-        )
+    return account_crud.create_account(
+        db=db, ledger_id=ledger_id, account=account
+    )
 
 
 @account_router.get(

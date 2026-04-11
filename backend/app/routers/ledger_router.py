@@ -35,18 +35,9 @@ def create_ledger(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Name and currency symbol cannot be empty",
         )
-    try:
-        new_ledger = ledger_crud.create_ledger(
-            db=db, user_id=user.user_id, ledger=ledger
-        )
-        return new_ledger
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while creating the ledger.",
-        )
+    return ledger_crud.create_ledger(
+        db=db, user_id=user.user_id, ledger=ledger
+    )
 
 
 @ledger_router.get(
@@ -68,15 +59,6 @@ def update_ledger_route(
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    try:
-        updated_ledger = ledger_crud.update_ledger(
-            db=db, ledger_id=ledger_id, user_id=user.user_id, ledger_update=ledger_update
-        )
-        return updated_ledger
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while updating the ledger.",
-        )
+    return ledger_crud.update_ledger(
+        db=db, ledger_id=ledger_id, user_id=user.user_id, ledger_update=ledger_update
+    )

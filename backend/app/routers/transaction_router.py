@@ -154,12 +154,9 @@ def add_transfer_transaction(
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    try:
-        transaction_crud.create_transfer_transaction(
-            db=db, transfer=transfer, user_id=user.user_id
-        )
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    transaction_crud.create_transfer_transaction(
+        db=db, transfer=transfer, user_id=user.user_id
+    )
 
     return {"message": "Transfer completed successfully"}
 
@@ -261,17 +258,12 @@ def update_transfer_transaction(
             detail="Invalid transfer_id. It must be a valid UUID.",
         )
 
-    try:
-        return transaction_crud.update_transfer_transaction(
-            db=db,
-            transfer_id=transfer_id,
-            transfer_update=transfer_update,
-            user_id=user.user_id,
-        )
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    return transaction_crud.update_transfer_transaction(
+        db=db,
+        transfer_id=transfer_id,
+        transfer_update=transfer_update,
+        user_id=user.user_id,
+    )
 
 
 @transaction_router.delete(
@@ -286,13 +278,9 @@ def delete_transaction(
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Delete the transaction
-    try:
-        transaction_crud.delete_transaction(
-            db=db, transaction_id=transaction_id, user_id=user.user_id
-        )
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    transaction_crud.delete_transaction(
+        db=db, transaction_id=transaction_id, user_id=user.user_id
+    )
 
     return {"message": "Transaction deleted successfully"}
 
@@ -310,18 +298,12 @@ def update_transaction(
     user: user_schema.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Update the transaction
-    try:
-        return transaction_crud.update_transaction(
-            db=db,
-            transaction_id=transaction_id,
-            transaction_update=transaction_update,
-            user_id=user.user_id,
-        )
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    return transaction_crud.update_transaction(
+        db=db,
+        transaction_id=transaction_id,
+        transaction_update=transaction_update,
+        user_id=user.user_id,
+    )
 
 
 @transaction_router.get(

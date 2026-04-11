@@ -6,6 +6,8 @@ import structlog
 import uvicorn
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError, OperationalError
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.database.connection import Base, engine
@@ -70,6 +72,33 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.exception_handler(IntegrityError)
+async def integrity_error_handler(request: Request, exc: IntegrityError):
+    logger.error("db_integrity_error", detail=str(exc.orig))
+    return JSONResponse(
+        status_code=409,
+        content={"detail": "Database constraint violation."},
+    )
+
+
+@app.exception_handler(OperationalError)
+async def operational_error_handler(request: Request, exc: OperationalError):
+    logger.error("db_operational_error", detail=str(exc.orig))
+    return JSONResponse(
+        status_code=503,
+        content={"detail": "Database is unavailable. Please try again later."},
+    )
+
+
+@app.exception_handler(ValueError)
+async def value_error_handler(request: Request, exc: ValueError):
+    logger.warning("value_error", detail=str(exc))
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc)},
+    )
+
 
 app.include_router(user_router)
 app.include_router(ledger_router)
