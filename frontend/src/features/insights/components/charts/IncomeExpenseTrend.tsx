@@ -115,7 +115,7 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
   const ratioAccentColor = useColorModeValue("purple.400", "purple.300");
 
   const sym = currencySymbol || "₹";
-  const maxTicks = useBreakpointValue({ base: 5, md: 10 }) || 5;
+  const isMobile = useBreakpointValue({ base: true, md: false }) ?? true;
 
   // Fetch data
   const { data, isLoading, isError } = useQuery<InsightsData>({
@@ -149,6 +149,17 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
   // Tick values for x-axis
   const tickValues = useMemo(() => {
     if (!data?.trend_data?.length) return undefined;
+
+    // Hide all x-axis labels on mobile
+    if (isMobile) return [];
+
+    // Show all labels for last 12 months and yearly snapshot
+    if (periodType === "last_12_months" || periodType === "yearly_since_beginning") {
+      return undefined;
+    }
+
+    // For monthly overview, filter to avoid clutter
+    const maxTicks = 10;
     const xValues = data.trend_data.map(d => d.period);
     if (xValues.length <= maxTicks) return undefined;
     const step = Math.ceil(xValues.length / maxTicks);
@@ -157,7 +168,7 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
       ticks.push(xValues[xValues.length - 1]);
     }
     return ticks;
-  }, [data, maxTicks]);
+  }, [data, periodType, isMobile]);
 
   // Aggregates
   const netSavings = data?.summary
@@ -387,7 +398,7 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
                 axisBottom={{
                   tickSize: 5,
                   tickPadding: 5,
-                  tickRotation: (data?.trend_data?.length ?? 0) > 8 ? -45 : 0,
+                  tickRotation: 0,
                   format: formatPeriod,
                   tickValues,
                 }}

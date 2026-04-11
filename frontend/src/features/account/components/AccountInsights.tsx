@@ -117,7 +117,7 @@ const AccountInsights: React.FC<AccountInsightsProps> = ({ accountId }) => {
               <Box height={{ base: "220px", md: "260px" }} width="full">
                 <ResponsiveLine
                   data={lineData}
-                  margin={{ top: 10, right: 20, bottom: 40, left: 60 }}
+                  margin={{ top: 10, right: 20, bottom: 10, left: 60 }}
                   xScale={{ type: "point" }}
                   yScale={{ type: "linear", min: 0, max: "auto", stacked: false }}
                   curve="monotoneX"
@@ -133,11 +133,7 @@ const AccountInsights: React.FC<AccountInsightsProps> = ({ accountId }) => {
                   enableSlices="x"
                   enableGridX={false}
                   gridYValues={5}
-                  axisBottom={{
-                    tickSize: 5,
-                    tickPadding: 5,
-                    format: formatPeriod,
-                  }}
+                  axisBottom={null}
                   axisLeft={{
                     tickSize: 5,
                     tickPadding: 5,

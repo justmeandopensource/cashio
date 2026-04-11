@@ -20,11 +20,6 @@ interface AccountBalanceChartProps {
   accountId: string;
 }
 
-const formatDate = (dateStr: string) => {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
-};
-
 const AccountBalanceChart: React.FC<AccountBalanceChartProps> = ({ accountId }) => {
   const ledgerId = useLedgerStore((s) => s.ledgerId);
   const currencySymbol = useLedgerStore((s) => s.currencySymbol);
@@ -49,15 +44,6 @@ const AccountBalanceChart: React.FC<AccountBalanceChartProps> = ({ accountId }) 
       id: "Balance",
       data: data.data_points.map(p => ({ x: p.date, y: p.balance })),
     }];
-  }, [data]);
-
-  const tickValues = useMemo(() => {
-    if (!data?.data_points?.length) return undefined;
-    const xValues = data.data_points.map(p => p.date);
-    const maxLabels = 6;
-    if (xValues.length <= maxLabels) return xValues;
-    const step = Math.floor(xValues.length / maxLabels);
-    return xValues.filter((_, i) => i % step === 0).slice(0, maxLabels);
   }, [data]);
 
   if (!data || data.data_points.length === 0) {
@@ -95,7 +81,7 @@ const AccountBalanceChart: React.FC<AccountBalanceChartProps> = ({ accountId }) 
         <Box height={{ base: "220px", md: "280px" }} width="full">
           <ResponsiveLine
             data={lineData}
-            margin={{ top: 10, right: 20, bottom: 40, left: 60 }}
+            margin={{ top: 10, right: 20, bottom: 10, left: 60 }}
             xScale={{ type: "point" }}
             yScale={{ type: "linear", min: "auto", max: "auto" }}
             curve="monotoneX"
@@ -107,7 +93,7 @@ const AccountBalanceChart: React.FC<AccountBalanceChartProps> = ({ accountId }) 
             useMesh={true}
             enableCrosshair={true}
             enableGridX={false}
-            gridYValues={5}
+            gridYValues={7}
             defs={[{
               id: "balanceGradient",
               type: "linearGradient",
@@ -117,12 +103,7 @@ const AccountBalanceChart: React.FC<AccountBalanceChartProps> = ({ accountId }) 
               ],
             }]}
             fill={[{ match: "*", id: "balanceGradient" }]}
-            axisBottom={{
-              tickSize: 5,
-              tickPadding: 5,
-              format: formatDate,
-              tickValues,
-            }}
+            axisBottom={null}
             axisLeft={{
               tickSize: 5,
               tickPadding: 5,
