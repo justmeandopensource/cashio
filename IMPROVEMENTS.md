@@ -12,12 +12,6 @@ Analysis date: 2026-04-05
 - **Problem:** Modal data props typed as `any` — breaks type safety.
 - **Fix:** Create discriminated union types for modal data (e.g., `TransactionModalData = { mode: 'edit', tx: Transaction } | { mode: 'copy', tx: Transaction } | null`).
 
-### 16. No React Error Boundaries
-
-- **File:** `frontend/src/App.tsx`
-- **Problem:** No error boundaries around feature routes. A crash in one feature unmounts the whole app.
-- **Fix:** Add `react-error-boundary` package. Wrap each lazy-loaded route in an ErrorBoundary with a fallback UI and reset capability.
-
 ### 20. Outdated/Abandoned Python Dependencies
 
 - **File:** `backend/requirements.txt`
