@@ -1,13 +1,25 @@
 import os
+import time
 from contextlib import asynccontextmanager
 
+import structlog
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.database.connection import Base, engine
+from app.logging_config import configure_logging
 from app.models import model
 from app.repositories.settings import settings
+
+configure_logging(
+    log_level=settings.LOG_LEVEL,
+    json_logs=settings.LOG_FORMAT == "json",
+)
+
+logger = structlog.get_logger()
+
 from app.routers.account_router import account_router
 from app.routers.budget_router import budget_router
 from app.routers.fund_flow_router import fund_flow_router
@@ -25,16 +37,32 @@ from app.routers.user_router import user_router
 from app.version import __version__
 
 
+class RequestLoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next) -> Response:
+        start = time.perf_counter()
+        response = await call_next(request)
+        duration_ms = round((time.perf_counter() - start) * 1000, 2)
+        logger.info(
+            "request_handled",
+            method=request.method,
+            path=request.url.path,
+            status_code=response.status_code,
+            duration_ms=duration_ms,
+        )
+        return response
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # stuff to do when app starts
+    logger.info("app_startup")
     Base.metadata.create_all(bind=engine)
     yield
-    # stuff to do when app stops
+    logger.info("app_shutdown")
 
 
 app = FastAPI(version=__version__, lifespan=lifespan)
 
+app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,

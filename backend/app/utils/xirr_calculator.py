@@ -1,10 +1,11 @@
-import logging
 from datetime import datetime
 from typing import List, Dict, Any, Optional
+
+import structlog
 from scipy.optimize import newton
 import numpy as np
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger()
 
 
 def calculate_xirr(transactions: List[Dict[str, Any]], current_value: float, current_date: datetime) -> Optional[float]:
@@ -63,5 +64,5 @@ def calculate_xirr(transactions: List[Dict[str, Any]], current_value: float, cur
         xirr = newton(lambda r: npv(r, cash_flows, dates), 0.1, fprime=lambda r: npv_derivative(r, cash_flows, dates))
         return round(xirr * 100, 2)
     except Exception as e:
-        logger.warning("XIRR calculation failed: %s", e)
+        logger.warning("xirr_calculation_failed", error=str(e))
         return None

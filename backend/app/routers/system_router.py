@@ -1,11 +1,11 @@
 import platform
 import os
 import subprocess
-import logging
 import shutil
 from datetime import datetime
 from typing import List
 
+import structlog
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status, UploadFile, File
 from fastapi.responses import FileResponse
 from sqlalchemy import text
@@ -19,9 +19,7 @@ from app.repositories.settings import settings
 
 system_router = APIRouter(prefix="/api")
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger()
 
 BACKUP_DIR = settings.BACKUP_DIR
 if not os.path.exists(BACKUP_DIR):
@@ -31,7 +29,7 @@ def run_backup(db_settings: dict, backup_filepath: str):
     """
     Function to be run in the background to create a database backup.
     """
-    logger.info(f"Starting database backup to {backup_filepath}...")
+    logger.info("backup_started", filepath=backup_filepath)
     env = os.environ.copy()
     env["PGPASSWORD"] = db_settings["password"]
 
@@ -50,18 +48,18 @@ def run_backup(db_settings: dict, backup_filepath: str):
         stdout, stderr = process.communicate()
 
         if process.returncode == 0:
-            logger.info(f"Database backup successful: {backup_filepath}")
+            logger.info("backup_successful", filepath=backup_filepath)
         else:
-            logger.error(f"Database backup failed. Error: {stderr.decode()}")
+            logger.error("backup_failed", error=stderr.decode())
     except Exception as e:
-        logger.error(f"An exception occurred during backup: {e}")
+        logger.error("backup_exception", error=str(e))
 
 
 def run_restore(db_settings: dict, backup_filepath: str):
     """
     Function to be run in the background to restore the database.
     """
-    logger.info(f"Starting database restore from {backup_filepath}...")
+    logger.info("restore_started", filepath=backup_filepath)
     env = os.environ.copy()
     env["PGPASSWORD"] = db_settings["password"]
     
@@ -73,21 +71,21 @@ def run_restore(db_settings: dict, backup_filepath: str):
     ]
 
     try:
-        logger.info(f"Connecting to 'postgres' database to manage '{db_settings['db']}'...")
-        
+        logger.info("restore_connecting", database=db_settings["db"])
+
         term_connections_sql = f"SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = '{db_settings['db']}' AND pid <> pg_backend_pid();"
         subprocess.run(psql_command_base + ["-d", "postgres", "-c", term_connections_sql], env=env, check=True, capture_output=True)
-        logger.info(f"Terminated active connections to '{db_settings['db']}'.")
+        logger.info("restore_terminated_connections", database=db_settings["db"])
 
         drop_db_sql = f"DROP DATABASE IF EXISTS \"{db_settings['db']}\";"
         subprocess.run(psql_command_base + ["-d", "postgres", "-c", drop_db_sql], env=env, check=True, capture_output=True)
-        logger.info(f"Dropped database '{db_settings['db']}'.")
+        logger.info("restore_dropped_database", database=db_settings["db"])
 
         create_db_sql = f"CREATE DATABASE \"{db_settings['db']}\" WITH OWNER = \"{db_settings['user']}\";"
         subprocess.run(psql_command_base + ["-d", "postgres", "-c", create_db_sql], env=env, check=True, capture_output=True)
-        logger.info(f"Created database '{db_settings['db']}'.")
+        logger.info("restore_created_database", database=db_settings["db"])
 
-        logger.info(f"Restoring data to '{db_settings['db']}'...")
+        logger.info("restore_loading_data", database=db_settings["db"])
         restore_command = [
             "pg_restore",
             "-h", db_settings["host"],
@@ -103,16 +101,16 @@ def run_restore(db_settings: dict, backup_filepath: str):
         stdout, stderr = process.communicate()
 
         if process.returncode == 0:
-            logger.info("Database restore successful.")
+            logger.info("restore_successful")
         else:
-            logger.error(f"Database restore failed. Error: {stderr.decode()}")
+            logger.error("restore_failed", error=stderr.decode())
             if stdout:
-                logger.error(f"Restore stdout: {stdout.decode()}")
+                logger.error("restore_stdout", output=stdout.decode())
 
     except subprocess.CalledProcessError as e:
-        logger.error(f"A subprocess error occurred during restore setup: {e.stderr.decode()}")
+        logger.error("restore_subprocess_error", error=e.stderr.decode())
     except Exception as e:
-        logger.error(f"An exception occurred during restore: {e}")
+        logger.error("restore_exception", error=str(e))
 
 
 @system_router.get("/health", tags=["system"])

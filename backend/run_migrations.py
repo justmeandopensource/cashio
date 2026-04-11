@@ -4,11 +4,22 @@ Migration Runner Script
 Runs SQL migration files in order against the database.
 """
 
-import os
 import sys
 from pathlib import Path
-from app.database.connection import engine
+
+import structlog
 from sqlalchemy import text
+
+from app.database.connection import engine
+from app.logging_config import configure_logging
+from app.repositories.settings import settings
+
+configure_logging(
+    log_level=settings.LOG_LEVEL,
+    json_logs=settings.LOG_FORMAT == "json",
+)
+
+logger = structlog.get_logger()
 
 
 def run_migrations():
@@ -16,46 +27,42 @@ def run_migrations():
     migrations_dir = Path(__file__).parent / "migrations"
 
     if not migrations_dir.exists():
-        print("Migrations directory not found!")
+        logger.error("migrations_dir_not_found")
         return
 
-    # Get all SQL files and sort them by filename
     migration_files = sorted([f for f in migrations_dir.glob("*.sql")])
 
     if not migration_files:
-        print("No migration files found!")
+        logger.warning("no_migration_files_found")
         return
 
-    print(f"Found {len(migration_files)} migration files")
+    logger.info("migrations_found", count=len(migration_files))
 
     with engine.connect() as conn:
         for migration_file in migration_files:
-            print(f"Running migration: {migration_file.name}")
+            logger.info("migration_running", file=migration_file.name)
 
             try:
-                # Read the SQL file
                 with open(migration_file, 'r') as f:
                     sql_content = f.read()
 
-                # Execute the entire file as one batch
                 conn.execute(text(sql_content))
                 conn.commit()
-                print(f"✓ Migration {migration_file.name} completed successfully")
+                logger.info("migration_completed", file=migration_file.name)
 
             except Exception as e:
                 error_msg = str(e)
-                # Check if it's a "already exists" type error, which we can ignore
                 if any(keyword in error_msg.lower() for keyword in [
                     'already exists', 'duplicate', 'relation', 'constraint'
                 ]):
-                    print(f"⚠ Migration {migration_file.name} already applied (skipping)")
-                    conn.rollback()  # Reset transaction state
+                    logger.info("migration_skipped", file=migration_file.name, reason="already applied")
+                    conn.rollback()
                 else:
-                    print(f"✗ Error running migration {migration_file.name}: {e}")
+                    logger.error("migration_failed", file=migration_file.name, error=error_msg)
                     conn.rollback()
                     sys.exit(1)
 
-    print("All migrations completed successfully!")
+    logger.info("all_migrations_completed")
 
 
 if __name__ == "__main__":

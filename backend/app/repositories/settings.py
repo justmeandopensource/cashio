@@ -24,6 +24,10 @@ class Settings(BaseSettings):
 
     ALLOWED_ORIGINS: List[str] = ["http://localhost:5173"]
 
+    # logging
+    LOG_LEVEL: str = "INFO"
+    LOG_FORMAT: str = "console"  # "console" or "json"
+
     # for jwt
     SECRET_KEY: str = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     ALGORITHM: str = "HS256"
