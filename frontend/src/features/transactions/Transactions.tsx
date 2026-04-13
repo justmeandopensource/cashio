@@ -25,7 +25,7 @@ import type { Transaction } from "@/types";
 
 const EditTransactionModal = lazy(() => import("@components/modals/EditTransactionModal/EditTransactionModal"));
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const floatKeyframes = keyframes`
   0%, 100% { transform: translateY(0); }

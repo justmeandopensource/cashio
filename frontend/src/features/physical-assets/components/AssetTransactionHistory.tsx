@@ -55,7 +55,7 @@ import { notify } from "@/components/shared/notify";
 import AssetTransactionNotesPopover from "./AssetTransactionNotesPopover";
 import EmptyStateTransactions from "./EmptyStateTransactions";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
   assetTypes,

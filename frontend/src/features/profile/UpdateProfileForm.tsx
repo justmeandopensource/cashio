@@ -22,7 +22,7 @@ import { useUpdateUserProfile, useUserProfile } from "./hooks";
 import { UserUpdate } from "./api";
 import { notify } from "@/components/shared/notify";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const UpdateProfileForm: React.FC = () => {
   const textColor = useColorModeValue("gray.800", "gray.100");

@@ -21,9 +21,9 @@ import useLedgerStore from "@/components/shared/store";
 import { splitCurrencyForDisplay } from "../../../mutual-funds/utils";
 import api from "@/lib/api";
 
-const MotionBox = motion(Box);
-const MotionFlex = motion(Flex);
-const MotionSimpleGrid = motion(SimpleGrid);
+const MotionBox = motion.create(Box);
+const MotionFlex = motion.create(Flex);
+const MotionSimpleGrid = motion.create(SimpleGrid);
 
 // Color palette for pie chart segments
 const LOCATION_COLORS = [

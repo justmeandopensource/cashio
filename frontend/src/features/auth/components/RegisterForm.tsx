@@ -22,7 +22,7 @@ import {
 import { motion } from "framer-motion";
 import { UserPlus, Eye, EyeOff, Mail, Lock, User, AtSign } from "lucide-react";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 interface RegisterFormProps {
    

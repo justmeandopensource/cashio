@@ -50,7 +50,7 @@ import { getAmcs, getMutualFunds, getAllMfTransactions, deleteMutualFund } from 
 import { MutualFund } from "./types";
 import { notify } from "@/components/shared/notify";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
  
 interface MutualFundsProps {

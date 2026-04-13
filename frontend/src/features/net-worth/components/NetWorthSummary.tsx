@@ -13,7 +13,7 @@ import { TrendingUp, Building, ShieldAlert, ArrowUpRight, ArrowDownRight } from 
 import { splitCurrencyForDisplay } from "@/features/mutual-funds/utils";
 import FinancialTooltip from "@/components/shared/FinancialTooltip";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 interface NetWorthSummaryProps {
   netWorth: number | string;

@@ -33,9 +33,9 @@ import {
 import { getAmcSummaries, getMutualFunds } from "@/features/mutual-funds/api";
 import { AmcSummary, MutualFund } from "@/features/mutual-funds/types";
 
-const MotionBox = motion(Box);
-const MotionFlex = motion(Flex);
-const MotionSimpleGrid = motion(SimpleGrid);
+const MotionBox = motion.create(Box);
+const MotionFlex = motion.create(Flex);
+const MotionSimpleGrid = motion.create(SimpleGrid);
 
 const COLORS = [
   "#3B82F6", "#F59E0B", "#10B981", "#8B5CF6", "#EC4899",

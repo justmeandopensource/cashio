@@ -9,7 +9,7 @@ import { keyframes } from "@emotion/react";
 import { motion } from "framer-motion";
 import { BookOpen } from "lucide-react";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const floatKeyframes = keyframes`
   0%, 100% { transform: translateY(0); }

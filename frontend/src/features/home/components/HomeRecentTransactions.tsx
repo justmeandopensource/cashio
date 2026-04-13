@@ -22,7 +22,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import type { Ledger } from "@/types";
 import type { Transaction } from "@/types/transaction";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 interface HomeRecentTransactionsProps {
   defaultLedgerId: number;

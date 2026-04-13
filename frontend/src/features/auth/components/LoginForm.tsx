@@ -20,7 +20,7 @@ import {
 import { motion } from "framer-motion";
 import { LogIn, Eye, EyeOff, Mail, Lock } from "lucide-react";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 interface LoginFormProps {
    

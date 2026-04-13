@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 import React, { FC, ReactNode } from "react";
 import Breadcrumbs, { type BreadcrumbEntry } from "./Breadcrumbs";
 
-const MotionFlex = motion(Flex);
+const MotionFlex = motion.create(Flex);
 
 interface PageHeaderProps {
   title: ReactNode;

@@ -848,7 +848,7 @@ def get_transactions_for_ledger_id(
             (Transaction.notes.ilike(f"%{search_text}%")) |
             (TransactionSplit.notes.ilike(f"%{search_text}%"))
         )
-        query = query.group_by(Transaction.transaction_id)
+        query = query.group_by(Transaction.transaction_id, Account.account_id)
     if transaction_type:
         if transaction_type == "income":
             query = query.filter(Transaction.credit > 0, Transaction.is_transfer == False)

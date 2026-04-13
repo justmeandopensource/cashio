@@ -32,8 +32,8 @@ import {
 import { getMutualFunds, getCorpusGrowth } from "@/features/mutual-funds/api";
 import { MutualFund, YearlyInvestment } from "@/features/mutual-funds/types";
 
-const MotionBox = motion(Box);
-const MotionSimpleGrid = motion(SimpleGrid);
+const MotionBox = motion.create(Box);
+const MotionSimpleGrid = motion.create(SimpleGrid);
 
 const LINE_COLOR = "#38B2AC";
 

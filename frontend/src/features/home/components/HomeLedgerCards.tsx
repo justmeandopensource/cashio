@@ -17,7 +17,7 @@ import { useSetDefaultLedger } from "@/features/profile/hooks";
 import { notify } from "@/components/shared/notify";
 import LedgerSparkline from "./LedgerSparkline";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 import type { Ledger } from "@/types";
 

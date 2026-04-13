@@ -37,7 +37,7 @@ import MobileDrawer from "./MobileDrawer";
 import { NavItem, NavSubItem, type NavItemColorTokens } from "./SidebarNavItem";
 import GlobalSearch from "../shared/GlobalSearch";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 interface SidebarProps {
   handleLogout: () => void;

@@ -20,7 +20,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import type { Ledger } from "@/types";
 import type { BudgetItemData } from "@/features/budget/components/BudgetItem";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 interface HomeBudgetAlertsProps {
   defaultLedgerId: number;

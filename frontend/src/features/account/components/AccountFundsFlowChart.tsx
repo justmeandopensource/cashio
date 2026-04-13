@@ -17,7 +17,7 @@ import { formatNumberAsCurrency } from "@/components/shared/utils";
 import { useAccountFundsFlow } from "../hooks";
 import type { FundsFlowCounterparty } from "../api";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 interface AccountFundsFlowChartProps {
   accountId: string;

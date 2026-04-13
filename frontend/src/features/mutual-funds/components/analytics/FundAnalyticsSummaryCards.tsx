@@ -23,8 +23,8 @@ import {
 } from "../../utils";
 import { SummaryMetrics } from "./useFundAnalyticsData";
 
-const MotionSimpleGrid = motion(SimpleGrid);
-const MotionBox = motion(Box);
+const MotionSimpleGrid = motion.create(SimpleGrid);
+const MotionBox = motion.create(Box);
 
 interface FundAnalyticsSummaryCardsProps {
   metrics: SummaryMetrics;

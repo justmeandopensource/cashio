@@ -26,8 +26,8 @@ import LedgerAccountSection, { type SubtypeGroup } from "./LedgerAccountSection"
 
 import type { Account, Transaction } from "@/types";
 
-const MotionBox = motion(Box);
-const MotionSimpleGrid = motion(SimpleGrid);
+const MotionBox = motion.create(Box);
+const MotionSimpleGrid = motion.create(SimpleGrid);
 
 interface LedgerMainAccountsProps {
   accounts: Account[];

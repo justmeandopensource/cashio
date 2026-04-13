@@ -23,7 +23,7 @@ import { AlignLeft, CreditCard, Coins, TrendingUp } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
 import { useAccounts } from "../hooks";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 import type { Transaction } from "@/types";
 

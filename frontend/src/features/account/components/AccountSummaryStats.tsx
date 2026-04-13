@@ -15,8 +15,8 @@ import { formatNumberAsCurrency } from "@/components/shared/utils";
 import FinancialTooltip from "@/components/shared/FinancialTooltip";
 import { useAccountSummary } from "../hooks";
 
-const MotionBox = motion(Box);
-const MotionSimpleGrid = motion(SimpleGrid);
+const MotionBox = motion.create(Box);
+const MotionSimpleGrid = motion.create(SimpleGrid);
 
 interface AccountSummaryStatsProps {
   accountId: string;

@@ -11,7 +11,7 @@ import FinancialTooltip from "@/components/shared/FinancialTooltip";
 import BudgetProgressBar from "./BudgetProgressBar";
 import { getBudgetStatusColor } from "../utils";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 interface BudgetSummaryCardProps {
   periodLabel: string;

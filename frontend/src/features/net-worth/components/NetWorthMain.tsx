@@ -30,7 +30,7 @@ import AssetAllocationChart from "./AssetAllocationChart";
 import PortfolioComposition from "./PortfolioComposition";
 import type { Ledger } from "@/types";
 
-const MotionCenter = motion(Center);
+const MotionCenter = motion.create(Center);
 
 interface NetWorthMainProps {
   data: NetWorthResponse | undefined;

@@ -34,8 +34,8 @@ import {
   splitPercentageForDisplay,
 } from "../../../mutual-funds/utils";
 
-const MotionBox = motion(Box);
-const MotionSimpleGrid = motion(SimpleGrid);
+const MotionBox = motion.create(Box);
+const MotionSimpleGrid = motion.create(SimpleGrid);
 
 const INCOME_COLOR = "#38B2AC";
 const EXPENSE_COLOR = "#E53E3E";

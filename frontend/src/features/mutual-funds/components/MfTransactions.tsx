@@ -46,7 +46,7 @@ import { deleteMfTransaction } from "../api";
 import useLedgerStore from "@/components/shared/store";
 import MfTransactionNotesPopover from "./MfTransactionNotesPopover";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const floatKeyframes = keyframes`
   0%, 100% { transform: translateY(0); }

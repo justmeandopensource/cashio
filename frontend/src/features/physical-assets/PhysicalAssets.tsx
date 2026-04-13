@@ -49,7 +49,7 @@ import EmptyStateTransactions from "./components/EmptyStateTransactions";
 import AssetTransactionHistory from "./components/AssetTransactionHistory";
 import { PhysicalAsset, AssetType } from "./types";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const PhysicalAssets: FC = () => {
   const queryClient = useQueryClient();

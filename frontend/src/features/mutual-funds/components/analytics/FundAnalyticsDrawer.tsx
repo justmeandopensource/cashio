@@ -29,7 +29,7 @@ import InvestmentValueChart from "./InvestmentValueChart";
 import TransactionHistoryChart from "./TransactionHistoryChart";
 import CostBasisIndicator from "./CostBasisIndicator";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 interface FundAnalyticsDrawerProps {
   isOpen: boolean;

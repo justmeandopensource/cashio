@@ -16,8 +16,8 @@ import { splitCurrencyForDisplay } from "@/features/mutual-funds/utils";
 
 import { ALLOCATION_COLORS } from "../constants";
 
-const MotionBox = motion(Box);
-const MotionFlex = motion(Flex);
+const MotionBox = motion.create(Box);
+const MotionFlex = motion.create(Flex);
 
 interface AssetAllocationChartProps {
   allocation: AssetAllocationItem[];

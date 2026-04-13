@@ -34,8 +34,8 @@ import useLedgerStore from "../../../components/shared/store";
 import FinancialTooltip from "@/components/shared/FinancialTooltip";
 import PhysicalAssetsTable from "./PhysicalAssetsTable";
 
-const MotionBox = motion(Box);
-const MotionSimpleGrid = motion(SimpleGrid);
+const MotionBox = motion.create(Box);
+const MotionSimpleGrid = motion.create(SimpleGrid);
 
 const floatKeyframes = keyframes`
   0%, 100% { transform: translateY(0); }

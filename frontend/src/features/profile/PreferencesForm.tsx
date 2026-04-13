@@ -16,7 +16,7 @@ import { useLedgers } from "@/features/ledger/hooks";
 import { useUserProfile, useSetDefaultLedger } from "./hooks";
 import { notify } from "@/components/shared/notify";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const PreferencesForm: React.FC = () => {
   const textColor = useColorModeValue("gray.800", "gray.100");

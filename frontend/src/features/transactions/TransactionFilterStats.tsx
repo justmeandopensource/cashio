@@ -13,8 +13,8 @@ import { TrendingUp, TrendingDown, Hash, Scale } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
 
-const MotionBox = motion(Box);
-const MotionSimpleGrid = motion(SimpleGrid);
+const MotionBox = motion.create(Box);
+const MotionSimpleGrid = motion.create(SimpleGrid);
 
 interface TransactionFilterStatsProps {
   totalTransactions: number;

@@ -16,7 +16,7 @@ import { formatNumberAsCurrency } from "@/components/shared/utils";
 import BudgetProgressBar from "./BudgetProgressBar";
 import { getBudgetStatusColor } from "../utils";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 export interface BudgetItemData {
   budget_id: number;

@@ -22,7 +22,7 @@ import { useFundFlow } from "@/features/insights/hooks";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
 import type { FundFlowData, FundFlowLink } from "./types";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const PERIOD_OPTIONS = [
   { value: "current_month", label: "Current Month" },

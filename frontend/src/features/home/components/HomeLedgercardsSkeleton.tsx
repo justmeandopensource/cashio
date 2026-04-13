@@ -9,7 +9,7 @@ import {
 import { keyframes } from "@emotion/react";
 import { motion } from "framer-motion";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const shimmer = keyframes`
   0% { opacity: 0.5; }

@@ -13,7 +13,7 @@ import { Landmark, TrendingUp, Gem, BarChart2 } from "lucide-react";
 import { splitCurrencyForDisplay } from "@/features/mutual-funds/utils";
 import { ALLOCATION_COLORS } from "../constants";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 interface CompositionRow {
   label: string;

@@ -23,7 +23,7 @@ import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
 import api from "@/lib/api";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 interface ExpenseCalendarData {
   date: string;

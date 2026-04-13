@@ -14,7 +14,7 @@ import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
 import { useAccountBalanceHistory } from "../hooks";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 interface AccountBalanceChartProps {
   accountId: string;

@@ -33,9 +33,9 @@ import {
 import { getMutualFunds } from "@/features/mutual-funds/api";
 import { MutualFund } from "@/features/mutual-funds/types";
 
-const MotionBox = motion(Box);
-const MotionFlex = motion(Flex);
-const MotionSimpleGrid = motion(SimpleGrid);
+const MotionBox = motion.create(Box);
+const MotionFlex = motion.create(Flex);
+const MotionSimpleGrid = motion.create(SimpleGrid);
 
 const ASSET_CLASS_COLORS: Record<string, string> = {
   Equity: "#10B981",

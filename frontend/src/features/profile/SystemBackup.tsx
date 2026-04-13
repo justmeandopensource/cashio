@@ -49,8 +49,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-const MotionBox = motion(Box);
-const MotionCard = motion(Card);
+const MotionBox = motion.create(Box);
+const MotionCard = motion.create(Card);
 
 const SystemBackup: React.FC = () => {
   const textColor = useColorModeValue("gray.800", "gray.100");

@@ -18,7 +18,7 @@ import { splitCurrencyForDisplay } from "@/features/mutual-funds/utils";
 import { queryKeys } from "@/lib/queryKeys";
 import type { Ledger } from "@/types";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 interface HomeNetWorthBannerProps {
   defaultLedgerId: number;

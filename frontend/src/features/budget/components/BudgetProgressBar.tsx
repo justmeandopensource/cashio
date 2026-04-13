@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import React from "react";
 import { getBudgetStatusColor } from "../utils";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 interface BudgetProgressBarProps {
   spent: number;

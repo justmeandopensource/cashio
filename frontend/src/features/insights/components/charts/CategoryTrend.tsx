@@ -33,8 +33,8 @@ import useLedgerStore from "@/components/shared/store";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
 import { splitCurrencyForDisplay } from "../../../mutual-funds/utils";
 
-const MotionBox = motion(Box);
-const MotionSimpleGrid = motion(SimpleGrid);
+const MotionBox = motion.create(Box);
+const MotionSimpleGrid = motion.create(SimpleGrid);
 
 // Color palette for subcategories
 const SUBCATEGORY_COLORS = [

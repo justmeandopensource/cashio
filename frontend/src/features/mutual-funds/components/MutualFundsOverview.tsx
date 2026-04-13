@@ -35,8 +35,8 @@ import MutualFundsTable from "./MutualFundsTable";
 import BulkNavUpdateModal from "./modals/BulkNavUpdateModal";
 import PortfolioChangeModal from "./modals/PortfolioChangeModal";
 
-const MotionBox = motion(Box);
-const MotionSimpleGrid = motion(SimpleGrid);
+const MotionBox = motion.create(Box);
+const MotionSimpleGrid = motion.create(SimpleGrid);
 
 const floatKeyframes = keyframes`
   0%, 100% { transform: translateY(0); }
