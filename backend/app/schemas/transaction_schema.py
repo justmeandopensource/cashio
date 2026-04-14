@@ -122,6 +122,9 @@ class Transaction(BaseModel, str_strip_whitespace=True):
     created_at: datetime
     tags: Optional[List[Tag]] = None
     filter_matched_split: Optional[MatchedSplitInfo] = None
+    split_category_names: Optional[List[str]] = None
+    transfer_source_account_name: Optional[str] = None
+    transfer_destination_account_name: Optional[str] = None
 
     class Config:
         from_attributes = True

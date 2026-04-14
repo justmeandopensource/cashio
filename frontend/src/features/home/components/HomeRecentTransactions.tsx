@@ -14,6 +14,8 @@ import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeftRight,
   ArrowRight,
+  MoveLeft,
+  MoveRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getTransactions } from "@/features/transactions/api";
@@ -144,14 +146,38 @@ const HomeRecentTransactions: React.FC<HomeRecentTransactionsProps> = ({
                 {/* Category + account */}
                 <Box flex={1} minW={0}>
                   <HStack spacing={1}>
-                    <Text
-                      fontSize="xs"
-                      fontWeight="600"
-                      color={textColor}
-                      noOfLines={1}
-                    >
-                      {tx.category_name || (tx.is_transfer ? "Fund Transfer" : "Uncategorized")}
-                    </Text>
+                    {tx.is_split && !tx.is_transfer && !tx.is_mf_transaction && tx.split_category_names?.length ? (
+                      <HStack spacing={0} overflow="hidden" flexWrap="nowrap">
+                        {tx.split_category_names.map((name, i) => (
+                          <HStack key={name} spacing={0} flexShrink={i === 0 ? 0 : 1} minW={0}>
+                            {i > 0 && (
+                              <Text fontSize="8px" color={splitColor} mx={1} flexShrink={0}>
+                                ·
+                              </Text>
+                            )}
+                            <Text
+                              fontSize="xs"
+                              fontWeight="600"
+                              color={textColor}
+                              whiteSpace="nowrap"
+                              overflow="hidden"
+                              textOverflow="ellipsis"
+                            >
+                              {name}
+                            </Text>
+                          </HStack>
+                        ))}
+                      </HStack>
+                    ) : (
+                      <Text
+                        fontSize="xs"
+                        fontWeight="600"
+                        color={textColor}
+                        noOfLines={1}
+                      >
+                        {tx.is_mf_transaction ? (tx.notes || "Mutual Fund") : (tx.category_name || (tx.is_transfer ? "Fund Transfer" : "Uncategorized"))}
+                      </Text>
+                    )}
                     {tx.is_split && !tx.is_transfer && (
                       <Box w="5px" h="5px" borderRadius="sm" bg={splitColor} flexShrink={0} title="Split" />
                     )}
@@ -159,12 +185,36 @@ const HomeRecentTransactions: React.FC<HomeRecentTransactionsProps> = ({
                       <Box w="5px" h="5px" borderRadius="sm" bg={transferColor} flexShrink={0} title="Transfer" />
                     )}
                   </HStack>
-                  {tx.account_name && (
+                  {tx.is_transfer && tx.transfer_source_account_name && tx.transfer_destination_account_name ? (
+                    <HStack spacing={1} mt={0.5} overflow="hidden">
+                      {tx.transfer_type === "destination" ? (
+                        <>
+                          <Text fontSize="2xs" color={subtextColor} noOfLines={1} flexShrink={1} minW={0}>
+                            {tx.transfer_destination_account_name}
+                          </Text>
+                          <Icon as={MoveLeft} boxSize={2.5} color={transferColor} flexShrink={0} />
+                          <Text fontSize="2xs" color={subtextColor} noOfLines={1} flexShrink={1} minW={0}>
+                            {tx.transfer_source_account_name}
+                          </Text>
+                        </>
+                      ) : (
+                        <>
+                          <Text fontSize="2xs" color={subtextColor} noOfLines={1} flexShrink={1} minW={0}>
+                            {tx.transfer_source_account_name}
+                          </Text>
+                          <Icon as={MoveRight} boxSize={2.5} color={transferColor} flexShrink={0} />
+                          <Text fontSize="2xs" color={subtextColor} noOfLines={1} flexShrink={1} minW={0}>
+                            {tx.transfer_destination_account_name}
+                          </Text>
+                        </>
+                      )}
+                    </HStack>
+                  ) : tx.account_name ? (
                     <Text fontSize="2xs" color={subtextColor} noOfLines={1} mt={0.5}>
                       {tx.account_name}
                       {tx.store ? ` · ${tx.store}` : ""}
                     </Text>
-                  )}
+                  ) : null}
                 </Box>
 
                 {/* Amount */}

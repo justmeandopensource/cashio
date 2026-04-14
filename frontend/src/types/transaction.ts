@@ -22,6 +22,9 @@ export interface Transaction {
   tags?: TagItem[];
   splits?: SplitTransaction[];
   filter_matched_split?: FilterMatchedSplit;
+  split_category_names?: string[];
+  transfer_source_account_name?: string;
+  transfer_destination_account_name?: string;
 }
 
 export interface TransactionCreate {

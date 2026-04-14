@@ -863,7 +863,7 @@ def get_transactions_for_ledger_id(
     if location:
         query = query.filter(Transaction.location.ilike(f"%{location}%"))
 
-    transactions = query.order_by(Transaction.date.desc()).offset(offset).limit(limit).all()
+    transactions = query.order_by(Transaction.date.desc(), Transaction.transaction_id.desc()).offset(offset).limit(limit).all()
 
     # When filtering by category, find split-matched transactions and attach the matching split
     split_by_tx: dict = {}
@@ -909,16 +909,39 @@ def get_transactions_for_ledger_id(
                     splits_by_tx_raw[tx_id]["notes"] = None
             split_by_tx = splits_by_tx_raw
 
-    # Batch-detect cross-ledger transfers
+    # Batch-fetch split category names for split transactions
+    split_tx_ids = [t.transaction_id for t in transactions if t.is_split]
+    split_categories_by_tx: dict = {}
+    if split_tx_ids:
+        splits_with_categories = (
+            db.query(
+                TransactionSplit.transaction_id,
+                Category.name.label("category_name"),
+            )
+            .outerjoin(Category, TransactionSplit.category_id == Category.category_id)
+            .filter(TransactionSplit.transaction_id.in_(split_tx_ids))
+            .order_by(TransactionSplit.split_id)
+            .all()
+        )
+        for row in splits_with_categories:
+            if row.transaction_id not in split_categories_by_tx:
+                split_categories_by_tx[row.transaction_id] = []
+            if row.category_name and row.category_name not in split_categories_by_tx[row.transaction_id]:
+                split_categories_by_tx[row.transaction_id].append(row.category_name)
+
+    # Batch-detect cross-ledger transfers and collect paired account names
     transfer_ids = [
         t.transfer_id for t in transactions if t.is_transfer and t.transfer_id
     ]
     cross_ledger_transfer_ids: set = set()
+    transfer_accounts: dict = {}
     if transfer_ids:
         transfer_rows = (
             db.query(
                 Transaction.transfer_id,
+                Transaction.transfer_type,
                 Account.ledger_id,
+                Account.name.label("account_name"),
             )
             .join(Account, Transaction.account_id == Account.account_id)
             .filter(Transaction.transfer_id.in_(transfer_ids))
@@ -927,6 +950,11 @@ def get_transactions_for_ledger_id(
         ledgers_by_transfer: dict = {}
         for row in transfer_rows:
             ledgers_by_transfer.setdefault(row.transfer_id, set()).add(row.ledger_id)
+            transfer_accounts.setdefault(row.transfer_id, {})
+            if row.transfer_type == "source":
+                transfer_accounts[row.transfer_id]["source"] = row.account_name
+            elif row.transfer_type == "destination":
+                transfer_accounts[row.transfer_id]["destination"] = row.account_name
         cross_ledger_transfer_ids = {
             tid for tid, ledger_ids in ledgers_by_transfer.items() if len(ledger_ids) > 1
         }
@@ -959,6 +987,13 @@ def get_transactions_for_ledger_id(
                 for tag in transaction.tags
             ],
             "filter_matched_split": matched_split,
+            "split_category_names": split_categories_by_tx.get(transaction.transaction_id),
+            "transfer_source_account_name": transfer_accounts.get(
+                transaction.transfer_id, {}
+            ).get("source") if transaction.is_transfer else None,
+            "transfer_destination_account_name": transfer_accounts.get(
+                transaction.transfer_id, {}
+            ).get("destination") if transaction.is_transfer else None,
         }
         formatted_transactions.append(formatted_transaction)
 
