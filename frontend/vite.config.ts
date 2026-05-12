@@ -1,17 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
-import fs from "fs";
 import path from "path";
-import process from "process";
 import { fileURLToPath } from "url";
-
-const certFile = process.env.SSL_CERTFILE;
-const keyFile = process.env.SSL_KEYFILE;
-const httpsConfig =
-  certFile && keyFile && fs.existsSync(certFile) && fs.existsSync(keyFile)
-    ? { cert: fs.readFileSync(certFile), key: fs.readFileSync(keyFile) }
-    : undefined;
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -53,8 +44,7 @@ export default defineConfig({
   ],
   server: {
     host: "0.0.0.0",
-    port: httpsConfig ? 443 : 3000,
-    https: httpsConfig,
+    port: 3000,
     allowedHosts: ["cashio.test", "cashio.local"],
   },
   build: {

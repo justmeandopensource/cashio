@@ -1,13 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# cashio-stack: Robust Docker Compose helper for the cashio monorepo
+# cashio-stack: Robust Podman Compose helper for the cashio monorepo
 # Usage: ./cashio-stack <command> [service]
 
 set -e
 
 # Detect project root (directory containing this script)
 CASHIO_DIR="$(cd "$(dirname "$0")" && pwd)"
-COMPOSE_FILE="$CASHIO_DIR/docker-compose.yaml"
+
+# Use rootless podman socket for Docker-API compatibility
+export DOCKER_HOST="unix:///run/user/$(id -u)/podman/podman.sock"
+# Suppress the "Executing external compose provider" warning
+export PODMAN_COMPOSE_WARNING_LOGS=false
 
 AVAILABLE_SERVICES=(db backend frontend)
 
@@ -23,10 +27,10 @@ function build_services() {
     cd "$CASHIO_DIR"
     if [[ -z "$service" || "$service" == "all" ]]; then
         echo "[+] Building all services..."
-        docker compose build
+        podman compose build
     elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
         echo "[+] Building service: $service"
-        docker compose build $service
+        podman compose build $service
     else
         echo "[!] Unknown service: $service"
         print_services
@@ -38,10 +42,10 @@ function start_services() {
     cd "$CASHIO_DIR"
     if [[ -z "$service" || "$service" == "all" ]]; then
         echo "[+] Starting all services..."
-        docker compose up -d
+        podman compose up -d
     elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
         echo "[+] Starting service: $service"
-        docker compose up -d $service
+        podman compose up -d $service
     else
         echo "[!] Unknown service: $service"
         print_services
@@ -53,10 +57,10 @@ function stop_services() {
     cd "$CASHIO_DIR"
     if [[ -z "$service" || "$service" == "all" ]]; then
         echo "[+] Stopping all services..."
-        docker compose stop
+        podman compose stop
     elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
         echo "[+] Stopping service: $service"
-        docker compose stop $service
+        podman compose stop $service
     else
         echo "[!] Unknown service: $service"
         print_services
@@ -68,10 +72,10 @@ function restart_services() {
     cd "$CASHIO_DIR"
     if [[ -z "$service" || "$service" == "all" ]]; then
         echo "[+] Restarting all services..."
-        docker compose up -d --force-recreate
+        podman compose up -d --force-recreate
     elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
         echo "[+] Restarting service: $service"
-        docker compose up -d --force-recreate $service
+        podman compose up -d --force-recreate $service
     else
         echo "[!] Unknown service: $service"
         print_services
@@ -83,10 +87,10 @@ function down_services() {
     cd "$CASHIO_DIR"
     if [[ -z "$service" || "$service" == "all" ]]; then
         echo "[+] Stopping and removing all services..."
-        docker compose down
+        podman compose down
     elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
         echo "[+] Removing service: $service (stops container, removes it from project)"
-        docker compose rm -sf $service
+        podman compose rm -sf $service
     else
         echo "[!] Unknown service: $service"
         print_services
@@ -98,10 +102,10 @@ function show_logs() {
     cd "$CASHIO_DIR"
     if [[ -z "$service" || "$service" == "all" ]]; then
         echo "[+] Showing logs for all services... (Press Ctrl+C to exit)"
-        docker compose logs -f
+        podman compose logs -f
     elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
         echo "[+] Showing logs for service: $service (Press Ctrl+C to exit)"
-        docker compose logs -f $service
+        podman compose logs -f $service
     else
         echo "[!] Unknown service for logs: $service"
         print_services
@@ -130,7 +134,7 @@ function show_status() {
     cd "$CASHIO_DIR"
 
     echo "=== Containers ==="
-    docker compose ps
+    podman compose ps
     echo ""
 
     echo "=== Local Dev Servers ==="
@@ -138,29 +142,16 @@ function show_status() {
         echo "  [!] lsof not found — install it to see local dev server status"
     else
         local backend_pid frontend_pid
-        local cert="$CASHIO_DIR/certs/cert.pem"
-        local ssl_present=false
-        [[ -f "$cert" ]] && ssl_present=true
-
         backend_pid=$(local_pid_on_port 8000)
         frontend_pid=$(local_vite_pid)
         # Fall back to port-based detection if pgrep found nothing
         if [[ -z "$frontend_pid" ]]; then
-            if $ssl_present; then
-                frontend_pid=$(local_pid_on_port 443)
-            else
-                frontend_pid=$(local_pid_on_port 3000)
-            fi
+            frontend_pid=$(local_pid_on_port 3000)
         fi
 
         local backend_scheme="http"
         local frontend_scheme="http"
         local frontend_port="3000"
-        if $ssl_present; then
-            backend_scheme="https"
-            frontend_scheme="https"
-            frontend_port="443"
-        fi
 
         if [[ -n "$backend_pid" ]]; then
             echo "  backend   [LOCAL]  pid=$backend_pid  ${backend_scheme}://localhost:8000  (FastAPI/uvicorn, auto-reload)"
@@ -182,7 +173,7 @@ function show_status() {
 function container_is_running() {
     local service=$1
     cd "$CASHIO_DIR"
-    docker compose ps --status running --services 2>/dev/null | grep -q "^${service}$"
+    podman compose ps --status running --services 2>/dev/null | grep -q "^${service}$"
 }
 
 function stop_container_if_running() {
@@ -190,7 +181,7 @@ function stop_container_if_running() {
     echo "[~] Checking if $service container is running..."
     if container_is_running "$service"; then
         echo "[+] Stopping $service container..."
-        cd "$CASHIO_DIR" && docker compose stop "$service"
+        cd "$CASHIO_DIR" && podman compose stop "$service"
         echo "[✓] $service container stopped"
     else
         echo "[~] $service container is not running"
@@ -203,7 +194,7 @@ function ensure_db_running() {
         echo "[✓] db container is already running"
     else
         echo "[+] Starting db container (required for backend)..."
-        cd "$CASHIO_DIR" && docker compose up -d db
+        cd "$CASHIO_DIR" && podman compose up -d db
         echo "[~] Waiting for db to become ready..."
         sleep 3
         echo "[✓] db container started"
@@ -288,15 +279,6 @@ function read_env_value() {
     echo "${value:-$default}"
 }
 
-function set_local_ssl_env() {
-    local cert="$CASHIO_DIR/certs/cert.pem"
-    local key="$CASHIO_DIR/certs/key.pem"
-    if [[ -f "$cert" && -f "$key" ]]; then
-        export SSL_CERTFILE="$cert"
-        export SSL_KEYFILE="$key"
-        echo "[~] SSL certs found — backend will run over HTTPS"
-    fi
-}
 
 function start_local_backend() {
     echo ""
@@ -316,14 +298,10 @@ function start_local_backend() {
     echo "[~] Using Python: $python_cmd"
 
     load_env
-    set_local_ssl_env
-
-    local scheme="http"
-    [[ -n "${SSL_CERTFILE:-}" ]] && scheme="https"
 
     echo "[+] Starting FastAPI dev server (auto-reload enabled)..."
-    echo "[~] Backend:  ${scheme}://localhost:8000"
-    echo "[~] API docs: ${scheme}://localhost:8000/docs"
+    echo "[~] Backend:  http://localhost:8000"
+    echo "[~] API docs: http://localhost:8000/docs"
     echo ""
 
     cd "$CASHIO_DIR/backend"
@@ -349,26 +327,16 @@ function start_local_frontend() {
     fi
 
     load_env
-    set_local_ssl_env
 
     local api_url
     api_url=$(read_env_value VITE_CASHIO_API_BASE_URL "http://localhost:8000")
     echo "[~] API URL: $api_url"
     echo "[+] Starting Vite dev server (HMR enabled)..."
-
-    local frontend_scheme="http"
-    local frontend_port="3000"
-    if [[ -n "${SSL_CERTFILE:-}" ]]; then
-        frontend_scheme="https"
-        frontend_port="443"
-    fi
-    echo "[~] Frontend: ${frontend_scheme}://cashio.test"
+    echo "[~] Frontend: http://cashio.test:3000"
     echo ""
 
     cd "$CASHIO_DIR/frontend"
     exec env VITE_CASHIO_API_BASE_URL="$api_url" \
-             SSL_CERTFILE="${SSL_CERTFILE:-}" \
-             SSL_KEYFILE="${SSL_KEYFILE:-}" \
              npm run dev
 }
 
@@ -406,16 +374,12 @@ function start_local() {
     echo "[+] Starting FastAPI dev server in background..."
     cd "$CASHIO_DIR/backend"
     load_env
-    set_local_ssl_env
-
-    local scheme="http"
-    [[ -n "${SSL_CERTFILE:-}" ]] && scheme="https"
 
     "$python_cmd" -m app.main &
     local BACKEND_PID=$!
     echo "[✓] Backend started (PID: $BACKEND_PID)"
-    echo "[~] Backend:  ${scheme}://localhost:8000"
-    echo "[~] API docs: ${scheme}://localhost:8000/docs"
+    echo "[~] Backend:  http://localhost:8000"
+    echo "[~] API docs: http://localhost:8000/docs"
 
     # Trap Ctrl+C / termination to kill both servers
     trap "echo ''; echo '[+] Shutting down local dev servers...'; kill $BACKEND_PID 2>/dev/null || true; echo '[✓] Done'; exit 0" INT TERM
@@ -426,7 +390,6 @@ function start_local() {
     local api_url
     api_url=$(read_env_value VITE_CASHIO_API_BASE_URL "http://localhost:8000")
     local frontend_url="http://cashio.test:3000"
-    [[ -n "${SSL_CERTFILE:-}" ]] && frontend_url="https://cashio.test"
     echo ""
     echo "[+] Starting Vite dev server (foreground)..."
     echo "[~] Frontend: $frontend_url"
@@ -436,8 +399,6 @@ function start_local() {
 
     cd "$CASHIO_DIR/frontend"
     env VITE_CASHIO_API_BASE_URL="$api_url" \
-        SSL_CERTFILE="${SSL_CERTFILE:-}" \
-        SSL_KEYFILE="${SSL_KEYFILE:-}" \
         npm run dev
 
     # Frontend exited normally — clean up backend
@@ -450,7 +411,7 @@ function start_local() {
 function show_help() {
     echo "Usage: $0 <command> [service]"
     echo ""
-    echo "Docker Compose commands:"
+    echo "Podman Compose commands:"
     echo "  start [service]          Start all or one containerised service"
     echo "  stop [service]           Stop all or one containerised service"
     echo "  restart [service]        Restart all or one containerised service"
@@ -459,7 +420,7 @@ function show_help() {
     echo "  logs [service]           Follow logs for all or a specific service"
     echo "  status                   Show container status"
     echo ""
-    echo "Local dev commands (hot-reload, no Docker build required):"
+    echo "Local dev commands (hot-reload, no Podman build required):"
     echo "  start-local              Start backend + frontend dev servers locally"
     echo "  start-local-backend      Start FastAPI dev server locally (keeps db container)"
     echo "  start-local-frontend     Start Vite dev server locally"
@@ -468,17 +429,16 @@ function show_help() {
     echo ""
     echo "Services:"
     print_services
-    echo "[docker compose must be installed]
-"
+    echo "[podman compose must be installed]"
 }
 
-# Ensure docker compose is installed
-if ! command -v docker &>/dev/null; then
-    echo "[!] Docker must be installed!"
+# Ensure podman compose is installed
+if ! command -v podman &>/dev/null; then
+    echo "[!] Podman must be installed!"
     exit 1
 fi
 
-docker compose version >/dev/null 2>&1 || { echo "[!] docker compose plugin is required (not docker-compose)."; exit 1; }
+podman compose version >/dev/null 2>&1 || { echo "[!] podman compose plugin is required (not docker-compose)."; exit 1; }
 
 # Main logic
 case "$1" in

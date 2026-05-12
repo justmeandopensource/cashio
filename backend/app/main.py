@@ -1,4 +1,3 @@
-import os
 import time
 from contextlib import asynccontextmanager
 
@@ -127,6 +126,4 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8000,
         reload=True,
-        ssl_keyfile=os.getenv("SSL_KEYFILE") or None,
-        ssl_certfile=os.getenv("SSL_CERTFILE") or None,
     )
