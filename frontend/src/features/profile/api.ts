@@ -78,6 +78,22 @@ export const uploadBackup = async (file: File): Promise<{ message: string; filen
   return response.data;
 };
 
+export interface RestoreStatus {
+  state: "idle" | "backing_up" | "restoring" | "restore_complete" | "restore_failed";
+  message: string;
+  filename: string | null;
+  error: string | null;
+}
+
+export const getRestoreStatus = async (): Promise<RestoreStatus> => {
+  const response = await api.get("/api/system/restore-status");
+  return response.data;
+};
+
+export const resetRestoreStatus = async (): Promise<void> => {
+  await api.post("/api/system/restore-status/reset");
+};
+
 export const downloadBackup = async (filename: string) => {
   try {
     const response = await api.get(`/api/system/download-backup/${filename}`, {

@@ -42,10 +42,10 @@ function start_services() {
     cd "$CASHIO_DIR"
     if [[ -z "$service" || "$service" == "all" ]]; then
         echo "[+] Starting all services..."
-        podman compose up -d
+        podman compose up -d 2>&1 | grep -v "^Error: no container" || true
     elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
         echo "[+] Starting service: $service"
-        podman compose up -d $service
+        podman compose up -d $service 2>&1 | grep -v "^Error: no container" || true
     else
         echo "[!] Unknown service: $service"
         print_services
@@ -138,32 +138,33 @@ function show_status() {
     echo ""
 
     echo "=== Local Dev Servers ==="
-    if ! command -v lsof &>/dev/null; then
-        echo "  [!] lsof not found — install it to see local dev server status"
-    else
-        local backend_pid frontend_pid
-        backend_pid=$(local_pid_on_port 8000)
+    local backend_pid frontend_pid
+
+    if command -v ss &>/dev/null; then
+        # Only check for local dev server if the container is NOT running
+        # (container port mappings show up in port checks and cause false positives)
+        if ! container_is_running backend; then
+            backend_pid=$(ss -tlnp 'sport = :8000' 2>/dev/null | sed -n 's/.*pid=\([0-9]*\).*/\1/p' | head -1)
+        fi
+        if ! container_is_running frontend; then
+            frontend_pid=$(ss -tlnp 'sport = :3000' 2>/dev/null | sed -n 's/.*pid=\([0-9]*\).*/\1/p' | head -1)
+        fi
+    fi
+    # Fall back to vite process name matching
+    if [[ -z "$frontend_pid" ]]; then
         frontend_pid=$(local_vite_pid)
-        # Fall back to port-based detection if pgrep found nothing
-        if [[ -z "$frontend_pid" ]]; then
-            frontend_pid=$(local_pid_on_port 3000)
-        fi
+    fi
 
-        local backend_scheme="http"
-        local frontend_scheme="http"
-        local frontend_port="3000"
+    if [[ -n "$backend_pid" ]]; then
+        echo "  backend   [LOCAL]  pid=$backend_pid  http://localhost:8000  (FastAPI/uvicorn, auto-reload)"
+    else
+        echo "  backend   [not running locally]"
+    fi
 
-        if [[ -n "$backend_pid" ]]; then
-            echo "  backend   [LOCAL]  pid=$backend_pid  ${backend_scheme}://localhost:8000  (FastAPI/uvicorn, auto-reload)"
-        else
-            echo "  backend   [not running locally]"
-        fi
-
-        if [[ -n "$frontend_pid" ]]; then
-            echo "  frontend  [LOCAL]  pid=$frontend_pid  ${frontend_scheme}://localhost:${frontend_port}  (Vite dev server, HMR)"
-        else
-            echo "  frontend  [not running locally]"
-        fi
+    if [[ -n "$frontend_pid" ]]; then
+        echo "  frontend  [LOCAL]  pid=$frontend_pid  http://localhost:3000  (Vite dev server, HMR)"
+    else
+        echo "  frontend  [not running locally]"
     fi
     echo ""
 }
@@ -173,7 +174,8 @@ function show_status() {
 function container_is_running() {
     local service=$1
     cd "$CASHIO_DIR"
-    podman compose ps --status running --services 2>/dev/null | grep -q "^${service}$"
+    # podman-compose doesn't support --status/--services flags, so parse ps output
+    podman compose ps 2>/dev/null | awk -v s="$service" '$NF == s && / Up /' | grep -q .
 }
 
 function stop_container_if_running() {
@@ -425,6 +427,7 @@ function show_help() {
     echo "  start-local-backend      Start FastAPI dev server locally (keeps db container)"
     echo "  start-local-frontend     Start Vite dev server locally"
     echo ""
+
     echo "  help                     Show this help message"
     echo ""
     echo "Services:"

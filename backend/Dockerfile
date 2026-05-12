@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED=1
 # Install dependencies
 WORKDIR /app
 COPY requirements.txt .
-RUN pip install --user -r requirements.txt
+RUN pip install --no-cache-dir --user -r requirements.txt
 
 # Copy the application code
 COPY . .
@@ -22,12 +22,14 @@ ENV PYTHONUNBUFFERED=1
 
 # Install postgresql-client-18 from official PostgreSQL repo (modern, no apt-key)
 RUN apt-get update \
-  && apt-get install -y wget gnupg2 lsb-release \
+  && apt-get install -y --no-install-recommends wget gnupg2 lsb-release \
   && mkdir -p /etc/apt/keyrings \
   && wget --quiet -O /etc/apt/keyrings/pg-archive-keyring.gpg https://www.postgresql.org/media/keys/ACCC4CF8.asc \
   && echo "deb [signed-by=/etc/apt/keyrings/pg-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
   && apt-get update \
-  && apt-get install -y postgresql-client-18 \
+  && apt-get install -y --no-install-recommends gzip postgresql-client-18 \
+  && apt-get remove -y wget gnupg2 lsb-release \
+  && apt-get autoremove -y \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy only the necessary files from the builder stage

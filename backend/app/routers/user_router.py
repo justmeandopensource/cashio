@@ -25,7 +25,7 @@ user_router = APIRouter(prefix="/user")
 @user_router.post(
     "/create", response_model=general_schema.RegisterResponse, tags=["users"]
 )
-@limiter.limit("3/minute")
+@limiter.limit("10/minute")
 def create_user(request: Request, user: user_schema.UserCreate, db: Session = Depends(get_db)):
     db_user = user_crud.get_user_by_username(db=db, username=user.username)
     if db_user:

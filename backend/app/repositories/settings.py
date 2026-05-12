@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str
     POSTGRES_PORT: int
     BACKUP_DIR: str = "./backups"
+    MAX_BACKUPS: int = 50
+    BACKUP_RETENTION_DAYS: int = 0  # 0 = disabled
 
     @computed_field
     @property

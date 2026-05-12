@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -e
+
+CASHIO_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Check that PostgreSQL is listening on port 5432
+if ! ss -tlnp 2>/dev/null | grep -q ':5432 '; then
+  echo "ERROR: No PostgreSQL server found on port 5432. Start the app first."
+  echo "       ./cashio-stack start-local    (or ./cashio-stack start)"
+  exit 1
+fi
+
+exec python3 "$CASHIO_DIR/backend/scripts/backup_cli.py" "$@"

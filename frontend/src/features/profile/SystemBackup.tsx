@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -33,11 +34,16 @@ import {
   deleteBackup,
   uploadBackup,
   downloadBackup,
+  getRestoreStatus,
+  resetRestoreStatus,
+  type RestoreStatus,
 } from "./api";
+import { setAuthToken, setRefreshToken } from "@/lib/api";
 import { useColorModeValue } from "@chakra-ui/react";
 import { notify } from "@/components/shared/notify";
 import { motion } from "framer-motion";
 import {
+  CheckCircle,
   Database,
   Trash2,
   RotateCcw,
@@ -83,9 +89,11 @@ const SystemBackup: React.FC = () => {
   const indexBadgeColor = useColorModeValue("gray.500", "gray.400");
 
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreStatus, setRestoreStatus] = useState<RestoreStatus | null>(null);
   const inputFileRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -217,32 +225,25 @@ const SystemBackup: React.FC = () => {
         status: "info",
       });
       setIsRestoring(true);
-      const checkFn = async () => {
+      setRestoreStatus(null);
+      // Poll restore status every 2s
+      const intervalId = setInterval(async () => {
         try {
-          await queryClient.refetchQueries({ queryKey: ["backups"] });
-          return true;
+          const status = await getRestoreStatus();
+          setRestoreStatus(status);
+          if (status.state === "restore_complete" || status.state === "restore_failed") {
+            clearInterval(intervalId);
+            setIsRestoring(false);
+          }
         } catch {
-          return false;
+          // Ignore polling errors during restore — server may be restarting
         }
-      };
-      poll(checkFn, 60000, 3000)
-        .then(() => {
-          notify({
-            title: "Success",
-            description: "Database restore completed successfully.",
-            status: "success",
-          });
-          queryClient.invalidateQueries({ queryKey: ["backups"] });
-        })
-        .catch(() =>
-          notify({
-            title: "Error",
-            description: "Restore process timed out or failed.",
-            status: "error",
-            duration: 5000,
-          }),
-        )
-        .finally(() => setIsRestoring(false));
+      }, 2000);
+      // Timeout after 5 minutes
+      setTimeout(() => {
+        clearInterval(intervalId);
+        setIsRestoring(false);
+      }, 300000);
     },
     onError: (error: Error) =>
       notify({
@@ -252,6 +253,20 @@ const SystemBackup: React.FC = () => {
         duration: 5000,
       }),
   });
+
+  // Watch restore status for completion or failure
+  useEffect(() => {
+    if (!restoreStatus) return;
+    if (restoreStatus.state === "restore_failed") {
+      notify({
+        title: "Restore Failed",
+        description: restoreStatus.error || "Unknown error during restore",
+        status: "error",
+        duration: 10000,
+      });
+      resetRestoreStatus().catch(() => {});
+    }
+  }, [restoreStatus]);
 
   const uploadMutation = useMutation({
     mutationFn: uploadBackup,
@@ -551,7 +566,7 @@ const SystemBackup: React.FC = () => {
             </SimpleGrid>
             <input
               type="file"
-              accept=".dump"
+              accept=".sql,.gz,.sql.gz"
               ref={inputFileRef}
               style={{ display: "none" }}
               onChange={handleFileChange}
@@ -774,6 +789,19 @@ const SystemBackup: React.FC = () => {
                       >
                         Create your first backup to safeguard your data.
                       </Text>
+                      <Text
+                        color={emptyTextColor}
+                        fontSize="xs"
+                        textAlign="center"
+                        maxW="sm"
+                        mt={1}
+                      >
+                        Lost access? Use{" "}
+                        <Box as="code" bg={filenameBg} px={1.5} py={0.5} borderRadius="md" fontSize="xs">
+                          ./cashio-backup restore &lt;file&gt;
+                        </Box>{" "}
+                        from the command line.
+                      </Text>
                     </VStack>
                   </CardBody>
                 </Card>
@@ -885,6 +913,108 @@ const SystemBackup: React.FC = () => {
               leftIcon={<Icon as={Upload} boxSize={3.5} />}
             >
               Upload & Restore
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Restore Complete Modal */}
+      <Modal
+        isOpen={restoreStatus?.state === "restore_complete"}
+        onClose={() => {}}
+        isCentered
+        closeOnOverlayClick={false}
+        closeOnEsc={false}
+        size="md"
+      >
+        <ModalOverlay bg={overlayBg} backdropFilter="blur(4px)" />
+        <ModalContent
+          bg={modalBg}
+          border="1px"
+          borderColor="green.300"
+          borderRadius="xl"
+          mx={4}
+        >
+          <ModalBody pt={8} pb={6} textAlign="center">
+            <VStack spacing={4}>
+              <Box
+                w={16}
+                h={16}
+                borderRadius="full"
+                bg="green.100"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Icon as={CheckCircle} color="green.500" boxSize={9} />
+              </Box>
+              <Heading size="md" color={textColor}>
+                Restore Complete
+              </Heading>
+              <Text color={subtitleColor} fontSize="sm" maxW="sm">
+                Database restored successfully. Your session has expired. Please log in with your
+                credentials.
+              </Text>
+              <Button
+                colorScheme="brand"
+                size="lg"
+                borderRadius="lg"
+                mt={2}
+                onClick={() => {
+                  setAuthToken(null);
+                  setRefreshToken(null);
+                  navigate("/login");
+                }}
+              >
+                Go to Login
+              </Button>
+            </VStack>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      {/* Restore Failed Modal */}
+      <Modal
+        isOpen={restoreStatus?.state === "restore_failed"}
+        onClose={() => {
+          resetRestoreStatus().catch(() => {});
+          setRestoreStatus(null);
+        }}
+        isCentered
+        size="md"
+      >
+        <ModalOverlay bg={overlayBg} backdropFilter="blur(4px)" />
+        <ModalContent
+          bg={modalBg}
+          border="1px"
+          borderColor="red.300"
+          borderRadius="xl"
+          mx={4}
+        >
+          <ModalHeader color={textColor} pb={2} fontSize="lg">
+            Restore Failed
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <HStack spacing={2} align="flex-start">
+              <Icon as={AlertTriangle} color={dangerColor} boxSize={5} mt={0.5} flexShrink={0} />
+              <Text color={textColor} fontSize="sm">
+                {restoreStatus?.error || "An unknown error occurred during restore."}
+              </Text>
+            </HStack>
+          </ModalBody>
+          <ModalFooter pt={4}>
+            <Button
+              variant="solid"
+              colorScheme="brand"
+              onClick={() => {
+                resetRestoreStatus().catch(() => {});
+                setRestoreStatus(null);
+              }}
+              size="sm"
+              borderRadius="lg"
+            >
+              Dismiss
             </Button>
           </ModalFooter>
         </ModalContent>
