@@ -28,6 +28,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent       # backend/scripts/
 BACKEND_DIR = SCRIPT_DIR.parent                    # backend/
 REPO_ROOT = BACKEND_DIR.parent                     # cashio/
+COMPOSE_FILE = REPO_ROOT / "docker-compose.yaml"  # Always docker-compose.yaml in repo root
 DEFAULT_BACKUP_DIR = REPO_ROOT / "backups"
 
 
@@ -134,7 +135,8 @@ def _container_exec(cmd: list[str], stdin: bytes | None = None) -> subprocess.Co
 
     # -T disables TTY allocation (needed for non-interactive piping)
     # docker compose also accepts -T; podman-compose does not have -i
-    full_cmd = [runtime, "compose", "exec", "-T", "db"] + cmd
+    # Use -f flag to specify the compose file location
+    full_cmd = [runtime, "compose", "-f", str(COMPOSE_FILE), "exec", "-T", "db"] + cmd
     try:
         return subprocess.run(full_cmd, input=stdin, capture_output=True)
     except FileNotFoundError:
