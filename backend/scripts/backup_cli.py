@@ -350,6 +350,50 @@ def cmd_delete(args: argparse.Namespace) -> None:
     print(filepath.name)
 
 
+def cmd_prune(args: argparse.Namespace) -> None:
+    """Delete old backups, keeping only the most recent N."""
+    backup_dir = get_backup_dir()
+    # List and sort by mtime descending (newest first)
+    files = sorted(backup_dir.glob("*.sql.gz"), key=lambda f: f.stat().st_mtime, reverse=True)
+
+    keep = args.keep
+    if keep is not None and keep >= 0:
+        to_keep = files[:keep]
+        to_delete = files[keep:]
+    else:
+        # If no --keep or negative/zero, delete everything
+        to_keep = []
+        to_delete = files
+
+    if not to_delete:
+        print("Nothing to prune.")
+        return
+
+    print(f"Found {len(files)} total backups.")
+    if keep is not None:
+        print(f"Keeping the {len(to_keep)} most recent backups.")
+    else:
+        print("Keeping 0 backups (pruning all).")
+
+    print(f"Files to delete:")
+    for f in to_delete:
+        print(f"  {f.name}")
+
+    try:
+        response = input(f"Are you sure you want to delete these {len(to_delete)} files? (yes/no): ")
+    except (EOFError, KeyboardInterrupt):
+        print("\nAborted.", file=sys.stderr)
+        sys.exit(1)
+
+    if response.strip().lower() != "yes":
+        print("Aborted.", file=sys.stderr)
+        sys.exit(1)
+
+    for f in to_delete:
+        os.remove(f)
+        print(f"[✓] Deleted: {f.name}")
+
+
 def cmd_verify(args: argparse.Namespace) -> None:
     """Verify system prerequisites."""
     print("[~] Verifying system prerequisites...", file=sys.stderr)
@@ -418,6 +462,10 @@ def main() -> None:
     delete_parser = subparsers.add_parser("delete", help="Delete a backup file")
     delete_parser.add_argument("filename", help="Backup filename (in backup dir) or full path")
 
+    # prune
+    prune_parser = subparsers.add_parser("prune", help="Delete old backups, keeping only the most recent N")
+    prune_parser.add_argument("--keep", type=int, help="Number of recent backups to keep (deletes all if not specified)")
+
     # verify
     subparsers.add_parser("verify", help="Check system prerequisites")
 
@@ -431,6 +479,8 @@ def main() -> None:
         cmd_list(args)
     elif args.command == "delete":
         cmd_delete(args)
+    elif args.command == "prune":
+        cmd_prune(args)
     elif args.command == "verify":
         cmd_verify(args)
 
