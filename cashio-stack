@@ -8,10 +8,26 @@ set -e
 # Detect project root (directory containing this script)
 CASHIO_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Use rootless podman socket for Docker-API compatibility
-export DOCKER_HOST="unix:///run/user/$(id -u)/podman/podman.sock"
-# Suppress the "Executing external compose provider" warning
-export PODMAN_COMPOSE_WARNING_LOGS=false
+# Define container tool
+# Preference: Docker if running, otherwise Podman
+if command -v docker &>/dev/null && docker info >/dev/null 2>&1; then
+    export CONTAINER_ENGINE="docker"
+    export COMPOSE_CMD="docker compose"
+    # Ensure we aren't pointing at a podman socket if using docker
+    unset DOCKER_HOST
+elif command -v podman &>/dev/null; then
+    export CONTAINER_ENGINE="podman"
+    export COMPOSE_CMD="podman compose"
+    # Use rootless podman socket for Docker-API compatibility
+    if [ -z "$DOCKER_HOST" ]; then
+        export DOCKER_HOST="unix:///run/user/$(id -u)/podman/podman.sock"
+    fi
+    # Suppress the "Executing external compose provider" warning
+    export PODMAN_COMPOSE_WARNING_LOGS=false
+else
+    echo "[!] Neither docker nor podman found!"
+    exit 1
+fi
 
 AVAILABLE_SERVICES=(db backend frontend)
 
@@ -27,10 +43,10 @@ function build_services() {
     cd "$CASHIO_DIR"
     if [[ -z "$service" || "$service" == "all" ]]; then
         echo "[+] Building all services..."
-        podman compose build
+        $COMPOSE_CMD build
     elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
         echo "[+] Building service: $service"
-        podman compose build $service
+        $COMPOSE_CMD build $service
     else
         echo "[!] Unknown service: $service"
         print_services
@@ -42,10 +58,10 @@ function start_services() {
     cd "$CASHIO_DIR"
     if [[ -z "$service" || "$service" == "all" ]]; then
         echo "[+] Starting all services..."
-        podman compose up -d 2>&1 | grep -v "^Error: no container" || true
+        $COMPOSE_CMD up -d 2>&1 | grep -v "^Error: no container" || true
     elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
         echo "[+] Starting service: $service"
-        podman compose up -d $service 2>&1 | grep -v "^Error: no container" || true
+        $COMPOSE_CMD up -d $service 2>&1 | grep -v "^Error: no container" || true
     else
         echo "[!] Unknown service: $service"
         print_services
@@ -57,10 +73,10 @@ function stop_services() {
     cd "$CASHIO_DIR"
     if [[ -z "$service" || "$service" == "all" ]]; then
         echo "[+] Stopping all services..."
-        podman compose stop
+        $COMPOSE_CMD stop
     elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
         echo "[+] Stopping service: $service"
-        podman compose stop $service
+        $COMPOSE_CMD stop $service
     else
         echo "[!] Unknown service: $service"
         print_services
@@ -72,10 +88,10 @@ function restart_services() {
     cd "$CASHIO_DIR"
     if [[ -z "$service" || "$service" == "all" ]]; then
         echo "[+] Restarting all services..."
-        podman compose up -d --force-recreate
+        $COMPOSE_CMD up -d --force-recreate
     elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
         echo "[+] Restarting service: $service"
-        podman compose up -d --force-recreate $service
+        $COMPOSE_CMD up -d --force-recreate $service
     else
         echo "[!] Unknown service: $service"
         print_services
@@ -87,10 +103,10 @@ function down_services() {
     cd "$CASHIO_DIR"
     if [[ -z "$service" || "$service" == "all" ]]; then
         echo "[+] Stopping and removing all services..."
-        podman compose down
+        $COMPOSE_CMD down
     elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
         echo "[+] Removing service: $service (stops container, removes it from project)"
-        podman compose rm -sf $service
+        $COMPOSE_CMD rm -sf $service
     else
         echo "[!] Unknown service: $service"
         print_services
@@ -102,10 +118,10 @@ function show_logs() {
     cd "$CASHIO_DIR"
     if [[ -z "$service" || "$service" == "all" ]]; then
         echo "[+] Showing logs for all services... (Press Ctrl+C to exit)"
-        podman compose logs -f
+        $COMPOSE_CMD logs -f
     elif [[ " ${AVAILABLE_SERVICES[@]} " =~ " ${service} " ]]; then
         echo "[+] Showing logs for service: $service (Press Ctrl+C to exit)"
-        podman compose logs -f $service
+        $COMPOSE_CMD logs -f $service
     else
         echo "[!] Unknown service for logs: $service"
         print_services
@@ -134,7 +150,7 @@ function show_status() {
     cd "$CASHIO_DIR"
 
     echo "=== Containers ==="
-    podman compose ps
+    $COMPOSE_CMD ps
     echo ""
 
     echo "=== Local Dev Servers ==="
@@ -174,8 +190,15 @@ function show_status() {
 function container_is_running() {
     local service=$1
     cd "$CASHIO_DIR"
-    # podman-compose doesn't support --status/--services flags, so parse ps output
-    podman compose ps 2>/dev/null | awk -v s="$service" '$NF == s && / Up /' | grep -q .
+    if [ "$CONTAINER_ENGINE" = "docker" ]; then
+        # Docker compose ps output:
+        # NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+        # ...
+        $COMPOSE_CMD ps --format '{{.Service}} {{.Status}}' | awk -v s="$service" '$1 == s && $2 ~ /Up/' | grep -q .
+    else
+        # Original logic for Podman (assuming plugin installation)
+        $COMPOSE_CMD ps 2>/dev/null | awk -v s="$service" '$NF == s && / Up /' | grep -q .
+    fi
 }
 
 function stop_container_if_running() {
@@ -183,7 +206,7 @@ function stop_container_if_running() {
     echo "[~] Checking if $service container is running..."
     if container_is_running "$service"; then
         echo "[+] Stopping $service container..."
-        cd "$CASHIO_DIR" && podman compose stop "$service"
+        cd "$CASHIO_DIR" && $COMPOSE_CMD stop "$service"
         echo "[✓] $service container stopped"
     else
         echo "[~] $service container is not running"
@@ -196,7 +219,7 @@ function ensure_db_running() {
         echo "[✓] db container is already running"
     else
         echo "[+] Starting db container (required for backend)..."
-        cd "$CASHIO_DIR" && podman compose up -d db
+        cd "$CASHIO_DIR" && $COMPOSE_CMD up -d db
         echo "[~] Waiting for db to become ready..."
         sleep 3
         echo "[✓] db container started"
@@ -432,16 +455,16 @@ function show_help() {
     echo ""
     echo "Services:"
     print_services
-    echo "[podman compose must be installed]"
+    echo "[Docker or Podman compose plugin must be installed]"
 }
 
-# Ensure podman compose is installed
-if ! command -v podman &>/dev/null; then
-    echo "[!] Podman must be installed!"
+# Ensure container engine is installed
+if ! command -v "$CONTAINER_ENGINE" &>/dev/null; then
+    echo "[!] $CONTAINER_ENGINE must be installed!"
     exit 1
 fi
 
-podman compose version >/dev/null 2>&1 || { echo "[!] podman compose plugin is required (not docker-compose)."; exit 1; }
+$COMPOSE_CMD version >/dev/null 2>&1 || { echo "[!] $COMPOSE_CMD plugin is required."; exit 1; }
 
 # Main logic
 case "$1" in
