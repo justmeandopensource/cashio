@@ -110,7 +110,10 @@ export const deleteMfTransaction = async (ledgerId: number, transactionId: numbe
 
 // Bulk NAV API functions
 export const bulkFetchNav = async (ledgerId: number, request: BulkNavFetchRequest): Promise<BulkNavFetchResponse> => {
-  const response = await api.post(`/ledger/${ledgerId}/mutual-funds/bulk-fetch-nav`, request);
+  // mfapi.in can be slow and the backend retries up to 3 times; allow generous client-side timeout.
+  const response = await api.post(`/ledger/${ledgerId}/mutual-funds/bulk-fetch-nav`, request, {
+    timeout: 60000,
+  });
   return response.data;
 };
 
