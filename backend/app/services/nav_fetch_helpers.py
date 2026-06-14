@@ -66,6 +66,20 @@ def fetcher_for(nav_service_type: str) -> NavFetcher:
     return NavService.fetch_nav_bulk
 
 
+def default_max_retries_for(nav_service_type: str, default: int = DEFAULT_MAX_RETRIES) -> int:
+    """How many orchestration-layer retries to use for this NAV source.
+
+    ``NavService`` (India) already retries per scheme inside the service
+    with its own backoff schedule and process-wide rate limit, so
+    orchestration retries on top would multiply latency on bad upstreams.
+    ``YahooNavService`` (UK) has no internal retry, so the orchestration
+    layer is the only thing protecting against transient Yahoo failures.
+    """
+    if nav_service_type == "uk":
+        return default
+    return 0
+
+
 def is_transient(result: NavFetchResult) -> bool:
     """Decide whether a failed :class:`NavFetchResult` is worth retrying.
 

@@ -28,8 +28,8 @@ from app.repositories.mutual_fund_crud import bulk_update_mutual_fund_navs
 from app.schemas.mutual_funds_schema import BulkNavUpdateItem, NavFetchResult
 from app.services.nav_fetch_helpers import (
     DEFAULT_BASE_BACKOFF_S,
-    DEFAULT_MAX_RETRIES,
     NavFetcher,
+    default_max_retries_for,
     fetch_with_retry,
     fetcher_for,
 )
@@ -197,7 +197,7 @@ async def _process_ledger(
     nav_results = await fetch_with_retry(
         unique_codes,
         fetcher,
-        max_retries=DEFAULT_MAX_RETRIES,
+        max_retries=default_max_retries_for(nav_service_type),
         base_backoff_s=DEFAULT_BASE_BACKOFF_S,
     )
 

@@ -35,7 +35,11 @@ from app.repositories.mf_transaction_crud import (
 )
 from app.schemas import mutual_funds_schema
 from sqlalchemy import func, extract, case, literal
-from app.services.nav_fetch_helpers import fetch_with_retry, fetcher_for
+from app.services.nav_fetch_helpers import (
+    default_max_retries_for,
+    fetch_with_retry,
+    fetcher_for,
+)
 from app.utils.xirr_calculator import calculate_xirr
 
 mutual_funds_router = APIRouter(prefix="/ledger")
@@ -594,14 +598,16 @@ async def bulk_fetch_nav(
     try:
         # Dedupe input — duplicate codes only waste upstream calls.
         unique_codes = list(dict.fromkeys(request.scheme_codes))
-        fetcher = fetcher_for(str(ledger.nav_service_type))  # type: ignore[arg-type]
+        nav_type = str(ledger.nav_service_type)  # type: ignore[arg-type]
+        fetcher = fetcher_for(nav_type)
 
-        # 2 retries keeps worst-case latency around ~3-4s (1s + 2s + jitter)
-        # which is acceptable for an interactive call.
+        # India (NavService) retries internally; for UK (Yahoo) we cap
+        # orchestration retries at 2 to keep worst-case latency reasonable
+        # (~3-4s with 1s + 2s + jitter) for this interactive endpoint.
         results = await fetch_with_retry(
             unique_codes,
             fetcher,
-            max_retries=2,
+            max_retries=default_max_retries_for(nav_type, default=2),
         )
 
         total_requested = len(request.scheme_codes)
