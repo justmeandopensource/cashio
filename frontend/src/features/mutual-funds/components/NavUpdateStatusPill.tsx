@@ -29,8 +29,71 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getNavUpdateStatus,
   triggerNavUpdate,
-  NavUpdateRunStatus,
+  NavUpdateLedgerResult,
+  NavUpdateRunState,
 } from "../api";
+import useLedgerStore from "../../../components/shared/store";
+
+// Per-ledger effective state — what we actually render in the pill.
+type EffectiveStatus =
+  | "idle"
+  | "no_funds"
+  | "success"
+  | "partial"
+  | "failed"
+  | "running"
+  | "skipped";
+
+interface EffectiveState {
+  label: string;
+  status: EffectiveStatus;
+  totalFunds: number;
+  updatedCount: number;
+  failedCount: number;
+  ledgerName: string | null;
+}
+
+function deriveEffective(
+  data: NavUpdateRunState,
+  myLedger: NavUpdateLedgerResult | undefined,
+): EffectiveState {
+  const ledgerName = myLedger?.ledger_name ?? null;
+
+  if (data.status === "running") {
+    return {
+      label: "Running…",
+      status: "running",
+      totalFunds: myLedger?.total_funds ?? 0,
+      updatedCount: myLedger?.updated ?? 0,
+      failedCount: myLedger?.failed ?? 0,
+      ledgerName,
+    };
+  }
+  if (data.status === "idle") {
+    return { label: "No run yet", status: "idle", totalFunds: 0, updatedCount: 0, failedCount: 0, ledgerName };
+  }
+  if (data.status === "skipped_locked") {
+    return { label: "Skipped (busy)", status: "skipped", totalFunds: 0, updatedCount: 0, failedCount: 0, ledgerName };
+  }
+  if (data.status === "failed" && data.ledgers.length === 0) {
+    return { label: "Failed", status: "failed", totalFunds: 0, updatedCount: 0, failedCount: 0, ledgerName };
+  }
+  if (!myLedger) {
+    return { label: "No funds to update", status: "no_funds", totalFunds: 0, updatedCount: 0, failedCount: 0, ledgerName };
+  }
+
+  const { total_funds, updated, failed } = myLedger;
+  if (total_funds === 0) {
+    return { label: "No funds to update", status: "no_funds", totalFunds: 0, updatedCount: 0, failedCount: 0, ledgerName };
+  }
+  if (failed === 0 && updated === total_funds) {
+    return { label: "Up to date", status: "success", totalFunds: total_funds, updatedCount: updated, failedCount: 0, ledgerName };
+  }
+  if (updated === 0 && failed > 0) {
+    return { label: "Failed", status: "failed", totalFunds: total_funds, updatedCount: 0, failedCount: failed, ledgerName };
+  }
+  return { label: "Partial", status: "partial", totalFunds: total_funds, updatedCount: updated, failedCount: failed, ledgerName };
+}
 
 const STATUS_QUERY_KEY = ["nav-update-status"] as const;
 
@@ -59,6 +122,8 @@ interface NavUpdateStatusPillProps {
 
 const NavUpdateStatusPill: FC<NavUpdateStatusPillProps> = ({ compact = false }) => {
   const queryClient = useQueryClient();
+  const ledgerIdRaw = useLedgerStore((s) => s.ledgerId);
+  const ledgerIdNum = ledgerIdRaw !== undefined ? Number(ledgerIdRaw) : undefined;
 
   const { data, isLoading, isError } = useQuery({
     queryKey: STATUS_QUERY_KEY,
@@ -98,22 +163,34 @@ const NavUpdateStatusPill: FC<NavUpdateStatusPillProps> = ({ compact = false }) 
   const runningColor = useColorModeValue("blue.600", "blue.300");
   const popoverBg = useColorModeValue("white", "gray.800");
 
+  const myLedger = useMemo(
+    () =>
+      data && ledgerIdNum !== undefined
+        ? data.ledgers.find((l) => l.ledger_id === ledgerIdNum)
+        : undefined,
+    [data, ledgerIdNum],
+  );
+
+  const effective: EffectiveState | null = useMemo(
+    () => (data ? deriveEffective(data, myLedger) : null),
+    [data, myLedger],
+  );
+
   const visual = useMemo(() => {
-    const status: NavUpdateRunStatus | undefined = data?.status;
-    switch (status) {
+    switch (effective?.status) {
       case "success":
-        return { label: "Up to date", icon: CheckCircle2, color: successColor, bg: pillBgSuccess, border: pillBorderSuccess };
+        return { icon: CheckCircle2, color: successColor, bg: pillBgSuccess, border: pillBorderSuccess };
       case "partial":
-        return { label: "Partial", icon: AlertTriangle, color: partialColor, bg: pillBgPartial, border: pillBorderPartial };
+        return { icon: AlertTriangle, color: partialColor, bg: pillBgPartial, border: pillBorderPartial };
       case "failed":
-      case "skipped_locked":
-        return { label: status === "failed" ? "Failed" : "Skipped (busy)", icon: XCircle, color: failedColor, bg: pillBgFailed, border: pillBorderFailed };
+      case "skipped":
+        return { icon: XCircle, color: failedColor, bg: pillBgFailed, border: pillBorderFailed };
       case "running":
-        return { label: "Running…", icon: RotateCw, color: runningColor, bg: pillBgRunning, border: pillBorderRunning };
+        return { icon: RotateCw, color: runningColor, bg: pillBgRunning, border: pillBorderRunning };
       default:
-        return { label: "No run yet", icon: Clock, color: subText, bg: pillBgIdle, border: pillBorderIdle };
+        return { icon: Clock, color: subText, bg: pillBgIdle, border: pillBorderIdle };
     }
-  }, [data?.status, successColor, partialColor, failedColor, runningColor, subText, pillBgIdle, pillBgSuccess, pillBgPartial, pillBgFailed, pillBgRunning, pillBorderIdle, pillBorderSuccess, pillBorderPartial, pillBorderFailed, pillBorderRunning]);
+  }, [effective?.status, successColor, partialColor, failedColor, runningColor, subText, pillBgIdle, pillBgSuccess, pillBgPartial, pillBgFailed, pillBgRunning, pillBorderIdle, pillBorderSuccess, pillBorderPartial, pillBorderFailed, pillBorderRunning]);
 
   if (isLoading) {
     return compact ? (
@@ -126,7 +203,7 @@ const NavUpdateStatusPill: FC<NavUpdateStatusPillProps> = ({ compact = false }) 
     );
   }
 
-  if (isError || !data) {
+  if (isError || !data || !effective) {
     return compact ? (
       <Text fontSize="xs" color={failedColor}>Auto-update: unavailable</Text>
     ) : (
@@ -139,15 +216,22 @@ const NavUpdateStatusPill: FC<NavUpdateStatusPillProps> = ({ compact = false }) 
 
   const finishedRelative = data.finished_at ? formatRelative(data.finished_at) : null;
   const startedRelative = data.started_at ? formatRelative(data.started_at) : null;
-  const headlineRelative = data.status === "running" ? startedRelative : finishedRelative;
-  const totalFunds = data.total_funds;
-  const updatedCount = data.total_updated;
+  const headlineRelative = effective.status === "running" ? startedRelative : finishedRelative;
+  const totalFunds = effective.totalFunds;
+  const updatedCount = effective.updatedCount;
+  const showCounts =
+    effective.status !== "running" &&
+    effective.status !== "idle" &&
+    effective.status !== "no_funds" &&
+    totalFunds > 0;
 
   const summaryLine =
-    data.status === "running"
+    effective.status === "running"
       ? `Started ${startedRelative ?? "now"}`
-      : data.status === "idle"
+      : effective.status === "idle"
       ? "No run yet"
+      : effective.status === "no_funds"
+      ? "No funds to update"
       : `Auto-updated ${finishedRelative ?? "—"} · ${updatedCount}/${totalFunds}`;
 
   if (compact) {
@@ -155,7 +239,7 @@ const NavUpdateStatusPill: FC<NavUpdateStatusPillProps> = ({ compact = false }) 
       <HStack spacing={2}>
         <Icon as={visual.icon} boxSize={3.5} color={visual.color} />
         <Text fontSize="xs" color={subText}>{summaryLine}</Text>
-        {data.status !== "running" && (
+        {effective.status !== "running" && (
           <Text
             fontSize="xs"
             color="brand.500"
@@ -186,20 +270,20 @@ const NavUpdateStatusPill: FC<NavUpdateStatusPillProps> = ({ compact = false }) 
               transition="all 0.15s ease"
               _hover={{ filter: "brightness(0.97)" }}
             >
-              {data.status === "running" ? (
+              {effective.status === "running" ? (
                 <Spinner size="xs" color={visual.color} />
               ) : (
                 <Icon as={visual.icon} boxSize={3.5} color={visual.color} />
               )}
               <Text fontSize="xs" fontWeight="semibold" color={visual.color}>
-                {visual.label}
+                {effective.label}
               </Text>
-              {headlineRelative && data.status !== "idle" && (
+              {headlineRelative && effective.status !== "idle" && effective.status !== "no_funds" && (
                 <Text fontSize="xs" color={subText}>
                   · {headlineRelative}
                 </Text>
               )}
-              {data.status !== "running" && data.status !== "idle" && totalFunds > 0 && (
+              {showCounts && (
                 <Text fontSize="xs" color={subText}>
                   · {updatedCount}/{totalFunds}
                 </Text>
@@ -212,19 +296,28 @@ const NavUpdateStatusPill: FC<NavUpdateStatusPillProps> = ({ compact = false }) 
         <PopoverArrow bg={popoverBg} />
         <PopoverHeader fontWeight="bold" border="none" pb={2}>
           Auto NAV update
+          {effective.ledgerName && (
+            <Text as="span" fontSize="xs" color={mutedText} fontWeight="normal" ml={2}>
+              · {effective.ledgerName}
+            </Text>
+          )}
         </PopoverHeader>
         <PopoverBody pt={0}>
           <VStack align="stretch" spacing={2}>
-            <DetailRow label="Status" value={visual.label} valueColor={visual.color} />
+            <DetailRow label="Status" value={effective.label} valueColor={visual.color} />
             <DetailRow label="Last run" value={formatAbsolute(data.finished_at ?? data.started_at)} />
             <DetailRow label="Triggered by" value={data.triggered_by ?? "—"} />
-            <DetailRow label="Ledgers" value={String(data.total_ledgers)} />
-            <DetailRow
-              label="Funds updated"
-              value={`${data.total_updated} / ${data.total_funds}`}
-            />
-            {data.total_failed > 0 && (
-              <DetailRow label="Failed" value={String(data.total_failed)} valueColor={failedColor} />
+            {(effective.status === "success" ||
+              effective.status === "partial" ||
+              effective.status === "failed" ||
+              effective.status === "running") && (
+              <DetailRow
+                label="Funds updated"
+                value={`${effective.updatedCount} / ${effective.totalFunds}`}
+              />
+            )}
+            {effective.failedCount > 0 && (
+              <DetailRow label="Failed" value={String(effective.failedCount)} valueColor={failedColor} />
             )}
             {data.error && (
               <Box mt={1}>
@@ -234,35 +327,15 @@ const NavUpdateStatusPill: FC<NavUpdateStatusPillProps> = ({ compact = false }) 
               </Box>
             )}
 
-            {data.ledgers.length > 0 && (
-              <>
-                <Divider my={1} />
-                <Text fontSize="xs" color={mutedText} mb={1}>Per-ledger breakdown</Text>
-                <VStack align="stretch" spacing={1}>
-                  {data.ledgers.map((l) => (
-                    <HStack key={l.ledger_id} justify="space-between" fontSize="xs">
-                      <Text color={subText} noOfLines={1}>
-                        {l.ledger_name ?? `Ledger ${l.ledger_id}`}
-                      </Text>
-                      <Text color={l.failed > 0 ? partialColor : subText} fontWeight="semibold">
-                        {l.updated}/{l.total_funds}
-                        {l.failed > 0 && ` · ${l.failed} failed`}
-                      </Text>
-                    </HStack>
-                  ))}
-                </VStack>
-              </>
-            )}
-
             <Divider my={1} />
             <Button
               leftIcon={<Play size={14} />}
               size="sm"
               colorScheme="brand"
               onClick={() => triggerMutation.mutate()}
-              isLoading={triggerMutation.isPending || data.status === "running"}
-              loadingText={data.status === "running" ? "Running…" : "Starting…"}
-              isDisabled={data.status === "running"}
+              isLoading={triggerMutation.isPending || effective.status === "running"}
+              loadingText={effective.status === "running" ? "Running…" : "Starting…"}
+              isDisabled={effective.status === "running"}
             >
               Run now in background
             </Button>
