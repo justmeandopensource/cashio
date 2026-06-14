@@ -33,6 +33,7 @@ import FinancialTooltip from "@/components/shared/FinancialTooltip";
 import { notify } from "@/components/shared/notify";
 import MutualFundsTable from "./MutualFundsTable";
 import BulkNavUpdateModal from "./modals/BulkNavUpdateModal";
+import NavUpdateStatusPill from "./NavUpdateStatusPill";
 import PortfolioChangeModal from "./modals/PortfolioChangeModal";
 
 const MotionBox = motion.create(Box);
@@ -328,6 +329,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                        Bulk update Mutual Funds NAV
                      </Text>
                    )}
+                   <NavUpdateStatusPill compact />
                  </VStack>
                  {/* Desktop: buttons beside title */}
                  <HStack spacing={2} display={{ base: "none", md: "flex" }}>
@@ -368,6 +370,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                        Update NAVs
                      </Button>
                    )}
+                   <NavUpdateStatusPill />
                  </HStack>
                </Flex>
              </MotionBox>

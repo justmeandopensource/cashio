@@ -38,6 +38,7 @@ from app.routers.system_router import system_router
 from app.routers.tag_router import tag_router
 from app.routers.transaction_router import transaction_router
 from app.routers.user_router import user_router
+from app.scheduler import start_scheduler, stop_scheduler
 from app.version import __version__
 
 
@@ -60,7 +61,9 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 async def lifespan(app: FastAPI):
     logger.info("app_startup")
     Base.metadata.create_all(bind=engine)
+    start_scheduler()
     yield
+    stop_scheduler()
     logger.info("app_shutdown")
 
 

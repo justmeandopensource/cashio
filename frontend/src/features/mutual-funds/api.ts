@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { AxiosError, AxiosResponse } from "axios";
 import api from "@/lib/api";
 import {
   Amc,
@@ -109,16 +110,91 @@ export const deleteMfTransaction = async (ledgerId: number, transactionId: numbe
 };
 
 // Bulk NAV API functions
+
+// Decide whether an axios failure is worth retrying. We only retry on
+// network-layer errors and 5xx responses — 4xx is a permanent client-side
+// problem and is passed straight through.
+const isRetriableAxiosError = (error: unknown): boolean => {
+  if (!(error instanceof AxiosError)) return false;
+  if (!error.response) return true; // network error / timeout
+  return error.response.status >= 500;
+};
+
+// Retry bulkFetchNav twice with short exponential backoff on transient
+// network/5xx failures. This sits above the backend retry layer and
+// guards only against client↔backend hiccups (the backend's own retry
+// handles upstream NAV API flakiness).
 export const bulkFetchNav = async (ledgerId: number, request: BulkNavFetchRequest): Promise<BulkNavFetchResponse> => {
-  // mfapi.in can be slow and the backend retries up to 3 times; allow generous client-side timeout.
-  const response = await api.post(`/ledger/${ledgerId}/mutual-funds/bulk-fetch-nav`, request, {
-    timeout: 60000,
-  });
-  return response.data;
+  const url = `/ledger/${ledgerId}/mutual-funds/bulk-fetch-nav`;
+  // mfapi.in can be slow and the backend retries up to 3 times; allow a
+  // generous per-attempt timeout (60s), and retry the whole POST twice
+  // more on client↔backend hiccups (5xx / network only).
+  const maxAttempts = 3;
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const response: AxiosResponse<BulkNavFetchResponse> = await api.post(url, request, {
+        timeout: 60000,
+      });
+      return response.data;
+    } catch (error) {
+      lastError = error;
+      if (attempt === maxAttempts - 1 || !isRetriableAxiosError(error)) {
+        throw error;
+      }
+      // 500ms, then 1000ms
+      const delayMs = 500 * Math.pow(2, attempt);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  throw lastError;
 };
 
 export const bulkUpdateNav = async (ledgerId: number, request: BulkNavUpdateRequest): Promise<BulkNavUpdateResponse> => {
   const response = await api.put(`/ledger/${ledgerId}/mutual-funds/bulk-update-nav`, request);
+  return response.data;
+};
+
+// Auto NAV update — status + manual trigger
+export type NavUpdateRunStatus =
+  | "idle"
+  | "running"
+  | "success"
+  | "partial"
+  | "failed"
+  | "skipped_locked";
+
+export interface NavUpdateLedgerResult {
+  ledger_id: number;
+  ledger_name: string | null;
+  total_funds: number;
+  updated: number;
+  failed: number;
+  skipped_no_code: number;
+}
+
+export interface NavUpdateRunState {
+  status: NavUpdateRunStatus;
+  started_at: string | null;
+  finished_at: string | null;
+  triggered_by: "schedule" | "manual" | null;
+  total_ledgers: number;
+  total_funds: number;
+  total_updated: number;
+  total_failed: number;
+  error: string | null;
+  ledgers: NavUpdateLedgerResult[];
+}
+
+export const getNavUpdateStatus = async (): Promise<NavUpdateRunState> => {
+  const response = await api.get("/api/system/nav-update/status");
+  return response.data;
+};
+
+export const triggerNavUpdate = async (): Promise<NavUpdateRunState> => {
+  const response = await api.post("/api/system/nav-update/run");
   return response.data;
 };
 

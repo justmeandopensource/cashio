@@ -35,8 +35,7 @@ from app.repositories.mf_transaction_crud import (
 )
 from app.schemas import mutual_funds_schema
 from sqlalchemy import func, extract, case, literal
-from app.services.nav_service import NavService
-from app.services.yahoo_nav_service import YahooNavService
+from app.services.nav_fetch_helpers import fetch_with_retry, fetcher_for
 from app.utils.xirr_calculator import calculate_xirr
 
 mutual_funds_router = APIRouter(prefix="/ledger")
@@ -587,20 +586,27 @@ async def bulk_fetch_nav(
     ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
-    """Fetch latest NAV for multiple mutual funds by scheme codes."""
-    try:
-        # Choose the appropriate NAV service based on ledger configuration
-        if ledger.nav_service_type == "uk":  # type: ignore
-            # Yahoo Finance auto-detects GBp/GBX and converts to GBP
-            results = await YahooNavService.fetch_nav_bulk(request.scheme_codes)
-        else:
-            # Default to Indian service
-            results = await NavService.fetch_nav_bulk(request.scheme_codes)
+    """Fetch latest NAV for multiple mutual funds by scheme codes.
 
-        # Calculate summary stats
+    Dedupes scheme codes, then runs the per-ledger NAV source through the
+    transient-aware retry helper so a flaky upstream doesn't fail the call.
+    """
+    try:
+        # Dedupe input — duplicate codes only waste upstream calls.
+        unique_codes = list(dict.fromkeys(request.scheme_codes))
+        fetcher = fetcher_for(str(ledger.nav_service_type))  # type: ignore[arg-type]
+
+        # 2 retries keeps worst-case latency around ~3-4s (1s + 2s + jitter)
+        # which is acceptable for an interactive call.
+        results = await fetch_with_retry(
+            unique_codes,
+            fetcher,
+            max_retries=2,
+        )
+
         total_requested = len(request.scheme_codes)
         total_successful = sum(1 for r in results if r.success)
-        total_failed = total_requested - total_successful
+        total_failed = len(results) - total_successful
 
         return mutual_funds_schema.BulkNavFetchResponse(
             results=results,

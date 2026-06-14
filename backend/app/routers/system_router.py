@@ -19,6 +19,10 @@ from app.database.connection import SessionLocal
 from app.security.user_security import get_current_user
 from app.schemas.user_schema import User
 from app.repositories.settings import settings
+from app.services.auto_nav_update_service import (
+    get_last_run_state,
+    trigger_manual_run,
+)
 
 system_router = APIRouter(prefix="/api")
 
@@ -443,3 +447,49 @@ async def verify_backup(
         "max_backups": MAX_BACKUPS,
         "backup_retention_days": BACKUP_RETENTION_DAYS,
     }
+
+
+def _serialize_run_state(state) -> dict:
+    return {
+        "status": state.status,
+        "started_at": state.started_at.isoformat() if state.started_at else None,
+        "finished_at": state.finished_at.isoformat() if state.finished_at else None,
+        "triggered_by": state.triggered_by,
+        "total_ledgers": state.total_ledgers,
+        "total_funds": state.total_funds,
+        "total_updated": state.total_updated,
+        "total_failed": state.total_failed,
+        "error": state.error,
+        "ledgers": [
+            {
+                "ledger_id": l.ledger_id,
+                "ledger_name": l.ledger_name,
+                "total_funds": l.total_funds,
+                "updated": l.updated,
+                "failed": l.failed,
+                "skipped_no_code": l.skipped_no_code,
+            }
+            for l in state.ledgers
+        ],
+    }
+
+
+@system_router.get("/system/nav-update/status", tags=["system"])
+async def get_nav_update_status(current_user: User = Depends(get_current_user)):
+    """Return the most-recent NAV update run state."""
+    return _serialize_run_state(get_last_run_state())
+
+
+@system_router.post(
+    "/system/nav-update/run",
+    status_code=status.HTTP_202_ACCEPTED,
+    tags=["system"],
+)
+async def run_nav_update_now(current_user: User = Depends(get_current_user)):
+    """Manually trigger the NAV update job.
+
+    Returns 202 with the current state. If a run is already in flight,
+    no new run is started and the existing state is returned.
+    """
+    state = await trigger_manual_run()
+    return _serialize_run_state(state)

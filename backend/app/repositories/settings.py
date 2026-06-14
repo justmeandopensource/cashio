@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     MAX_BACKUPS: int = 50
     BACKUP_RETENTION_DAYS: int = 0  # 0 = disabled
 
+    # scheduler
+    SCHEDULER_ENABLED: bool = True
+    NAV_UPDATE_SCHEDULE_TIME: str = "05:00"
+    NAV_UPDATE_SCHEDULE_TIMEZONE: str = "Europe/London"
+
     @computed_field
     @property
     def SQLALCHEMY_DATABASE_URL(self) -> str:

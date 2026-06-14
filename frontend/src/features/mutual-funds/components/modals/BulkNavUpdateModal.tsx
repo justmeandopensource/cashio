@@ -130,29 +130,44 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
 
     const sortedFunds = [...mutualFunds].sort((a, b) => a.name.localeCompare(b.name));
 
-    for (let i = 0; i < sortedFunds.length; i++) {
-      const fund = sortedFunds[i];
+    // Dedupe scheme codes — multiple funds (e.g. one per owner) can share a
+    // code, and re-fetching the same NAV is just wasted upstream traffic.
+    // The results Map is keyed by code, so any fund matching that code
+    // picks up the result during render.
+    const uniqueCodes: string[] = [];
+    const seen = new Set<string>();
+    for (const fund of sortedFunds) {
+      const code = fund.code;
+      if (!code || seen.has(code)) continue;
+      seen.add(code);
+      uniqueCodes.push(code);
+    }
+
+    for (let i = 0; i < uniqueCodes.length; i++) {
+      const code = uniqueCodes[i];
       if (stopFetchRef.current) {
         break;
       }
 
-      setCurrentFetchingCode(fund.code!);
+      setCurrentFetchingCode(code);
 
       try {
         const data = await bulkFetchNav(Number(ledgerId), {
-          scheme_codes: [fund.code!],
+          scheme_codes: [code],
         });
         const result = data.results[0];
-        setResults((prev) => new Map(prev).set(fund.code!, result));
+        setResults((prev) => new Map(prev).set(code, result));
       } catch {
         const errorResult: NavFetchResult = {
-          scheme_code: fund.code!,
+          scheme_code: code,
           success: false,
           error_message: "Fetch failed",
         };
-        setResults((prev) => new Map(prev).set(fund.code!, errorResult));
+        setResults((prev) => new Map(prev).set(code, errorResult));
       }
       flushSync(() => {
+        // Count progress per unique scheme code rather than per fund —
+        // the visible counter reflects upstream work, not row count.
         setFetchedCount((prev) => prev + 1);
       });
     }
@@ -164,6 +179,12 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
     stopFetchRef.current = true;
     setIsFetching(false);
   };
+
+  const uniqueCodeCount = useMemo(() => {
+    const codes = new Set<string>();
+    for (const f of mutualFunds) if (f.code) codes.add(f.code);
+    return codes.size;
+  }, [mutualFunds]);
 
   const { successfulComparisons, failedComparisons, allFunds } = useMemo(() => {
     const allFundsData = [...mutualFunds].sort((a, b) => a.name.localeCompare(b.name)).map((fund) => {
@@ -273,7 +294,7 @@ const BulkNavUpdateModal: FC<BulkNavUpdateModalProps> = ({
                   Bulk NAV Update
                 </Text>
                 <Text fontSize="sm" color={subTextColor}>
-                  {fetchedCount} of {mutualFunds.length} funds fetched
+                  {fetchedCount} of {uniqueCodeCount} scheme{uniqueCodeCount === 1 ? "" : "s"} fetched
                 </Text>
               </Box>
             </HStack>
