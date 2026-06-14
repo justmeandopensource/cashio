@@ -77,6 +77,11 @@
             echo "  Backend:  ./cashio-stack start-local-backend"
             echo "  Frontend: ./cashio-stack start-local-frontend"
             echo "  Both:     ./cashio-stack start-local"
+
+            # Drop into zsh if the host has it; otherwise stay in bash.
+            if command -v zsh >/dev/null 2>&1; then
+              exec zsh
+            fi
           '';
         };
       });
