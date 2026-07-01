@@ -39,6 +39,7 @@ class User(Base):
     categories = relationship("Category", back_populates="user")
     tags = relationship("Tag", back_populates="user")
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
+    api_tokens = relationship("APIToken", back_populates="user", cascade="all, delete-orphan")
 
 
 class RefreshToken(Base):
@@ -57,6 +58,33 @@ class RefreshToken(Base):
     __table_args__ = (
         Index("idx_refresh_tokens_user_id", "user_id"),
         Index("idx_refresh_tokens_token_hash", "token_hash"),
+    )
+
+
+class APIToken(Base):
+    """Long-lived personal API token for programmatic access (e.g. the rb1n
+    assistant). Only the SHA256 hash is stored; the plaintext is shown once at
+    creation. Grants the owning user's full access; revocable, optionally expiring."""
+
+    __tablename__ = "api_tokens"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False
+    )
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    last4: Mapped[str] = mapped_column(String(4), nullable=False)
+    revoked: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+
+    user = relationship("User", back_populates="api_tokens")
+
+    __table_args__ = (
+        Index("idx_api_tokens_user_id", "user_id"),
+        Index("idx_api_tokens_token_hash", "token_hash"),
     )
 
 

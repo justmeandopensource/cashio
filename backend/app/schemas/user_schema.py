@@ -57,3 +57,26 @@ class ChangePassword(BaseModel):
 
 class SetDefaultLedger(BaseModel):
     ledger_id: int | None = None
+
+
+class ApiTokenCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    expires_days: int | None = Field(default=None, ge=1)
+
+
+class ApiTokenInfo(BaseModel):
+    id: int
+    name: str
+    last4: str
+    revoked: bool
+    last_used_at: datetime | None = None
+    expires_at: datetime | None = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ApiTokenCreated(ApiTokenInfo):
+    # Plaintext token — returned ONCE at creation, never retrievable again.
+    token: str
