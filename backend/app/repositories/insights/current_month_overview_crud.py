@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -61,10 +61,18 @@ def _calculate_totals_for_range(db: Session, ledger_id: int, first_day: datetime
     return float(income), float(expense)  # type: ignore
 
 
-def get_current_month_overview(db: Session, ledger_id: int):
-    # Get first and last day of current month
-    today = datetime.now()
-    first_day, last_day = _get_month_range(today.year, today.month)
+def get_current_month_overview(
+    db: Session,
+    ledger_id: int,
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+):
+    # Resolve the target month: explicit year/month if supplied, else the
+    # current calendar month (preserves the original current-month behaviour).
+    if year is None or month is None:
+        today = datetime.now()
+        year, month = today.year, today.month
+    first_day, last_day = _get_month_range(year, month)
 
     # Previous month range
     prev_month = (first_day - timedelta(days=1))

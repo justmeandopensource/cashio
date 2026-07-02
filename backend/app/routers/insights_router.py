@@ -1,4 +1,5 @@
-from typing import List, Literal
+from datetime import datetime
+from typing import List, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -65,12 +66,29 @@ def get_income_expense_trend(
 )
 def get_current_month_overview(
     ledger_id: int,
+    month: Optional[str] = Query(
+        default=None,
+        description=(
+            "Target month as YYYY-MM (e.g. 2026-06). "
+            "Omit to use the current calendar month."
+        ),
+    ),
     ledger: Ledger = Depends(get_validated_ledger),
     db: Session = Depends(get_db),
 ):
+    year_arg = month_arg = None
+    if month:
+        try:
+            parsed = datetime.strptime(month, "%Y-%m")
+            year_arg, month_arg = parsed.year, parsed.month
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="month must be in YYYY-MM format, e.g. 2026-06",
+            )
     try:
         return current_month_overview_crud.get_current_month_overview(
-            db=db, ledger_id=ledger_id
+            db=db, ledger_id=ledger_id, year=year_arg, month=month_arg
         )
     except Exception as e:
         raise HTTPException(
