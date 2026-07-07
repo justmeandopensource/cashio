@@ -80,7 +80,10 @@ def get_transaction_by_id(
         "is_split": transaction.is_split,
         "is_transfer": transaction.is_transfer,
         "is_asset_transaction": transaction.is_asset_transaction,
-        "transfer_id": str(transaction.transfer_id),
+        "is_mf_transaction": transaction.is_mf_transaction,
+        "transfer_id": (
+            str(transaction.transfer_id) if transaction.transfer_id else None
+        ),
         "transfer_type": transaction.transfer_type,
         "created_at": transaction.created_at,
         "tags": [
