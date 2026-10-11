@@ -373,6 +373,46 @@ def get_location_suggestions(
 
 
 @transaction_router.get(
+    "/{ledger_id}/transaction/store/list",
+    response_model=List[transaction_schema.LabelUsage],
+    tags=["transactions"],
+)
+def list_stores(
+    ledger_id: int,
+    search_text: Optional[str] = Query(
+        None, description="Only stores containing this text (case-insensitive)"
+    ),
+    limit: Optional[int] = Query(None, ge=1, le=1000, description="Max rows"),
+    ledger: Ledger = Depends(get_validated_ledger),
+    db: Session = Depends(get_db),
+):
+    """Distinct stores in the ledger with usage counts. Case variants are listed separately."""
+    return transaction_crud.get_distinct_stores(
+        db=db, ledger_id=ledger_id, search_text=search_text, limit=limit
+    )
+
+
+@transaction_router.get(
+    "/{ledger_id}/transaction/location/list",
+    response_model=List[transaction_schema.LabelUsage],
+    tags=["transactions"],
+)
+def list_locations(
+    ledger_id: int,
+    search_text: Optional[str] = Query(
+        None, description="Only locations containing this text (case-insensitive)"
+    ),
+    limit: Optional[int] = Query(None, ge=1, le=1000, description="Max rows"),
+    ledger: Ledger = Depends(get_validated_ledger),
+    db: Session = Depends(get_db),
+):
+    """Distinct locations in the ledger with usage counts. Case variants are listed separately."""
+    return transaction_crud.get_distinct_locations(
+        db=db, ledger_id=ledger_id, search_text=search_text, limit=limit
+    )
+
+
+@transaction_router.get(
     "/{ledger_id}/transactions",
     response_model=transaction_schema.PaginatedTransactionResponse,
     tags=["transactions"],

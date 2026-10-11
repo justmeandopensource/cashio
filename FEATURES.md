@@ -32,6 +32,7 @@ Cashio is a full-stack personal finance management application supporting multi-
 - **Advanced filtering:** date range, category, tags (any/all), store, location, type, notes keyword
 - Paginated list (50/page); responsive table (desktop) / card (mobile) views
 - **Autocomplete suggestions** for notes, store names, and locations based on history
+- **No duplicate stores/locations:** on create/update, a store or location that matches an existing one case-insensitively (ignoring extra whitespace) is saved with the existing, most-used spelling; `GET /ledger/{id}/transaction/store/list` and `/location/list` return distinct values with usage counts
 
 ---
 

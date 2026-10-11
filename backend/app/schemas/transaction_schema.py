@@ -8,6 +8,14 @@ from pydantic import BaseModel, model_validator
 from app.schemas.tag_schema import Tag, TagCreate
 
 
+class LabelUsage(BaseModel):
+    """A distinct store/location value with how often and when it was used."""
+
+    name: str
+    count: int
+    last_used: Optional[datetime] = None
+
+
 class TransactionSplitCreate(BaseModel):
     category_id: Optional[int] = None
     credit: JsonDecimal = Decimal("0")

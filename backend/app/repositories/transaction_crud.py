@@ -148,6 +148,13 @@ def create_transaction(db: Session, transaction: TransactionCreate):
                 detail=f"Sum of split debits ({total_split_debit}) does not match main transaction debit ({debit})",
             )
 
+    # Reuse the ledger's existing spelling of store/location rather than
+    # creating case/whitespace variants of them.
+    store = canonicalize_label(db, account.ledger_id, Transaction.store, transaction.store)
+    location = canonicalize_label(
+        db, account.ledger_id, Transaction.location, transaction.location
+    )
+
     # Create the main transaction
     db_transaction = Transaction(
         account_id=transaction.account_id,
@@ -156,8 +163,8 @@ def create_transaction(db: Session, transaction: TransactionCreate):
         debit=debit,
         date=transaction.date,
         notes=transaction.notes,
-        store=transaction.store,
-        location=transaction.location,
+        store=store,
+        location=location,
         is_split=transaction.is_split,
         is_transfer=transaction.is_transfer,
         is_asset_transaction=transaction.is_asset_transaction,
@@ -761,6 +768,8 @@ def get_transaction_notes_suggestions(
 def get_transaction_store_suggestions(
     db: Session, ledger_id: int, search_text: str, limit: int = 5
 ) -> List[str]:
+    # One row per distinct value (most recently used first); without the
+    # grouping the newest N rows are often N copies of the same value.
     suggestions = (
         db.query(Transaction.store)
         .filter(Transaction.store.ilike(f"%{search_text}%"))
@@ -769,7 +778,8 @@ def get_transaction_store_suggestions(
                 db.query(Account.account_id).filter(Account.ledger_id == ledger_id)
             )
         )
-        .order_by(Transaction.date.desc())
+        .group_by(Transaction.store)
+        .order_by(func.max(Transaction.date).desc())
         .limit(limit)
         .all()
     )
@@ -780,6 +790,8 @@ def get_transaction_store_suggestions(
 def get_transaction_location_suggestions(
     db: Session, ledger_id: int, search_text: str, limit: int = 5
 ) -> List[str]:
+    # One row per distinct value (most recently used first); without the
+    # grouping the newest N rows are often N copies of the same value.
     suggestions = (
         db.query(Transaction.location)
         .filter(Transaction.location.ilike(f"%{search_text}%"))
@@ -788,12 +800,90 @@ def get_transaction_location_suggestions(
                 db.query(Account.account_id).filter(Account.ledger_id == ledger_id)
             )
         )
-        .order_by(Transaction.date.desc())
+        .group_by(Transaction.location)
+        .order_by(func.max(Transaction.date).desc())
         .limit(limit)
         .all()
     )
 
     return [suggestion[0] for suggestion in suggestions]
+
+def _clean_label(value: Optional[str]) -> Optional[str]:
+    """Trim and collapse internal whitespace; empty becomes None."""
+    if value is None:
+        return None
+    cleaned = " ".join(value.split())
+    return cleaned or None
+
+
+def get_distinct_label_usage(
+    db: Session,
+    ledger_id: int,
+    column,
+    search_text: Optional[str] = None,
+    limit: Optional[int] = None,
+):
+    """Distinct values of a free-text transaction column (store/location).
+
+    Grouped by the raw value, so spelling variants that differ only in case
+    come back as separate rows. Most-used first, then most recently used.
+    """
+    query = (
+        db.query(column, func.count().label("count"), func.max(Transaction.date).label("last_used"))
+        .filter(column.isnot(None), column != "")
+        .filter(
+            Transaction.account_id.in_(
+                db.query(Account.account_id).filter(Account.ledger_id == ledger_id)
+            )
+        )
+    )
+    if search_text:
+        query = query.filter(column.ilike(f"%{search_text}%"))
+    query = query.group_by(column).order_by(
+        func.count().desc(), func.max(Transaction.date).desc(), column
+    )
+    if limit:
+        query = query.limit(limit)
+    return [
+        {"name": name, "count": count, "last_used": last_used}
+        for name, count, last_used in query.all()
+    ]
+
+
+def get_distinct_stores(db: Session, ledger_id: int, search_text: Optional[str] = None,
+                        limit: Optional[int] = None):
+    return get_distinct_label_usage(db, ledger_id, Transaction.store, search_text, limit)
+
+
+def get_distinct_locations(db: Session, ledger_id: int, search_text: Optional[str] = None,
+                           limit: Optional[int] = None):
+    return get_distinct_label_usage(db, ledger_id, Transaction.location, search_text, limit)
+
+
+def canonicalize_label(db: Session, ledger_id: int, column, value: Optional[str]) -> Optional[str]:
+    """Reuse the existing spelling of a store/location instead of creating a variant.
+
+    Whitespace is normalised, then the value is matched case-insensitively
+    against what the ledger already holds; the most-used existing spelling wins.
+    With no match the cleaned value is returned unchanged (a genuinely new label).
+    """
+    cleaned = _clean_label(value)
+    if cleaned is None:
+        return None
+    existing = (
+        db.query(column, func.count().label("count"), func.max(Transaction.date).label("last_used"))
+        .filter(func.lower(func.trim(column)) == cleaned.lower())
+        .filter(
+            Transaction.account_id.in_(
+                db.query(Account.account_id).filter(Account.ledger_id == ledger_id)
+            )
+        )
+        .group_by(column)
+        .order_by(func.count().desc(), func.max(Transaction.date).desc())
+        .first()
+    )
+    return existing[0] if existing else cleaned
+
 
 def get_transactions_for_ledger_id(
     db: Session,
@@ -1187,6 +1277,22 @@ def update_transaction(
 
     # Update transaction fields
     update_data = transaction_update.dict(exclude_unset=True)
+    # Reuse the ledger's existing spelling of store/location (see create_transaction).
+    # The target account may change in this update, so use its ledger.
+    target_account = account
+    if update_data.get("account_id") not in (None, account.account_id):
+        target_account = (
+            db.query(Account).filter(Account.account_id == update_data["account_id"]).first()
+            or account
+        )
+    if "store" in update_data:
+        update_data["store"] = canonicalize_label(
+            db, target_account.ledger_id, Transaction.store, update_data["store"]
+        )
+    if "location" in update_data:
+        update_data["location"] = canonicalize_label(
+            db, target_account.ledger_id, Transaction.location, update_data["location"]
+        )
     for key, value in update_data.items():
         if key == "splits":
             # Handle splits separately
