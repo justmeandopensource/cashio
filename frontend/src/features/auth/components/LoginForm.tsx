@@ -1,22 +1,17 @@
 import React, { useState, ChangeEvent } from "react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import { Link as RouterLink } from "react-router-dom";
 import {
   Box,
   Button,
-  FormControl,
-  FormLabel,
   Input,
-  InputGroup,
-  InputRightElement,
   VStack,
   Text,
-  FormErrorMessage,
-  InputLeftElement,
-  useColorModeValue,
   HStack,
   Icon,
-  FormHelperText,
+  Field,
 } from "@chakra-ui/react";
+import { InputGroup } from "@/components/ui/input-group";
 import { motion } from "framer-motion";
 import { LogIn, Eye, EyeOff, Mail, Lock } from "lucide-react";
 
@@ -110,7 +105,10 @@ const LoginForm: React.FC<LoginFormProps> = ({
         {/* Gradient accent line */}
         <Box
           h="3px"
-          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+          bgGradient="to-r"
+          gradientFrom="brand.400"
+          gradientVia="brand.600"
+          gradientTo="teal.300"
         />
 
         {/* Header */}
@@ -122,7 +120,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.15, ease: "easeOut" }}
         >
-          <HStack spacing={3} align="center" mb={2}>
+          <HStack gap={3} align="center" mb={2}>
             <Box
               p={2.5}
               bg={useColorModeValue("brand.50", "whiteAlpha.100")}
@@ -156,7 +154,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         <Box px={{ base: 6, sm: 8 }} py={{ base: 4, sm: 6 }}>
           <VStack
             as="form"
-            spacing={6}
+            gap={6}
             onSubmit={handleSubmit}
           >
             <MotionBox
@@ -170,20 +168,16 @@ const LoginForm: React.FC<LoginFormProps> = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.25, ease: "easeOut" }}
             >
-              <VStack spacing={5} align="stretch">
-                <FormControl isInvalid={usernameError}>
-                  <FormLabel fontWeight="bold" mb={2} fontSize="sm">
+              <VStack gap={5} align="stretch">
+                <Field.Root invalid={usernameError}>
+                  <Field.Label fontWeight="bold" mb={2} fontSize="sm">
                     Username
-                  </FormLabel>
-                  <InputGroup>
-                    <InputLeftElement
-                      pointerEvents="none"
-                      height="100%"
-                      display="flex"
-                      alignItems="center"
-                    >
-                      <Icon as={Mail} boxSize={4} color="gray.400" />
-                    </InputLeftElement>
+                  </Field.Label>
+                  <InputGroup
+                    w="full"
+                    startElement={<Icon as={Mail} boxSize={4} color="gray.400" />}
+                    startElementProps={{ height: "100%", display: "flex", alignItems: "center" }}
+                  >
                     <Input
                       ref={usernameInputRef}
                       type="text"
@@ -207,32 +201,43 @@ const LoginForm: React.FC<LoginFormProps> = ({
                     />
                   </InputGroup>
                   {usernameError ? (
-                    <FormErrorMessage mt={2}>
+                    <Field.ErrorText mt={2}>
                       Username is required
-                    </FormErrorMessage>
+                    </Field.ErrorText>
                   ) : (
-                    <FormHelperText mt={2} fontSize="xs">
+                    <Field.HelperText mt={2} fontSize="xs">
                       Enter your registered username
-                    </FormHelperText>
+                    </Field.HelperText>
                   )}
-                </FormControl>
+                </Field.Root>
 
-                <FormControl isInvalid={passwordError}>
-                  <FormLabel fontWeight="bold" mb={2} fontSize="sm">
+                <Field.Root invalid={passwordError}>
+                  <Field.Label fontWeight="bold" mb={2} fontSize="sm">
                     Password
-                  </FormLabel>
-                  <InputGroup size="lg">
-                    <InputLeftElement
-                      pointerEvents="none"
-                      height="100%"
-                      display="flex"
-                      alignItems="center"
-                    >
-                      <Icon as={Lock} boxSize={4} color="gray.400" />
-                    </InputLeftElement>
+                  </Field.Label>
+                  <InputGroup
+                    w="full"
+                    startElement={<Icon as={Lock} boxSize={4} color="gray.400" />}
+                    startElementProps={{ height: "100%", display: "flex", alignItems: "center" }}
+                    endElement={
+                      <Button
+                        variant="ghost"
+                        onClick={() => setShowPassword(!showPassword)}
+                        _hover={{ bg: "transparent" }}
+                        size="sm"
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
+                      >
+                        <Icon as={showPassword ? EyeOff : Eye} boxSize={4} />
+                      </Button>
+                    }
+                    endElementProps={{ height: "100%" }}
+                  >
                     <Input
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
+                      size="lg"
                       value={password}
                       onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         setPassword(e.target.value)
@@ -249,30 +254,17 @@ const LoginForm: React.FC<LoginFormProps> = ({
                       }}
                       autoComplete="current-password"
                     />
-                    <InputRightElement height="100%">
-                      <Button
-                        variant="ghost"
-                        onClick={() => setShowPassword(!showPassword)}
-                        _hover={{ bg: "transparent" }}
-                        size="sm"
-                        aria-label={
-                          showPassword ? "Hide password" : "Show password"
-                        }
-                      >
-                        <Icon as={showPassword ? EyeOff : Eye} boxSize={4} />
-                      </Button>
-                    </InputRightElement>
                   </InputGroup>
                   {passwordError ? (
-                    <FormErrorMessage mt={2}>
+                    <Field.ErrorText mt={2}>
                       Password is required
-                    </FormErrorMessage>
+                    </Field.ErrorText>
                   ) : (
-                    <FormHelperText mt={2} fontSize="xs">
+                    <Field.HelperText mt={2} fontSize="xs">
                       Enter your account password
-                    </FormHelperText>
+                    </Field.HelperText>
                   )}
-                </FormControl>
+                </Field.Root>
               </VStack>
             </MotionBox>
 
@@ -286,8 +278,8 @@ const LoginForm: React.FC<LoginFormProps> = ({
                 type="submit"
                 size="lg"
                 w="full"
-                colorScheme="brand"
-                isLoading={isLoading}
+                colorPalette="brand"
+                loading={isLoading}
                 loadingText="Logging in"
                 borderRadius="xl"
                 fontWeight="800"
@@ -300,11 +292,8 @@ const LoginForm: React.FC<LoginFormProps> = ({
                   transform: "translateY(0)",
                 }}
                 transition="all 0.2s ease"
-                leftIcon={<Icon as={LogIn} boxSize={4} />}
-                isDisabled={!username || !password}
-              >
-                Log In
-              </Button>
+                disabled={!username || !password}><Icon as={LogIn} boxSize={4} />Log In
+                              </Button>
             </MotionBox>
 
             <MotionBox

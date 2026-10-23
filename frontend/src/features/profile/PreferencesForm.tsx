@@ -1,16 +1,7 @@
 import React from "react";
+import { useColorModeValue } from "../../components/ui/color-mode";
 import { Settings, BookText, Check } from "lucide-react";
-import {
-  Box,
-  FormControl,
-  FormLabel,
-  VStack,
-  Text,
-  HStack,
-  Icon,
-  Heading,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { Box, VStack, Text, HStack, Icon, Heading, Field } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useLedgers } from "@/features/ledger/hooks";
 import { useUserProfile, useSetDefaultLedger } from "./hooks";
@@ -69,7 +60,7 @@ const PreferencesForm: React.FC = () => {
           transition={{ duration: 0.3 }}
           mb={8}
         >
-          <HStack spacing={3}>
+          <HStack gap={3}>
             <Box
               w={10}
               h={10}
@@ -79,7 +70,7 @@ const PreferencesForm: React.FC = () => {
               alignItems="center"
               justifyContent="center"
             >
-              <Icon as={Settings} color={headerIconColor} boxSize={5} />
+              <Icon color={headerIconColor} boxSize={5} asChild><Settings /></Icon>
             </Box>
             <Box>
               <Heading size="md" color={textColor} fontWeight="700">
@@ -99,11 +90,11 @@ const PreferencesForm: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.08 }}
         >
-          <VStack spacing={6} align="stretch">
-            <FormControl>
-              <FormLabel fontSize="sm" fontWeight="600" color={labelColor} mb={1}>
+          <VStack gap={6} align="stretch">
+            <Field.Root>
+              <Field.Label fontSize="sm" fontWeight="600" color={labelColor} mb={1}>
                 Default Ledger
-              </FormLabel>
+              </Field.Label>
               <Text fontSize="xs" color={subtitleColor} mb={4}>
                 The default ledger is used on the dashboard for financial
                 summaries, quick actions, and is pre-selected when you open the
@@ -118,18 +109,13 @@ const PreferencesForm: React.FC = () => {
                   border="1px dashed"
                   borderColor={cardBorder}
                 >
-                  <Icon
-                    as={BookText}
-                    boxSize={6}
-                    color={subtitleColor}
-                    mb={2}
-                  />
+                  <Icon boxSize={6} color={subtitleColor} mb={2} asChild><BookText /></Icon>
                   <Text fontSize="sm" color={subtitleColor}>
                     No ledgers yet. Create a ledger to set it as default.
                   </Text>
                 </Box>
               ) : (
-                <VStack spacing={2} align="stretch">
+                <VStack gap={2} align="stretch">
                   {ledgers.map((ledger) => {
                     const isDefault =
                       user?.default_ledger_id != null &&
@@ -157,7 +143,7 @@ const PreferencesForm: React.FC = () => {
                         opacity={isPending ? 0.6 : 1}
                       >
                         <HStack justify="space-between">
-                          <HStack spacing={3}>
+                          <HStack gap={3}>
                             <Box
                               w={8}
                               h={8}
@@ -188,7 +174,7 @@ const PreferencesForm: React.FC = () => {
                                 <Text
                                   fontSize="xs"
                                   color={subtitleColor}
-                                  noOfLines={1}
+                                  lineClamp={1}
                                 >
                                   {ledger.description}
                                 </Text>
@@ -196,7 +182,7 @@ const PreferencesForm: React.FC = () => {
                             </Box>
                           </HStack>
                           {isDefault && (
-                            <HStack spacing={1.5}>
+                            <HStack gap={1.5}>
                               <Box
                                 w={5}
                                 h={5}
@@ -206,12 +192,7 @@ const PreferencesForm: React.FC = () => {
                                 alignItems="center"
                                 justifyContent="center"
                               >
-                                <Icon
-                                  as={Check}
-                                  boxSize={3}
-                                  color="white"
-                                  strokeWidth={3}
-                                />
+                                <Icon boxSize={3} color="white" strokeWidth={3} asChild><Check /></Icon>
                               </Box>
                               <Text
                                 fontSize="xs"
@@ -228,7 +209,7 @@ const PreferencesForm: React.FC = () => {
                   })}
                 </VStack>
               )}
-            </FormControl>
+            </Field.Root>
           </VStack>
         </MotionBox>
       </Box>

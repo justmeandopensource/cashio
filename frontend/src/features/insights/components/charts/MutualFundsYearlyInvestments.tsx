@@ -1,16 +1,16 @@
 import React, { useState, useMemo } from "react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
 import {
   Box,
   VStack,
   HStack,
   Heading,
   Text,
-  useColorModeValue,
   useBreakpointValue,
   Flex,
   Icon,
   Center,
-  Select,
+  NativeSelect,
   SimpleGrid,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
@@ -19,7 +19,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   BarChart3,
   TrendingUp,
-  ChevronDown,
   Calendar,
   Wallet,
   ArrowUpRight,
@@ -138,7 +137,7 @@ const MutualFundsYearlyInvestments: React.FC<MutualFundsYearlyInvestmentsProps> 
   if (isError) {
     return (
       <Box bg={cardBg} p={{ base: 4, md: 6 }} borderRadius="xl" border="1px solid" borderColor={sectionBorderColor} textAlign="center">
-        <Icon as={TrendingUp} color="red.500" boxSize={6} mb={4} />
+        <Icon color="red.500" boxSize={6} mb={4} asChild><TrendingUp /></Icon>
         <Text color="red.500" fontWeight="bold" fontSize="lg">Unable to load yearly investments data</Text>
       </Box>
     );
@@ -150,7 +149,7 @@ const MutualFundsYearlyInvestments: React.FC<MutualFundsYearlyInvestmentsProps> 
       label: "Total Invested",
       accentColor: portfolioAccentColor,
       renderValue: () => (
-        <HStack spacing={0} align="baseline">
+        <HStack gap={0} align="baseline">
           <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={pnlPositiveColor} lineHeight="short" letterSpacing="-0.01em">
             {splitCurrencyForDisplay(totalInvested, sym).main}
           </Text>
@@ -165,7 +164,7 @@ const MutualFundsYearlyInvestments: React.FC<MutualFundsYearlyInvestmentsProps> 
       label: "Avg / Year",
       accentColor: avgAccentColor,
       renderValue: () => (
-        <HStack spacing={0} align="baseline">
+        <HStack gap={0} align="baseline">
           <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
             {splitCurrencyForDisplay(avgYearlyInvestment, sym).main}
           </Text>
@@ -180,8 +179,8 @@ const MutualFundsYearlyInvestments: React.FC<MutualFundsYearlyInvestmentsProps> 
       label: "Peak Year",
       accentColor: peakAccentColor,
       renderValue: () => (
-        <VStack spacing={0} align="flex-start">
-          <HStack spacing={0} align="baseline">
+        <VStack gap={0} align="flex-start">
+          <HStack gap={0} align="baseline">
             <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
               {peakYear ? splitCurrencyForDisplay(peakYear.invested, sym).main : "—"}
             </Text>
@@ -204,7 +203,7 @@ const MutualFundsYearlyInvestments: React.FC<MutualFundsYearlyInvestmentsProps> 
       label: "Active Years",
       accentColor: yearsAccentColor,
       renderValue: () => (
-        <HStack spacing={1.5} align="baseline">
+        <HStack gap={1.5} align="baseline">
           <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
             {activeYearCount}
           </Text>
@@ -234,30 +233,31 @@ const MutualFundsYearlyInvestments: React.FC<MutualFundsYearlyInvestmentsProps> 
           mb={{ base: 4, md: 5 }}
         >
           <Flex align="center" gap={2}>
-            <Icon as={BarChart3} boxSize={4} color={iconColor} />
+            <Icon boxSize={4} color={iconColor} asChild><BarChart3 /></Icon>
             <Heading as="h2" size="md" color={primaryTextColor} letterSpacing="-0.02em">
               Mutual Funds - Yearly Investments
             </Heading>
           </Flex>
 
           {availableOwners.length > 0 && (
-            <Select
-              value={selectedOwner}
-              onChange={(e) => setSelectedOwner(e.target.value)}
+            <NativeSelect.Root
               maxW={{ base: "full", md: "220px" }}
-              icon={<ChevronDown />}
-              variant="filled"
-              bg={selectBg}
-              size="sm"
-              borderRadius="lg"
-              fontWeight="medium"
-              fontSize="sm"
-            >
-              <option value="all">All Owners</option>
-              {availableOwners.map((owner) => (
-                <option key={owner} value={owner}>{owner}</option>
-              ))}
-            </Select>
+              variant="subtle"
+              size="sm">
+              <NativeSelect.Field
+                value={selectedOwner}
+                onChange={(e) => setSelectedOwner(e.target.value)}
+                bg={selectBg}
+                borderRadius="lg"
+                fontWeight="medium"
+                fontSize="sm">
+                <option value="all">All Owners</option>
+                {availableOwners.map((owner) => (
+                  <option key={owner} value={owner}>{owner}</option>
+                ))}
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
           )}
         </Flex>
 
@@ -265,7 +265,7 @@ const MutualFundsYearlyInvestments: React.FC<MutualFundsYearlyInvestmentsProps> 
         {chartData.length > 0 && (
           <MotionSimpleGrid
             columns={{ base: 2, sm: 4 }}
-            spacing={{ base: 3, md: 4 }}
+            gap={{ base: 3, md: 4 }}
             mb={{ base: 4, md: 5 }}
             initial="hidden"
             animate="visible"
@@ -369,7 +369,7 @@ const MutualFundsYearlyInvestments: React.FC<MutualFundsYearlyInvestmentsProps> 
             />
           ) : (
             <Center height="full" borderRadius="lg" flexDirection="column" textAlign="center" p={6}>
-              <Icon as={BarChart3} boxSize={6} color={tertiaryTextColor} mb={4} />
+              <Icon boxSize={6} color={tertiaryTextColor} mb={4} asChild><BarChart3 /></Icon>
               <Heading size="md" mb={2} color={secondaryTextColor}>No Investment Data Available</Heading>
               <Text color={secondaryTextColor} fontSize="sm">Add mutual fund investments to see your yearly investment chart.</Text>
             </Center>

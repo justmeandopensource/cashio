@@ -1,16 +1,6 @@
 import React, { useMemo, useState } from "react";
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Flex,
-  HStack,
-  Icon,
-  Skeleton,
-  Text,
-  useColorModeValue,
-  VStack,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
+import { Box, Button, ButtonGroup, Flex, HStack, Icon, Skeleton, Text, VStack } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import {
   ArrowLeftRight,
@@ -110,7 +100,9 @@ const CorridorRow: React.FC<CorridorRowProps> = ({
       px={4}
       py={3}
       _hover={{ bg: hoverBg }}
-      sx={{ transition: "background 0.1s ease" }}
+      css={{
+        transition: "background 0.1s ease"
+      }}
     >
       {/* Source → Destination header */}
       <Flex align="center" gap={2} mb={1.5} flexWrap="wrap">
@@ -118,25 +110,20 @@ const CorridorRow: React.FC<CorridorRowProps> = ({
           fontSize="xs"
           fontWeight="700"
           color={textColor}
-          noOfLines={1}
+          lineClamp={1}
           flex={1}
           minW={0}
         >
           {link.source_account_name}
         </Text>
 
-        <Icon
-          as={ArrowRight}
-          boxSize={3.5}
-          color={arrowColor}
-          flexShrink={0}
-        />
+        <Icon boxSize={3.5} color={arrowColor} flexShrink={0} asChild><ArrowRight /></Icon>
 
         <Text
           fontSize="xs"
           fontWeight="700"
           color={textColor}
-          noOfLines={1}
+          lineClamp={1}
           flex={1}
           minW={0}
         >
@@ -144,7 +131,7 @@ const CorridorRow: React.FC<CorridorRowProps> = ({
         </Text>
 
         {/* Amount */}
-        <VStack spacing={0} align="end" flexShrink={0}>
+        <VStack gap={0} align="end" flexShrink={0}>
           <Text fontSize="xs" fontWeight="700" color={textColor}>
             {formatNumberAsCurrency(link.total_amount, link.source_currency)}
           </Text>
@@ -225,8 +212,8 @@ const HomeFundFlow: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <HStack spacing={1.5} mb={3}>
-          <Icon as={Waypoints} boxSize={3.5} color={labelColor} />
+        <HStack gap={1.5} mb={3}>
+          <Icon boxSize={3.5} color={labelColor} asChild><Waypoints /></Icon>
           <Text
             fontSize="xs"
             fontWeight="600"
@@ -258,8 +245,8 @@ const HomeFundFlow: React.FC = () => {
         flexWrap="wrap"
         gap={2}
       >
-        <HStack spacing={1.5}>
-          <Icon as={Waypoints} boxSize={3.5} color={labelColor} />
+        <HStack gap={1.5}>
+          <Icon boxSize={3.5} color={labelColor} asChild><Waypoints /></Icon>
           <Text
             fontSize="xs"
             fontWeight="600"
@@ -271,7 +258,7 @@ const HomeFundFlow: React.FC = () => {
           </Text>
         </HStack>
 
-        <ButtonGroup size="xs" isAttached>
+        <ButtonGroup size="xs" attached>
           {PERIOD_OPTIONS.map((opt) => (
             <Button
               key={opt.value}
@@ -314,7 +301,7 @@ const HomeFundFlow: React.FC = () => {
               alignItems="center"
               justifyContent="center"
             >
-              <Icon as={ArrowLeftRight} boxSize={5} color={emptyTextColor} />
+              <Icon boxSize={5} color={emptyTextColor} asChild><ArrowLeftRight /></Icon>
             </Box>
             <Text fontSize="xs" fontWeight="600" color={emptyTextColor}>
               No fund transfers found
@@ -339,7 +326,7 @@ const HomeFundFlow: React.FC = () => {
                 <Box key={section.title}>
                   {/* Section header */}
                   <HStack
-                    spacing={1.5}
+                    gap={1.5}
                     px={4}
                     py={2}
                     bg={sectionHeaderBg}
@@ -350,11 +337,7 @@ const HomeFundFlow: React.FC = () => {
                     top={0}
                     zIndex={1}
                   >
-                    <Icon
-                      as={section.icon}
-                      boxSize={3}
-                      color={sectionHeaderColor}
-                    />
+                    <Icon boxSize={3} color={sectionHeaderColor} asChild><section.icon /></Icon>
                     <Text
                       fontSize="2xs"
                       fontWeight="700"
@@ -370,17 +353,7 @@ const HomeFundFlow: React.FC = () => {
                   </HStack>
 
                   {/* Corridor rows */}
-                  <VStack
-                    spacing={0}
-                    align="stretch"
-                    divider={
-                      <Box
-                        borderBottom="1px solid"
-                        borderColor={dividerColor}
-                      />
-                    }
-                  >
-                    {section.links.map((link) => (
+                  <VStack gap={0} align="stretch">{section.links.map((link) => (
                       <CorridorRow
                         key={`${link.source_account_id}-${link.target_account_id}`}
                         link={link}
@@ -388,8 +361,7 @@ const HomeFundFlow: React.FC = () => {
                         index={rowIndex++}
                         isCrossLedger={isCross}
                       />
-                    ))}
-                  </VStack>
+                    ))}</VStack>
                 </Box>
               );
             })}

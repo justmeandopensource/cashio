@@ -1,11 +1,10 @@
 import React from "react";
 import {
-  FormControl,
   Stack,
-  Radio,
   RadioGroup,
   Box,
   VStack,
+  Field,
 } from "@chakra-ui/react";
 import FormTags from "@/components/shared/FormTags";
 import type { InternalFilters, FilterThemeColors } from "./types";
@@ -31,28 +30,27 @@ const FilterTagsSection: React.FC<FilterTagsSectionProps> = ({
       border="1px solid"
       borderColor={borderColor}
     >
-      <VStack spacing={5} align="stretch">
+      <VStack gap={5} align="stretch">
         <FormTags
           tags={filters.tags}
           setTags={(tags) => handleInputChange("tags", tags)}
           borderColor={inputBorderColor}
           buttonColorScheme="teal"
         />
-        <FormControl>
-          <RadioGroup
+        <Field.Root>
+          <RadioGroup.Root
             value={filters.tags_match}
-            onChange={(value) => handleInputChange("tags_match", value as "any" | "all")}
-          >
-            <Stack direction="row" spacing={6}>
-              <Radio value="any" colorScheme="teal" size="lg">
-                Match Any Tag
-              </Radio>
-              <Radio value="all" colorScheme="teal" size="lg">
-                Match All Tags
-              </Radio>
+            colorPalette="teal"
+            size="lg"
+            onValueChange={(e) => handleInputChange("tags_match", e.value as "any" | "all")}>
+            <Stack direction="row" gap={6}>
+              <RadioGroup.Item value="any"><RadioGroup.ItemHiddenInput /><RadioGroup.ItemIndicator /><RadioGroup.ItemText>Match Any Tag
+                                </RadioGroup.ItemText></RadioGroup.Item>
+              <RadioGroup.Item value="all"><RadioGroup.ItemHiddenInput /><RadioGroup.ItemIndicator /><RadioGroup.ItemText>Match All Tags
+                                </RadioGroup.ItemText></RadioGroup.Item>
             </Stack>
-          </RadioGroup>
-        </FormControl>
+          </RadioGroup.Root>
+        </Field.Root>
       </VStack>
     </Box>
   );

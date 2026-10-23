@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, FormEvent } from "react";
+import { useColorModeValue } from "../../components/ui/color-mode";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
-import { Box, Flex, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 import LoginForm from "@features/auth/components/LoginForm";
 import api, { setAuthToken, setRefreshToken } from "@/lib/api";
 import { notify } from "@/components/shared/notify";

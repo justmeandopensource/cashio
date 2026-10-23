@@ -1,30 +1,21 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalBody,
-  ModalFooter,
   Box,
   HStack,
   VStack,
-  FormControl,
-  FormLabel,
-  Select,
+  NativeSelect,
   NumberInput,
-  NumberInputField,
   Input,
-  InputGroup,
-  InputLeftElement,
-  InputRightElement,
   Popover,
-  PopoverTrigger,
-  PopoverContent,
   Button,
   Icon,
   Text,
-  useColorModeValue,
+  Field,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
+import { InputGroup } from "@/components/ui/input-group";
 import { Plus, Pencil, Search, ChevronDown, X, Check } from "lucide-react";
 import { notify } from "@/components/shared/notify";
 import { AxiosError } from "axios";
@@ -238,298 +229,316 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
   }, [isOpen, isCategoryOpen, isSubmitDisabled, onClose]);
 
   return (
-    <Modal isOpen={isOpen} returnFocusOnClose={false} onClose={onClose} size={{ base: "full", sm: "xl" }} motionPreset="slideInBottom">
-      <ModalOverlay backdropFilter="blur(8px)" bg="blackAlpha.400" />
-      <ModalContent
-        bg={bgColor}
-        borderRadius={{ base: 0, sm: "xl" }}
-        boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)"
-        border="1px solid"
-        borderColor={borderColor}
-        overflow="hidden"
-        mx={{ base: 0, sm: 4 }}
-        my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "90vh" }}
-        display="flex"
-        flexDirection="column"
-      >
-        {/* Gradient accent line */}
-        <Box
-          h="3px"
-          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
-        />
-        {/* Header */}
-        <Box px={{ base: 4, sm: 8 }} py={5} borderBottom="1px solid" borderColor={borderColor}>
-          <HStack spacing={3} align="center">
-            <Box
-              p={2}
-              borderRadius="xl"
-              bg={modalIconBg}
-            >
-              <Icon as={isCreate ? Plus : Pencil} boxSize={4} color={modalIconColor} />
-            </Box>
-            <Box>
-              <Text fontSize="lg" fontWeight="bold" color={modalTitleColor} letterSpacing="-0.02em">
-                {isCreate ? "Add Budget" : "Edit Budget"}
-              </Text>
-              <Text fontSize="sm" color={textColorSecondary}>
-                {isCreate ? "Set a spending limit for a category" : "Update the spending limit"}
-              </Text>
-            </Box>
-          </HStack>
-        </Box>
+    <Dialog.Root
+      open={isOpen}
+      restoreFocus={false}
+      size={{ base: "full", sm: "xl" }}
+      motionPreset="slide-in-bottom"
+      onOpenChange={e => {
+        if (!e.open) {
+          onClose();
+        }
+      }}>
+      <Portal>
 
-        <ModalBody
-          px={{ base: 4, sm: 8 }}
-          py={{ base: 4, sm: 6 }}
-          flex="1"
-          display="flex"
-          flexDirection="column"
-          overflowY="auto"
-          justifyContent={{ base: "space-between", sm: "flex-start" }}
-        >
-          <VStack spacing={4} align="stretch" w="100%">
-            {/* Category */}
-            <Box bg={cardBg} p={{ base: 4, sm: 5 }} borderRadius="xl" border="1px solid" borderColor={borderColor}>
-              <FormControl>
-                <FormLabel fontWeight="semibold" fontSize="sm" mb={2} display="flex" alignItems="center" gap={1.5}>
-                  Category
-                  {isCreate && categoryId && <Icon as={Check} boxSize={3.5} color="brand.500" />}
-                </FormLabel>
-                {isCreate ? (
-                  <Popover
-                    isOpen={isCategoryOpen}
-                    onClose={() => { setIsCategoryOpen(false); setHighlightedIndex(-1); }}
-                    matchWidth
-                    placement="bottom-start"
-                    autoFocus={false}
-                    returnFocusOnClose={false}
-                  >
-                    <PopoverTrigger>
-                      <InputGroup size="lg">
-                        <InputLeftElement pointerEvents="none" height="100%">
-                          <Icon as={Search} boxSize={4} color={helperTextColor} />
-                        </InputLeftElement>
-                        <Input
-                          value={isCategoryOpen ? categorySearch : (selectedCategory?.name ?? "")}
-                          onChange={(e) => {
-                            setCategorySearch(e.target.value);
-                            setCategoryId("");
-                            setHighlightedIndex(-1);
-                            setIsCategoryOpen(true);
-                          }}
-                          onFocus={() => {
-                            setCategorySearch("");
-                            setHighlightedIndex(-1);
-                            setIsCategoryOpen(true);
-                          }}
-                          onKeyDown={handleCategoryKeyDown}
-                          placeholder="Search categories..."
+        <Dialog.Backdrop backdropFilter="blur(8px)" bg="blackAlpha.400" />
+        <Dialog.Positioner>
+          <Dialog.Content
+            bg={bgColor}
+            borderRadius={{ base: 0, sm: "xl" }}
+            boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+            border="1px solid"
+            borderColor={borderColor}
+            overflow="hidden"
+            mx={{ base: 0, sm: 4 }}
+            my={{ base: 0, sm: "auto" }}
+            maxHeight={{ base: "100%", md: "90vh" }}
+            display="flex"
+            flexDirection="column">
+            {/* Gradient accent line */}
+            <Box h="3px" bgGradient="to-r" gradientFrom="brand.400" gradientVia="brand.600" gradientTo="teal.300"  />
+            {/* Header */}
+            <Box px={{ base: 4, sm: 8 }} py={5} borderBottom="1px solid" borderColor={borderColor}>
+              <HStack gap={3} align="center">
+                <Box
+                  p={2}
+                  borderRadius="xl"
+                  bg={modalIconBg}
+                >
+                  <Icon as={isCreate ? Plus : Pencil} boxSize={4} color={modalIconColor} />
+                </Box>
+                <Box>
+                  <Text fontSize="lg" fontWeight="bold" color={modalTitleColor} letterSpacing="-0.02em">
+                    {isCreate ? "Add Budget" : "Edit Budget"}
+                  </Text>
+                  <Text fontSize="sm" color={textColorSecondary}>
+                    {isCreate ? "Set a spending limit for a category" : "Update the spending limit"}
+                  </Text>
+                </Box>
+              </HStack>
+            </Box>
+
+            <Dialog.Body
+              px={{ base: 4, sm: 8 }}
+              py={{ base: 4, sm: 6 }}
+              flex="1"
+              display="flex"
+              flexDirection="column"
+              overflowY="auto"
+              justifyContent={{ base: "space-between", sm: "flex-start" }}
+            >
+              <VStack gap={4} align="stretch" w="100%">
+                {/* Category */}
+                <Box bg={cardBg} p={{ base: 4, sm: 5 }} borderRadius="xl" border="1px solid" borderColor={borderColor}>
+                  <Field.Root>
+                    <Field.Label fontWeight="semibold" fontSize="sm" mb={2} display="flex" alignItems="center" gap={1.5}>
+                      Category
+                      {isCreate && categoryId && <Icon as={Check} boxSize={3.5} color="brand.500" />}
+                    </Field.Label>
+                    {isCreate ? (
+                      <Popover.Root
+                        open={isCategoryOpen}
+                        autoFocus={false}
+                        restoreFocus={false}
+                        onOpenChange={e => {
+                          if (!(e.open)) { setIsCategoryOpen(false); setHighlightedIndex(-1); }
+                        }}
+                        positioning={{
+                          sameWidth: true,
+                          placement: 'bottom-start'
+                        }}>
+                        <Popover.Trigger asChild>
+                          <InputGroup
+                            startElement={<Icon as={Search} boxSize={4} color={helperTextColor} />}
+                            startElementProps={{ pointerEvents: "none", height: "100%" }}
+                            endElementProps={{ height: "100%", pr: 1, pointerEvents: "auto" }}
+                            endElement={
+                              categoryId ? (
+                                <Icon
+                                  as={X}
+                                  boxSize={4}
+                                  color={helperTextColor}
+                                  cursor="pointer"
+                                  onClick={() => {
+                                    setCategoryId("");
+                                    setCategorySearch("");
+                                    setIsCategoryOpen(false);
+                                    setHighlightedIndex(-1);
+                                  }}
+                                />
+                              ) : (
+                                <Icon
+                                  as={ChevronDown}
+                                  boxSize={4}
+                                  color={helperTextColor}
+                                  cursor="pointer"
+                                  onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                                />
+                              )
+                            }>
+                            <Input
+                              size="lg"
+                              value={isCategoryOpen ? categorySearch : (selectedCategory?.name ?? "")}
+                              onChange={(e) => {
+                                setCategorySearch(e.target.value);
+                                setCategoryId("");
+                                setHighlightedIndex(-1);
+                                setIsCategoryOpen(true);
+                              }}
+                              onFocus={() => {
+                                setCategorySearch("");
+                                setHighlightedIndex(-1);
+                                setIsCategoryOpen(true);
+                              }}
+                              onKeyDown={handleCategoryKeyDown}
+                              placeholder="Search categories..."
+                              borderWidth="2px"
+                              borderColor={categoryId ? selectedBorderColor : inputBorderColor}
+                              bg={inputBg}
+                              borderRadius="lg"
+                              _hover={{ borderColor: "brand.300" }}
+                              _focus={{ borderColor: focusBorderColor, boxShadow: `0 0 0 1px ${focusBorderColor}` }}
+                              autoComplete="off"
+                              autoFocus
+                            />
+                          </InputGroup>
+                        </Popover.Trigger>
+                        <Popover.Positioner>
+                          <Popover.Content w="full" p={0}
+                          bg={bgColor}
+                          border="1px solid"
+                          borderColor={borderColor}
+                          borderRadius="xl"
+                          boxShadow="0 4px 20px rgba(0,0,0,0.08)"
+                          maxH="220px"
+                          overflowY="auto"
+                          _focus={{ outline: "none" }}>{filteredCategories.length > 0 ? (
+                            filteredCategories.map((cat, i) => (
+                              <Box
+                                key={cat.category_id}
+                                px={4}
+                                py={2.5}
+                                cursor="pointer"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="space-between"
+                                bg={String(cat.category_id) === categoryId || i === highlightedIndex ? highlightColor : "transparent"}
+                                _hover={{ bg: highlightColor }}
+                                transition="background 0.1s ease"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  setCategoryId(String(cat.category_id));
+                                  setCategorySearch("");
+                                  setIsCategoryOpen(false);
+                                  setHighlightedIndex(-1);
+                                  setTimeout(() => amountRef.current?.focus(), 50);
+                                }}
+                              >
+                                <Text fontSize="sm" fontWeight={String(cat.category_id) === categoryId ? "semibold" : "normal"}>
+                                  {cat.name}
+                                </Text>
+                                {String(cat.category_id) === categoryId && (
+                                  <Icon as={Check} boxSize={4} color="brand.500" />
+                                )}
+                              </Box>
+                            ))
+                          ) : (
+                            <Box px={4} py={5} textAlign="center">
+                              <Text fontSize="sm" color={helperTextColor}>No categories found</Text>
+                            </Box>
+                          )}</Popover.Content>
+                        </Popover.Positioner>
+                      </Popover.Root>
+                    ) : (
+                      <Text fontWeight="medium" fontSize="md" color={modalTitleColor}>
+                        {budget?.category_name}
+                      </Text>
+                    )}
+                  </Field.Root>
+                </Box>
+
+                {/* Period */}
+                <Box bg={cardBg} p={{ base: 4, sm: 5 }} borderRadius="xl" border="1px solid" borderColor={borderColor}>
+                  <Field.Root>
+                    <Field.Label fontWeight="semibold" fontSize="sm" mb={2}>Period</Field.Label>
+                    {isCreate ? (
+                      <NativeSelect.Root size="lg">
+                        <NativeSelect.Field
+                          value={selectedPeriod}
+                          onChange={(e) => setSelectedPeriod(e.target.value)}
                           borderWidth="2px"
-                          borderColor={categoryId ? selectedBorderColor : inputBorderColor}
+                          borderColor={inputBorderColor}
                           bg={inputBg}
                           borderRadius="lg"
                           _hover={{ borderColor: "brand.300" }}
-                          _focus={{ borderColor: focusBorderColor, boxShadow: `0 0 0 1px ${focusBorderColor}` }}
-                          autoComplete="off"
-                          autoFocus
-                        />
-                        <InputRightElement height="100%" pr={1}>
-                          {categoryId ? (
-                            <Icon
-                              as={X}
-                              boxSize={4}
-                              color={helperTextColor}
-                              cursor="pointer"
-                              onClick={() => {
-                                setCategoryId("");
-                                setCategorySearch("");
-                                setIsCategoryOpen(false);
-                                setHighlightedIndex(-1);
-                              }}
-                            />
-                          ) : (
-                            <Icon
-                              as={ChevronDown}
-                              boxSize={4}
-                              color={helperTextColor}
-                              cursor="pointer"
-                              onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                            />
-                          )}
-                        </InputRightElement>
-                      </InputGroup>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      p={0}
-                      bg={bgColor}
-                      border="1px solid"
-                      borderColor={borderColor}
-                      borderRadius="xl"
-                      boxShadow="0 4px 20px rgba(0,0,0,0.08)"
-                      maxH="220px"
-                      overflowY="auto"
-                      _focus={{ outline: "none" }}
-                    >
-                      {filteredCategories.length > 0 ? (
-                        filteredCategories.map((cat, i) => (
-                          <Box
-                            key={cat.category_id}
-                            px={4}
-                            py={2.5}
-                            cursor="pointer"
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="space-between"
-                            bg={String(cat.category_id) === categoryId || i === highlightedIndex ? highlightColor : "transparent"}
-                            _hover={{ bg: highlightColor }}
-                            transition="background 0.1s ease"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setCategoryId(String(cat.category_id));
-                              setCategorySearch("");
-                              setIsCategoryOpen(false);
-                              setHighlightedIndex(-1);
-                              setTimeout(() => amountRef.current?.focus(), 50);
-                            }}
-                          >
-                            <Text fontSize="sm" fontWeight={String(cat.category_id) === categoryId ? "semibold" : "normal"}>
-                              {cat.name}
-                            </Text>
-                            {String(cat.category_id) === categoryId && (
-                              <Icon as={Check} boxSize={4} color="brand.500" />
-                            )}
-                          </Box>
-                        ))
-                      ) : (
-                        <Box px={4} py={5} textAlign="center">
-                          <Text fontSize="sm" color={helperTextColor}>No categories found</Text>
-                        </Box>
-                      )}
-                    </PopoverContent>
-                  </Popover>
-                ) : (
-                  <Text fontWeight="medium" fontSize="md" color={modalTitleColor}>
-                    {budget?.category_name}
-                  </Text>
-                )}
-              </FormControl>
-            </Box>
+                          _focus={{ borderColor: focusBorderColor, boxShadow: `0 0 0 1px ${focusBorderColor}` }}>
+                          <option value="monthly">Monthly</option>
+                          <option value="yearly">Yearly</option>
+                        </NativeSelect.Field>
+                        <NativeSelect.Indicator />
+                      </NativeSelect.Root>
+                    ) : (
+                      <Text fontWeight="medium" fontSize="md" color={modalTitleColor} textTransform="capitalize">
+                        {budget?.period}
+                      </Text>
+                    )}
+                  </Field.Root>
+                </Box>
 
-            {/* Period */}
-            <Box bg={cardBg} p={{ base: 4, sm: 5 }} borderRadius="xl" border="1px solid" borderColor={borderColor}>
-              <FormControl>
-                <FormLabel fontWeight="semibold" fontSize="sm" mb={2}>Period</FormLabel>
-                {isCreate ? (
-                  <Select
-                    value={selectedPeriod}
-                    onChange={(e) => setSelectedPeriod(e.target.value)}
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    bg={inputBg}
-                    size="lg"
-                    borderRadius="lg"
-                    _hover={{ borderColor: "brand.300" }}
-                    _focus={{ borderColor: focusBorderColor, boxShadow: `0 0 0 1px ${focusBorderColor}` }}
-                  >
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                  </Select>
-                ) : (
-                  <Text fontWeight="medium" fontSize="md" color={modalTitleColor} textTransform="capitalize">
-                    {budget?.period}
-                  </Text>
-                )}
-              </FormControl>
-            </Box>
+                {/* Amount */}
+                <Box bg={cardBg} p={{ base: 4, sm: 5 }} borderRadius="xl" border="1px solid" borderColor={borderColor}>
+                  <Field.Root>
+                    <Field.Label fontWeight="semibold" fontSize="sm" mb={2} display="flex" alignItems="center" gap={1.5}>
+                      Limit Amount
+                      {amount && Number(amount) > 0 && <Icon as={Check} boxSize={3.5} color="brand.500" />}
+                    </Field.Label>
+                    <NumberInput.Root
+                      value={String(amount)}
+                      onValueChange={(d) => setAmount(d.value)}
+                      min={0.01}
+                      formatOptions={{ minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: false }}>
+                      <NumberInput.Input
+                        ref={amountRef}
+                        placeholder="e.g. 500.00"
+                        borderWidth="2px"
+                        borderColor={inputBorderColor}
+                        bg={inputBg}
+                        borderRadius="lg"
+                        h="3rem"
+                        fontSize="md"
+                        _hover={{ borderColor: "brand.300" }}
+                        _focus={{ borderColor: focusBorderColor, boxShadow: `0 0 0 1px ${focusBorderColor}` }}
+                        autoFocus={mode === "edit"}
+                      />
+                    </NumberInput.Root>
+                  </Field.Root>
+                </Box>
+              </VStack>
 
-            {/* Amount */}
-            <Box bg={cardBg} p={{ base: 4, sm: 5 }} borderRadius="xl" border="1px solid" borderColor={borderColor}>
-              <FormControl>
-                <FormLabel fontWeight="semibold" fontSize="sm" mb={2} display="flex" alignItems="center" gap={1.5}>
-                  Limit Amount
-                  {amount && Number(amount) > 0 && <Icon as={Check} boxSize={3.5} color="brand.500" />}
-                </FormLabel>
-                <NumberInput value={amount} onChange={(val) => setAmount(val)} min={0.01} precision={2}>
-                  <NumberInputField
-                    ref={amountRef}
-                    placeholder="e.g. 500.00"
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    bg={inputBg}
-                    borderRadius="lg"
-                    h="3rem"
-                    fontSize="md"
-                    _hover={{ borderColor: "brand.300" }}
-                    _focus={{ borderColor: focusBorderColor, boxShadow: `0 0 0 1px ${focusBorderColor}` }}
-                    autoFocus={mode === "edit"}
-                  />
-                </NumberInput>
-              </FormControl>
-            </Box>
-          </VStack>
+              {/* Mobile buttons */}
+              <Box display={{ base: "block", sm: "none" }} mt={6}>
+                <Button
+                  colorPalette="teal"
+                  size="lg"
+                  width="100%"
+                  mb={3}
+                  borderRadius="lg"
+                  loading={isPending}
+                  loadingText={isCreate ? "Creating..." : "Saving..."}
+                  onClick={handleSubmit}
+                >
+                  {isCreate ? "Add Budget" : "Save Changes"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  colorPalette="gray"
+                  onClick={onClose}
+                  size="lg"
+                  width="100%"
+                  borderRadius="lg"
+                  disabled={isPending}
+                >
+                  Cancel
+                </Button>
+              </Box>
+            </Dialog.Body>
 
-          {/* Mobile buttons */}
-          <Box display={{ base: "block", sm: "none" }} mt={6}>
-            <Button
-              colorScheme="teal"
-              size="lg"
-              width="100%"
-              mb={3}
-              borderRadius="lg"
-              isLoading={isPending}
-              loadingText={isCreate ? "Creating..." : "Saving..."}
-              onClick={handleSubmit}
+            {/* Desktop footer */}
+            <Dialog.Footer
+              display={{ base: "none", sm: "flex" }}
+              px={8}
+              py={5}
+              bg={footerBg}
+              borderTop="1px solid"
+              borderColor={borderColor}
             >
-              {isCreate ? "Add Budget" : "Save Changes"}
-            </Button>
-            <Button
-              variant="ghost"
-              colorScheme="gray"
-              onClick={onClose}
-              size="lg"
-              width="100%"
-              borderRadius="lg"
-              isDisabled={isPending}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </ModalBody>
+              <Button
+                colorPalette="teal"
+                mr={3}
+                onClick={handleSubmit}
+                px={8}
+                borderRadius="lg"
+                loading={isPending}
+                loadingText={isCreate ? "Creating..." : "Saving..."}
+              >
+                {isCreate ? "Add Budget" : "Save Changes"}
+              </Button>
+              <Button
+                variant="ghost"
+                colorPalette="gray"
+                onClick={onClose}
+                disabled={isPending}
+                px={6}
+                borderRadius="lg"
+              >
+                Cancel
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
 
-        {/* Desktop footer */}
-        <ModalFooter
-          display={{ base: "none", sm: "flex" }}
-          px={8}
-          py={5}
-          bg={footerBg}
-          borderTop="1px solid"
-          borderColor={borderColor}
-        >
-          <Button
-            colorScheme="teal"
-            mr={3}
-            onClick={handleSubmit}
-            px={8}
-            borderRadius="lg"
-            isLoading={isPending}
-            loadingText={isCreate ? "Creating..." : "Saving..."}
-          >
-            {isCreate ? "Add Budget" : "Save Changes"}
-          </Button>
-          <Button
-            variant="ghost"
-            colorScheme="gray"
-            onClick={onClose}
-            isDisabled={isPending}
-            px={6}
-            borderRadius="lg"
-          >
-            Cancel
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

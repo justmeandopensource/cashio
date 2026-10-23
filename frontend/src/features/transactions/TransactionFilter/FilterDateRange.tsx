@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  FormControl,
-  FormLabel,
-  Icon,
-  Box,
-  Grid,
-  GridItem,
-} from "@chakra-ui/react";
+import { Icon, Box, Grid, GridItem, Field, Text } from "@chakra-ui/react";
 import { Check } from "lucide-react";
 import ChakraDatePicker from "@/components/shared/ChakraDatePicker";
 import type { InternalFilters, FilterThemeColors } from "./types";
@@ -32,31 +25,31 @@ const FilterDateRange: React.FC<FilterDateRangeProps> = ({
       border="1px solid"
       borderColor={borderColor}
     >
-      <FormLabel fontWeight="semibold" mb={3} display="flex" alignItems="center" gap={1.5}>
+      <Text fontWeight="semibold" mb={3} display="flex" alignItems="center" gap={1.5}>
         Date Range
         {(filters.from_date || filters.to_date) && (
-          <Icon as={Check} boxSize={3.5} color="teal.500" />
+          <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
         )}
-      </FormLabel>
+      </Text>
       <Grid templateColumns="repeat(2, 1fr)" gap={4}>
         <GridItem>
-          <FormControl>
-            <FormLabel fontSize="sm" color={secondaryTextColor} mb={1}>
+          <Field.Root>
+            <Field.Label fontSize="sm" color={secondaryTextColor} mb={1}>
               From Date
-            </FormLabel>
+            </Field.Label>
             <ChakraDatePicker
               selected={filters.from_date}
               onChange={(date) => handleInputChange("from_date", date)}
               shouldCloseOnSelect={true}
               placeholderText="From"
             />
-          </FormControl>
+          </Field.Root>
         </GridItem>
         <GridItem>
-          <FormControl>
-            <FormLabel fontSize="sm" color={secondaryTextColor} mb={1}>
+          <Field.Root>
+            <Field.Label fontSize="sm" color={secondaryTextColor} mb={1}>
               To Date
-            </FormLabel>
+            </Field.Label>
             <ChakraDatePicker
               selected={filters.to_date}
               onChange={(date) => handleInputChange("to_date", date)}
@@ -64,7 +57,7 @@ const FilterDateRange: React.FC<FilterDateRangeProps> = ({
               placeholderText="To"
               minDate={filters.from_date}
             />
-          </FormControl>
+          </Field.Root>
         </GridItem>
       </Grid>
     </Box>

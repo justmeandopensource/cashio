@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from "react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
 import {
   Box,
   VStack,
   HStack,
   Heading,
   Text,
-  Select,
-  useColorModeValue,
+  NativeSelect,
   useBreakpointValue,
   Flex,
   Icon,
@@ -20,7 +20,6 @@ import {
   LineChart,
   TrendingUp,
   TrendingDown,
-  ChevronDown,
   BarChart2,
   ArrowUpRight,
   ArrowDownRight,
@@ -190,7 +189,7 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
   if (isError) {
     return (
       <Box bg={cardBg} p={{ base: 4, md: 6 }} borderRadius="xl" border="1px solid" borderColor={sectionBorderColor} textAlign="center">
-        <Icon as={TrendingDown} color="red.500" boxSize={6} mb={4} />
+        <Icon color="red.500" boxSize={6} mb={4} asChild><TrendingDown /></Icon>
         <Text color="red.500" fontWeight="bold" fontSize="lg">Unable to load financial insights</Text>
       </Box>
     );
@@ -202,8 +201,8 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
       label: "Income",
       accentColor: incomeAccentColor,
       renderValue: () => (
-        <VStack spacing={0} align="flex-start">
-          <HStack spacing={0} align="baseline">
+        <VStack gap={0} align="flex-start">
+          <HStack gap={0} align="baseline">
             <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={positiveColor} lineHeight="short" letterSpacing="-0.01em">
               {splitCurrencyForDisplay(data?.summary?.income.total ?? 0, sym).main}
             </Text>
@@ -227,8 +226,8 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
       label: "Expenses",
       accentColor: expenseAccentColor,
       renderValue: () => (
-        <VStack spacing={0} align="flex-start">
-          <HStack spacing={0} align="baseline">
+        <VStack gap={0} align="flex-start">
+          <HStack gap={0} align="baseline">
             <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={expenseValueColor} lineHeight="short" letterSpacing="-0.01em">
               {splitCurrencyForDisplay(data?.summary?.expense.total ?? 0, sym).main}
             </Text>
@@ -254,8 +253,8 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
       renderValue: () => {
         const color = isSavingsPositive ? positiveColor : expenseValueColor;
         return (
-          <VStack spacing={0} align="flex-start">
-            <HStack spacing={0} align="baseline">
+          <VStack gap={0} align="flex-start">
+            <HStack gap={0} align="baseline">
               <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={color} lineHeight="short" letterSpacing="-0.01em">
                 {isSavingsPositive ? "+" : "-"}{splitCurrencyForDisplay(Math.abs(netSavings), sym).main}
               </Text>
@@ -275,7 +274,7 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
         const color = isSavingsPositive ? positiveColor : expenseValueColor;
         const pctDisplay = splitPercentageForDisplay(savingsRate);
         return (
-          <HStack spacing={0} align="baseline">
+          <HStack gap={0} align="baseline">
             <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={color} lineHeight="short" letterSpacing="-0.01em">
               {isSavingsPositive ? "+" : "-"}{pctDisplay.main}
             </Text>
@@ -304,37 +303,38 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
           mb={{ base: 4, md: 5 }}
         >
           <Flex align="center" gap={2}>
-            <Icon as={LineChart} boxSize={4} color={iconColor} />
+            <Icon boxSize={4} color={iconColor} asChild><LineChart /></Icon>
             <Heading as="h2" size="md" color={primaryTextColor} letterSpacing="-0.02em">
               Income vs Expense Trend
             </Heading>
           </Flex>
 
-          <Select
-            value={periodType}
-            onChange={(e) => setPeriodType(e.target.value)}
+          <NativeSelect.Root
             maxW={{ base: "full", md: "220px" }}
-            icon={<ChevronDown />}
-            variant="filled"
-            bg={selectBg}
-            size="sm"
-            borderRadius="lg"
-            fontWeight="medium"
-            fontSize="sm"
-          >
-            {periodOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+            variant="subtle"
+            size="sm">
+            <NativeSelect.Field
+              value={periodType}
+              onChange={(e) => setPeriodType(e.target.value)}
+              bg={selectBg}
+              borderRadius="lg"
+              fontWeight="medium"
+              fontSize="sm">
+              {periodOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
         </Flex>
 
         {/* Summary Cards */}
         {data?.summary && data.trend_data && data.trend_data.length > 0 && (
           <MotionSimpleGrid
             columns={{ base: 2, sm: 4 }}
-            spacing={{ base: 3, md: 4 }}
+            gap={{ base: 3, md: 4 }}
             mb={{ base: 4, md: 5 }}
             initial="hidden"
             animate="visible"
@@ -462,7 +462,7 @@ const IncomeExpenseTrend: React.FC<IncomeExpenseTrendProps> = ({
             </>
           ) : (
             <Center height={{ base: "300px", md: "380px" }} bg={cardBg} borderRadius="lg" flexDirection="column" textAlign="center" p={6}>
-              <Icon as={BarChart2} boxSize={6} color={tertiaryTextColor} mb={4} />
+              <Icon boxSize={6} color={tertiaryTextColor} mb={4} asChild><BarChart2 /></Icon>
               <Heading size="md" mb={2} color={secondaryTextColor}>No Financial Data Available</Heading>
               <Text color={secondaryTextColor} fontSize="sm">
                 Select a different time period or add some transactions to see your income and expense trends.

@@ -1,16 +1,6 @@
 import React, { useMemo } from "react";
-import {
-  Box,
-  Flex,
-  Grid,
-  GridItem,
-  HStack,
-  Heading,
-  Icon,
-  Text,
-  VStack,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box, Flex, Grid, GridItem, HStack, Heading, Icon, Text, VStack } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { ResponsiveLine } from "@nivo/line";
 import { LineChart, BarChart2 } from "lucide-react";
@@ -103,7 +93,7 @@ const AccountInsights: React.FC<AccountInsightsProps> = ({ accountId }) => {
               h="full"
             >
               <Flex align="center" gap={2} mb={4}>
-                <Icon as={LineChart} boxSize={4} color={iconColor} />
+                <Icon boxSize={4} color={iconColor} asChild><LineChart /></Icon>
                 <Heading
                   as="h3"
                   size="sm"
@@ -191,7 +181,7 @@ const AccountInsights: React.FC<AccountInsightsProps> = ({ accountId }) => {
               h="full"
             >
               <Flex align="center" gap={2} mb={4}>
-                <Icon as={BarChart2} boxSize={4} color={headingColor} />
+                <Icon boxSize={4} color={headingColor} asChild><BarChart2 /></Icon>
                 <Heading
                   as="h3"
                   size="sm"
@@ -202,7 +192,7 @@ const AccountInsights: React.FC<AccountInsightsProps> = ({ accountId }) => {
                 </Heading>
               </Flex>
 
-              <VStack align="stretch" spacing={0}>
+              <VStack align="stretch" gap={0}>
                 {data.top_categories.map((category, idx) => {
                   const pct =
                     totalCatAmount > 0
@@ -235,11 +225,11 @@ const AccountInsights: React.FC<AccountInsightsProps> = ({ accountId }) => {
                             fontSize="sm"
                             fontWeight="medium"
                             color={primaryText}
-                            noOfLines={1}
+                            lineClamp={1}
                           >
                             {category.name}
                           </Text>
-                          <HStack spacing={2} flexShrink={0}>
+                          <HStack gap={2} flexShrink={0}>
                             <Text fontSize="xs" color={secondaryTextColor}>
                               {pct.toFixed(1)}%
                             </Text>

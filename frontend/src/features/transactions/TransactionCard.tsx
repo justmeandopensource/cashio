@@ -1,4 +1,5 @@
 import React from "react";
+import { useColorModeValue } from "../../components/ui/color-mode";
 import {
   Box,
   Flex,
@@ -6,18 +7,16 @@ import {
   HStack,
   Icon,
   Square,
-  Tooltip,
   VStack,
   Wrap,
   WrapItem,
   Tag,
-  TagLabel,
   useDisclosure,
   Button,
   IconButton,
   Link as ChakraLink,
-  useColorModeValue,
 } from "@chakra-ui/react";
+import { Tooltip } from '@/components/ui/tooltip';
 import { Calendar, Tag as TagIcon, Info, CreditCard, Trash2, MessageSquare, Edit, Copy } from "lucide-react";
 import DeleteTransactionModal from "./DeleteTransactionModal";
 import { Link } from "react-router-dom";
@@ -77,7 +76,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
   const amount = formatAmount(displayCredit, displayDebit, currencySymbol as string);
   const amountValue = displayCredit !== 0 ? displayCredit : displayDebit;
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
 
   const cardBg = useColorModeValue("primaryBg", "cardDarkBg");
   const cardBorder = useColorModeValue("gray.100", "gray.600");
@@ -110,43 +109,45 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
         _hover={{
           borderColor: cardHoverBorder,
         }}
-        sx={{ '@media (hover: hover)': { '&:hover': { borderColor: cardHoverBorder } } }}
+        css={{
+          '& @media (hover: hover)': { '&:hover': { borderColor: cardHoverBorder } }
+        }}
       >
         {/* Main row with essential info */}
         <Flex justify="space-between" align="flex-start">
           {/* Left side with date, category and notes */}
-          <VStack align="flex-start" spacing={1} maxW="70%">
-            <HStack spacing={2}>
-              <Icon as={Calendar} color="tertiaryTextColor" boxSize={3.5} />
+          <VStack align="flex-start" gap={1} maxW="70%">
+            <HStack gap={2}>
+              <Icon color="tertiaryTextColor" boxSize={3.5} asChild><Calendar /></Icon>
               <Text fontSize="sm" color="secondaryTextColor">
                 {formatDate(transaction.date)}
               </Text>
 
               {/* Transaction type indicators */}
               {(transaction.is_split || transaction.is_transfer || transaction.is_asset_transaction || transaction.is_mf_transaction) && (
-                <HStack spacing={1}>
+                <HStack gap={1}>
                   {transaction.is_split && !transaction.is_transfer && !transaction.is_mf_transaction && (
-                    <Tooltip label="Split Transaction">
+                    <Tooltip content="Split Transaction">
                       <Square size="7px" bg={splitColor} borderRadius="sm" />
                     </Tooltip>
                   )}
                   {transaction.is_transfer && (
-                    <Tooltip label="Transfer">
+                    <Tooltip content="Transfer">
                       <Square size="7px" bg={transferColor} borderRadius="sm" />
                     </Tooltip>
                   )}
                   {(transaction.is_transfer || transaction.is_mf_transaction) && transaction.is_split && (
-                    <Tooltip label={transaction.is_mf_transaction ? "MF Charges" : "Transfer Fee"}>
+                    <Tooltip content={transaction.is_mf_transaction ? "MF Charges" : "Transfer Fee"}>
                       <Square size="7px" bg="orange.400" borderRadius="sm" />
                     </Tooltip>
                   )}
                     {transaction.is_asset_transaction && (
-                      <Tooltip label="Asset Transaction">
+                      <Tooltip content="Asset Transaction">
                         <Square size="7px" bg={assetColor} borderRadius="sm" />
                       </Tooltip>
                     )}
                     {transaction.is_mf_transaction && (
-                      <Tooltip label="Mutual Fund Transaction">
+                      <Tooltip content="Mutual Fund Transaction">
                         <Square size="7px" bg={mutualFundColor} borderRadius="sm" />
                       </Tooltip>
                     )}
@@ -171,23 +172,23 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
 
             {/* Notes section - visible by default */}
             {transaction.notes && (
-              <Text fontSize="sm" color="secondaryTextColor" mt={0.5} noOfLines={2} lineHeight="1.5">
+              <Text fontSize="sm" color="secondaryTextColor" mt={0.5} lineClamp={2} lineHeight="1.5">
                 {transaction.notes}
               </Text>
             )}
 
             {/* Account name - displayed when showAccountName is true */}
             {showAccountName && transaction.account_name && transaction.account_id && (
-              <ChakraLink as={Link} to={`/account/${transaction.account_id}`} fontSize="sm" color={accountLinkColor} mt={0.5}>
-                {transaction.account_name}
-              </ChakraLink>
+              <ChakraLink fontSize="sm" color={accountLinkColor} mt={0.5} asChild><Link to={`/account/${transaction.account_id}`}>
+                  {transaction.account_name}
+                </Link></ChakraLink>
             )}
 
             {/* Store and Location - displayed at bottom of visible area */}
             {(transaction.store || transaction.location) && (
-              <HStack mt={1} spacing={1.5}>
+              <HStack mt={1} gap={1.5}>
                 {transaction.store && (
-                  <Tag
+                  <Tag.Root
                     size="sm"
                     borderRadius="full"
                     bg={storeTagBg}
@@ -200,11 +201,11 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                     _hover={onQuickFilter ? { opacity: 0.8 } : undefined}
                     onClick={onQuickFilter ? (e) => { e.stopPropagation(); onQuickFilter("store", transaction.store!); } : undefined}
                   >
-                    <TagLabel>{transaction.store}</TagLabel>
-                  </Tag>
+                    <Tag.Label>{transaction.store}</Tag.Label>
+                  </Tag.Root>
                 )}
                 {transaction.location && (
-                  <Tag
+                  <Tag.Root
                     size="sm"
                     borderRadius="full"
                     bg={storeTagBg}
@@ -217,8 +218,8 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                     _hover={onQuickFilter ? { opacity: 0.8 } : undefined}
                     onClick={onQuickFilter ? (e) => { e.stopPropagation(); onQuickFilter("location", transaction.location!); } : undefined}
                   >
-                    <TagLabel>{transaction.location}</TagLabel>
-                  </Tag>
+                    <Tag.Label>{transaction.location}</Tag.Label>
+                  </Tag.Root>
                 )}
               </HStack>
             )}
@@ -226,7 +227,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
 
             {/* Right side with amount */}
             <Box textAlign="right">
-              <HStack spacing={0} align="baseline">
+              <HStack gap={0} align="baseline">
                 <Text fontWeight="bold" fontSize="lg" color={amount.color} letterSpacing="-0.01em">
                   {splitCurrencyForDisplay(amountValue, currencySymbol || "₹").main}
                 </Text>
@@ -244,25 +245,25 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
             {transaction.tags && transaction.tags.length > 0 && (
               <Box mt={1}>
                 <HStack mb={1}>
-                  <Icon as={TagIcon} color="tertiaryTextColor" boxSize={3.5} />
+                  <Icon color="tertiaryTextColor" boxSize={3.5} asChild><TagIcon /></Icon>
                   <Text fontSize="xs" fontWeight="bold" color="secondaryTextColor" textTransform="uppercase" letterSpacing="wider">
                     Tags
                   </Text>
                 </HStack>
-                <Wrap spacing={2} ml={6}>
+                <Wrap gap={2} ml={6}>
                   {transaction.tags.map((tag) => (
                     <WrapItem key={tag.tag_id}>
-                      <Tag
+                      <Tag.Root
                         size="sm"
                         borderRadius="md"
                         variant="subtle"
-                        colorScheme="brand"
+                        colorPalette="brand"
                         cursor={onQuickFilter ? "pointer" : undefined}
                         _hover={onQuickFilter ? { opacity: 0.8 } : undefined}
                         onClick={onQuickFilter ? (e) => { e.stopPropagation(); onQuickFilter("tags", tag.name); } : undefined}
                       >
-                        <TagLabel>{tag.name}</TagLabel>
-                      </Tag>
+                        <Tag.Label>{tag.name}</Tag.Label>
+                      </Tag.Root>
                     </WrapItem>
                   ))}
                 </Wrap>
@@ -274,8 +275,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               <Box mt={3}>
                 <Button
                   size="xs"
-                  leftIcon={<Info size={14} />}
-                  colorScheme="purple"
+                  colorPalette="purple"
                   variant="outline"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -283,10 +283,8 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                   }}
                   mb={2}
                   borderRadius="lg"
-                  fontWeight="bold"
-                >
-                  View Split Details
-                </Button>
+                  fontWeight="bold"><Info size={14} />View Split Details
+                                  </Button>
 
                 {isSplitLoading ? (
                   <SplitTransactionSkeleton />
@@ -316,7 +314,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                             <Text fontSize="sm" fontWeight="medium">
                               {split.category_name}
                             </Text>
-                             <HStack spacing={0} align="baseline">
+                             <HStack gap={0} align="baseline">
                                <Text fontSize="sm" fontWeight="semibold">
                                  {splitCurrencyForDisplay(split.debit, currencySymbol || "₹").main}
                                </Text>
@@ -329,16 +327,11 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                           {/* Split notes row - only displayed if notes exist */}
                           {split.notes && (
                             <Flex align="center" mt={1}>
-                              <Icon
-                                as={MessageSquare}
-                                color="tertiaryTextColor"
-                                mr={1}
-                                fontSize="xs"
-                              />
+                              <Icon color="tertiaryTextColor" mr={1} fontSize="xs" asChild><MessageSquare /></Icon>
                               <Text
                                 fontSize="xs"
                                 color="secondaryTextColor"
-                                noOfLines={2}
+                                lineClamp={2}
                               >
                                 {split.notes}
                               </Text>
@@ -357,8 +350,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               <Box mt={3}>
                 <Button
                   size="xs"
-                  leftIcon={<Info size={14} />}
-                  colorScheme="orange"
+                  colorPalette="orange"
                   variant="outline"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -366,10 +358,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                   }}
                   mb={2}
                   borderRadius="lg"
-                  fontWeight="bold"
-                >
-                  {transaction.is_mf_transaction ? "View Charge Details" : "View Fee Details"}
-                </Button>
+                  fontWeight="bold"><Info size={14} />{transaction.is_mf_transaction ? "View Charge Details" : "View Fee Details"}</Button>
 
                 {isSplitLoading ? (
                   <SplitTransactionSkeleton />
@@ -390,7 +379,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                               <Text fontSize="sm" fontWeight="medium">
                                 {split.category_name}
                               </Text>
-                              <HStack spacing={0} align="baseline">
+                              <HStack gap={0} align="baseline">
                                 <Text fontSize="sm" fontWeight="semibold">
                                   {splitCurrencyForDisplay(split.debit, currencySymbol || "₹").main}
                                 </Text>
@@ -412,8 +401,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               <Box mt={3}>
                 <Button
                   size="xs"
-                  leftIcon={<CreditCard size={14} />}
-                  colorScheme="blue"
+                  colorPalette="blue"
                   variant="outline"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -421,10 +409,8 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                   }}
                   mb={2}
                   borderRadius="lg"
-                  fontWeight="bold"
-                >
-                  View Transfer Details
-                </Button>
+                  fontWeight="bold"><CreditCard size={14} />View Transfer Details
+                                  </Button>
 
                 {isTransferLoading ? (
                   <TransferDetailsSkeleton />
@@ -458,45 +444,39 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                     <IconButton
                       size="sm"
                       variant="ghost"
-                      colorScheme="blue"
-                      icon={<Edit size={16} />}
+                      colorPalette="blue"
                       aria-label="Edit transaction"
                       borderRadius="lg"
                       onClick={(e) => {
                         e.stopPropagation();
                         onEditTransaction(transaction);
                       }}
-                      data-testid="transactioncard-edit-icon"
-                    />
+                      data-testid="transactioncard-edit-icon"><Edit size={16} /></IconButton>
                     <IconButton
                       size="sm"
                       variant="ghost"
-                      colorScheme="gray"
-                      icon={<Copy size={16} />}
+                      colorPalette="gray"
                       aria-label="Copy transaction"
                       borderRadius="lg"
                       onClick={(e) => {
                         e.stopPropagation();
                         onCopyTransaction(transaction);
                       }}
-                      data-testid="transactioncard-copy-icon"
-                    />
+                      data-testid="transactioncard-copy-icon"><Copy size={16} /></IconButton>
                   </>
                 )}
                 {!transaction.is_asset_transaction && !transaction.is_mf_transaction && transaction.transfer_type !== "destination" && (
                   <IconButton
                     size="sm"
                     variant="ghost"
-                    colorScheme="red"
-                    icon={<Trash2 size={16} />}
+                    colorPalette="red"
                     aria-label="Delete transaction"
                     borderRadius="lg"
                     onClick={(e) => {
                       e.stopPropagation();
                       onOpen();
                     }}
-                    data-testid="transactioncard-delete-icon"
-                  />
+                    data-testid="transactioncard-delete-icon"><Trash2 size={16} /></IconButton>
                 )}
              </Flex>
           </Box>
@@ -504,7 +484,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
       </Box>
 
       <DeleteTransactionModal
-        isOpen={isOpen}
+        isOpen={open}
         onClose={onClose}
         onDelete={onDeleteTransaction}
         transaction={transaction}

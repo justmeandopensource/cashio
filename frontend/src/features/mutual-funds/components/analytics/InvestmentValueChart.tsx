@@ -1,5 +1,6 @@
 import { FC, useMemo } from "react";
-import { Box, Text, useColorModeValue, useBreakpointValue } from "@chakra-ui/react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
+import { Box, Text, useBreakpointValue } from "@chakra-ui/react";
 import { ResponsiveLine, type Point } from "@nivo/line";
 
 type ChartSeries = {

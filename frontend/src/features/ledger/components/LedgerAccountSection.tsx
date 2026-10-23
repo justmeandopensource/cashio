@@ -1,16 +1,6 @@
 import React from "react";
-import {
-  Flex,
-  Box,
-  Button,
-  Text,
-  Icon,
-  IconButton,
-  Heading,
-  HStack,
-  Badge,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Flex, Box, Button, Text, Icon, IconButton, Heading, HStack, Badge } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import {
   Plus,
@@ -115,12 +105,12 @@ export const SubtypeGroupSection: React.FC<SubtypeGroupSectionProps> = ({
             fontWeight="semibold"
             fontSize="sm"
             color={groupColor}
-            isTruncated
+            truncate
           >
             {group.label}
           </Text>
           <Badge
-            colorScheme="gray"
+            colorPalette="gray"
             variant="subtle"
             fontSize="2xs"
             borderRadius="full"
@@ -131,7 +121,7 @@ export const SubtypeGroupSection: React.FC<SubtypeGroupSectionProps> = ({
           </Badge>
         </Flex>
         <Flex align="center" gap={2}>
-          <HStack spacing={0} align="baseline">
+          <HStack gap={0} align="baseline">
             <Text fontWeight="semibold" color={balanceColor} fontSize="sm">
               {splitCurrencyForDisplay(group.totalBalance, currencySymbol || "").main}
             </Text>
@@ -253,7 +243,7 @@ const LedgerAccountSection: React.FC<LedgerAccountSectionProps> = ({
         flexWrap={{ base: "wrap", sm: "nowrap" }}
       >
         <Flex align="center" gap={2}>
-          <Icon as={icon} size={20} color={iconColor} />
+          <Icon as={icon} boxSize="20px" color={iconColor} />
           <Heading size="md" color={groupColor} letterSpacing="-0.02em">
             {title}
           </Heading>
@@ -281,13 +271,11 @@ const LedgerAccountSection: React.FC<LedgerAccountSectionProps> = ({
             {showZeroBalance ? "Hide zeros" : "Show zeros"}
           </Flex>
           <IconButton
-            icon={<Plus />}
             size="sm"
-            colorScheme="brand"
+            colorPalette="brand"
             variant="ghost"
             aria-label={`Add ${title} Account`}
-            onClick={onCreateAccount}
-          />
+            onClick={onCreateAccount}><Plus /></IconButton>
         </Flex>
       </Flex>
       {groups.length === 0 ? (
@@ -352,15 +340,7 @@ const EmptyState: React.FC<{
       <Text color={subColor} mb={5} fontSize="sm" maxW="260px" mx="auto" lineHeight="tall">
         {message}
       </Text>
-      <Button
-        leftIcon={<Plus size={16} />}
-        onClick={onClick}
-        size="sm"
-        colorScheme="brand"
-        borderRadius="lg"
-      >
-        {buttonText}
-      </Button>
+      <Button onClick={onClick} size="sm" colorPalette="brand" borderRadius="lg"><Plus size={16} />{buttonText}</Button>
     </Box>
   );
 };

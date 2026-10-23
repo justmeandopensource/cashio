@@ -8,7 +8,7 @@ import { useLogout } from "@/lib/useLogout";
 import { useUserProfile } from "@/features/profile/hooks";
 
 const Home = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
 
   // Fetch ledgers and user profile
   const {
@@ -72,7 +72,7 @@ const Home = () => {
         ledgers={ledgers || []}
         defaultLedgerId={userProfile?.default_ledger_id ?? null}
         onOpen={onOpen}
-        isOpen={isOpen}
+        isOpen={open}
         onClose={onClose}
         handleCreateLedger={handleCreateLedger}
       />

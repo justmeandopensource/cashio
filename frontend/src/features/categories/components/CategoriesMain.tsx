@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Box,
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Text,
   Button,
   Icon,
@@ -27,12 +23,11 @@ import { Plus,
 } from "lucide-react";
 import CreateCategoryModal from "@components/modals/CreateCategoryModal";
 import { notify } from "@/components/shared/notify";
-import { useColorModeValue } from "@chakra-ui/react";
 import type { Category } from "@/types";
 import { useCategories } from "../hooks";
 
 const CategoriesMain: React.FC = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
   const [categoryType, setCategoryType] = useState<"income" | "expense" | null>(
     null,
   );
@@ -101,11 +96,11 @@ const CategoriesMain: React.FC = () => {
       .filter((category) => category.parent_category_id === parentId)
       .map((category) => (
         <React.Fragment key={category.category_id}>
-          <Tr
+          <Table.Row
             bg={category.is_group ? groupBg : "transparent"}
             _hover={{ bg: hoverBg }}
           >
-            <Td pl={`${level * 24 + 8}px`} position="relative">
+            <Table.Cell pl={`${level * 24 + 8}px`} position="relative">
               {category.is_group && (
                 <Box
                   position="absolute"
@@ -136,8 +131,8 @@ const CategoriesMain: React.FC = () => {
                   {category.name}
                 </Text>
               )}
-            </Td>
-            <Td>
+            </Table.Cell>
+            <Table.Cell>
               <Box display="flex" gap={2}>
                 {category.is_group && (
                   <ChakraLink
@@ -149,17 +144,12 @@ const CategoriesMain: React.FC = () => {
                     }
                     _hover={{ textDecoration: "none" }}
                   >
-                    <Icon
-                      as={Plus}
-                      size={16}
-                      color={iconColor}
-                      _hover={{ color: hoverIconColor }}
-                    />
+                    <Icon boxSize={4} color={iconColor} _hover={{ color: hoverIconColor }} asChild><Plus /></Icon>
                   </ChakraLink>
                 )}
               </Box>
-            </Td>
-          </Tr>
+            </Table.Cell>
+          </Table.Row>
 
           {renderCategoriesTable(categories, category.category_id, level + 1)}
         </React.Fragment>
@@ -179,7 +169,7 @@ const CategoriesMain: React.FC = () => {
   if (isCategoriesLoading) {
     return (
       <Box bg={loadingBg} p={{ base: 3, md: 4, lg: 6 }} borderRadius="lg">
-        <SimpleGrid columns={{ base: 1, md: 1, lg: 2 }} spacing={{ base: 4, md: 6 }}>
+        <SimpleGrid columns={{ base: 1, md: 1, lg: 2 }} gap={{ base: 4, md: 6 }}>
           {[0, 1].map((i) => (
             <Box
               key={i}
@@ -196,7 +186,7 @@ const CategoriesMain: React.FC = () => {
                 <Skeleton h="20px" w="20px" borderRadius="md" />
                 <Skeleton h="20px" w="160px" borderRadius="md" />
               </HStack>
-              <SkeletonText noOfLines={5} spacing={4} skeletonHeight="14px" />
+              <SkeletonText noOfLines={5} gap={4} height="14px" />
             </Box>
           ))}
         </SimpleGrid>
@@ -215,9 +205,8 @@ const CategoriesMain: React.FC = () => {
           <Text color={errorTextColor} mb={4}>
             There was an error loading your categories.
           </Text>
-          <Button onClick={refreshCategories} colorScheme="brand" leftIcon={<RefreshCw size={16} />}>
-            Try Again
-          </Button>
+          <Button onClick={refreshCategories} colorPalette="brand"><RefreshCw size={16} />Try Again
+                      </Button>
         </Box>
       </Box>
     );
@@ -226,7 +215,7 @@ const CategoriesMain: React.FC = () => {
   return (
     <Box>
       <Box bg={loadingBg} p={{ base: 3, md: 4, lg: 6 }} borderRadius="lg">
-        <SimpleGrid columns={{ base: 1, md: 1, lg: 2 }} spacing={{ base: 4, md: 6 }}>
+        <SimpleGrid columns={{ base: 1, md: 1, lg: 2 }} gap={{ base: 4, md: 6 }}>
           {/* Income Categories */}
           <Box
             bg={cardBg}
@@ -246,20 +235,18 @@ const CategoriesMain: React.FC = () => {
               mb={4}
               flexWrap={{ base: "wrap", sm: "nowrap" } as any}
             >
-              <HStack spacing={2}>
-                <Icon as={ArrowUpCircle} size={20} color={iconColor} />
+              <HStack gap={2}>
+                <Icon boxSize={5} color={iconColor} asChild><ArrowUpCircle /></Icon>
                 <Heading size="md" color={groupColor}>
                   Income Categories
                 </Heading>
               </HStack>
               <IconButton
-                icon={<Plus />}
                 size="sm"
-                colorScheme="brand"
+                colorPalette="brand"
                 variant="ghost"
                 aria-label="Add Income Category"
-                onClick={() => handleCreateCategoryClick("income")}
-              />
+                onClick={() => handleCreateCategoryClick("income")}><Plus /></IconButton>
             </HStack>
             {incomeCategories.length === 0 ? (
               <Box textAlign="center" py={6} px={4}>
@@ -270,19 +257,16 @@ const CategoriesMain: React.FC = () => {
                   You do not have any income categories yet.
                 </Text>
                 <Button
-                  leftIcon={<Plus />}
                   onClick={() => handleCreateCategoryClick("income")}
                   size="sm"
-                  colorScheme="brand"
-                >
-                  Create Income Category
-                </Button>
+                  colorPalette="brand"><Plus />Create Income Category
+                                  </Button>
               </Box>
             ) : (
-              <Table variant="simple" size="sm">
-                <Thead>
-                  <Tr>
-                    <Th
+              <Table.Root variant="line" size="sm">
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeader
                       color={columnHeaderColor}
                       fontSize="2xs"
                       fontWeight="semibold"
@@ -292,12 +276,12 @@ const CategoriesMain: React.FC = () => {
                       borderBottomColor={sectionBorderColor}
                     >
                       Category
-                    </Th>
-                    <Th pb={2} borderBottomColor={sectionBorderColor} />
-                  </Tr>
-                </Thead>
-                <Tbody>{renderCategoriesTable(incomeCategories)}</Tbody>
-              </Table>
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader pb={2} borderBottomColor={sectionBorderColor} />
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>{renderCategoriesTable(incomeCategories)}</Table.Body>
+              </Table.Root>
             )}
           </Box>
 
@@ -320,20 +304,18 @@ const CategoriesMain: React.FC = () => {
               mb={4}
               flexWrap={{ base: "wrap", sm: "nowrap" } as any}
             >
-              <HStack spacing={2}>
-                <Icon as={ArrowDownCircle} size={20} color={iconColor} />
+              <HStack gap={2}>
+                <Icon boxSize={5} color={iconColor} asChild><ArrowDownCircle /></Icon>
                 <Heading size="md" color={groupColor}>
                   Expense Categories
                 </Heading>
               </HStack>
               <IconButton
-                icon={<Plus />}
                 size="sm"
-                colorScheme="brand"
+                colorPalette="brand"
                 variant="ghost"
                 aria-label="Add Expense Category"
-                onClick={() => handleCreateCategoryClick("expense")}
-              />
+                onClick={() => handleCreateCategoryClick("expense")}><Plus /></IconButton>
             </HStack>
             {expenseCategories.length === 0 ? (
               <Box textAlign="center" py={6} px={4}>
@@ -344,19 +326,16 @@ const CategoriesMain: React.FC = () => {
                   You do not have any expense categories yet.
                 </Text>
                 <Button
-                  leftIcon={<Plus />}
                   onClick={() => handleCreateCategoryClick("expense")}
                   size="sm"
-                  colorScheme="brand"
-                >
-                  Create Expense Category
-                </Button>
+                  colorPalette="brand"><Plus />Create Expense Category
+                                  </Button>
               </Box>
             ) : (
-              <Table variant="simple" size="sm">
-                <Thead>
-                  <Tr>
-                    <Th
+              <Table.Root variant="line" size="sm">
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeader
                       color={columnHeaderColor}
                       fontSize="2xs"
                       fontWeight="semibold"
@@ -366,12 +345,12 @@ const CategoriesMain: React.FC = () => {
                       borderBottomColor={sectionBorderColor}
                     >
                       Category
-                    </Th>
-                    <Th pb={2} borderBottomColor={sectionBorderColor} />
-                  </Tr>
-                </Thead>
-                <Tbody>{renderCategoriesTable(expenseCategories)}</Tbody>
-              </Table>
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader pb={2} borderBottomColor={sectionBorderColor} />
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>{renderCategoriesTable(expenseCategories)}</Table.Body>
+              </Table.Root>
             )}
           </Box>
         </SimpleGrid>
@@ -379,7 +358,7 @@ const CategoriesMain: React.FC = () => {
 
       {/* Create Category Modal */}
       <CreateCategoryModal
-        isOpen={isOpen}
+        isOpen={open}
         onClose={onClose}
         categoryType={categoryType === "income" ? "income" : "expense"}
         parentCategoryId={parentCategoryId}

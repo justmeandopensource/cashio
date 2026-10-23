@@ -1,12 +1,5 @@
-import {
-  Box,
-  Heading,
-  Button,
-  useColorModeValue,
-  Icon,
-  Text,
-  Flex,
-} from "@chakra-ui/react";
+import { Box, Heading, Button, Icon, Text, Flex } from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { FC } from "react";
@@ -38,10 +31,7 @@ const HomeMainHeader: FC<HomeMainHeaderProps> = ({ onCreateLedger }) => {
       borderColor={borderColor}
     >
       {/* Thin gradient accent line at top */}
-      <Box
-        h="2px"
-        bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
-      />
+      <Box h="2px" bgGradient="to-r" gradientFrom="brand.400" gradientVia="brand.600" gradientTo="teal.300"  />
 
       <MotionFlex
         justify="space-between"
@@ -79,9 +69,8 @@ const HomeMainHeader: FC<HomeMainHeaderProps> = ({ onCreateLedger }) => {
         >
           <Button
             onClick={onCreateLedger}
-            colorScheme="brand"
+            colorPalette="brand"
             size="sm"
-            leftIcon={<Icon as={Plus} boxSize={4} strokeWidth={2.5} />}
             borderRadius="lg"
             fontWeight="bold"
             letterSpacing="0.01em"
@@ -89,10 +78,8 @@ const HomeMainHeader: FC<HomeMainHeaderProps> = ({ onCreateLedger }) => {
             _hover={{
               boxShadow: btnGlow,
             }}
-            transition="all 0.2s ease"
-          >
-            New Ledger
-          </Button>
+            transition="all 0.2s ease"><Icon boxSize={4} strokeWidth={2.5} asChild><Plus /></Icon>New Ledger
+                      </Button>
         </MotionBox>
       </MotionFlex>
     </Box>

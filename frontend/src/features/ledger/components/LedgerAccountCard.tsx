@@ -1,14 +1,7 @@
 import React from "react";
-import {
-  Flex,
-  Text,
-  Icon,
-  HStack,
-  IconButton,
-  Link as ChakraLink,
-  Tooltip,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Flex, Text, Icon, HStack, IconButton, Link as ChakraLink } from "@chakra-ui/react";
+import { Tooltip } from '@/components/ui/tooltip';
 import { Link as RouterLink } from "react-router-dom";
 import { Plus, Repeat } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
@@ -70,29 +63,27 @@ export const LedgerAccountRowDesktop: React.FC<LedgerAccountCardProps> = ({
       transition="background 0.15s ease"
       borderRadius="md"
     >
-      <HStack spacing={1.5} flex={1} minW={0}>
-        <ChakraLink
-          as={RouterLink}
-          to={`/account/${account.account_id}`}
-          _hover={{ textDecoration: "none" }}
-        >
-          <Text
-            fontSize="sm"
-            color={tertiaryTextColor}
-            _hover={{ color: "brand.500" }}
-            transition="color 0.15s ease"
-            isTruncated
-          >
-            {account.name}
-          </Text>
-        </ChakraLink>
+      <HStack gap={1.5} flex={1} minW={0}>
+        <ChakraLink _hover={{ textDecoration: "none" }} asChild><RouterLink to={`/account/${account.account_id}`}>
+            <Text
+              fontSize="sm"
+              color={tertiaryTextColor}
+              _hover={{ color: "brand.500" }}
+              transition="color 0.15s ease"
+              truncate
+            >
+              {account.name}
+            </Text>
+          </RouterLink></ChakraLink>
         {getOwnerInitials(account.owner) && (
           <Text as="span" fontSize="xs" color="gray.500">
             [{getOwnerInitials(account.owner)}]
           </Text>
         )}
         {timeAgo && (
-          <Tooltip label={`Last transaction: ${new Date(account.last_transaction_date!).toLocaleDateString()}`} placement="top" hasArrow>
+          <Tooltip content={`Last transaction: ${new Date(account.last_transaction_date!).toLocaleDateString()}`} showArrow positioning={{
+            placement: "top"
+          }}>
             <Text fontSize="2xs" color={timeAgoColor} flexShrink={0}>
               {timeAgo}
             </Text>
@@ -100,7 +91,7 @@ export const LedgerAccountRowDesktop: React.FC<LedgerAccountCardProps> = ({
         )}
       </HStack>
       <Flex align="center" gap={3}>
-        <HStack spacing={0} align="baseline">
+        <HStack gap={0} align="baseline">
           <Text fontWeight="semibold" color={balanceColor} fontSize="sm">
             {splitCurrencyForDisplay(balance, currencySymbol || "").main}
           </Text>
@@ -119,24 +110,22 @@ export const LedgerAccountRowDesktop: React.FC<LedgerAccountCardProps> = ({
             _hover={{ textDecoration: "none" }}
           >
             <Icon
-              as={Plus}
-              size={14}
+              boxSize="14px"
               color={iconColor}
               _hover={{ color: hoverIconColor }}
               transition="color 0.15s ease"
-            />
+              asChild><Plus /></Icon>
           </ChakraLink>
           <ChakraLink
             onClick={() => onTransferFunds(account.account_id)}
             _hover={{ textDecoration: "none" }}
           >
             <Icon
-              as={Repeat}
-              size={14}
+              boxSize="14px"
               color={iconColor}
               _hover={{ color: hoverIconColor }}
               transition="color 0.15s ease"
-            />
+              asChild><Repeat /></Icon>
           </ChakraLink>
         </Flex>
       </Flex>
@@ -171,20 +160,16 @@ export const LedgerAccountCardMobile: React.FC<LedgerAccountCardProps> = ({
       borderColor={dividerColor}
       _last={{ borderBottom: "none" }}
     >
-      <HStack spacing={1.5} flex={1} minW={0}>
-        <ChakraLink
-          as={RouterLink}
-          to={`/account/${account.account_id}`}
-          _hover={{ textDecoration: "none" }}
-        >
-          <Text
-            color={tertiaryTextColor}
-            fontSize="sm"
-            isTruncated
-          >
-            {account.name}
-          </Text>
-        </ChakraLink>
+      <HStack gap={1.5} flex={1} minW={0}>
+        <ChakraLink _hover={{ textDecoration: "none" }} asChild><RouterLink to={`/account/${account.account_id}`}>
+            <Text
+              color={tertiaryTextColor}
+              fontSize="sm"
+              truncate
+            >
+              {account.name}
+            </Text>
+          </RouterLink></ChakraLink>
         {getOwnerInitials(account.owner) && (
           <Text as="span" fontSize="xs" color="gray.500">
             [{getOwnerInitials(account.owner)}]
@@ -197,7 +182,7 @@ export const LedgerAccountCardMobile: React.FC<LedgerAccountCardProps> = ({
         )}
       </HStack>
       <Flex align="center" gap={2}>
-        <HStack spacing={0} align="baseline">
+        <HStack gap={0} align="baseline">
           <Text fontWeight="semibold" color={balanceColor} fontSize="sm">
             {splitCurrencyForDisplay(balance, currencySymbol || "").main}
           </Text>
@@ -207,21 +192,17 @@ export const LedgerAccountCardMobile: React.FC<LedgerAccountCardProps> = ({
         </HStack>
         <Flex gap={1}>
           <IconButton
-            icon={<Plus size={14} />}
             size="xs"
             variant="ghost"
-            colorScheme="brand"
+            colorPalette="brand"
             aria-label="Add transaction"
-            onClick={() => onAddTransaction(account.account_id, undefined)}
-          />
+            onClick={() => onAddTransaction(account.account_id, undefined)}><Plus size={14} /></IconButton>
           <IconButton
-            icon={<Repeat size={14} />}
             size="xs"
             variant="ghost"
-            colorScheme="brand"
+            colorPalette="brand"
             aria-label="Transfer funds"
-            onClick={() => onTransferFunds(account.account_id)}
-          />
+            onClick={() => onTransferFunds(account.account_id)}><Repeat size={14} /></IconButton>
         </Flex>
       </Flex>
     </Flex>

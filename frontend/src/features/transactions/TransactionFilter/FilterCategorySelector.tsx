@@ -1,20 +1,15 @@
 import React from "react";
 import {
-  FormControl,
-  FormLabel,
   Icon,
   Input,
-  InputGroup,
-  InputLeftElement,
-  InputRightElement,
   Flex,
   Box,
   Text,
   Spinner,
   Popover,
-  PopoverTrigger,
-  PopoverContent,
+  Field,
 } from "@chakra-ui/react";
+import { InputGroup } from "@/components/ui/input-group";
 import { Search, X, ChevronDown, Check } from "lucide-react";
 import type { Category } from "@/types";
 import type { InternalFilters, FilterThemeColors } from "./types";
@@ -73,30 +68,46 @@ const FilterCategorySelector: React.FC<FilterCategorySelectorProps> = ({
       border="1px solid"
       borderColor={borderColor}
     >
-      <FormControl>
-        <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+      <Field.Root>
+        <Field.Label fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
           Category
-          {filters.category_id && <Icon as={Check} boxSize={3.5} color="teal.500" />}
-        </FormLabel>
+          {filters.category_id && <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>}
+        </Field.Label>
         {isCategoriesLoading ? (
           <Flex justify="center" align="center" py={4}>
-            <Spinner size="md" color="teal.500" thickness="3px" />
+            <Spinner size="md" color="teal.500" borderWidth="3px" />
           </Flex>
         ) : (
-          <Popover
-            isOpen={isCategoryOpen}
-            onClose={() => { setIsCategoryOpen(false); setHighlightedCategoryIndex(-1); }}
-            matchWidth
-            placement="bottom-start"
+          <Popover.Root
+            open={isCategoryOpen}
             autoFocus={false}
-            returnFocusOnClose={false}
-          >
-            <PopoverTrigger>
-              <InputGroup size="lg">
-                <InputLeftElement pointerEvents="none" height="100%">
-                  <Icon as={Search} boxSize={4} color={helperTextColor} />
-                </InputLeftElement>
+            onOpenChange={e => {
+              if (!(e.open)) { setIsCategoryOpen(false); setHighlightedCategoryIndex(-1); }
+            }}
+            positioning={{
+              sameWidth: true,
+              placement: 'bottom-start'
+            }}>
+            <Popover.Trigger asChild>
+              <InputGroup
+                startElement={<Icon boxSize={4} color={helperTextColor} asChild><Search /></Icon>}
+                startElementProps={{ pointerEvents: "none", height: "100%" }}
+                endElementProps={{ height: "100%", pr: 1, pointerEvents: "auto" }}
+                endElement={
+                  filters.category_id ? (
+                    <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><X
+                        onClick={() => {
+                          handleInputChange("category_id", "");
+                          setCategorySearch("");
+                          setIsCategoryOpen(false);
+                          setHighlightedCategoryIndex(-1);
+                        }} /></Icon>
+                  ) : (
+                    <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><ChevronDown onClick={() => setIsCategoryOpen(!isCategoryOpen)} /></Icon>
+                  )
+                }>
                 <Input
+                  size="lg"
                   value={isCategoryOpen ? categorySearch : (selectedCategory?.name ?? "")}
                   onChange={(e) => {
                     setCategorySearch(e.target.value);
@@ -122,34 +133,10 @@ const FilterCategorySelector: React.FC<FilterCategorySelectorProps> = ({
                   }}
                   autoComplete="off"
                 />
-                <InputRightElement height="100%" pr={1}>
-                  {filters.category_id ? (
-                    <Icon
-                      as={X}
-                      boxSize={4}
-                      color={helperTextColor}
-                      cursor="pointer"
-                      onClick={() => {
-                        handleInputChange("category_id", "");
-                        setCategorySearch("");
-                        setIsCategoryOpen(false);
-                        setHighlightedCategoryIndex(-1);
-                      }}
-                    />
-                  ) : (
-                    <Icon
-                      as={ChevronDown}
-                      boxSize={4}
-                      color={helperTextColor}
-                      cursor="pointer"
-                      onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                    />
-                  )}
-                </InputRightElement>
               </InputGroup>
-            </PopoverTrigger>
-            <PopoverContent
-              p={0}
+            </Popover.Trigger>
+            <Popover.Positioner>
+              <Popover.Content w="full" p={0}
               bg={bgColor}
               border="1px solid"
               borderColor={borderColor}
@@ -157,9 +144,7 @@ const FilterCategorySelector: React.FC<FilterCategorySelectorProps> = ({
               boxShadow="lg"
               maxH="220px"
               overflowY="auto"
-              _focus={{ outline: "none" }}
-            >
-              {filteredIncomeCategories.length > 0 && (
+              _focus={{ outline: "none" }}>{filteredIncomeCategories.length > 0 && (
                 <>
                   <Box px={3} py={2} bg={cardBg} borderBottom="1px solid" borderColor={borderColor}>
                     <Text fontSize="xs" fontWeight="semibold" color={helperTextColor} textTransform="uppercase" letterSpacing="wider">
@@ -187,7 +172,7 @@ const FilterCategorySelector: React.FC<FilterCategorySelectorProps> = ({
                       <Text fontSize="sm" fontWeight={filters.category_id === String(cat.category_id) ? "semibold" : "normal"}>
                         {cat.name}
                       </Text>
-                      {filters.category_id === String(cat.category_id) && <Icon as={Check} boxSize={4} color="teal.500" />}
+                      {filters.category_id === String(cat.category_id) && <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>}
                     </Box>
                   ))}
                 </>
@@ -227,7 +212,7 @@ const FilterCategorySelector: React.FC<FilterCategorySelectorProps> = ({
                         <Text fontSize="sm" fontWeight={filters.category_id === String(cat.category_id) ? "semibold" : "normal"}>
                           {cat.name}
                         </Text>
-                        {filters.category_id === String(cat.category_id) && <Icon as={Check} boxSize={4} color="teal.500" />}
+                        {filters.category_id === String(cat.category_id) && <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>}
                       </Box>
                     );
                   })}
@@ -237,11 +222,11 @@ const FilterCategorySelector: React.FC<FilterCategorySelectorProps> = ({
                 <Box px={4} py={5} textAlign="center">
                   <Text fontSize="sm" color={helperTextColor}>No categories found</Text>
                 </Box>
-              )}
-            </PopoverContent>
-          </Popover>
+              )}</Popover.Content>
+            </Popover.Positioner>
+          </Popover.Root>
         )}
-      </FormControl>
+      </Field.Root>
     </Box>
   );
 };

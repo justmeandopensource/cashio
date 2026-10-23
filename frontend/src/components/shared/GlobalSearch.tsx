@@ -1,12 +1,6 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { useColorModeValue } from "../ui/color-mode";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalBody,
-  InputGroup,
-  InputLeftElement,
-  InputRightElement,
   Input,
   Box,
   Text,
@@ -14,9 +8,11 @@ import {
   Icon,
   Spinner,
   Badge,
-  useColorModeValue,
   Kbd,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
+import { InputGroup } from "@/components/ui/input-group";
 import {
   Search,
   X,
@@ -251,263 +247,262 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
   let flatIndex = 0;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg" motionPreset="none">
-      <ModalOverlay bg="blackAlpha.400" backdropFilter="blur(4px)" />
-      <ModalContent
-        bg={modalBg}
-        borderRadius="xl"
-        mx={4}
-        mt={{ base: 4, md: "12vh" }}
-        mb={0}
-        overflow="hidden"
-        maxH={{ base: "90vh", md: "70vh" }}
-      >
-        <ModalBody p={0}>
-          {/* Search Input */}
-          <Box borderBottom="1px solid" borderColor={borderColor} p={3}>
-            <InputGroup size="lg">
-              <InputLeftElement pointerEvents="none" h="full">
-                {isFetching ? (
-                  <Spinner size="sm" color="brand.500" />
-                ) : (
-                  <Icon as={Search} color="gray.400" boxSize={5} />
-                )}
-              </InputLeftElement>
-              <Input
-                placeholder="Search or jump to..."
-                value={inputValue}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                variant="filled"
-                bg={inputBg}
-                border="none"
-                borderRadius="lg"
-                _focus={{ bg: inputBg, boxShadow: "none" }}
-                _hover={{ bg: inputBg }}
-                autoFocus
-              />
-              {inputValue && (
-                <InputRightElement h="full">
-                  <Box as="button" onClick={clearInput} p={1} cursor="pointer">
-                    <Icon as={X} color="gray.400" boxSize={4} />
-                  </Box>
-                </InputRightElement>
-              )}
-            </InputGroup>
-          </Box>
+    <Dialog.Root open={isOpen} size='lg' motionPreset="none" onOpenChange={e => {
+      if (!e.open) {
+        onClose();
+      }
+    }}>
+      <Portal>
 
-          {/* Results */}
-          <Box
-            ref={resultsRef}
-            overflowY="auto"
-            maxH={{ base: "calc(90vh - 120px)", md: "calc(70vh - 120px)" }}
-          >
-            {/* Command sections */}
-            {groupedCommands.map((group) => (
-              <Box key={group.category} py={2}>
-                <HStack px={4} py={1.5} spacing={2}>
-                  <Text
-                    fontSize="xs"
-                    fontWeight="bold"
-                    textTransform="uppercase"
-                    letterSpacing="0.05em"
-                    color={sectionColor}
-                  >
-                    {CATEGORY_LABELS[group.category]}
-                  </Text>
-                </HStack>
-                {group.items.map((cmd) => {
-                  const currentIndex = flatIndex++;
-                  const isSelected = currentIndex === selectedIndex;
-                  return (
-                    <Box
-                      key={cmd.id}
-                      data-index={currentIndex}
-                      px={4}
-                      py={2.5}
-                      mx={2}
-                      borderRadius="lg"
-                      cursor="pointer"
-                      bg={isSelected ? selectedBg : "transparent"}
-                      _hover={{ bg: isSelected ? selectedBg : hoverBg }}
-                      transition="background 0.1s ease"
-                      onClick={() => cmd.execute()}
-                      onMouseEnter={() => setSelectedIndex(currentIndex)}
-                    >
-                      <HStack justify="space-between" align="center">
-                        <HStack flex={1} minW={0} spacing={3}>
-                          <Icon
-                            as={cmd.icon}
-                            boxSize={4}
-                            color={cmdIconColor}
-                            flexShrink={0}
-                          />
-                          <Box flex={1} minW={0}>
-                            <Text fontSize="sm" fontWeight="500" noOfLines={1}>
-                              {cmd.title}
-                            </Text>
-                            {cmd.subtitle && (
-                              <Text
-                                fontSize="xs"
-                                color={subtitleColor}
-                                noOfLines={1}
-                                mt={0.5}
-                              >
-                                {cmd.subtitle}
-                              </Text>
+        <Dialog.Backdrop bg="blackAlpha.400" backdropFilter="blur(4px)" />
+        <Dialog.Positioner>
+          <Dialog.Content
+            bg={modalBg}
+            borderRadius="xl"
+            mx={4}
+            mt={{ base: 4, md: "12vh" }}
+            mb={0}
+            overflow="hidden"
+            maxH={{ base: "90vh", md: "70vh" }}>
+            <Dialog.Body p={0}>
+              {/* Search Input */}
+              <Box borderBottom="1px solid" borderColor={borderColor} p={3}>
+                <InputGroup
+                  w="full"
+                  startElement={
+                    isFetching ? (
+                      <Spinner size="sm" color="brand.500" />
+                    ) : (
+                      <Icon color="gray.400" boxSize={5} asChild><Search /></Icon>
+                    )
+                  }
+                  startElementProps={{ h: "full" }}
+                  endElement={
+                    inputValue ? (
+                      <Box p={1} cursor="pointer" asChild><button onClick={clearInput}>
+                          <Icon color="gray.400" boxSize={4} asChild><X /></Icon>
+                        </button></Box>
+                    ) : undefined
+                  }
+                  endElementProps={{ h: "full" }}
+                >
+                  <Input
+                    size="lg"
+                    placeholder="Search or jump to..."
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    variant="subtle"
+                    bg={inputBg}
+                    border="none"
+                    borderRadius="lg"
+                    _focus={{ bg: inputBg, boxShadow: "none" }}
+                    _hover={{ bg: inputBg }}
+                    autoFocus
+                  />
+                </InputGroup>
+              </Box>
+
+              {/* Results */}
+              <Box
+                ref={resultsRef}
+                overflowY="auto"
+                maxH={{ base: "calc(90vh - 120px)", md: "calc(70vh - 120px)" }}
+              >
+                {/* Command sections */}
+                {groupedCommands.map((group) => (
+                  <Box key={group.category} py={2}>
+                    <HStack px={4} py={1.5} gap={2}>
+                      <Text
+                        fontSize="xs"
+                        fontWeight="bold"
+                        textTransform="uppercase"
+                        letterSpacing="0.05em"
+                        color={sectionColor}
+                      >
+                        {CATEGORY_LABELS[group.category]}
+                      </Text>
+                    </HStack>
+                    {group.items.map((cmd) => {
+                      const currentIndex = flatIndex++;
+                      const isSelected = currentIndex === selectedIndex;
+                      return (
+                        <Box
+                          key={cmd.id}
+                          data-index={currentIndex}
+                          px={4}
+                          py={2.5}
+                          mx={2}
+                          borderRadius="lg"
+                          cursor="pointer"
+                          bg={isSelected ? selectedBg : "transparent"}
+                          _hover={{ bg: isSelected ? selectedBg : hoverBg }}
+                          transition="background 0.1s ease"
+                          onClick={() => cmd.execute()}
+                          onMouseEnter={() => setSelectedIndex(currentIndex)}
+                        >
+                          <HStack justify="space-between" align="center">
+                            <HStack flex={1} minW={0} gap={3}>
+                              <Icon boxSize={4} color={cmdIconColor} flexShrink={0} asChild><cmd.icon /></Icon>
+                              <Box flex={1} minW={0}>
+                                <Text fontSize="sm" fontWeight="500" lineClamp={1}>
+                                  {cmd.title}
+                                </Text>
+                                {cmd.subtitle && (
+                                  <Text
+                                    fontSize="xs"
+                                    color={subtitleColor}
+                                    lineClamp={1}
+                                    mt={0.5}
+                                  >
+                                    {cmd.subtitle}
+                                  </Text>
+                                )}
+                              </Box>
+                            </HStack>
+                            {isSelected && (
+                              <Icon boxSize={3.5} color={sectionColor} flexShrink={0} ml={2} asChild><CornerDownLeft /></Icon>
                             )}
-                          </Box>
-                        </HStack>
-                        {isSelected && (
-                          <Icon
-                            as={CornerDownLeft}
-                            boxSize={3.5}
-                            color={sectionColor}
-                            flexShrink={0}
-                            ml={2}
-                          />
-                        )}
+                          </HStack>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                ))}
+
+                {/* Search result sections */}
+                {groupedSearchResults.map((group) => {
+                  const config = SEARCH_TYPE_CONFIG[group.type];
+                  return (
+                    <Box key={group.type} py={2}>
+                      <HStack px={4} py={1.5} gap={2}>
+                        <Icon boxSize={3.5} color={sectionColor} asChild><config.icon /></Icon>
+                        <Text
+                          fontSize="xs"
+                          fontWeight="bold"
+                          textTransform="uppercase"
+                          letterSpacing="0.05em"
+                          color={sectionColor}
+                        >
+                          {config.label}
+                        </Text>
                       </HStack>
+                      {group.items.map((item) => {
+                        const currentIndex = flatIndex++;
+                        const isSelected = currentIndex === selectedIndex;
+                        return (
+                          <Box
+                            key={`${item.type}-${item.id}`}
+                            data-index={currentIndex}
+                            px={4}
+                            py={2.5}
+                            mx={2}
+                            borderRadius="lg"
+                            cursor="pointer"
+                            bg={isSelected ? selectedBg : "transparent"}
+                            _hover={{ bg: isSelected ? selectedBg : hoverBg }}
+                            transition="background 0.1s ease"
+                            onClick={() => navigateToSearchResult(item)}
+                            onMouseEnter={() => setSelectedIndex(currentIndex)}
+                          >
+                            <HStack justify="space-between" align="center">
+                              <Box flex={1} minW={0}>
+                                <Text
+                                  fontSize="sm"
+                                  fontWeight="500"
+                                  lineClamp={1}
+                                >
+                                  {item.title}
+                                </Text>
+                                {item.subtitle && (
+                                  <Text
+                                    fontSize="xs"
+                                    color={subtitleColor}
+                                    lineClamp={1}
+                                    mt={0.5}
+                                  >
+                                    {item.subtitle}
+                                  </Text>
+                                )}
+                              </Box>
+                              {item.ledger_name && (
+                                <Badge
+                                  fontSize="2xs"
+                                  fontWeight="600"
+                                  px={2}
+                                  py={0.5}
+                                  borderRadius="full"
+                                  bg={badgeBg}
+                                  color={badgeColor}
+                                  textTransform="none"
+                                  flexShrink={0}
+                                  ml={2}
+                                >
+                                  {item.ledger_name}
+                                </Badge>
+                              )}
+                            </HStack>
+                          </Box>
+                        );
+                      })}
                     </Box>
                   );
                 })}
-              </Box>
-            ))}
 
-            {/* Search result sections */}
-            {groupedSearchResults.map((group) => {
-              const config = SEARCH_TYPE_CONFIG[group.type];
-              return (
-                <Box key={group.type} py={2}>
-                  <HStack px={4} py={1.5} spacing={2}>
-                    <Icon
-                      as={config.icon}
-                      boxSize={3.5}
-                      color={sectionColor}
-                    />
-                    <Text
-                      fontSize="xs"
-                      fontWeight="bold"
-                      textTransform="uppercase"
-                      letterSpacing="0.05em"
-                      color={sectionColor}
-                    >
-                      {config.label}
+                {/* Empty state: no results at all when searching */}
+                {showSearchResults && !isFetching && !hasAnyResults && (
+                  <Box px={6} py={8} textAlign="center">
+                    <Text color={emptyColor} fontSize="sm">
+                      No results found for &ldquo;{debouncedQuery}&rdquo;
+                    </Text>
+                  </Box>
+                )}
+
+                {/* Empty state: commands filtered to zero, but search hasn't run yet */}
+                {!showSearchResults && !hasCommands && inputValue.length > 0 && (
+                  <Box px={6} py={8} textAlign="center">
+                    <Text color={emptyColor} fontSize="sm">
+                      No matching commands. Type more to search...
+                    </Text>
+                  </Box>
+                )}
+              </Box>
+
+              {/* Footer with keyboard hints */}
+              <Box
+                borderTop="1px solid"
+                borderColor={borderColor}
+                px={4}
+                py={2}
+                bg={footerBg}
+              >
+                <HStack gap={4} justify="center">
+                  <HStack gap={1}>
+                    <Kbd size="sm" fontSize="2xs">&#8593;&#8595;</Kbd>
+                    <Text fontSize="2xs" color={sectionColor}>
+                      navigate
                     </Text>
                   </HStack>
-                  {group.items.map((item) => {
-                    const currentIndex = flatIndex++;
-                    const isSelected = currentIndex === selectedIndex;
-                    return (
-                      <Box
-                        key={`${item.type}-${item.id}`}
-                        data-index={currentIndex}
-                        px={4}
-                        py={2.5}
-                        mx={2}
-                        borderRadius="lg"
-                        cursor="pointer"
-                        bg={isSelected ? selectedBg : "transparent"}
-                        _hover={{ bg: isSelected ? selectedBg : hoverBg }}
-                        transition="background 0.1s ease"
-                        onClick={() => navigateToSearchResult(item)}
-                        onMouseEnter={() => setSelectedIndex(currentIndex)}
-                      >
-                        <HStack justify="space-between" align="center">
-                          <Box flex={1} minW={0}>
-                            <Text
-                              fontSize="sm"
-                              fontWeight="500"
-                              noOfLines={1}
-                            >
-                              {item.title}
-                            </Text>
-                            {item.subtitle && (
-                              <Text
-                                fontSize="xs"
-                                color={subtitleColor}
-                                noOfLines={1}
-                                mt={0.5}
-                              >
-                                {item.subtitle}
-                              </Text>
-                            )}
-                          </Box>
-                          {item.ledger_name && (
-                            <Badge
-                              fontSize="2xs"
-                              fontWeight="600"
-                              px={2}
-                              py={0.5}
-                              borderRadius="full"
-                              bg={badgeBg}
-                              color={badgeColor}
-                              textTransform="none"
-                              flexShrink={0}
-                              ml={2}
-                            >
-                              {item.ledger_name}
-                            </Badge>
-                          )}
-                        </HStack>
-                      </Box>
-                    );
-                  })}
-                </Box>
-              );
-            })}
-
-            {/* Empty state: no results at all when searching */}
-            {showSearchResults && !isFetching && !hasAnyResults && (
-              <Box px={6} py={8} textAlign="center">
-                <Text color={emptyColor} fontSize="sm">
-                  No results found for &ldquo;{debouncedQuery}&rdquo;
-                </Text>
+                  <HStack gap={1}>
+                    <Kbd size="sm" fontSize="2xs">&#9166;</Kbd>
+                    <Text fontSize="2xs" color={sectionColor}>
+                      select
+                    </Text>
+                  </HStack>
+                  <HStack gap={1}>
+                    <Kbd size="sm" fontSize="2xs">esc</Kbd>
+                    <Text fontSize="2xs" color={sectionColor}>
+                      close
+                    </Text>
+                  </HStack>
+                </HStack>
               </Box>
-            )}
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
 
-            {/* Empty state: commands filtered to zero, but search hasn't run yet */}
-            {!showSearchResults && !hasCommands && inputValue.length > 0 && (
-              <Box px={6} py={8} textAlign="center">
-                <Text color={emptyColor} fontSize="sm">
-                  No matching commands. Type more to search...
-                </Text>
-              </Box>
-            )}
-          </Box>
-
-          {/* Footer with keyboard hints */}
-          <Box
-            borderTop="1px solid"
-            borderColor={borderColor}
-            px={4}
-            py={2}
-            bg={footerBg}
-          >
-            <HStack spacing={4} justify="center">
-              <HStack spacing={1}>
-                <Kbd size="sm" fontSize="2xs">&#8593;&#8595;</Kbd>
-                <Text fontSize="2xs" color={sectionColor}>
-                  navigate
-                </Text>
-              </HStack>
-              <HStack spacing={1}>
-                <Kbd size="sm" fontSize="2xs">&#9166;</Kbd>
-                <Text fontSize="2xs" color={sectionColor}>
-                  select
-                </Text>
-              </HStack>
-              <HStack spacing={1}>
-                <Kbd size="sm" fontSize="2xs">esc</Kbd>
-                <Text fontSize="2xs" color={sectionColor}>
-                  close
-                </Text>
-              </HStack>
-            </HStack>
-          </Box>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

@@ -1,7 +1,7 @@
 from app.schemas import JsonDecimal as Decimal
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class AccountNetWorthItem(BaseModel):
@@ -10,8 +10,7 @@ class AccountNetWorthItem(BaseModel):
     type: str
     net_balance: Decimal
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MutualFundNetWorthItem(BaseModel):
@@ -21,8 +20,7 @@ class MutualFundNetWorthItem(BaseModel):
     total_invested_cash: Decimal
     unrealized_gain: Decimal
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PhysicalAssetNetWorthItem(BaseModel):
@@ -31,8 +29,7 @@ class PhysicalAssetNetWorthItem(BaseModel):
     asset_type_name: str
     current_value: Decimal
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AssetAllocationItem(BaseModel):

@@ -1,12 +1,5 @@
-import {
-  Box,
-  Heading,
-  useColorModeValue,
-  HStack,
-  Text,
-  Flex,
-  Icon,
-} from "@chakra-ui/react";
+import { Box, Heading, HStack, Text, Flex, Icon } from "@chakra-ui/react";
+import { useColorModeValue } from "../ui/color-mode";
 import { motion } from "framer-motion";
 import React, { FC, ReactNode } from "react";
 import Breadcrumbs, { type BreadcrumbEntry } from "./Breadcrumbs";
@@ -44,7 +37,10 @@ const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, heade
       {/* Gradient accent line */}
       <Box
         h="2px"
-        bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+        bgGradient="to-r"
+        gradientFrom="brand.400"
+        gradientVia="brand.600"
+        gradientTo="teal.300"
       />
 
       {breadcrumbs && breadcrumbs.length > 0 && (
@@ -66,7 +62,7 @@ const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, icon, actions, heade
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        <HStack spacing={3} align="flex-start">
+        <HStack gap={3} align="flex-start">
           {backIcon && (
             <Icon
               as={backIcon}

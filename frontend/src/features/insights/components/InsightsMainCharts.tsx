@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
-import { Text, Box, Center, Heading, Icon, Skeleton, VStack, useColorModeValue } from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Text, Box, Center, Heading, Icon, Skeleton, VStack } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { BarChart2 } from "lucide-react";
 
@@ -47,7 +48,7 @@ const InsightsMainCharts = ({
           mb={5}
           css={{ animation: `${floatAnimation} 3s ease-in-out infinite` }}
         >
-          <Icon as={BarChart2} boxSize={8} color="brand.500" />
+          <Icon boxSize={8} color="brand.500" asChild><BarChart2 /></Icon>
         </Box>
         <Heading fontSize="xl" fontWeight="bold" color={emptyTitleColor} mb={2}>
           No ledger selected
@@ -96,7 +97,7 @@ const InsightsMainCharts = ({
               justifyContent="center"
               mb={4}
             >
-              <Icon as={BarChart2} boxSize={7} color="brand.500" />
+              <Icon boxSize={7} color="brand.500" asChild><BarChart2 /></Icon>
             </Box>
             <Heading fontSize="lg" fontWeight="bold" color={emptyTitleColor} mb={2}>
               Visualization not found
@@ -111,7 +112,7 @@ const InsightsMainCharts = ({
 
   return (
     <Suspense fallback={
-      <VStack spacing={4} align="stretch" py={4}>
+      <VStack gap={4} align="stretch" py={4}>
         <Skeleton height="40px" borderRadius="lg" w="200px" />
         <Skeleton height="340px" borderRadius="xl" />
       </VStack>

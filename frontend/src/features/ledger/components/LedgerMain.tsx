@@ -1,19 +1,8 @@
 import { FC, useEffect, useState } from "react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import { useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  Badge,
-  Box,
-  Flex,
-  Text,
-  Icon,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { Badge, Box, Flex, Text, Icon, Tabs } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import LedgerMainAccounts from "./LedgerMainAccounts";
 import LedgerMainTransactions from "./LedgerMainTransactions";
@@ -127,6 +116,7 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds, on
     { icon: Coins, label: "Physical Assets", badge: null },
     { icon: TrendingUp, label: "Mutual Funds", badge: null },
   ];
+  const TAB_KEYS = ["accounts", "transactions", "physical-assets", "mutual-funds"];
 
   return (
     <MotionBox
@@ -135,11 +125,11 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds, on
       transition={{ duration: 0.35, ease: "easeOut" }}
     >
       <Box borderRadius="xl" bg={tabBg} overflow="hidden" border="1px solid" borderColor={tabBorderColor}>
-        <Tabs
-          variant="unstyled"
+        <Tabs.Root
+          unstyled
           size={{ base: "md", md: "md" }}
-          index={tabIndex}
-          onChange={handleTabChange}
+          value={TAB_KEYS[tabIndex]}
+          onValueChange={(d) => handleTabChange(TAB_KEYS.indexOf(d.value))}
         >
           <Box
             px={{ base: 1, md: 4 }}
@@ -148,15 +138,18 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds, on
             borderBottom="1px solid"
             borderColor={tabBorderColor}
           >
-            <TabList
+            <Tabs.List
+              display="flex"
               borderBottom="none"
               justifyContent={{ base: "space-around", md: "flex-start" }}
               gap={{ base: 0, md: 1 }}
               mb="-1px"
             >
-              {tabItems.map(({ icon, label, badge }) => (
-                <Tab
+              {tabItems.map(({ icon, label, badge }, index) => (
+                <Tabs.Trigger
                   key={label}
+                  value={TAB_KEYS[index]}
+                  cursor="pointer"
                   px={{ base: 3, md: 4 }}
                   py={2.5}
                   fontWeight="medium"
@@ -194,50 +187,48 @@ const LedgerMain: FC<LedgerMainProps> = ({ onAddTransaction, onTransferFunds, on
                       </Badge>
                     )}
                   </Flex>
-                </Tab>
+                </Tabs.Trigger>
               ))}
-            </TabList>
+            </Tabs.List>
           </Box>
-          <TabPanels>
-            <TabPanel p={{ base: 0, md: 4 }}>
-              {tabIndex === 0 && (
-                <LedgerMainAccounts
-                  accounts={accounts || []}
-                  isLoading={isLoading}
-                  onAddTransaction={onAddTransaction}
-                  onTransferFunds={onTransferFunds}
-                />
-              )}
-            </TabPanel>
-            <TabPanel p={{ base: 0, md: 4 }}>
-              {tabIndex === 1 && (
-                <LedgerMainTransactions
-                  onAddTransaction={onAddTransaction}
-                  onTransactionDeleted={async () => {
-                    await refreshAccountsData();
-                    await queryClient.invalidateQueries({
-                      queryKey: [`transactions-count`, ledgerId],
-                    });
-                    await refreshInsightsData();
-                  }}
-                  onTransactionUpdated={async () => {
-                    await refreshAccountsData();
-                    await refreshInsightsData();
-                  }}
-                  onCopyTransaction={handleCopyTransaction}
-                  onEditTransfer={onEditTransfer}
-                  shouldFetch={tabIndex === 1}
-                />
-              )}
-            </TabPanel>
-            <TabPanel p={{ base: 0, md: 4 }}>
-              {tabIndex === 2 && <PhysicalAssets />}
-            </TabPanel>
-            <TabPanel p={{ base: 0, md: 4 }}>
-              {tabIndex === 3 && <MutualFunds onAccountDataChange={refreshAccountsData} filters={mutualFundsFilters} onFiltersChange={setMutualFundsFilters} />}
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+          <Tabs.Content value="accounts" p={{ base: 0, md: 4 }}>
+            {tabIndex === 0 && (
+              <LedgerMainAccounts
+                accounts={accounts || []}
+                isLoading={isLoading}
+                onAddTransaction={onAddTransaction}
+                onTransferFunds={onTransferFunds}
+              />
+            )}
+          </Tabs.Content>
+          <Tabs.Content value="transactions" p={{ base: 0, md: 4 }}>
+            {tabIndex === 1 && (
+              <LedgerMainTransactions
+                onAddTransaction={onAddTransaction}
+                onTransactionDeleted={async () => {
+                  await refreshAccountsData();
+                  await queryClient.invalidateQueries({
+                    queryKey: [`transactions-count`, ledgerId],
+                  });
+                  await refreshInsightsData();
+                }}
+                onTransactionUpdated={async () => {
+                  await refreshAccountsData();
+                  await refreshInsightsData();
+                }}
+                onCopyTransaction={handleCopyTransaction}
+                onEditTransfer={onEditTransfer}
+                shouldFetch={tabIndex === 1}
+              />
+            )}
+          </Tabs.Content>
+          <Tabs.Content value="physical-assets" p={{ base: 0, md: 4 }}>
+            {tabIndex === 2 && <PhysicalAssets />}
+          </Tabs.Content>
+          <Tabs.Content value="mutual-funds" p={{ base: 0, md: 4 }}>
+            {tabIndex === 3 && <MutualFunds onAccountDataChange={refreshAccountsData} filters={mutualFundsFilters} onFiltersChange={setMutualFundsFilters} />}
+          </Tabs.Content>
+        </Tabs.Root>
       </Box>
     </MotionBox>
   );

@@ -1,8 +1,8 @@
 import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { Input, Select, IconButton } from "@chakra-ui/react";
-import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
+import { Input, NativeSelect, IconButton } from "@chakra-ui/react";
+import { LuChevronLeft, LuChevronRight } from 'react-icons/lu';
 
 interface ChakraDatePickerProps {
   selected: Date | null;
@@ -89,48 +89,42 @@ const ChakraDatePicker: React.FC<ChakraDatePickerProps> = ({
       >
         <IconButton
           aria-label="Previous Month"
-          icon={<ChevronLeftIcon />}
           onClick={decreaseMonth}
           disabled={prevMonthButtonDisabled}
           size="sm"
-          variant="ghost"
-        />
-        <Select
-          value={new Date(date).getFullYear()}
-          onChange={({ target: { value } }) => changeYear(Number(value))}
-          size="sm"
-          minWidth="80px"
-          mx={1}
-        >
-          {years.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </Select>
-        <Select
-          value={months[new Date(date).getMonth()]}
-          onChange={({ target: { value } }) =>
-            changeMonth(months.indexOf(value))
-          }
-          size="sm"
-          minWidth="70px"
-          mx={1}
-        >
-          {months.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </Select>
+          variant="ghost"><LuChevronLeft /></IconButton>
+        <NativeSelect.Root size="sm" minWidth="80px" mx={1}>
+          <NativeSelect.Field
+            value={new Date(date).getFullYear()}
+            onChange={({ target: { value } }) => changeYear(Number(value))}>
+            {years.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
+        <NativeSelect.Root size="sm" minWidth="70px" mx={1}>
+          <NativeSelect.Field
+            value={months[new Date(date).getMonth()]}
+            onChange={({ target: { value } }) =>
+              changeMonth(months.indexOf(value))
+            }>
+            {months.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
         <IconButton
           aria-label="Next Month"
-          icon={<ChevronRightIcon />}
           onClick={increaseMonth}
           disabled={nextMonthButtonDisabled}
           size="sm"
-          variant="ghost"
-        />
+          variant="ghost"><LuChevronRight /></IconButton>
       </div>
     );
   };

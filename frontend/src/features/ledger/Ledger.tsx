@@ -72,12 +72,12 @@ const Ledger = () => {
   }, [pendingAction, clearPendingAction]);
 
   const {
-    isOpen: isUpdateLedgerModalOpen,
+    open: isUpdateLedgerModalOpen,
     onOpen: onUpdateLedgerModalOpen,
     onClose: onUpdateLedgerModalClose,
   } = useDisclosure();
   const {
-    isOpen: isLedgerDetailsModalOpen,
+    open: isLedgerDetailsModalOpen,
     onOpen: onLedgerDetailsModalOpen,
     onClose: onLedgerDetailsModalClose,
   } = useDisclosure();
@@ -175,7 +175,7 @@ const Ledger = () => {
       <PageHeader
         title={
           <HStack
-            spacing={2}
+            gap={2}
             onClick={onLedgerDetailsModalOpen}
             cursor="pointer"
             role="group"
@@ -191,30 +191,24 @@ const Ledger = () => {
           { label: ledgerName || "Ledger" },
         ]}
         actions={
-          <HStack spacing={2} w={{ base: "100%", md: "auto" }}>
+          <HStack gap={2} w={{ base: "100%", md: "auto" }}>
             <Button
-              leftIcon={<Plus size={14} />}
-              colorScheme="brand"
+              colorPalette="brand"
               size="sm"
               borderRadius="md"
               fontWeight="medium"
               onClick={() => handleAddTransaction(undefined)}
-              flex={{ base: 1, md: "none" }}
-            >
-              Add Transaction
-            </Button>
+              flex={{ base: 1, md: "none" }}><Plus size={14} />Add Transaction
+                          </Button>
             <Button
-              leftIcon={<Repeat size={14} />}
-              colorScheme="brand"
+              colorPalette="brand"
               variant="outline"
               size="sm"
               borderRadius="md"
               fontWeight="medium"
               onClick={() => setIsTransferModalOpen(true)}
-              flex={{ base: 1, md: "none" }}
-            >
-              Transfer Funds
-            </Button>
+              flex={{ base: 1, md: "none" }}><Repeat size={14} />Transfer Funds
+                          </Button>
           </HStack>
         }
       />

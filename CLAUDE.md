@@ -41,7 +41,7 @@ npm run preview   # Preview production build
 
 ```bash
 python -m app.main          # Start FastAPI with auto-reload
-python run_migrations.py    # Run SQL migrations
+python run_migrations.py    # Run SQL migrations (no-op: see Architecture note)
 ```
 
 ### Versioning
@@ -69,7 +69,7 @@ backend/app/
 
 The 10 feature domains are: `user`, `ledger`, `account`, `transaction`, `category`, `tag`, `physical_assets`, `mutual_funds`, `insights`, `system`. Each domain has a corresponding router, service, repository, and schema module.
 
-Database tables are auto-created from SQLAlchemy models on startup. SQL migration files live in `backend/migrations/` and are applied with `run_migrations.py`.
+Database tables are auto-created from SQLAlchemy models on startup. SQL migrations are not yet set up: there is no `backend/migrations/` directory, so `run_migrations.py` logs `migrations_dir_not_found` and exits without doing anything.
 
 ### Frontend (React + TypeScript, feature-based)
 

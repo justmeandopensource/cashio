@@ -1,5 +1,6 @@
 import React from "react";
-import { Box, useColorModeValue } from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box } from "@chakra-ui/react";
 import Transactions from "@/features/transactions/Transactions";
 import type { Account, Transaction } from "@/types";
 

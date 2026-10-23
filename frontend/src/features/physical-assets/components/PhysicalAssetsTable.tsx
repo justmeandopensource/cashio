@@ -1,34 +1,25 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import {
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Box,
   Text,
   Button,
   HStack,
-  Collapse,
+  Collapsible,
   IconButton,
-  Select,
+  NativeSelect,
   Flex,
-  useColorModeValue,
   Stat,
-  StatLabel,
-  StatNumber,
   Icon,
-  Switch,
-  FormControl,
-  FormLabel,
   Input,
-  InputGroup,
-  InputLeftElement,
   useBreakpointValue,
   VStack,
   SimpleGrid,
+  Field,
 } from "@chakra-ui/react";
+import { Switch } from "@/components/ui/switch";
+import { InputGroup } from "@/components/ui/input-group";
 import {
   ChevronDown,
   ChevronRight,
@@ -60,7 +51,7 @@ import { useAssetTransactions } from "../api";
 import useLedgerStore from "../../../components/shared/store";
 
 // Expanded Asset Row Component
- 
+
 interface ExpandedAssetRowProps {
   asset: PhysicalAsset & { asset_type_name: string; invested: number; unrealized_pnl: number; unrealized_pnl_percentage: number };
   currencySymbol: string | undefined;
@@ -70,7 +61,7 @@ interface ExpandedAssetRowProps {
   onUpdatePrice: (asset: PhysicalAsset) => void;
   onViewTransactions: (asset: PhysicalAsset) => void;
 }
- 
+
 
 const ExpandedAssetRow: React.FC<ExpandedAssetRowProps> = ({
   asset,
@@ -114,13 +105,13 @@ const ExpandedAssetRow: React.FC<ExpandedAssetRowProps> = ({
         columnGap={4}
         rowGap={3}
       >
-        <HStack spacing={{ base: 3, md: 5 }} wrap="wrap">
-          <Stat size="sm">
-            <StatLabel fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
+        <HStack gap={{ base: 3, md: 5 }} wrap="wrap">
+          <Stat.Root size="sm">
+            <Stat.Label fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
               Lowest Cost
-            </StatLabel>
-            <HStack spacing={0} align="baseline">
-              <StatNumber fontSize="sm" color={tertiaryTextColor}>
+            </Stat.Label>
+            <HStack gap={0} align="baseline">
+              <Stat.ValueText fontSize="sm" color={tertiaryTextColor}>
                 {isLoadingTransactions
                   ? "..."
                   : lowestPurchasePrice !== null
@@ -129,7 +120,7 @@ const ExpandedAssetRow: React.FC<ExpandedAssetRowProps> = ({
                       currencySymbol || "₹",
                     ).main
                   : "--"}
-              </StatNumber>
+              </Stat.ValueText>
               <Text fontSize="xs" opacity={0.7} color={tertiaryTextColor}>
                 {isLoadingTransactions
                   ? ""
@@ -141,20 +132,20 @@ const ExpandedAssetRow: React.FC<ExpandedAssetRowProps> = ({
                   : ""}
               </Text>
             </HStack>
-          </Stat>
-          <Stat size="sm">
-            <StatLabel fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
+          </Stat.Root>
+          <Stat.Root size="sm">
+            <Stat.Label fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
               Avg. Cost
-            </StatLabel>
-            <HStack spacing={0} align="baseline">
-              <StatNumber fontSize="sm" color={tertiaryTextColor}>
+            </Stat.Label>
+            <HStack gap={0} align="baseline">
+              <Stat.ValueText fontSize="sm" color={tertiaryTextColor}>
                 {
                   splitCurrencyForDisplay(
                     toNumber(asset.average_cost_per_unit),
                     currencySymbol || "₹",
                   ).main
                 }
-              </StatNumber>
+              </Stat.ValueText>
               <Text fontSize="xs" opacity={0.7} color={tertiaryTextColor}>
                 {
                   splitCurrencyForDisplay(
@@ -164,13 +155,13 @@ const ExpandedAssetRow: React.FC<ExpandedAssetRowProps> = ({
                 }
               </Text>
             </HStack>
-          </Stat>
-          <Stat size="sm">
-            <StatLabel fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
+          </Stat.Root>
+          <Stat.Root size="sm">
+            <Stat.Label fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
               Highest Cost
-            </StatLabel>
-            <HStack spacing={0} align="baseline">
-              <StatNumber fontSize="sm" color={tertiaryTextColor}>
+            </Stat.Label>
+            <HStack gap={0} align="baseline">
+              <Stat.ValueText fontSize="sm" color={tertiaryTextColor}>
                 {isLoadingTransactions
                   ? "..."
                   : highestPurchasePrice !== null
@@ -179,7 +170,7 @@ const ExpandedAssetRow: React.FC<ExpandedAssetRowProps> = ({
                       currencySymbol || "₹",
                     ).main
                   : "--"}
-              </StatNumber>
+              </Stat.ValueText>
               <Text fontSize="xs" opacity={0.7} color={tertiaryTextColor}>
                 {isLoadingTransactions
                   ? ""
@@ -191,41 +182,26 @@ const ExpandedAssetRow: React.FC<ExpandedAssetRowProps> = ({
                   : ""}
               </Text>
             </HStack>
-          </Stat>
+          </Stat.Root>
         </HStack>
 
-        <HStack spacing={2}>
+        <HStack gap={2}>
            <Button
              size="xs"
              variant="outline"
-             leftIcon={<Icon as={ShoppingCart} boxSize={3} />}
-             onClick={() => onBuySell(asset.physical_asset_id)}
-           >
-             Buy/Sell
-           </Button>
-           <Button
-             size="xs"
-             variant="outline"
-             leftIcon={<Icon as={List} boxSize={3} />}
-              onClick={() => onViewTransactions(asset)}
-           >
-             Transactions
-           </Button>
-           <Button
-             size="xs"
-             variant="outline"
-             leftIcon={<Icon as={RefreshCw} boxSize={3} />}
-             onClick={() => onUpdatePrice(asset)}
-           >
-             Update Price
-           </Button>
+             onClick={() => onBuySell(asset.physical_asset_id)}><Icon boxSize={3} asChild><ShoppingCart /></Icon>Buy/Sell
+                        </Button>
+           <Button size="xs" variant="outline" onClick={() => onViewTransactions(asset)}><Icon boxSize={3} asChild><List /></Icon>Transactions
+                        </Button>
+           <Button size="xs" variant="outline" onClick={() => onUpdatePrice(asset)}><Icon boxSize={3} asChild><RefreshCw /></Icon>Update Price
+                        </Button>
         </HStack>
       </Flex>
     </Box>
   );
 };
 
- 
+
 interface PhysicalAssetsTableProps {
   assetTypes: AssetType[];
   physicalAssets: PhysicalAsset[];
@@ -243,7 +219,7 @@ interface PhysicalAssetsTableProps {
       searchTerm?: string;
     }) => void;
 }
- 
+
 
 type SortField =
   | "asset_type"
@@ -438,21 +414,23 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
     },
   ) => {
     return (
-      <Tr key={`expanded-${asset.physical_asset_id}`}>
-        <Td colSpan={9} p={0}>
-          <Collapse in={expandedRows.has(asset.physical_asset_id)} animateOpacity>
-            <ExpandedAssetRow
-              asset={asset}
-              currencySymbol={currencySymbol}
-              mutedColor={mutedColor}
-              isExpanded={expandedRows.has(asset.physical_asset_id)}
-              onBuySell={onBuySell}
-              onUpdatePrice={onUpdatePrice}
-              onViewTransactions={onViewTransactions}
-            />
-          </Collapse>
-        </Td>
-      </Tr>
+      <Table.Row key={`expanded-${asset.physical_asset_id}`}>
+        <Table.Cell colSpan={9} p={0}>
+          <Collapsible.Root open={expandedRows.has(asset.physical_asset_id)}>
+            <Collapsible.Content>
+              <ExpandedAssetRow
+                asset={asset}
+                currencySymbol={currencySymbol}
+                mutedColor={mutedColor}
+                isExpanded={expandedRows.has(asset.physical_asset_id)}
+                onBuySell={onBuySell}
+                onUpdatePrice={onUpdatePrice}
+                onViewTransactions={onViewTransactions}
+              />
+            </Collapsible.Content>
+          </Collapsible.Root>
+        </Table.Cell>
+      </Table.Row>
     );
   };
 
@@ -467,23 +445,18 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
         <Box p={4} onClick={() => setIsExpanded(!isExpanded)} cursor="pointer">
           <Flex justify="space-between" align="start">
             <Box maxW="80%">
-              <HStack spacing={1} align="baseline" wrap="wrap">
-                <Text fontWeight="medium" noOfLines={2} color={tertiaryTextColor}>{asset.name}</Text>
+              <HStack gap={1} align="baseline" wrap="wrap">
+                <Text fontWeight="medium" lineClamp={2} color={tertiaryTextColor}>{asset.name}</Text>
               </HStack>
               <Text fontSize="sm" color={tertiaryTextColor}>{asset.asset_type_name}</Text>
             </Box>
-            <IconButton
-              icon={isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-              variant="ghost"
-              size="sm"
-              aria-label="Expand row"
-            />
+            <IconButton variant="ghost" size="sm" aria-label="Expand row">{isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}</IconButton>
           </Flex>
-          <SimpleGrid columns={2} spacing={4} mt={4}>
-            <Stat>
-              <StatLabel fontSize="xs" color={mutedColor}>Value</StatLabel>
-              <StatNumber>
-                <HStack spacing={0} align="baseline">
+          <SimpleGrid columns={2} gap={4} mt={4}>
+            <Stat.Root>
+              <Stat.Label fontSize="xs" color={mutedColor}>Value</Stat.Label>
+              <Stat.ValueText>
+                <HStack gap={0} align="baseline">
                   <Text fontSize="lg" fontWeight="bold" color={tertiaryTextColor}>
                     {splitCurrencyForDisplay(asset.current_value, currencySymbol || "₹").main}
                   </Text>
@@ -491,12 +464,12 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
                     {splitCurrencyForDisplay(asset.current_value, currencySymbol || "₹").decimals}
                   </Text>
                 </HStack>
-              </StatNumber>
-            </Stat>
-            <Stat>
-              <StatLabel fontSize="xs" color={mutedColor}>P&L</StatLabel>
-              <StatNumber>
-                <HStack spacing={0} align="baseline">
+              </Stat.ValueText>
+            </Stat.Root>
+            <Stat.Root>
+              <Stat.Label fontSize="xs" color={mutedColor}>P&L</Stat.Label>
+              <Stat.ValueText>
+                <HStack gap={0} align="baseline">
                   <Text fontSize="lg" fontWeight="bold" color={getPnLColor(asset.unrealized_pnl)}>
                     {splitCurrencyForDisplay(Math.abs(asset.unrealized_pnl), currencySymbol || "₹").main}
                   </Text>
@@ -504,8 +477,8 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
                     {splitCurrencyForDisplay(Math.abs(asset.unrealized_pnl), currencySymbol || "₹").decimals}
                   </Text>
                 </HStack>
-              </StatNumber>
-               <HStack spacing={0} align="baseline">
+              </Stat.ValueText>
+               <HStack gap={0} align="baseline">
                  <Text fontSize="xs" color={getPnLColor(asset.unrealized_pnl_percentage)}>
                    {splitPercentageForDisplay(asset.unrealized_pnl_percentage).main}
                  </Text>
@@ -513,42 +486,59 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
                    {splitPercentageForDisplay(asset.unrealized_pnl_percentage).decimals}
                  </Text>
                </HStack>
-            </Stat>
+            </Stat.Root>
           </SimpleGrid>
         </Box>
-        <Collapse in={isExpanded} animateOpacity>
-          <Box
-            py={3}
-            px={4}
-            bg={boxBg}
-            borderTop="1px solid"
-            borderColor={borderColor}
-          >
-            <SimpleGrid columns={2} spacingX={4} spacingY={2} mb={4}>
-              <Stat size="sm">
-                <StatLabel fontSize="2xs" color={mutedColor}>Current Price</StatLabel>
-                <HStack spacing={0} align="baseline"><StatNumber fontSize="sm" color={tertiaryTextColor}>{splitCurrencyForDisplay(toNumber(asset.latest_price_per_unit), currencySymbol || "₹").main}</StatNumber><Text fontSize="xs" opacity={0.7} color={tertiaryTextColor}>{splitCurrencyForDisplay(toNumber(asset.latest_price_per_unit), currencySymbol || "₹").decimals}</Text></HStack>
-              </Stat>
-              <Stat size="sm">
-                <StatLabel fontSize="2xs" color={mutedColor}>Quantity</StatLabel>
-                <StatNumber fontSize="sm" color={tertiaryTextColor}>{splitQuantityForDisplay(asset.total_quantity).main}{splitQuantityForDisplay(asset.total_quantity).decimals} {asset.asset_type?.unit_symbol}</StatNumber>
-              </Stat>
-              <Stat size="sm">
-                <StatLabel fontSize="2xs" color={mutedColor}>Invested</StatLabel>
-                <HStack spacing={0} align="baseline"><StatNumber fontSize="sm" color={tertiaryTextColor}>{splitCurrencyForDisplay(asset.invested, currencySymbol || "₹").main}</StatNumber><Text fontSize="xs" opacity={0.7} color={tertiaryTextColor}>{splitCurrencyForDisplay(asset.invested, currencySymbol || "₹").decimals}</Text></HStack>
-              </Stat>
-              <Stat size="sm">
-                <StatLabel fontSize="2xs" color={mutedColor}>Avg. Cost</StatLabel>
-                <HStack spacing={0} align="baseline"><StatNumber fontSize="sm" color={tertiaryTextColor}>{splitCurrencyForDisplay(toNumber(asset.average_cost_per_unit), currencySymbol || "₹").main}</StatNumber><Text fontSize="xs" opacity={0.7} color={tertiaryTextColor}>{splitCurrencyForDisplay(toNumber(asset.average_cost_per_unit), currencySymbol || "₹").decimals}</Text></HStack>
-              </Stat>
-            </SimpleGrid>
-            <Flex gap={3} mt={4} justify="space-around">
-              <IconButton size="sm" variant="ghost" icon={<Icon as={ShoppingCart} />} onClick={() => onBuySell(asset.physical_asset_id)} aria-label="Buy/Sell" title="Buy/Sell" />
-               <IconButton size="sm" variant="ghost" icon={<Icon as={List} />} onClick={() => onViewTransactions(asset)} aria-label="Transactions" title="Transactions" />
-              <IconButton size="sm" variant="ghost" icon={<Icon as={RefreshCw} />} onClick={() => onUpdatePrice(asset)} aria-label="Update Price" title="Update Price" />
-            </Flex>
-          </Box>
-        </Collapse>
+        <Collapsible.Root open={isExpanded}>
+          <Collapsible.Content>
+            <Box
+              py={3}
+              px={4}
+              bg={boxBg}
+              borderTop="1px solid"
+              borderColor={borderColor}
+            >
+              <SimpleGrid columns={2} columnGap={4} rowGap={2} mb={4}>
+                <Stat.Root size="sm">
+                  <Stat.Label fontSize="2xs" color={mutedColor}>Current Price</Stat.Label>
+                  <HStack gap={0} align="baseline"><Stat.ValueText fontSize="sm" color={tertiaryTextColor}>{splitCurrencyForDisplay(toNumber(asset.latest_price_per_unit), currencySymbol || "₹").main}</Stat.ValueText><Text fontSize="xs" opacity={0.7} color={tertiaryTextColor}>{splitCurrencyForDisplay(toNumber(asset.latest_price_per_unit), currencySymbol || "₹").decimals}</Text></HStack>
+                </Stat.Root>
+                <Stat.Root size="sm">
+                  <Stat.Label fontSize="2xs" color={mutedColor}>Quantity</Stat.Label>
+                  <Stat.ValueText fontSize="sm" color={tertiaryTextColor}>{splitQuantityForDisplay(asset.total_quantity).main}{splitQuantityForDisplay(asset.total_quantity).decimals} {asset.asset_type?.unit_symbol}</Stat.ValueText>
+                </Stat.Root>
+                <Stat.Root size="sm">
+                  <Stat.Label fontSize="2xs" color={mutedColor}>Invested</Stat.Label>
+                  <HStack gap={0} align="baseline"><Stat.ValueText fontSize="sm" color={tertiaryTextColor}>{splitCurrencyForDisplay(asset.invested, currencySymbol || "₹").main}</Stat.ValueText><Text fontSize="xs" opacity={0.7} color={tertiaryTextColor}>{splitCurrencyForDisplay(asset.invested, currencySymbol || "₹").decimals}</Text></HStack>
+                </Stat.Root>
+                <Stat.Root size="sm">
+                  <Stat.Label fontSize="2xs" color={mutedColor}>Avg. Cost</Stat.Label>
+                  <HStack gap={0} align="baseline"><Stat.ValueText fontSize="sm" color={tertiaryTextColor}>{splitCurrencyForDisplay(toNumber(asset.average_cost_per_unit), currencySymbol || "₹").main}</Stat.ValueText><Text fontSize="xs" opacity={0.7} color={tertiaryTextColor}>{splitCurrencyForDisplay(toNumber(asset.average_cost_per_unit), currencySymbol || "₹").decimals}</Text></HStack>
+                </Stat.Root>
+              </SimpleGrid>
+              <Flex gap={3} mt={4} justify="space-around">
+                <IconButton
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => onBuySell(asset.physical_asset_id)}
+                  aria-label="Buy/Sell"
+                  title="Buy/Sell"><Icon asChild><ShoppingCart /></Icon></IconButton>
+                 <IconButton
+                   size="sm"
+                   variant="ghost"
+                   onClick={() => onViewTransactions(asset)}
+                   aria-label="Transactions"
+                   title="Transactions"><Icon asChild><List /></Icon></IconButton>
+                <IconButton
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => onUpdatePrice(asset)}
+                  aria-label="Update Price"
+                  title="Update Price"><Icon asChild><RefreshCw /></Icon></IconButton>
+              </Flex>
+            </Box>
+          </Collapsible.Content>
+        </Collapsible.Root>
       </Box>
     );
   };
@@ -557,68 +547,66 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
     <Box>
       {/* Filter Controls */}
       <Flex mb={4} gap={4} direction={{ base: "column", md: "row" }} align={{ md: "center" }}>
-        <Select
-          value={filters.selectedAssetType}
-          onChange={(e) => onFiltersChange({ ...filters, selectedAssetType: e.target.value })}
-          size="sm"
-          maxW={{ md: "200px" }}
-        >
-          <option value="all">All Asset Types</option>
-          {availableAssetTypes.map((assetType) => (
-            <option key={assetType.asset_type_id} value={assetType.name}>
-              {assetType.name}
-            </option>
-          ))}
-        </Select>
-        <InputGroup size="sm" maxW={{ base: "full", md: "300px" }} flexGrow={1}>
-          <InputLeftElement>
-            <Search size={16} />
-          </InputLeftElement>
+        <NativeSelect.Root size="sm" maxW={{ md: "200px" }}>
+          <NativeSelect.Field
+            value={filters.selectedAssetType}
+            onChange={(e) => onFiltersChange({ ...filters, selectedAssetType: e.target.value })}>
+            <option value="all">All Asset Types</option>
+            {availableAssetTypes.map((assetType) => (
+              <option key={assetType.asset_type_id} value={assetType.name}>
+                {assetType.name}
+              </option>
+            ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
+        <InputGroup maxW={{ base: "full", md: "300px" }} flexGrow={1} startElement={<Search size={16} />}>
           <Input
+            size="sm"
             placeholder="Search assets..."
             value={filters.searchTerm || ""}
             onChange={(e) => onFiltersChange({ ...filters, searchTerm: e.target.value })}
           />
         </InputGroup>
         {hasZeroQuantityAssets && (
-          <FormControl display="flex" alignItems="center" w="auto" ml={{ md: "auto" }}>
-            <FormLabel
+          <Field.Root display="flex" alignItems="center" w="auto" ml={{ md: "auto" }}>
+            <Field.Label
               htmlFor="show-zero-balance"
               mb="0"
               fontSize="sm"
               whiteSpace="nowrap"
             >
               Zero Qty
-            </FormLabel>
+            </Field.Label>
             <Switch
-              id="show-zero-balance"
-              isChecked={filters.showZeroBalance}
-              onChange={(e) => onFiltersChange({ ...filters, showZeroBalance: e.target.checked })}
+              ids={{ hiddenInput: "show-zero-balance" }}
+              checked={filters.showZeroBalance}
+              onCheckedChange={(e) => onFiltersChange({ ...filters, showZeroBalance: e.checked })}
               size="sm"
-              colorScheme="teal"
+              colorPalette="teal"
             />
-          </FormControl>
+          </Field.Root>
         )}
       </Flex>
 
       {isMobile ? (
-        <VStack spacing={4} align="stretch" mt={4}>
+        <VStack gap={4} align="stretch" mt={4}>
           {sortedAssets.map((asset) => (
             <MobileAssetCard key={asset.physical_asset_id} asset={asset} />
           ))}
         </VStack>
       ) : (
         <Box overflowX="auto" bg={tableBg} p={{ base: 3, md: 4, lg: 6 }} borderRadius="lg">
-          <Table variant="simple" size="sm" minW="800px" borderColor={tableBorderColor}>
-            <Thead>
-              <Tr>
-                <Th width="2%"></Th>
-                 <Th width="10%" cursor="pointer" onClick={() => handleSort("asset_type")}>
+          <Table.Root variant="line" size="sm" minW="800px" borderColor={tableBorderColor}>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader width="2%"></Table.ColumnHeader>
+                 <Table.ColumnHeader width="10%" cursor="pointer" onClick={() => handleSort("asset_type")}>
                    <Flex align="center" gap={1}>
                      Asset Type {getSortIcon("asset_type")}
                    </Flex>
-                 </Th>
-                  <Th
+                 </Table.ColumnHeader>
+                  <Table.ColumnHeader
                      width="20%"
                      cursor="pointer"
                      onClick={() => handleSort("asset")}
@@ -626,98 +614,91 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
                      <Flex align="center" gap={1}>
                        Asset {getSortIcon("asset")}
                      </Flex>
-                   </Th>
+                   </Table.ColumnHeader>
 
-                  <Th
+                  <Table.ColumnHeader
                     width="15%"
-                    isNumeric
                     display={{ base: "none", lg: "table-cell" }}
+                    textAlign='end'
                   >
                     Current Price
-                  </Th>
-                  <Th
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
                     width="10%"
-                    isNumeric
                     display={{ base: "none", lg: "table-cell" }}
+                    textAlign='end'
                   >
                     Quantity
-                  </Th>
-                <Th
+                  </Table.ColumnHeader>
+                <Table.ColumnHeader
                   width="10%"
-                  isNumeric
                   cursor="pointer"
                   onClick={() => handleSort("invested")}
                   display={{ base: "none", md: "table-cell" }}
+                  textAlign='end'
                 >
                   <Flex align="center" gap={1} justify="flex-end">
                     Invested {getSortIcon("invested")}
                   </Flex>
-                </Th>
-                <Th
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
                   width="10%"
-                  isNumeric
                   cursor="pointer"
                   onClick={() => handleSort("value")}
+                  textAlign='end'
                 >
                   <Flex align="center" gap={1} justify="flex-end">
                     Value {getSortIcon("value")}
                   </Flex>
-                </Th>
-                 <Th
+                </Table.ColumnHeader>
+                 <Table.ColumnHeader
                    width="10%"
-                   isNumeric
                    cursor="pointer"
                    onClick={() => handleSort("unrealized_pnl")}
+                   textAlign='end'
                  >
                    <Flex align="center" gap={1} justify="flex-end">
                      P&L {getSortIcon("unrealized_pnl")}
                    </Flex>
-                 </Th>
-                   <Th
+                 </Table.ColumnHeader>
+                   <Table.ColumnHeader
                      width="5%"
-                     isNumeric
                      cursor="pointer"
                      onClick={() => handleSort("unrealized_pnl_percentage")}
                      whiteSpace="nowrap"
+                     textAlign='end'
                    >
                      <Flex align="center" gap={1} justify="flex-end">
                        P&L % {getSortIcon("unrealized_pnl_percentage")}
                      </Flex>
-                   </Th>
-               </Tr>
-            </Thead>
-            <Tbody>
+                   </Table.ColumnHeader>
+               </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {sortedAssets.map((asset) => (
                 <React.Fragment key={asset.physical_asset_id}>
-                   <Tr
+                   <Table.Row
                      _hover={{ bg: tableHoverBg, cursor: "pointer" }}
                      onClick={() => toggleRowExpansion(asset.physical_asset_id)}
                      data-asset-id={asset.physical_asset_id}
                    >
-                    <Td>
-                      <IconButton
-                        icon={
-                          expandedRows.has(asset.physical_asset_id) ? (
-                            <ChevronDown size={16} />
-                          ) : (
-                            <ChevronRight size={16} />
-                          )
-                        }
-                        variant="ghost"
-                        size="xs"
-                        aria-label="Expand row"
-                      />
-                    </Td>
-                    <Td fontWeight="medium" color={tertiaryTextColor}>{asset.asset_type_name}</Td>
-                     <Td>
-                       <HStack spacing={1} align="baseline">
-                         <Text fontWeight="medium" noOfLines={1} color={tertiaryTextColor}>
+                    <Table.Cell>
+                      <IconButton variant="ghost" size="xs" aria-label="Expand row">{expandedRows.has(asset.physical_asset_id) ? (
+                          <ChevronDown size={16} />
+                        ) : (
+                          <ChevronRight size={16} />
+                        )}</IconButton>
+                    </Table.Cell>
+                    <Table.Cell fontWeight="medium" color={tertiaryTextColor}>{asset.asset_type_name}</Table.Cell>
+                     <Table.Cell>
+                       <HStack gap={1} align="baseline">
+                         <Text fontWeight="medium" lineClamp={1} color={tertiaryTextColor}>
                            {asset.name}
                          </Text>
                        </HStack>
-                      </Td>
-                      <Td isNumeric display={{ base: "none", lg: "table-cell" }}>
-                        <HStack spacing={0} align="baseline" justify="flex-end">
+                      </Table.Cell>
+                      <Table.Cell display={{ base: "none", lg: "table-cell" }} textAlign='end'>
+                        <HStack gap={0} align="baseline" justify="flex-end">
                           <Text fontSize="sm" color={tertiaryTextColor}>
                             {
                               splitCurrencyForDisplay(
@@ -735,12 +716,12 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
                             }
                           </Text>
                         </HStack>
-                      </Td>
-                      <Td isNumeric display={{ base: "none", lg: "table-cell" }}>
+                      </Table.Cell>
+                      <Table.Cell display={{ base: "none", lg: "table-cell" }} textAlign='end'>
                         <Text fontSize="sm" color={tertiaryTextColor}>{splitQuantityForDisplay(asset.total_quantity).main}{splitQuantityForDisplay(asset.total_quantity).decimals} {asset.asset_type?.unit_symbol}</Text>
-                      </Td>
-                    <Td isNumeric display={{ base: "none", md: "table-cell" }}>
-                      <HStack spacing={0} align="baseline" justify="flex-end">
+                      </Table.Cell>
+                    <Table.Cell display={{ base: "none", md: "table-cell" }} textAlign='end'>
+                      <HStack gap={0} align="baseline" justify="flex-end">
                         <Text fontSize="sm" color={tertiaryTextColor}>
                           {
                             splitCurrencyForDisplay(
@@ -758,9 +739,9 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
                           }
                         </Text>
                       </HStack>
-                    </Td>
-                    <Td isNumeric>
-                      <HStack spacing={0} align="baseline" justify="flex-end">
+                    </Table.Cell>
+                    <Table.Cell textAlign='end'>
+                      <HStack gap={0} align="baseline" justify="flex-end">
                         <Text fontSize="sm" color={tertiaryTextColor}>
                           {
                             splitCurrencyForDisplay(
@@ -778,9 +759,9 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
                           }
                         </Text>
                       </HStack>
-                    </Td>
-                    <Td isNumeric>
-                      <HStack spacing={0} align="baseline" justify="flex-end">
+                    </Table.Cell>
+                    <Table.Cell textAlign='end'>
+                      <HStack gap={0} align="baseline" justify="flex-end">
                         <Text
                           fontSize="sm"
                           color={getPnLColor(asset.unrealized_pnl)}
@@ -805,9 +786,9 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
                           }
                         </Text>
                       </HStack>
-                    </Td>
-                    <Td isNumeric>
-                      <HStack spacing={0} align="baseline" justify="flex-end">
+                    </Table.Cell>
+                    <Table.Cell textAlign='end'>
+                      <HStack gap={0} align="baseline" justify="flex-end">
                         <Text
                           fontSize="sm"
                           fontWeight="semibold"
@@ -832,13 +813,13 @@ const PhysicalAssetsTable: React.FC<PhysicalAssetsTableProps> = ({
                           }
                         </Text>
                        </HStack>
-                     </Td>
-                   </Tr>
+                     </Table.Cell>
+                   </Table.Row>
                   {renderExpandedRow(asset)}
                 </React.Fragment>
               ))}
-            </Tbody>
-          </Table>
+            </Table.Body>
+          </Table.Root>
         </Box>
       )}
 

@@ -4,7 +4,7 @@ import { FallbackProps } from "react-error-boundary";
 const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
   return (
     <Center flex={1} p={8}>
-      <VStack spacing={4} textAlign="center">
+      <VStack gap={4} textAlign="center">
         <Heading size="lg" color="primaryTextColor">
           Something went wrong
         </Heading>

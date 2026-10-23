@@ -1,20 +1,15 @@
 import React from "react";
 import {
-  FormControl,
-  FormLabel,
   Icon,
   Input,
-  InputGroup,
-  InputLeftElement,
-  InputRightElement,
   Flex,
   Box,
   Text,
   Spinner,
   Popover,
-  PopoverTrigger,
-  PopoverContent,
+  Field,
 } from "@chakra-ui/react";
+import { InputGroup } from "@/components/ui/input-group";
 import { Search, X, ChevronDown, Check } from "lucide-react";
 import type { Account } from "@/types";
 import type { InternalFilters, FilterThemeColors } from "./types";
@@ -73,30 +68,46 @@ const FilterAccountSelector: React.FC<FilterAccountSelectorProps> = ({
       border="1px solid"
       borderColor={borderColor}
     >
-      <FormControl>
-        <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+      <Field.Root>
+        <Field.Label fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
           Account
-          {filters.account_id && <Icon as={Check} boxSize={3.5} color="teal.500" />}
-        </FormLabel>
+          {filters.account_id && <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>}
+        </Field.Label>
         {isAccountsLoading ? (
           <Flex justify="center" align="center" py={4}>
-            <Spinner size="md" color="teal.500" thickness="3px" />
+            <Spinner size="md" color="teal.500" borderWidth="3px" />
           </Flex>
         ) : (
-          <Popover
-            isOpen={isAccountOpen}
-            onClose={() => { setIsAccountOpen(false); setHighlightedAccountIndex(-1); }}
-            matchWidth
-            placement="bottom-start"
+          <Popover.Root
+            open={isAccountOpen}
             autoFocus={false}
-            returnFocusOnClose={false}
-          >
-            <PopoverTrigger>
-              <InputGroup size="lg">
-                <InputLeftElement pointerEvents="none" height="100%">
-                  <Icon as={Search} boxSize={4} color={helperTextColor} />
-                </InputLeftElement>
+            onOpenChange={e => {
+              if (!(e.open)) { setIsAccountOpen(false); setHighlightedAccountIndex(-1); }
+            }}
+            positioning={{
+              sameWidth: true,
+              placement: 'bottom-start'
+            }}>
+            <Popover.Trigger asChild>
+              <InputGroup
+                startElement={<Icon boxSize={4} color={helperTextColor} asChild><Search /></Icon>}
+                startElementProps={{ pointerEvents: "none", height: "100%" }}
+                endElementProps={{ height: "100%", pr: 1, pointerEvents: "auto" }}
+                endElement={
+                  filters.account_id ? (
+                    <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><X
+                        onClick={() => {
+                          handleInputChange("account_id", "");
+                          setAccountSearch("");
+                          setIsAccountOpen(false);
+                          setHighlightedAccountIndex(-1);
+                        }} /></Icon>
+                  ) : (
+                    <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><ChevronDown onClick={() => setIsAccountOpen(!isAccountOpen)} /></Icon>
+                  )
+                }>
                 <Input
+                  size="lg"
                   value={isAccountOpen ? accountSearch : (selectedAccount?.name ?? "")}
                   onChange={(e) => {
                     setAccountSearch(e.target.value);
@@ -122,34 +133,10 @@ const FilterAccountSelector: React.FC<FilterAccountSelectorProps> = ({
                   }}
                   autoComplete="off"
                 />
-                <InputRightElement height="100%" pr={1}>
-                  {filters.account_id ? (
-                    <Icon
-                      as={X}
-                      boxSize={4}
-                      color={helperTextColor}
-                      cursor="pointer"
-                      onClick={() => {
-                        handleInputChange("account_id", "");
-                        setAccountSearch("");
-                        setIsAccountOpen(false);
-                        setHighlightedAccountIndex(-1);
-                      }}
-                    />
-                  ) : (
-                    <Icon
-                      as={ChevronDown}
-                      boxSize={4}
-                      color={helperTextColor}
-                      cursor="pointer"
-                      onClick={() => setIsAccountOpen(!isAccountOpen)}
-                    />
-                  )}
-                </InputRightElement>
               </InputGroup>
-            </PopoverTrigger>
-            <PopoverContent
-              p={0}
+            </Popover.Trigger>
+            <Popover.Positioner>
+              <Popover.Content w="full" p={0}
               bg={bgColor}
               border="1px solid"
               borderColor={borderColor}
@@ -157,9 +144,7 @@ const FilterAccountSelector: React.FC<FilterAccountSelectorProps> = ({
               boxShadow="lg"
               maxH="220px"
               overflowY="auto"
-              _focus={{ outline: "none" }}
-            >
-              {filteredAssetAccounts.length > 0 && (
+              _focus={{ outline: "none" }}>{filteredAssetAccounts.length > 0 && (
                 <>
                   <Box px={3} py={2} bg={cardBg} borderBottom="1px solid" borderColor={borderColor}>
                     <Text fontSize="xs" fontWeight="semibold" color={helperTextColor} textTransform="uppercase" letterSpacing="wider">
@@ -187,7 +172,7 @@ const FilterAccountSelector: React.FC<FilterAccountSelectorProps> = ({
                       <Text fontSize="sm" fontWeight={filters.account_id === String(acc.account_id) ? "semibold" : "normal"}>
                         {acc.name}
                       </Text>
-                      {filters.account_id === String(acc.account_id) && <Icon as={Check} boxSize={4} color="teal.500" />}
+                      {filters.account_id === String(acc.account_id) && <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>}
                     </Box>
                   ))}
                 </>
@@ -227,7 +212,7 @@ const FilterAccountSelector: React.FC<FilterAccountSelectorProps> = ({
                         <Text fontSize="sm" fontWeight={filters.account_id === String(acc.account_id) ? "semibold" : "normal"}>
                           {acc.name}
                         </Text>
-                        {filters.account_id === String(acc.account_id) && <Icon as={Check} boxSize={4} color="teal.500" />}
+                        {filters.account_id === String(acc.account_id) && <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>}
                       </Box>
                     );
                   })}
@@ -237,11 +222,11 @@ const FilterAccountSelector: React.FC<FilterAccountSelectorProps> = ({
                 <Box px={4} py={5} textAlign="center">
                   <Text fontSize="sm" color={helperTextColor}>No accounts found</Text>
                 </Box>
-              )}
-            </PopoverContent>
-          </Popover>
+              )}</Popover.Content>
+            </Popover.Positioner>
+          </Popover.Root>
         )}
-      </FormControl>
+      </Field.Root>
     </Box>
   );
 };

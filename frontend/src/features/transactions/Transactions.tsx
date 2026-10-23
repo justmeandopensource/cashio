@@ -1,16 +1,6 @@
 import React, { lazy, Suspense } from "react";
-import {
-  Box,
-  Text,
-  Button,
-  Flex,
-  VStack,
-  IconButton,
-  Icon,
-  Skeleton,
-  SkeletonText,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../components/ui/color-mode";
+import { Box, Text, Button, Flex, VStack, IconButton, Icon, Skeleton, SkeletonText } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { motion } from "framer-motion";
 import { Plus, ChevronLeft, ChevronRight, Filter, AlignLeft, BookOpen } from "lucide-react";
@@ -110,7 +100,7 @@ const Transactions: React.FC<TransactionsProps> = ({
           </Flex>
           <Skeleton height="8" width="24" borderRadius="lg" />
         </Flex>
-        <VStack spacing={3} align="stretch">
+        <VStack gap={3} align="stretch">
           {Array.from({ length: 5 }).map((_, index) => (
             <MotionBox
               key={index}
@@ -129,7 +119,7 @@ const Transactions: React.FC<TransactionsProps> = ({
                   <Skeleton height="4" width="20" borderRadius="md" />
                   <Skeleton height="5" width="16" borderRadius="md" />
                 </Flex>
-                <SkeletonText noOfLines={2} spacing="2" />
+                <SkeletonText noOfLines={2} gap="2" />
               </Box>
             </MotionBox>
           ))}
@@ -188,30 +178,24 @@ const Transactions: React.FC<TransactionsProps> = ({
           <MotionBox whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             {hasActiveFilters ? (
               <Button
-                leftIcon={<Filter size={16} />}
-                colorScheme="brand"
+                colorPalette="brand"
                 onClick={handleResetFilters}
                 borderRadius="lg"
                 fontWeight="bold"
                 px={6}
                 _hover={{ boxShadow: btnGlow }}
-                transition="all 0.2s ease"
-              >
-                Reset Filters
-              </Button>
+                transition="all 0.2s ease"><Filter size={16} />Reset Filters
+                              </Button>
             ) : (
               <Button
-                leftIcon={<Plus size={16} />}
-                colorScheme="brand"
+                colorPalette="brand"
                 onClick={onAddTransaction}
                 borderRadius="lg"
                 fontWeight="bold"
                 px={6}
                 _hover={{ boxShadow: btnGlow }}
-                transition="all 0.2s ease"
-              >
-                Add Transaction
-              </Button>
+                transition="all 0.2s ease"><Plus size={16} />Add Transaction
+                              </Button>
             )}
           </MotionBox>
         </MotionBox>
@@ -232,7 +216,7 @@ const Transactions: React.FC<TransactionsProps> = ({
 
           <Flex justify="space-between" align="center" mb={4}>
             <Flex align="center" gap={2}>
-              <Icon as={AlignLeft} size={24} color="secondaryTextColor" />
+              <Icon as={AlignLeft} boxSize={6} color="secondaryTextColor" />
               <Text fontSize={{ base: "lg", lg: "xl" }} fontWeight="800" color={tertiaryTextColor} letterSpacing="-0.02em">
                 Transactions
               </Text>
@@ -265,7 +249,7 @@ const Transactions: React.FC<TransactionsProps> = ({
           </Box>
 
            <Box display={{ base: "block", lg: "none" }}>
-             <VStack spacing={1} align="stretch">
+             <VStack gap={1} align="stretch">
                {transactionsData.transactions.map((transaction, index) => (
                  <MotionBox
                    key={transaction.transaction_id}
@@ -320,15 +304,13 @@ const Transactions: React.FC<TransactionsProps> = ({
                 py={1}
               >
                 <IconButton
-                  icon={<ChevronLeft size={16} />}
-                  isDisabled={pagination.current_page === 1}
+                  disabled={pagination.current_page === 1}
                   onClick={() => handlePageChange(pagination.current_page - 1)}
                   variant="ghost"
                   size="sm"
                   aria-label="Previous page"
                   data-testid="transactions-prev-page-icon"
-                  borderRadius="lg"
-                />
+                  borderRadius="lg"><ChevronLeft size={16} /></IconButton>
                 <Text
                   mx={4}
                   fontSize="sm"
@@ -339,15 +321,13 @@ const Transactions: React.FC<TransactionsProps> = ({
                   {pagination.current_page} / {pagination.total_pages}
                 </Text>
                 <IconButton
-                  icon={<ChevronRight size={16} />}
-                  isDisabled={pagination.current_page === pagination.total_pages}
+                  disabled={pagination.current_page === pagination.total_pages}
                   onClick={() => handlePageChange(pagination.current_page + 1)}
                   variant="ghost"
                   size="sm"
                   aria-label="Next page"
                   data-testid="transactions-next-page-icon"
-                  borderRadius="lg"
-                />
+                  borderRadius="lg"><ChevronRight size={16} /></IconButton>
               </Flex>
             </Flex>
           )}

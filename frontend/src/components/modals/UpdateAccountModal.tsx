@@ -1,24 +1,18 @@
 import React, { useState } from "react";
+import { useColorModeValue } from "../ui/color-mode";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalFooter,
-  ModalBody,
-  FormControl,
-  FormLabel,
-  FormHelperText,
   Input,
   InputGroup,
-  InputLeftAddon,
-  Select,
+  NativeSelect,
   Button,
   Box,
   VStack,
   HStack,
-  useColorModeValue,
   Textarea,
   Icon,
+  Field,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
 import { AxiosError } from "axios";
 import api from "@/lib/api";
@@ -152,324 +146,334 @@ const UpdateAccountModal: React.FC<UpdateAccountModalProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      returnFocusOnClose={false}
-      onClose={onClose}
+    <Dialog.Root
+      open={isOpen}
       size={{ base: "full", sm: "xl" }}
-      motionPreset="slideInBottom"
-    >
-      <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-      <ModalContent
-        bg={bgColor}
-        borderRadius={{ base: 0, sm: "xl" }}
-        boxShadow="2xl"
-        border="1px solid"
-        borderColor={borderColor}
-        overflow="hidden"
-        mx={{ base: 0, sm: 4 }}
-        my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "90vh" }}
-        display="flex"
-        flexDirection="column"
-      >
-        <Box h="3px" bgGradient="linear(to-r, brand.400, brand.600, teal.300)" />
+      motionPreset="slide-in-bottom"
+      onOpenChange={e => {
+        if (!e.open) {
+          onClose();
+        }
+      }}>
+      <Portal>
 
-        <Box
-          px={{ base: 4, sm: 8 }}
-          py={5}
-          borderBottom="1px solid"
-          borderColor={modalHeaderBorderColor}
-        >
-          <HStack spacing={3} align="flex-start">
-            <Icon as={Edit} boxSize={5} mt="3px" color={modalIconColor} />
-            <Box>
-              <Box
-                fontSize="lg"
-                fontWeight="800"
-                letterSpacing="-0.02em"
-                color={modalTitleColor}
-              >
-                Update {account.type === "asset" ? "Asset" : "Liability"} Account
-              </Box>
-              <Box fontSize="sm" color={modalSubtitleColor}>
-                Modify account details and settings
-              </Box>
-            </Box>
-          </HStack>
-        </Box>
+        <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <Dialog.Positioner>
+          <Dialog.Content
+            bg={bgColor}
+            borderRadius={{ base: 0, sm: "xl" }}
+            boxShadow="2xl"
+            border="1px solid"
+            borderColor={borderColor}
+            overflow="hidden"
+            mx={{ base: 0, sm: 4 }}
+            my={{ base: 0, sm: "auto" }}
+            maxHeight={{ base: "100%", md: "90vh" }}
+            display="flex"
+            flexDirection="column">
+            <Box h="3px" bgGradient="to-r" gradientFrom="brand.400" gradientVia="brand.600" gradientTo="teal.300"  />
 
-        <ModalBody
-          px={{ base: 4, sm: 8 }}
-          py={{ base: 4, sm: 6 }}
-          flex="1"
-          display="flex"
-          flexDirection="column"
-          overflowY="auto"
-          overflowX="hidden"
-          justifyContent={{ base: "space-between", sm: "flex-start" }}
-        >
-          <VStack spacing={{ base: 5, sm: 6 }} align="stretch" w="100%">
-            {/* Account Name */}
             <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
+              px={{ base: 4, sm: 8 }}
+              py={5}
+              borderBottom="1px solid"
+              borderColor={modalHeaderBorderColor}
             >
-              <FormControl isRequired>
-                <FormLabel fontWeight="semibold" mb={2}>
-                  Account Name
-                </FormLabel>
-                <Input
-                  placeholder={`e.g., ${account.type === "asset" ? "Cash, Bank Account" : "Credit Card, Mortgage"}`}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  borderWidth="2px"
-                  borderColor={inputBorderColor}
-                  bg={inputBg}
-                  size="lg"
-                  borderRadius="lg"
-                  _hover={{ borderColor: "brand.300" }}
-                  _focus={{
-                    borderColor: focusBorderColor,
-                    boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                  }}
-                  autoFocus
-                />
-                <FormHelperText mt={2}>
-                  Update the name of your {account.type} account
-                </FormHelperText>
-              </FormControl>
-            </Box>
-
-            {/* Subtype + Opening Balance */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
-            >
-              <VStack spacing={5} align="stretch">
-                <FormControl>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    Account Type
-                  </FormLabel>
-                  <Select
-                    value={subtype}
-                    onChange={(e) => setSubtype(e.target.value)}
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    bg={inputBg}
-                    size="lg"
-                    borderRadius="lg"
-                    _hover={{ borderColor: "brand.300" }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                    }}
+              <HStack gap={3} align="flex-start">
+                <Icon boxSize={5} mt="3px" color={modalIconColor} asChild><Edit /></Icon>
+                <Box>
+                  <Box
+                    fontSize="lg"
+                    fontWeight="800"
+                    letterSpacing="-0.02em"
+                    color={modalTitleColor}
                   >
-                    {subtypeOptions.map(([value, meta]) => (
-                      <option key={value} value={value}>
-                        {meta.label}
-                      </option>
-                    ))}
-                  </Select>
-                  <FormHelperText mt={2}>
-                    Choose the category that best describes this account
-                  </FormHelperText>
-                </FormControl>
+                    Update {account.type === "asset" ? "Asset" : "Liability"} Account
+                  </Box>
+                  <Box fontSize="sm" color={modalSubtitleColor}>
+                    Modify account details and settings
+                  </Box>
+                </Box>
+              </HStack>
+            </Box>
 
-                <FormControl>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    Opening Balance
-                  </FormLabel>
-                  <InputGroup size="lg">
-                    <InputLeftAddon
-                      bg={inputBorderColor}
-                      borderWidth="2px"
-                      borderColor={inputBorderColor}
-                      color={useColorModeValue("gray.600", "gray.200")}
-                      fontWeight="semibold"
-                    >
-                      {currencySymbol}
-                    </InputLeftAddon>
+            <Dialog.Body
+              px={{ base: 4, sm: 8 }}
+              py={{ base: 4, sm: 6 }}
+              flex="1"
+              display="flex"
+              flexDirection="column"
+              overflowY="auto"
+              overflowX="hidden"
+              justifyContent={{ base: "space-between", sm: "flex-start" }}
+            >
+              <VStack gap={{ base: 5, sm: 6 }} align="stretch" w="100%">
+                {/* Account Name */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <Field.Root required>
+                    <Field.Label fontWeight="semibold" mb={2}>
+                      Account Name
+                    </Field.Label>
                     <Input
-                      type="number"
-                      value={openingBalance}
-                      onChange={(e) => setOpeningBalance(e.target.value)}
-                      placeholder="0.00"
+                      placeholder={`e.g., ${account.type === "asset" ? "Cash, Bank Account" : "Credit Card, Mortgage"}`}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      onKeyDown={handleKeyDown}
                       borderWidth="2px"
                       borderColor={inputBorderColor}
                       bg={inputBg}
+                      size="lg"
                       borderRadius="lg"
                       _hover={{ borderColor: "brand.300" }}
                       _focus={{
                         borderColor: focusBorderColor,
                         boxShadow: `0 0 0 1px ${focusBorderColor}`,
                       }}
+                      autoFocus
                     />
-                  </InputGroup>
-                  <FormHelperText mt={2}>
-                    Starting balance for this account
-                  </FormHelperText>
-                </FormControl>
-              </VStack>
-            </Box>
+                    <Field.HelperText mt={2}>
+                      Update the name of your {account.type} account
+                    </Field.HelperText>
+                  </Field.Root>
+                </Box>
 
-            {/* Owner */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
+                {/* Subtype + Opening Balance */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <VStack gap={5} align="stretch">
+                    <Field.Root>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        Account Type
+                      </Field.Label>
+                      <NativeSelect.Root size="lg">
+                        <NativeSelect.Field
+                          value={subtype}
+                          onChange={(e) => setSubtype(e.target.value)}
+                          borderWidth="2px"
+                          borderColor={inputBorderColor}
+                          bg={inputBg}
+                          borderRadius="lg"
+                          _hover={{ borderColor: "brand.300" }}
+                          _focus={{
+                            borderColor: focusBorderColor,
+                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                          }}>
+                          {subtypeOptions.map(([value, meta]) => (
+                            <option key={value} value={value}>
+                              {meta.label}
+                            </option>
+                          ))}
+                        </NativeSelect.Field>
+                        <NativeSelect.Indicator />
+                      </NativeSelect.Root>
+                      <Field.HelperText mt={2}>
+                        Choose the category that best describes this account
+                      </Field.HelperText>
+                    </Field.Root>
+
+                    <Field.Root>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        Opening Balance
+                      </Field.Label>
+                      <InputGroup
+                        startAddon={currencySymbol}
+                        startAddonProps={{
+                          size: "lg",
+                          bg: inputBorderColor,
+                          borderWidth: "2px",
+                          borderColor: inputBorderColor,
+                          color: useColorModeValue("gray.600", "gray.200"),
+                          fontWeight: "semibold",
+                        }}
+                      >
+                        <Input
+                          type="number"
+                          size="lg"
+                          value={openingBalance}
+                          onChange={(e) => setOpeningBalance(e.target.value)}
+                          placeholder="0.00"
+                          borderWidth="2px"
+                          borderColor={inputBorderColor}
+                          bg={inputBg}
+                          borderRadius="lg"
+                          _hover={{ borderColor: "brand.300" }}
+                          _focus={{
+                            borderColor: focusBorderColor,
+                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                          }}
+                        />
+                      </InputGroup>
+                      <Field.HelperText mt={2}>
+                        Starting balance for this account
+                      </Field.HelperText>
+                    </Field.Root>
+                  </VStack>
+                </Box>
+
+                {/* Owner */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <FormOwnerSuggestionField
+                    suggestionsUrl={`/ledger/${account.ledger_id}/account/owner/suggestions`}
+                    label="Owner (Optional)"
+                    value={owner}
+                    setValue={setOwner}
+                    placeholder="e.g., John Doe"
+                    helperText="Assign this account to a person for filtering"
+                    borderColor={inputBorderColor}
+                    inputBg={inputBg}
+                  />
+                </Box>
+
+                {/* Description + Notes */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <VStack gap={5} align="stretch">
+                    <Field.Root>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        Description
+                      </Field.Label>
+                      <Input
+                        placeholder="e.g., My main checking account"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        borderWidth="2px"
+                        borderColor={inputBorderColor}
+                        bg={inputBg}
+                        size="lg"
+                        borderRadius="lg"
+                        _hover={{ borderColor: "brand.300" }}
+                        _focus={{
+                          borderColor: focusBorderColor,
+                          boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                        }}
+                        disabled={isLoading}
+                      />
+                      <Field.HelperText mt={2}>
+                        A brief overview of this account&apos;s purpose
+                      </Field.HelperText>
+                    </Field.Root>
+
+                    <Field.Root>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        Notes
+                      </Field.Label>
+                      <Textarea
+                        placeholder="Any additional notes or details"
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        borderWidth="2px"
+                        borderColor={inputBorderColor}
+                        bg={inputBg}
+                        size="lg"
+                        borderRadius="lg"
+                        rows={4}
+                        _hover={{ borderColor: "brand.300" }}
+                        _focus={{
+                          borderColor: focusBorderColor,
+                          boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                        }}
+                        disabled={isLoading}
+                      />
+                      <Field.HelperText mt={2}>
+                        Detailed notes for this account
+                      </Field.HelperText>
+                    </Field.Root>
+                  </VStack>
+                </Box>
+              </VStack>
+
+              {/* Mobile action buttons */}
+              <Box display={{ base: "block", sm: "none" }} mt={6}>
+                <Button
+                  onClick={handleSubmit}
+                  colorPalette="brand"
+                  size="lg"
+                  width="100%"
+                  mb={3}
+                  borderRadius="lg"
+                  fontWeight="bold"
+                  loading={isLoading}
+                  loadingText="Updating..."
+                  disabled={!name || !hasChanges()}
+                >
+                  Update Account
+                </Button>
+                <Button
+                  variant="ghost"
+                  colorPalette="gray"
+                  onClick={onClose}
+                  size="lg"
+                  width="100%"
+                  borderRadius="lg"
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+              </Box>
+            </Dialog.Body>
+
+            {/* Desktop footer */}
+            <Dialog.Footer
+              display={{ base: "none", sm: "flex" }}
+              px={8}
+              py={6}
+              bg={footerBg}
+              borderTop="1px solid"
               borderColor={borderColor}
             >
-              <FormOwnerSuggestionField
-                suggestionsUrl={`/ledger/${account.ledger_id}/account/owner/suggestions`}
-                label="Owner (Optional)"
-                value={owner}
-                setValue={setOwner}
-                placeholder="e.g., John Doe"
-                helperText="Assign this account to a person for filtering"
-                borderColor={inputBorderColor}
-                inputBg={inputBg}
-              />
-            </Box>
+              <Button
+                colorPalette="brand"
+                mr={3}
+                onClick={handleSubmit}
+                px={8}
+                py={3}
+                borderRadius="lg"
+                fontWeight="bold"
+                loading={isLoading}
+                loadingText="Updating..."
+                disabled={!name || !hasChanges()}
+              >
+                Update Account
+              </Button>
+              <Button
+                variant="ghost"
+                colorPalette="gray"
+                onClick={onClose}
+                disabled={isLoading}
+                px={6}
+                py={3}
+                borderRadius="lg"
+              >
+                Cancel
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
 
-            {/* Description + Notes */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
-            >
-              <VStack spacing={5} align="stretch">
-                <FormControl>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    Description
-                  </FormLabel>
-                  <Input
-                    placeholder="e.g., My main checking account"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    bg={inputBg}
-                    size="lg"
-                    borderRadius="lg"
-                    _hover={{ borderColor: "brand.300" }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                    }}
-                    isDisabled={isLoading}
-                  />
-                  <FormHelperText mt={2}>
-                    A brief overview of this account&apos;s purpose
-                  </FormHelperText>
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    Notes
-                  </FormLabel>
-                  <Textarea
-                    placeholder="Any additional notes or details"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    bg={inputBg}
-                    size="lg"
-                    borderRadius="lg"
-                    rows={4}
-                    _hover={{ borderColor: "brand.300" }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                    }}
-                    isDisabled={isLoading}
-                  />
-                  <FormHelperText mt={2}>
-                    Detailed notes for this account
-                  </FormHelperText>
-                </FormControl>
-              </VStack>
-            </Box>
-          </VStack>
-
-          {/* Mobile action buttons */}
-          <Box display={{ base: "block", sm: "none" }} mt={6}>
-            <Button
-              onClick={handleSubmit}
-              colorScheme="brand"
-              size="lg"
-              width="100%"
-              mb={3}
-              borderRadius="lg"
-              fontWeight="bold"
-              isLoading={isLoading}
-              loadingText="Updating..."
-              isDisabled={!name || !hasChanges()}
-            >
-              Update Account
-            </Button>
-            <Button
-              variant="ghost"
-              colorScheme="gray"
-              onClick={onClose}
-              size="lg"
-              width="100%"
-              borderRadius="lg"
-              isDisabled={isLoading}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </ModalBody>
-
-        {/* Desktop footer */}
-        <ModalFooter
-          display={{ base: "none", sm: "flex" }}
-          px={8}
-          py={6}
-          bg={footerBg}
-          borderTop="1px solid"
-          borderColor={borderColor}
-        >
-          <Button
-            colorScheme="brand"
-            mr={3}
-            onClick={handleSubmit}
-            px={8}
-            py={3}
-            borderRadius="lg"
-            fontWeight="bold"
-            isLoading={isLoading}
-            loadingText="Updating..."
-            isDisabled={!name || !hasChanges()}
-          >
-            Update Account
-          </Button>
-          <Button
-            variant="ghost"
-            colorScheme="gray"
-            onClick={onClose}
-            isDisabled={isLoading}
-            px={6}
-            py={3}
-            borderRadius="lg"
-          >
-            Cancel
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

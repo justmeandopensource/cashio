@@ -1,10 +1,6 @@
 import React from "react";
-import {
-  Link as ChakraLink,
-  Icon,
-  Text,
-  Tooltip,
-} from "@chakra-ui/react";
+import { Link as ChakraLink, Icon, Text } from "@chakra-ui/react";
+import { Tooltip } from '@/components/ui/tooltip';
 import { motion } from "framer-motion";
 import { Box } from "@chakra-ui/react";
 
@@ -112,7 +108,9 @@ export const NavItem: React.FC<NavItemProps> = ({
 
   if (collapsed) {
     return (
-      <Tooltip label={label} placement="right" hasArrow openDelay={200}>
+      <Tooltip content={label} showArrow openDelay={200} positioning={{
+        placement: "right"
+      }}>
         {linkEl}
       </Tooltip>
     );
@@ -200,7 +198,9 @@ export const NavSubItem: React.FC<NavItemProps> = ({
 
   if (collapsed) {
     return (
-      <Tooltip label={label} placement="right" hasArrow openDelay={200}>
+      <Tooltip content={label} showArrow openDelay={200} positioning={{
+        placement: "right"
+      }}>
         {linkEl}
       </Tooltip>
     );

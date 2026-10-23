@@ -1,16 +1,6 @@
 import React, { useState, useMemo } from "react";
-import {
-  Flex,
-  Box,
-  Text,
-  Icon,
-  useDisclosure,
-  SimpleGrid,
-  HStack,
-  Skeleton,
-  useColorModeValue,
-  Select,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Flex, Box, Text, Icon, useDisclosure, SimpleGrid, HStack, Skeleton, NativeSelect } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import {
   Building,
@@ -42,7 +32,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
   onAddTransaction,
   onTransferFunds,
 }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
   const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const [accountType, setAccountType] = useState<"asset" | "liability">("asset");
   const [showZeroBalanceAssets, setShowZeroBalanceAssets] = useState(false);
@@ -141,13 +131,13 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
     return (
       <Box p={{ base: 2, md: 4 }}>
         {/* Summary cards skeleton */}
-        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 3, md: 4 }} mb={{ base: 4, md: 6 }}>
+        <SimpleGrid columns={{ base: 1, md: 3 }} gap={{ base: 3, md: 4 }} mb={{ base: 4, md: 6 }}>
           {[0, 1, 2].map((i) => (
             <Skeleton key={i} height="90px" borderRadius="xl" />
           ))}
         </SimpleGrid>
         {/* Account sections skeleton */}
-        <SimpleGrid columns={{ base: 1, md: 1, lg: 2 }} spacing={{ base: 4, md: 6 }}>
+        <SimpleGrid columns={{ base: 1, md: 1, lg: 2 }} gap={{ base: 4, md: 6 }}>
           {[0, 1].map((i) => (
             <Box key={i}>
               <Skeleton height="48px" borderRadius="lg" mb={2} />
@@ -192,27 +182,27 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
       {/* Owner filter */}
       {owners.length > 0 && (
         <Flex mb={4} justify="flex-end">
-          <Select
-            value={selectedOwner}
-            onChange={(e) => setSelectedOwner(e.target.value)}
-            size="sm"
-            maxW={{ base: "100%", md: "200px" }}
-            borderRadius="lg"
-          >
-            <option value="all">All Owners</option>
-            {owners.map((owner) => (
-              <option key={owner} value={owner}>
-                {owner}
-              </option>
-            ))}
-          </Select>
+          <NativeSelect.Root size="sm" maxW={{ base: "100%", md: "200px" }}>
+            <NativeSelect.Field
+              value={selectedOwner}
+              onChange={(e) => setSelectedOwner(e.target.value)}
+              borderRadius="lg">
+              <option value="all">All Owners</option>
+              {owners.map((owner) => (
+                <option key={owner} value={owner}>
+                  {owner}
+                </option>
+              ))}
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
         </Flex>
       )}
 
       {/* Summary bar */}
       <MotionSimpleGrid
         columns={{ base: 1, md: 3 }}
-        spacing={{ base: 3, md: 4 }}
+        gap={{ base: 3, md: 4 }}
         mb={{ base: 4, md: 6 }}
         initial="hidden"
         animate="visible"
@@ -272,7 +262,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
                   <FinancialTooltip term={tooltipTerm} />
                 </Text>
               </Flex>
-              <HStack spacing={0} align="baseline">
+              <HStack gap={0} align="baseline">
                 <Text
                   fontSize={{ base: "lg", md: "xl" }}
                   fontWeight="bold"
@@ -292,7 +282,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
       </MotionSimpleGrid>
 
       {/* Assets & Liabilities detail */}
-      <SimpleGrid columns={{ base: 1, md: 1, lg: 2 }} spacing={{ base: 4, md: 6 }}>
+      <SimpleGrid columns={{ base: 1, md: 1, lg: 2 }} gap={{ base: 4, md: 6 }}>
         <MotionBox
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -339,7 +329,7 @@ const LedgerMainAccounts: React.FC<LedgerMainAccountsProps> = ({
       </SimpleGrid>
 
       <CreateAccountModal
-        isOpen={isOpen}
+        isOpen={open}
         onClose={onClose}
         accountType={accountType}
       />

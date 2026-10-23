@@ -3,7 +3,7 @@ from decimal import Decimal
 from app.schemas import JsonDecimal
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from app.schemas.tag_schema import Tag, TagCreate
 
@@ -39,8 +39,7 @@ class TransactionSplit(BaseModel, str_strip_whitespace=True):
     debit: JsonDecimal
     notes: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TransactionSplitResponse(TransactionSplit):
@@ -134,8 +133,7 @@ class Transaction(BaseModel, str_strip_whitespace=True):
     transfer_source_account_name: Optional[str] = None
     transfer_destination_account_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PaginatedTransactionResponse(BaseModel):

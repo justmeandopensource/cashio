@@ -1,27 +1,20 @@
 import React from "react";
+import { useColorModeValue } from "../../ui/color-mode";
 import {
-  ModalBody,
-  FormControl,
-  FormLabel,
   Input,
-  Select,
-  Switch,
+  NativeSelect,
   Text,
   VStack,
   HStack,
   Box,
-  useColorModeValue,
   InputGroup,
-  InputLeftAddon,
-  InputLeftElement,
-  InputRightElement,
-  FormHelperText,
   Icon,
   Popover,
-  PopoverTrigger,
-  PopoverContent,
   Button,
+  Field,
+  Dialog,
 } from "@chakra-ui/react";
+import { Switch } from "@/components/ui/switch";
 import { Check, X, Search, ChevronDown, AlertTriangle } from "lucide-react";
 import ChakraDatePicker from "@components/shared/ChakraDatePicker";
 import FormNotes from "../../shared/FormNotes";
@@ -69,7 +62,7 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
   const heroPlaceholder = form.isOverBalance ? heroWarningPlaceholder : heroTransferPlaceholder;
 
   return (
-    <ModalBody
+    <Dialog.Body
       px={{ base: 4, sm: 8 }}
       py={{ base: 4, sm: 6 }}
       flex="1"
@@ -80,10 +73,9 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
       justifyContent={{ base: "space-between", sm: "flex-start" }}
     >
       <VStack
-        spacing={{ base: 5, sm: 6 }}
+        gap={{ base: 5, sm: 6 }}
         align="stretch"
         w="100%"
-        sx={{ "& .chakra-form__required-indicator": { display: "none" } }}
       >
         {/* Hero Amount Section */}
         <Box
@@ -93,9 +85,11 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
           border="2px solid"
           borderColor={heroBorderColor}
           textAlign="center"
-          sx={{ transition: "background-color 0.2s, border-color 0.2s" }}
+          css={{
+            transition: "background-color 0.2s, border-color 0.2s"
+          }}
         >
-          <HStack justify="center" spacing={1.5} mb={3}>
+          <HStack justify="center" gap={1.5} mb={3}>
             <Text
               fontSize="xs"
               fontWeight="semibold"
@@ -103,15 +97,17 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
               textTransform="uppercase"
               color={heroColor}
               opacity={0.7}
-              sx={{ transition: "color 0.2s" }}
+              css={{
+                transition: "color 0.2s"
+              }}
             >
               Transfer Amount
             </Text>
             {form.amount && parseFloat(form.amount) > 0 && !form.isOverBalance && (
-              <Icon as={Check} boxSize={3.5} color={heroColor} opacity={0.8} />
+              <Icon boxSize={3.5} color={heroColor} opacity={0.8} asChild><Check /></Icon>
             )}
             {form.isOverBalance && (
-              <Icon as={AlertTriangle} boxSize={3.5} color={heroColor} opacity={0.9} />
+              <Icon boxSize={3.5} color={heroColor} opacity={0.9} asChild><AlertTriangle /></Icon>
             )}
           </HStack>
           <Box position="relative" width="100%" display="flex" alignItems="center">
@@ -124,7 +120,9 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
               lineHeight="1"
               userSelect="none"
               pointerEvents="none"
-              sx={{ transition: "color 0.2s" }}
+              css={{
+                transition: "color 0.2s"
+              }}
             >
               {form.currencySymbol}
             </Text>
@@ -141,24 +139,28 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
               color={heroColor}
               _placeholder={{ color: heroPlaceholder }}
               textAlign="center"
-              variant="unstyled"
+              unstyled
               autoFocus
               width="100%"
-              sx={{ transition: "color 0.2s" }}
+              css={{
+                transition: "color 0.2s"
+              }}
               data-testid="transferfundsmodal-amount-input"
             />
           </Box>
           {form.fromAccountId && (
-            <HStack justify="center" spacing={1} mt={2}>
+            <HStack justify="center" gap={1} mt={2}>
               {form.isOverBalance && (
-                <Icon as={AlertTriangle} boxSize={3} color={heroColor} opacity={0.8} />
+                <Icon boxSize={3} color={heroColor} opacity={0.8} asChild><AlertTriangle /></Icon>
               )}
               <Text
                 fontSize="xs"
                 color={heroColor}
                 opacity={form.isOverBalance ? 0.9 : 0.6}
                 fontWeight={form.isOverBalance ? "semibold" : "normal"}
-                sx={{ transition: "color 0.2s, opacity 0.2s" }}
+                css={{
+                  transition: "color 0.2s, opacity 0.2s"
+                }}
               >
                 {form.isOverBalance
                   ? `Exceeds available balance of ${form.formatCurrency(form.selectedAccountBalance)}`
@@ -176,17 +178,18 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
           border="1px solid"
           borderColor={borderColor}
         >
-          <VStack spacing={5} align="stretch">
+          <VStack gap={5} align="stretch">
             {/* Date Picker */}
-            <FormControl isRequired>
-              <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+            <Field.Root required>
+              <Field.Label fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                 Transaction date
-                <Icon as={Check} boxSize={3.5} color="teal.500" />
-              </FormLabel>
+                <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
+              </Field.Label>
               <Box
-                sx={{
-                  ".react-datepicker-wrapper": { width: "100%" },
-                  ".react-datepicker__input-container input": {
+                css={{
+                  '& .react-datepicker-wrapper': { width: "100%" },
+
+                  '& .react-datepicker__input-container input': {
                     width: "100%",
                     height: "48px",
                     borderWidth: "2px",
@@ -199,7 +202,7 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                       borderColor: focusBorderColor,
                       boxShadow: `0 0 0 1px ${focusBorderColor}`,
                     },
-                  },
+                  }
                 }}
               >
                 <ChakraDatePicker
@@ -209,29 +212,45 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                   data-testid="transferfundsmodal-date-picker"
                 />
               </Box>
-            </FormControl>
+            </Field.Root>
 
             {/* From Account (only shown if no accountId -- at ledger level) */}
             {!accountId && form.accounts.length > 0 && (
-              <FormControl isRequired>
-                <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+              <Field.Root required>
+                <Field.Label fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                   From Account
-                  {form.fromAccountId && <Icon as={Check} boxSize={3.5} color="teal.500" />}
-                </FormLabel>
-                <Popover
-                  isOpen={form.isFromAccountOpen}
-                  onClose={() => { form.setIsFromAccountOpen(false); form.setHighlightedFromIndex(-1); }}
-                  matchWidth
-                  placement="bottom-start"
+                  {form.fromAccountId && <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>}
+                </Field.Label>
+                <Popover.Root
+                  open={form.isFromAccountOpen}
                   autoFocus={false}
-                  returnFocusOnClose={false}
-                >
-                  <PopoverTrigger>
-                    <InputGroup size="lg">
-                      <InputLeftElement pointerEvents="none" height="100%">
-                        <Icon as={Search} boxSize={4} color={helperTextColor} />
-                      </InputLeftElement>
+                  onOpenChange={e => {
+                    if (!(e.open)) { form.setIsFromAccountOpen(false); form.setHighlightedFromIndex(-1); }
+                  }}
+                  positioning={{
+                    sameWidth: true,
+                    placement: 'bottom-start'
+                  }}>
+                  <Popover.Trigger asChild>
+                    <InputGroup
+                      startElement={<Icon boxSize={4} color={helperTextColor} asChild><Search /></Icon>}
+                      endElement={
+                        form.fromAccountId ? (
+                          <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><X
+                              onClick={() => {
+                                form.setFromAccountId("");
+                                form.setFromAccountSearch("");
+                                form.setIsFromAccountOpen(false);
+                                form.setHighlightedFromIndex(-1);
+                              }} /></Icon>
+                        ) : (
+                          <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><ChevronDown onClick={() => form.setIsFromAccountOpen(!form.isFromAccountOpen)} /></Icon>
+                        )
+                      }
+                      endElementProps={{ pr: 1 }}
+                    >
                       <Input
+                        size="lg"
                         value={form.isFromAccountOpen ? form.fromAccountSearch : (form.selectedFromAccount?.name ?? "")}
                         onChange={(e) => {
                           form.setFromAccountSearch(e.target.value);
@@ -258,34 +277,10 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                         autoComplete="off"
                         data-testid="transferfundsmodal-from-account-dropdown"
                       />
-                      <InputRightElement height="100%" pr={1}>
-                        {form.fromAccountId ? (
-                          <Icon
-                            as={X}
-                            boxSize={4}
-                            color={helperTextColor}
-                            cursor="pointer"
-                            onClick={() => {
-                              form.setFromAccountId("");
-                              form.setFromAccountSearch("");
-                              form.setIsFromAccountOpen(false);
-                              form.setHighlightedFromIndex(-1);
-                            }}
-                          />
-                        ) : (
-                          <Icon
-                            as={ChevronDown}
-                            boxSize={4}
-                            color={helperTextColor}
-                            cursor="pointer"
-                            onClick={() => form.setIsFromAccountOpen(!form.isFromAccountOpen)}
-                          />
-                        )}
-                      </InputRightElement>
                     </InputGroup>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    p={0}
+                  </Popover.Trigger>
+                  <Popover.Positioner>
+                    <Popover.Content w="full" p={0}
                     bg={bgColor}
                     border="1px solid"
                     borderColor={borderColor}
@@ -293,9 +288,7 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                     boxShadow="lg"
                     maxH="220px"
                     overflowY="auto"
-                    _focus={{ outline: "none" }}
-                  >
-                    {form.filteredFromAssetAccounts.length > 0 && (
+                    _focus={{ outline: "none" }}>{form.filteredFromAssetAccounts.length > 0 && (
                       <>
                         <Box px={3} py={2} bg={cardBg} borderBottom="1px solid" borderColor={borderColor}>
                           <Text fontSize="xs" fontWeight="semibold" color={helperTextColor} textTransform="uppercase" letterSpacing="wider">
@@ -323,7 +316,7 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                             <Text fontSize="sm" fontWeight={form.fromAccountId === acc.account_id ? "semibold" : "normal"}>
                               {acc.name}
                             </Text>
-                            {form.fromAccountId === acc.account_id && <Icon as={Check} boxSize={4} color="teal.500" />}
+                            {form.fromAccountId === acc.account_id && <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>}
                           </Box>
                         ))}
                       </>
@@ -363,7 +356,7 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                               <Text fontSize="sm" fontWeight={form.fromAccountId === acc.account_id ? "semibold" : "normal"}>
                                 {acc.name}
                               </Text>
-                              {form.fromAccountId === acc.account_id && <Icon as={Check} boxSize={4} color="teal.500" />}
+                              {form.fromAccountId === acc.account_id && <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>}
                             </Box>
                           );
                         })}
@@ -373,13 +366,13 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                       <Box px={4} py={5} textAlign="center">
                         <Text fontSize="sm" color={helperTextColor}>No accounts found</Text>
                       </Box>
-                    )}
-                  </PopoverContent>
-                </Popover>
-                <FormHelperText mt={2} color={helperTextColor}>
+                    )}</Popover.Content>
+                  </Popover.Positioner>
+                </Popover.Root>
+                <Field.HelperText mt={2} color={helperTextColor}>
                   Select the account to transfer funds from
-                </FormHelperText>
-              </FormControl>
+                </Field.HelperText>
+              </Field.Root>
             )}
           </VStack>
         </Box>
@@ -402,16 +395,16 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
               </Text>
             </Box>
             <Switch
-              colorScheme="brand"
+              colorPalette="brand"
               size="lg"
-              isChecked={form.isDifferentLedger}
-              onChange={(e) => {
-                form.setIsDifferentLedger(e.target.checked);
+              checked={form.isDifferentLedger}
+              onCheckedChange={(e) => {
+                form.setIsDifferentLedger(e.checked);
                 form.setToAccountId("");
                 form.setToAccountSearch("");
                 form.setIsToAccountOpen(false);
                 form.setHighlightedToIndex(-1);
-                if (!e.target.checked) {
+                if (!e.checked) {
                   form.setDestinationLedgerId("");
                   form.setDestinationAmount("");
                 }
@@ -428,76 +421,93 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
           border="2px solid"
           borderColor="teal.200"
         >
-          <VStack spacing={5} align="stretch">
+          <VStack gap={5} align="stretch">
             <Text fontWeight="bold" color={tealTextColor}>
               Destination
             </Text>
 
             {/* Destination Ledger (if different ledger) */}
             {form.isDifferentLedger && (
-              <FormControl isRequired>
-                <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+              <Field.Root required>
+                <Field.Label fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                   Destination Ledger
-                  {form.destinationLedgerId && <Icon as={Check} boxSize={3.5} color="teal.500" />}
-                </FormLabel>
-                <Select
-                  value={form.destinationLedgerId}
-                  onChange={(e) => {
-                    const selectedLedger = form.ledgers.find(
-                      ledger => ledger.ledger_id == e.target.value,
-                    );
-                    form.setDestinationLedgerId(e.target.value);
-                    if (selectedLedger) {
-                      // destinationCurrencySymbol is set via the effect in the hook
-                    }
-                    form.setToAccountId("");
-                    form.setToAccountSearch("");
-                  }}
-                  placeholder="Select destination ledger"
-                  borderWidth="2px"
-                  borderColor={form.destinationLedgerId ? "teal.400" : inputBorderColor}
-                  bg={inputBg}
-                  size="lg"
-                  borderRadius="lg"
-                  _hover={{ borderColor: "brand.300" }}
-                  _focus={{
-                    borderColor: focusBorderColor,
-                    boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                  }}
-                  data-testid="transferfundsmodal-to-ledger-dropdown"
-                >
-                  {form.getFilteredLedgers(form.ledgers).map((ledger) => (
-                    <option key={ledger.ledger_id} value={ledger.ledger_id}>
-                      {ledger.name}
-                    </option>
-                  ))}
-                </Select>
-                <FormHelperText mt={2} color={helperTextColor}>
+                  {form.destinationLedgerId && <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>}
+                </Field.Label>
+                <NativeSelect.Root size="lg">
+                  <NativeSelect.Field
+                    value={form.destinationLedgerId}
+                    onChange={(e) => {
+                      const selectedLedger = form.ledgers.find(
+                        ledger => ledger.ledger_id == e.target.value,
+                      );
+                      form.setDestinationLedgerId(e.target.value);
+                      if (selectedLedger) {
+                        // destinationCurrencySymbol is set via the effect in the hook
+                      }
+                      form.setToAccountId("");
+                      form.setToAccountSearch("");
+                    }}
+                    placeholder="Select destination ledger"
+                    borderWidth="2px"
+                    borderColor={form.destinationLedgerId ? "teal.400" : inputBorderColor}
+                    bg={inputBg}
+                    borderRadius="lg"
+                    _hover={{ borderColor: "brand.300" }}
+                    _focus={{
+                      borderColor: focusBorderColor,
+                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                    }}
+                    data-testid="transferfundsmodal-to-ledger-dropdown">
+                    {form.getFilteredLedgers(form.ledgers).map((ledger) => (
+                      <option key={ledger.ledger_id} value={ledger.ledger_id}>
+                        {ledger.name}
+                      </option>
+                    ))}
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
+                <Field.HelperText mt={2} color={helperTextColor}>
                   Choose the destination ledger
-                </FormHelperText>
-              </FormControl>
+                </Field.HelperText>
+              </Field.Root>
             )}
 
             {/* To Account -- searchable Popover */}
-            <FormControl isRequired>
-              <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+            <Field.Root required>
+              <Field.Label fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                 To Account
-                {form.toAccountId && <Icon as={Check} boxSize={3.5} color="teal.500" />}
-              </FormLabel>
-              <Popover
-                isOpen={form.isToAccountOpen}
-                onClose={() => { form.setIsToAccountOpen(false); form.setHighlightedToIndex(-1); }}
-                matchWidth
-                placement="bottom-start"
+                {form.toAccountId && <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>}
+              </Field.Label>
+              <Popover.Root
+                open={form.isToAccountOpen}
                 autoFocus={false}
-                returnFocusOnClose={false}
-              >
-                <PopoverTrigger>
-                  <InputGroup size="lg">
-                    <InputLeftElement pointerEvents="none" height="100%">
-                      <Icon as={Search} boxSize={4} color={helperTextColor} />
-                    </InputLeftElement>
+                onOpenChange={e => {
+                  if (!(e.open)) { form.setIsToAccountOpen(false); form.setHighlightedToIndex(-1); }
+                }}
+                positioning={{
+                  sameWidth: true,
+                  placement: 'bottom-start'
+                }}>
+                <Popover.Trigger asChild>
+                  <InputGroup
+                    startElement={<Icon boxSize={4} color={helperTextColor} asChild><Search /></Icon>}
+                    endElement={
+                      form.toAccountId ? (
+                        <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><X
+                            onClick={() => {
+                              form.setToAccountId("");
+                              form.setToAccountSearch("");
+                              form.setIsToAccountOpen(false);
+                              form.setHighlightedToIndex(-1);
+                            }} /></Icon>
+                      ) : (
+                        <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><ChevronDown onClick={() => form.setIsToAccountOpen(!form.isToAccountOpen)} /></Icon>
+                      )
+                    }
+                    endElementProps={{ pr: 1 }}
+                  >
                     <Input
+                      size="lg"
                       value={form.isToAccountOpen ? form.toAccountSearch : (form.selectedToAccount?.name ?? "")}
                       onChange={(e) => {
                         form.setToAccountSearch(e.target.value);
@@ -524,34 +534,10 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                       autoComplete="off"
                       data-testid="transferfundsmodal-to-account-dropdown"
                     />
-                    <InputRightElement height="100%" pr={1}>
-                      {form.toAccountId ? (
-                        <Icon
-                          as={X}
-                          boxSize={4}
-                          color={helperTextColor}
-                          cursor="pointer"
-                          onClick={() => {
-                            form.setToAccountId("");
-                            form.setToAccountSearch("");
-                            form.setIsToAccountOpen(false);
-                            form.setHighlightedToIndex(-1);
-                          }}
-                        />
-                      ) : (
-                        <Icon
-                          as={ChevronDown}
-                          boxSize={4}
-                          color={helperTextColor}
-                          cursor="pointer"
-                          onClick={() => form.setIsToAccountOpen(!form.isToAccountOpen)}
-                        />
-                      )}
-                    </InputRightElement>
                   </InputGroup>
-                </PopoverTrigger>
-                <PopoverContent
-                  p={0}
+                </Popover.Trigger>
+                <Popover.Positioner>
+                  <Popover.Content w="full" p={0}
                   bg={bgColor}
                   border="1px solid"
                   borderColor={borderColor}
@@ -559,9 +545,7 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                   boxShadow="lg"
                   maxH="220px"
                   overflowY="auto"
-                  _focus={{ outline: "none" }}
-                >
-                  {form.filteredToAssetAccounts.length > 0 && (
+                  _focus={{ outline: "none" }}>{form.filteredToAssetAccounts.length > 0 && (
                     <>
                       <Box px={3} py={2} bg={cardBg} borderBottom="1px solid" borderColor={borderColor}>
                         <Text fontSize="xs" fontWeight="semibold" color={helperTextColor} textTransform="uppercase" letterSpacing="wider">
@@ -589,7 +573,7 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                           <Text fontSize="sm" fontWeight={form.toAccountId === acc.account_id ? "semibold" : "normal"}>
                             {acc.name}
                           </Text>
-                          {form.toAccountId === acc.account_id && <Icon as={Check} boxSize={4} color="teal.500" />}
+                          {form.toAccountId === acc.account_id && <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>}
                         </Box>
                       ))}
                     </>
@@ -629,7 +613,7 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                             <Text fontSize="sm" fontWeight={form.toAccountId === acc.account_id ? "semibold" : "normal"}>
                               {acc.name}
                             </Text>
-                            {form.toAccountId === acc.account_id && <Icon as={Check} boxSize={4} color="teal.500" />}
+                            {form.toAccountId === acc.account_id && <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>}
                           </Box>
                         );
                       })}
@@ -639,36 +623,38 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                     <Box px={4} py={5} textAlign="center">
                       <Text fontSize="sm" color={helperTextColor}>No accounts found</Text>
                     </Box>
-                  )}
-                </PopoverContent>
-              </Popover>
-              <FormHelperText mt={2} color={helperTextColor}>
+                  )}</Popover.Content>
+                </Popover.Positioner>
+              </Popover.Root>
+              <Field.HelperText mt={2} color={helperTextColor}>
                 Select the account to transfer funds to
-              </FormHelperText>
-            </FormControl>
+              </Field.HelperText>
+            </Field.Root>
 
             {/* Destination Amount (if different ledger) */}
             {form.isDifferentLedger && (
-              <FormControl isRequired>
-                <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+              <Field.Root required>
+                <Field.Label fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                   Destination Amount
                   {form.destinationAmount && parseFloat(form.destinationAmount) > 0 && (
-                    <Icon as={Check} boxSize={3.5} color="teal.500" />
+                    <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
                   )}
-                </FormLabel>
-                <InputGroup size="lg">
-                  <InputLeftAddon
-                    bg={inputBorderColor}
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    color={addonColor}
-                    fontWeight="semibold"
-                  >
-                    {form.destinationCurrencySymbol || form.currencySymbol}
-                  </InputLeftAddon>
+                </Field.Label>
+                <InputGroup
+                  startAddon={form.destinationCurrencySymbol || form.currencySymbol}
+                  startAddonProps={{
+                    size: "lg",
+                    bg: inputBorderColor,
+                    borderWidth: "2px",
+                    borderColor: inputBorderColor,
+                    color: addonColor,
+                    fontWeight: "semibold",
+                  }}
+                >
                   <Input
                     type="text"
                     inputMode="decimal"
+                    size="lg"
                     value={form.destinationAmount}
                     onChange={(e) => form.setDestinationAmount(e.target.value)}
                     onKeyDown={(e) => handleNumericInput(e, form.destinationAmount)}
@@ -685,10 +671,10 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                     }}
                   />
                 </InputGroup>
-                <FormHelperText mt={2} color={helperTextColor}>
+                <Field.HelperText mt={2} color={helperTextColor}>
                   Enter the amount in the destination ledger&apos;s currency
-                </FormHelperText>
-              </FormControl>
+                </Field.HelperText>
+              </Field.Root>
             )}
           </VStack>
         </Box>
@@ -701,30 +687,32 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
           border="1px solid"
           borderColor={borderColor}
         >
-          <VStack spacing={5} align="stretch">
+          <VStack gap={5} align="stretch">
             <Text fontWeight="semibold" color={secondaryTextColor} fontSize="sm">
               Transfer Fee <Text as="span" fontWeight="normal">(optional)</Text>
             </Text>
 
             {/* Fee Amount */}
-            <FormControl>
-              <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+            <Field.Root>
+              <Field.Label fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                 Fee Amount
-                {form.feeAmount && parseFloat(form.feeAmount) > 0 && <Icon as={Check} boxSize={3.5} color="teal.500" />}
-              </FormLabel>
-              <InputGroup size="lg">
-                <InputLeftAddon
-                  bg={inputBorderColor}
-                  borderWidth="2px"
-                  borderColor={inputBorderColor}
-                  color={addonColor}
-                  fontWeight="semibold"
-                >
-                  {form.currencySymbol}
-                </InputLeftAddon>
+                {form.feeAmount && parseFloat(form.feeAmount) > 0 && <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>}
+              </Field.Label>
+              <InputGroup
+                startAddon={form.currencySymbol}
+                startAddonProps={{
+                  size: "lg",
+                  bg: inputBorderColor,
+                  borderWidth: "2px",
+                  borderColor: inputBorderColor,
+                  color: addonColor,
+                  fontWeight: "semibold",
+                }}
+              >
                 <Input
                   type="text"
                   inputMode="decimal"
+                  size="lg"
                   value={form.feeAmount}
                   onChange={(e) => form.setFeeAmount(e.target.value)}
                   onKeyDown={(e) => handleNumericInput(e, form.feeAmount)}
@@ -741,31 +729,47 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                   }}
                 />
               </InputGroup>
-              <FormHelperText mt={2} color={helperTextColor}>
+              <Field.HelperText mt={2} color={helperTextColor}>
                 Fee charged by the transfer service (e.g. Wise, Remitly)
-              </FormHelperText>
-            </FormControl>
+              </Field.HelperText>
+            </Field.Root>
 
             {/* Fee Category */}
-            <FormControl>
-              <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+            <Field.Root>
+              <Field.Label fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                 Fee Category
-                {form.feeCategoryId && <Icon as={Check} boxSize={3.5} color="teal.500" />}
-              </FormLabel>
-              <Popover
-                isOpen={form.isFeeCategoryOpen}
-                onClose={() => { form.setIsFeeCategoryOpen(false); form.setHighlightedFeeCategoryIndex(-1); }}
-                matchWidth
-                placement="bottom-start"
+                {form.feeCategoryId && <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>}
+              </Field.Label>
+              <Popover.Root
+                open={form.isFeeCategoryOpen}
                 autoFocus={false}
-                returnFocusOnClose={false}
-              >
-                <PopoverTrigger>
-                  <InputGroup size="lg">
-                    <InputLeftElement pointerEvents="none" height="100%">
-                      <Icon as={Search} boxSize={4} color={helperTextColor} />
-                    </InputLeftElement>
+                onOpenChange={e => {
+                  if (!(e.open)) { form.setIsFeeCategoryOpen(false); form.setHighlightedFeeCategoryIndex(-1); }
+                }}
+                positioning={{
+                  sameWidth: true,
+                  placement: 'bottom-start'
+                }}>
+                <Popover.Trigger asChild>
+                  <InputGroup
+                    startElement={<Icon boxSize={4} color={helperTextColor} asChild><Search /></Icon>}
+                    endElement={
+                      form.feeCategoryId ? (
+                        <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><X
+                            onClick={() => {
+                              form.setFeeCategoryId("");
+                              form.setFeeCategorySearch("");
+                              form.setIsFeeCategoryOpen(false);
+                              form.setHighlightedFeeCategoryIndex(-1);
+                            }} /></Icon>
+                      ) : (
+                        <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><ChevronDown onClick={() => form.setIsFeeCategoryOpen(!form.isFeeCategoryOpen)} /></Icon>
+                      )
+                    }
+                    endElementProps={{ pr: 1 }}
+                  >
                     <Input
+                      size="lg"
                       value={form.isFeeCategoryOpen ? form.feeCategorySearch : (form.selectedFeeCategory?.name ?? "")}
                       onChange={(e) => {
                         form.setFeeCategorySearch(e.target.value);
@@ -791,34 +795,10 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                       }}
                       autoComplete="off"
                     />
-                    <InputRightElement height="100%" pr={1}>
-                      {form.feeCategoryId ? (
-                        <Icon
-                          as={X}
-                          boxSize={4}
-                          color={helperTextColor}
-                          cursor="pointer"
-                          onClick={() => {
-                            form.setFeeCategoryId("");
-                            form.setFeeCategorySearch("");
-                            form.setIsFeeCategoryOpen(false);
-                            form.setHighlightedFeeCategoryIndex(-1);
-                          }}
-                        />
-                      ) : (
-                        <Icon
-                          as={ChevronDown}
-                          boxSize={4}
-                          color={helperTextColor}
-                          cursor="pointer"
-                          onClick={() => form.setIsFeeCategoryOpen(!form.isFeeCategoryOpen)}
-                        />
-                      )}
-                    </InputRightElement>
                   </InputGroup>
-                </PopoverTrigger>
-                <PopoverContent
-                  p={0}
+                </Popover.Trigger>
+                <Popover.Positioner>
+                  <Popover.Content w="full" p={0}
                   bg={bgColor}
                   border="1px solid"
                   borderColor={borderColor}
@@ -826,9 +806,7 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                   boxShadow="lg"
                   maxH="220px"
                   overflowY="auto"
-                  _focus={{ outline: "none" }}
-                >
-                  {form.filteredFeeCategories.length > 0 ? (
+                  _focus={{ outline: "none" }}>{form.filteredFeeCategories.length > 0 ? (
                     form.filteredFeeCategories.map((cat, i) => (
                       <Box
                         key={cat.category_id}
@@ -850,20 +828,20 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
                         <Text fontSize="sm" fontWeight={form.feeCategoryId === cat.category_id ? "semibold" : "normal"}>
                           {cat.name}
                         </Text>
-                        {form.feeCategoryId === cat.category_id && <Icon as={Check} boxSize={4} color="teal.500" />}
+                        {form.feeCategoryId === cat.category_id && <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>}
                       </Box>
                     ))
                   ) : (
                     <Box px={4} py={5} textAlign="center">
                       <Text fontSize="sm" color={helperTextColor}>No categories found</Text>
                     </Box>
-                  )}
-                </PopoverContent>
-              </Popover>
-              <FormHelperText mt={2} color={helperTextColor}>
+                  )}</Popover.Content>
+                </Popover.Positioner>
+              </Popover.Root>
+              <Field.HelperText mt={2} color={helperTextColor}>
                 Expense category for tracking the fee (e.g. Bank Charges)
-              </FormHelperText>
-            </FormControl>
+              </Field.HelperText>
+            </Field.Root>
           </VStack>
         </Box>
 
@@ -889,31 +867,31 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({ form, accountId, 
       <Box display={{ base: "block", sm: "none" }} mt={6}>
         <Button
           onClick={form.handleSubmit}
-          colorScheme="brand"
+          colorPalette="brand"
           size="lg"
           width="100%"
           mb={3}
           borderRadius="lg"
           fontWeight="bold"
-          isLoading={form.isLoading}
+          loading={form.isLoading}
           loadingText={form.isEditMode ? "Updating..." : "Transferring..."}
-          isDisabled={form.isSaveDisabled}
+          disabled={form.isSaveDisabled}
         >
           {form.isEditMode ? "Save Changes" : "Complete Transfer"}
         </Button>
         <Button
           variant="ghost"
-          colorScheme="gray"
+          colorPalette="gray"
           onClick={onClose}
           size="lg"
           width="100%"
           borderRadius="lg"
-          isDisabled={form.isLoading}
+          disabled={form.isLoading}
         >
           Cancel
         </Button>
       </Box>
-    </ModalBody>
+    </Dialog.Body>
   );
 };
 

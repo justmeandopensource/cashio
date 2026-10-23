@@ -1,4 +1,5 @@
 import { FC, useState, useEffect } from "react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import { Link } from "react-router-dom";
 import {
   Box,
@@ -7,33 +8,21 @@ import {
   HStack,
   Badge,
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Select,
+  NativeSelect,
   Input,
-  InputGroup,
-  InputLeftElement,
   IconButton,
   useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
   Button,
   Flex,
   Link as ChakraLink,
   Icon,
   useBreakpointValue,
-  Tooltip,
   Square,
-  useColorModeValue,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
+import { Tooltip } from '@/components/ui/tooltip';
+import { InputGroup } from "@/components/ui/input-group";
 import { keyframes } from "@emotion/react";
 import { motion } from "framer-motion";
 import { Search, Trash2, Calendar, BookOpen } from "lucide-react";
@@ -86,7 +75,7 @@ const MfTransactions: FC<MfTransactionsProps> = ({
 
   // Delete transaction state
   const [transactionToDelete, setTransactionToDelete] = useState<MfTransaction | null>(null);
-  const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure();
+  const { open: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure();
 
   // Responsive breakpoint
   const [hasResolvedBreakpoint, setHasResolvedBreakpoint] = useState(false);
@@ -232,7 +221,7 @@ const MfTransactions: FC<MfTransactionsProps> = ({
         mb={5}
         css={{ animation: `${floatKeyframes} 3s ease-in-out infinite` }}
       >
-        <Icon as={BookOpen} boxSize={8} color="brand.500" strokeWidth={1.5} />
+        <Icon boxSize={8} color="brand.500" strokeWidth={1.5} asChild><BookOpen /></Icon>
       </Box>
       <Text fontSize="xl" fontWeight="800" color={emptyTitleColor} mb={2} letterSpacing="-0.02em">
         {title}
@@ -245,7 +234,7 @@ const MfTransactions: FC<MfTransactionsProps> = ({
 
   // Render mobile card view
   const renderMobileCards = () => (
-    <VStack spacing={1} align="stretch">
+    <VStack gap={1} align="stretch">
       {filteredTransactions.map((transaction, index) => {
         const isExpanded = expandedCardId === transaction.mf_transaction_id;
 
@@ -268,13 +257,13 @@ const MfTransactions: FC<MfTransactionsProps> = ({
               transition="all 0.2s ease"
               _hover={{ borderColor: cardHoverBorder }}
             >
-              <VStack spacing={3} align="stretch">
-                <HStack spacing={2}>
-                  <Icon as={Calendar} color={iconColor} boxSize={3.5} />
+              <VStack gap={3} align="stretch">
+                <HStack gap={2}>
+                  <Icon color={iconColor} boxSize={3.5} asChild><Calendar /></Icon>
                   <Text fontSize="sm" color={tertiaryTextColor}>
                     {formatDate(transaction.transaction_date)}
                   </Text>
-                  <Tooltip label={getTransactionTypeText(transaction.transaction_type)}>
+                  <Tooltip content={getTransactionTypeText(transaction.transaction_type)}>
                     <Square
                       size="7px"
                       bg={transactionTypeIndicatorColor(transaction.transaction_type)}
@@ -293,20 +282,18 @@ const MfTransactions: FC<MfTransactionsProps> = ({
                   </Text>
                 ) : (
                   <ChakraLink
-                    as={Link}
-                    to={`/account/${transaction.account_id}`}
                     color={accountLinkColor}
                     fontSize="sm"
                     fontWeight="medium"
                     _hover={{ textDecoration: "underline" }}
-                  >
-                    {transaction.account_name || `Account ${transaction.account_id}`}
-                  </ChakraLink>
+                    asChild><Link to={`/account/${transaction.account_id}`}>
+                      {transaction.account_name || `Account ${transaction.account_id}`}
+                    </Link></ChakraLink>
                 )}
 
                 <Flex justify="space-between" align="baseline">
-                  <VStack align="start" spacing={0.5}>
-                    <HStack spacing={0} align="baseline">
+                  <VStack align="start" gap={0.5}>
+                    <HStack gap={0} align="baseline">
                       <Text
                         fontSize="sm"
                         fontWeight="bold"
@@ -330,7 +317,7 @@ const MfTransactions: FC<MfTransactionsProps> = ({
                       </Text>
                     )}
                   </VStack>
-                  <VStack align="end" spacing={0.5}>
+                  <VStack align="end" gap={0.5}>
                     <Text fontSize="sm" color={tertiaryTextColor} fontWeight="medium">
                       {formatUnits(transaction.units)} units
                     </Text>
@@ -369,16 +356,14 @@ const MfTransactions: FC<MfTransactionsProps> = ({
                     <IconButton
                       size="sm"
                       variant="ghost"
-                      colorScheme="red"
-                      icon={<Trash2 size={16} />}
+                      colorPalette="red"
                       borderRadius="lg"
                       onClick={(e) => {
                         e.stopPropagation();
                         setTransactionToDelete(transaction);
                         onDeleteOpen();
                       }}
-                      aria-label="Delete transaction"
-                    />
+                      aria-label="Delete transaction"><Trash2 size={16} /></IconButton>
                   </Flex>
                 </Box>
               )}
@@ -399,7 +384,7 @@ const MfTransactions: FC<MfTransactionsProps> = ({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <VStack spacing={6} align="stretch">
+      <VStack gap={6} align="stretch">
         {/* Header */}
         <MotionBox
           mb={{ base: 0, md: 4 }}
@@ -435,55 +420,53 @@ const MfTransactions: FC<MfTransactionsProps> = ({
             align={{ base: "stretch", md: "center" }}
             wrap="wrap"
           >
-            <Select
-              size="sm"
-              maxW={{ base: "full", md: "150px" }}
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              borderRadius="lg"
-            >
-              <option value="all">All Types</option>
-              <option value="buy">Buy</option>
-              <option value="sell">Sell</option>
-              <option value="switch_out">Switch Out</option>
-              <option value="switch_in">Switch In</option>
-            </Select>
+            <NativeSelect.Root size="sm" maxW={{ base: "full", md: "150px" }}>
+              <NativeSelect.Field
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                borderRadius="lg">
+                <option value="all">All Types</option>
+                <option value="buy">Buy</option>
+                <option value="sell">Sell</option>
+                <option value="switch_out">Switch Out</option>
+                <option value="switch_in">Switch In</option>
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
 
-            <Select
-              size="sm"
-              maxW={{ base: "full", md: "200px" }}
-              value={amcFilter}
-              onChange={(e) => setAmcFilter(e.target.value)}
-              borderRadius="lg"
-            >
-              <option value="all">All AMCs</option>
-              {amcs.map(amc => (
-                <option key={amc.amc_id} value={amc.amc_id.toString()}>
-                  {amc.name}
-                </option>
-              ))}
-            </Select>
+            <NativeSelect.Root size="sm" maxW={{ base: "full", md: "200px" }}>
+              <NativeSelect.Field
+                value={amcFilter}
+                onChange={(e) => setAmcFilter(e.target.value)}
+                borderRadius="lg">
+                <option value="all">All AMCs</option>
+                {amcs.map(amc => (
+                  <option key={amc.amc_id} value={amc.amc_id.toString()}>
+                    {amc.name}
+                  </option>
+                ))}
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
 
-            <Select
-              size="sm"
-              maxW={{ base: "full", md: "200px" }}
-              value={fundFilter}
-              onChange={(e) => setFundFilter(e.target.value)}
-              borderRadius="lg"
-            >
-              <option value="all">All Funds</option>
-              {mutualFunds.map(fund => (
-                <option key={fund.mutual_fund_id} value={fund.mutual_fund_id.toString()}>
-                  {fund.name}
-                </option>
-              ))}
-            </Select>
+            <NativeSelect.Root size="sm" maxW={{ base: "full", md: "200px" }}>
+              <NativeSelect.Field
+                value={fundFilter}
+                onChange={(e) => setFundFilter(e.target.value)}
+                borderRadius="lg">
+                <option value="all">All Funds</option>
+                {mutualFunds.map(fund => (
+                  <option key={fund.mutual_fund_id} value={fund.mutual_fund_id.toString()}>
+                    {fund.name}
+                  </option>
+                ))}
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
 
-            <InputGroup size="sm" maxW={{ base: "full", md: "300px" }}>
-              <InputLeftElement>
-                <Search size={16} />
-              </InputLeftElement>
+            <InputGroup maxW={{ base: "full", md: "300px" }} startElement={<Search size={16} />}>
               <Input
+                size="sm"
                 placeholder="Search transactions..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -523,52 +506,52 @@ const MfTransactions: FC<MfTransactionsProps> = ({
             transition={{ duration: 0.35, delay: 0.1, ease: "easeOut" }}
           >
             <Box overflowX="auto">
-              <Table variant="simple" size="sm">
-                <Thead>
-                  <Tr>
-                    <Th color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Date</Th>
-                    <Th color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Fund</Th>
-                    <Th color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>AMC</Th>
-                    <Th color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Type</Th>
-                    <Th isNumeric color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Units</Th>
-                    <Th isNumeric color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>NAV</Th>
-                    <Th isNumeric color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Amount</Th>
-                    <Th isNumeric color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Charges</Th>
-                    <Th color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Account</Th>
-                    <Th width="2%" borderBottomColor={tableBorderColor}>Actions</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
+              <Table.Root variant="line" size="sm">
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Date</Table.ColumnHeader>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Fund</Table.ColumnHeader>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>AMC</Table.ColumnHeader>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Type</Table.ColumnHeader>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor} textAlign='end'>Units</Table.ColumnHeader>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor} textAlign='end'>NAV</Table.ColumnHeader>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor} textAlign='end'>Amount</Table.ColumnHeader>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor} textAlign='end'>Charges</Table.ColumnHeader>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Account</Table.ColumnHeader>
+                    <Table.ColumnHeader width="2%" color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Actions</Table.ColumnHeader>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
                   {filteredTransactions.map(transaction => (
-                    <Tr
+                    <Table.Row
                       key={transaction.mf_transaction_id}
                       _hover={{ bg: tableHoverBg }}
                       transition="background 0.15s ease"
                       onMouseLeave={handleRowMouseLeave}
-                      sx={{
-                        "&:hover .action-icons": {
+                      css={{
+                        '&:hover .action-icons': {
                           opacity: 1,
-                        },
+                        }
                       }}
                     >
-                      <Td borderBottomColor={tableBorderColor}>
+                      <Table.Cell borderBottomColor={tableBorderColor}>
                         <Text fontSize="sm" color={tertiaryTextColor}>
                           {formatDate(transaction.transaction_date)}
                         </Text>
-                      </Td>
-                      <Td borderBottomColor={tableBorderColor}>
+                      </Table.Cell>
+                      <Table.Cell borderBottomColor={tableBorderColor}>
                         <Text fontSize="sm" fontWeight="medium" color={tertiaryTextColor}>
                           {transaction.mutual_fund?.name}
                         </Text>
-                      </Td>
-                      <Td borderBottomColor={tableBorderColor}>
+                      </Table.Cell>
+                      <Table.Cell borderBottomColor={tableBorderColor}>
                         <Text fontSize="sm" fontWeight="medium" color={tertiaryTextColor}>
                           {transaction.mutual_fund?.amc?.name}
                         </Text>
-                      </Td>
-                      <Td borderBottomColor={tableBorderColor}>
+                      </Table.Cell>
+                      <Table.Cell borderBottomColor={tableBorderColor}>
                         <Badge
-                          colorScheme={getTransactionTypeColor(transaction.transaction_type)}
+                          colorPalette={getTransactionTypeColor(transaction.transaction_type)}
                           size="sm"
                           px={1.5}
                           borderRadius="md"
@@ -578,15 +561,15 @@ const MfTransactions: FC<MfTransactionsProps> = ({
                         >
                           {getTransactionTypeText(transaction.transaction_type)}
                         </Badge>
-                      </Td>
-                      <Td isNumeric borderBottomColor={tableBorderColor}>
+                      </Table.Cell>
+                      <Table.Cell borderBottomColor={tableBorderColor} textAlign='end'>
                         <Text fontSize="sm" color={tertiaryTextColor}>{formatUnits(transaction.units)}</Text>
-                      </Td>
-                      <Td isNumeric borderBottomColor={tableBorderColor}>
+                      </Table.Cell>
+                      <Table.Cell borderBottomColor={tableBorderColor} textAlign='end'>
                         <Text fontSize="sm" color={tertiaryTextColor}>{currencySymbol || "₹"}{formatNav(Number(transaction.nav_per_unit))}</Text>
-                      </Td>
-                      <Td isNumeric borderBottomColor={tableBorderColor}>
-                        <HStack spacing={0} align="baseline" justify="flex-end">
+                      </Table.Cell>
+                      <Table.Cell borderBottomColor={tableBorderColor} textAlign='end'>
+                        <HStack gap={0} align="baseline" justify="flex-end">
                           <Text
                             fontSize="sm"
                             fontWeight="semibold"
@@ -603,10 +586,10 @@ const MfTransactions: FC<MfTransactionsProps> = ({
                             {splitCurrencyForDisplay(Number(transaction.amount_excluding_charges), currencySymbol || "₹").decimals}
                           </Text>
                         </HStack>
-                      </Td>
-                      <Td isNumeric borderBottomColor={tableBorderColor}>
+                      </Table.Cell>
+                      <Table.Cell borderBottomColor={tableBorderColor} textAlign='end'>
                         {Number(transaction.other_charges) > 0 && (
-                          <HStack spacing={0} align="baseline" justify="flex-end">
+                          <HStack gap={0} align="baseline" justify="flex-end">
                             <Text fontSize="sm" fontWeight="semibold" color={deleteIconColor}>
                               {splitCurrencyForDisplay(Number(transaction.other_charges), currencySymbol || "₹").main}
                             </Text>
@@ -615,26 +598,24 @@ const MfTransactions: FC<MfTransactionsProps> = ({
                             </Text>
                           </HStack>
                         )}
-                      </Td>
-                      <Td borderBottomColor={tableBorderColor}>
+                      </Table.Cell>
+                      <Table.Cell borderBottomColor={tableBorderColor}>
                         {transaction.transaction_type === 'switch_out' || transaction.transaction_type === 'switch_in' ? (
                           <Text fontSize="sm" color={mutedColor}>
                             {transaction.target_fund_name}
                           </Text>
                         ) : (
                           <ChakraLink
-                            as={Link}
-                            to={`/account/${transaction.account_id}`}
                             color={accountLinkColor}
                             fontSize="sm"
                             fontWeight="medium"
                             _hover={{ textDecoration: "underline" }}
-                          >
-                            {transaction.account_name || `Account ${transaction.account_id}`}
-                          </ChakraLink>
+                            asChild><Link to={`/account/${transaction.account_id}`}>
+                              {transaction.account_name || `Account ${transaction.account_id}`}
+                            </Link></ChakraLink>
                         )}
-                      </Td>
-                      <Td width="2%" borderBottomColor={tableBorderColor}>
+                      </Table.Cell>
+                      <Table.Cell width="2%" borderBottomColor={tableBorderColor}>
                         <Flex
                           gap={2}
                           opacity={0}
@@ -655,100 +636,105 @@ const MfTransactions: FC<MfTransactionsProps> = ({
                             _hover={{ textDecoration: "none" }}
                           >
                             <Icon
-                              as={Trash2}
                               boxSize={4}
                               color={deleteIconColor}
                               _hover={{ color: deleteIconHoverColor }}
                               transition="color 0.15s ease"
-                            />
+                              asChild><Trash2 /></Icon>
                           </ChakraLink>
                         </Flex>
-                      </Td>
-                    </Tr>
+                      </Table.Cell>
+                    </Table.Row>
                   ))}
-                </Tbody>
-              </Table>
+                </Table.Body>
+              </Table.Root>
             </Box>
           </MotionBox>
         )}
       </VStack>
 
       {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={isDeleteOpen}
-        onClose={onDeleteClose}
+      <Dialog.Root
+        open={isDeleteOpen}
         size={isMobile ? "full" : "md"}
-        motionPreset="slideInBottom"
+        motionPreset="slide-in-bottom"
+        onOpenChange={e => {
+          if (!e.open) {
+            onDeleteClose();
+          }
+        }}
       >
-        <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-        <ModalContent
-          margin={isMobile ? 0 : "auto"}
-          borderRadius={isMobile ? 0 : "xl"}
-          bg={modalBg}
-          border="1px solid"
-          borderColor={modalBorderColor}
-          boxShadow="2xl"
-        >
-          <ModalHeader fontWeight="800" letterSpacing="-0.02em">Delete Transaction</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Text mb={4}>
-              Are you sure you want to delete this transaction? This action cannot be undone and will reverse all associated financial transactions.
-            </Text>
-            {transactionToDelete && (
-              <Box p={3} bg={modalDetailBg} borderRadius="xl" border="1px solid" borderColor={modalBorderColor}>
-                <Text fontWeight="bold">
-                  {transactionToDelete.mutual_fund?.name}
+        <Portal>
+
+          <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+          <Dialog.Positioner>
+            <Dialog.Content
+              margin={isMobile ? 0 : "auto"}
+              borderRadius={isMobile ? 0 : "xl"}
+              bg={modalBg}
+              border="1px solid"
+              borderColor={modalBorderColor}
+              boxShadow="2xl">
+              <Dialog.Header fontWeight="800" letterSpacing="-0.02em">Delete Transaction</Dialog.Header>
+              <Dialog.CloseTrigger />
+              <Dialog.Body>
+                <Text mb={4}>
+                  Are you sure you want to delete this transaction? This action cannot be undone and will reverse all associated financial transactions.
                 </Text>
-                <Text fontSize="sm" color={mutedColor}>
-                  {formatDate(transactionToDelete.transaction_date)}
-                </Text>
-                <VStack align="start" spacing={1} mt={1}>
-                  <HStack spacing={0} align="baseline">
-                    <Text
-                      fontSize="sm"
-                      fontWeight="bold"
-                      color={getAmountColor(transactionToDelete.transaction_type)}
-                    >
-                      {splitCurrencyForDisplay(Number(transactionToDelete.amount_excluding_charges), currencySymbol || "₹").main}
+                {transactionToDelete && (
+                  <Box p={3} bg={modalDetailBg} borderRadius="xl" border="1px solid" borderColor={modalBorderColor}>
+                    <Text fontWeight="bold">
+                      {transactionToDelete.mutual_fund?.name}
                     </Text>
-                    <Text
-                      fontSize="xs"
-                      fontWeight="semibold"
-                      opacity={0.6}
-                      color={getAmountColor(transactionToDelete.transaction_type)}
-                    >
-                      {splitCurrencyForDisplay(Number(transactionToDelete.amount_excluding_charges), currencySymbol || "₹").decimals}
+                    <Text fontSize="sm" color={mutedColor}>
+                      {formatDate(transactionToDelete.transaction_date)}
                     </Text>
-                    <Text fontSize="xs" color={mutedColor} ml={1}>
-                      (excl. charges)
-                    </Text>
-                  </HStack>
-                  {Number(transactionToDelete.other_charges) > 0 && (
-                    <Text fontSize="xs" color={deleteIconColor} fontWeight="medium">
-                      +{splitCurrencyForDisplay(Number(transactionToDelete.other_charges), currencySymbol || "₹").main}{splitCurrencyForDisplay(Number(transactionToDelete.other_charges), currencySymbol || "₹").decimals} charges
-                    </Text>
-                  )}
-                </VStack>
-              </Box>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onDeleteClose} borderRadius="lg">
-              Cancel
-            </Button>
-            <Button
-              colorScheme="red"
-              onClick={handleDeleteTransaction}
-              leftIcon={<Trash2 size={16} />}
-              borderRadius="lg"
-              fontWeight="bold"
-            >
-              Delete
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+                    <VStack align="start" gap={1} mt={1}>
+                      <HStack gap={0} align="baseline">
+                        <Text
+                          fontSize="sm"
+                          fontWeight="bold"
+                          color={getAmountColor(transactionToDelete.transaction_type)}
+                        >
+                          {splitCurrencyForDisplay(Number(transactionToDelete.amount_excluding_charges), currencySymbol || "₹").main}
+                        </Text>
+                        <Text
+                          fontSize="xs"
+                          fontWeight="semibold"
+                          opacity={0.6}
+                          color={getAmountColor(transactionToDelete.transaction_type)}
+                        >
+                          {splitCurrencyForDisplay(Number(transactionToDelete.amount_excluding_charges), currencySymbol || "₹").decimals}
+                        </Text>
+                        <Text fontSize="xs" color={mutedColor} ml={1}>
+                          (excl. charges)
+                        </Text>
+                      </HStack>
+                      {Number(transactionToDelete.other_charges) > 0 && (
+                        <Text fontSize="xs" color={deleteIconColor} fontWeight="medium">
+                          +{splitCurrencyForDisplay(Number(transactionToDelete.other_charges), currencySymbol || "₹").main}{splitCurrencyForDisplay(Number(transactionToDelete.other_charges), currencySymbol || "₹").decimals} charges
+                        </Text>
+                      )}
+                    </VStack>
+                  </Box>
+                )}
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Button variant="ghost" mr={3} onClick={onDeleteClose} borderRadius="lg">
+                  Cancel
+                </Button>
+                <Button
+                  colorPalette="red"
+                  onClick={handleDeleteTransaction}
+                  borderRadius="lg"
+                  fontWeight="bold"><Trash2 size={16} />Delete
+                              </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+
+        </Portal>
+      </Dialog.Root>
     </MotionBox>
   );
 };

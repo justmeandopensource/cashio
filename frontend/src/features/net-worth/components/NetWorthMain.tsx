@@ -1,18 +1,18 @@
 import React from "react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import {
   Box,
   Button,
   Center,
   Flex,
-  FormControl,
   Heading,
   Icon,
-  Select,
+  NativeSelect,
   SimpleGrid,
   Skeleton,
   Text,
-  useColorModeValue,
   VStack,
+  Field,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { keyframes } from "@emotion/react";
@@ -85,43 +85,39 @@ const NetWorthMain: React.FC<NetWorthMainProps> = ({
               >
                 Ledger
               </Text>
-              <FormControl>
-                <Select
-                  value={selectedLedgerId || ""}
-                  onChange={onLedgerChange}
-                  isDisabled={isLoadingLedgers}
-                  size="sm"
-                  borderRadius="md"
-                  bg={selectBg}
-                  borderColor={selectBorderColor}
-                  color={selectColor}
-                  focusBorderColor="brand.500"
-                  _hover={{ borderColor: selectHoverBorderColor }}
-                >
-                  <option value="">Select Ledger</option>
-                  {ledgers.map((l) => (
-                    <option key={l.ledger_id} value={l.ledger_id}>
-                      {l.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
+              <Field.Root>
+                <NativeSelect.Root disabled={isLoadingLedgers} size="sm">
+                  <NativeSelect.Field
+                    value={selectedLedgerId || ""}
+                    onChange={onLedgerChange}
+                    borderRadius="md"
+                    bg={selectBg}
+                    borderColor={selectBorderColor}
+                    color={selectColor}
+                    _hover={{ borderColor: selectHoverBorderColor }}>
+                    <option value="">Select Ledger</option>
+                    {ledgers.map((l) => (
+                      <option key={l.ledger_id} value={l.ledger_id}>
+                        {l.name}
+                      </option>
+                    ))}
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
+              </Field.Root>
             </Box>
 
             {/* Refresh button */}
             <Button
               size="sm"
               variant="outline"
-              leftIcon={<Icon as={RefreshCw} boxSize={3.5} />}
               onClick={onRefetch}
-              isLoading={isLoading}
-              isDisabled={!selectedLedgerId}
+              loading={isLoading}
+              disabled={!selectedLedgerId}
               borderRadius="lg"
               fontWeight="semibold"
-              flexShrink={0}
-            >
-              Refresh
-            </Button>
+              flexShrink={0}><Icon boxSize={3.5} asChild><RefreshCw /></Icon>Refresh
+                          </Button>
           </Flex>
         }
       />
@@ -150,7 +146,7 @@ const NetWorthMain: React.FC<NetWorthMainProps> = ({
               mb={5}
               css={{ animation: `${floatAnimation} 3s ease-in-out infinite` }}
             >
-              <Icon as={BookOpen} boxSize={8} color="brand.400" />
+              <Icon boxSize={8} color="brand.400" asChild><BookOpen /></Icon>
             </Box>
             <Heading fontSize="xl" fontWeight="bold" color={emptyTitleColor} mb={2}>
               No ledger selected
@@ -161,11 +157,11 @@ const NetWorthMain: React.FC<NetWorthMainProps> = ({
           </MotionCenter>
         ) : (
           <PageContainer>
-            <VStack align="stretch" spacing={{ base: 4, md: 5 }}>
+            <VStack align="stretch" gap={{ base: 4, md: 5 }}>
 
               {/* Row 1 — stat cards */}
               {isLoading ? (
-                <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 3, md: 4 }}>
+                <SimpleGrid columns={{ base: 1, md: 3 }} gap={{ base: 3, md: 4 }}>
                   {[0, 1, 2].map((i) => (
                     <Skeleton key={i} height="110px" borderRadius="xl" />
                   ))}
@@ -181,14 +177,14 @@ const NetWorthMain: React.FC<NetWorthMainProps> = ({
 
               {/* Row 2 — donut chart + portfolio composition */}
               {isLoading ? (
-                <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={{ base: 4, md: 5 }}>
+                <SimpleGrid columns={{ base: 1, lg: 2 }} gap={{ base: 4, md: 5 }}>
                   <Skeleton height="340px" borderRadius="xl" />
                   <Skeleton height="340px" borderRadius="xl" />
                 </SimpleGrid>
               ) : data ? (
                 <SimpleGrid
                   columns={{ base: 1, lg: 2 }}
-                  spacing={{ base: 4, md: 5 }}
+                  gap={{ base: 4, md: 5 }}
                   alignItems="stretch"
                 >
                   <AssetAllocationChart

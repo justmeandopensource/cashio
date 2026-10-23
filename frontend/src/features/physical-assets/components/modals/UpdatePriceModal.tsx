@@ -1,13 +1,7 @@
 import React, { FC, useState, useEffect } from "react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalBody,
-  ModalFooter,
   Button,
-  FormControl,
-  FormLabel,
   Input,
   VStack,
   Text,
@@ -15,17 +9,13 @@ import {
   HStack,
   Badge,
   Stack,
-  useColorModeValue,
-  FormHelperText,
-  FormErrorMessage,
-  InputGroup,
-  InputLeftAddon,
   Alert,
-  AlertIcon,
   Icon,
-  AlertTitle,
-  AlertDescription,
+  Field,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
+import { InputGroup } from "@/components/ui/input-group";
 import { TrendingUp, Clock, Info, RefreshCw } from "lucide-react";
 import { useUpdatePhysicalAssetPrice } from "../../api";
 import { PhysicalAsset } from "../../types";
@@ -165,360 +155,364 @@ const UpdatePriceModal: FC<UpdatePriceModalProps> = ({
     currentPrice > 0 ? (priceChange / currentPrice) * 100 : 0;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      returnFocusOnClose={false}
-      onClose={handleClose}
+    <Dialog.Root
+      open={isOpen}
       size={{ base: "full", sm: "lg" }}
-      motionPreset="slideInBottom"
-    >
-      <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-      <ModalContent
-        bg={bgColor}
-        borderRadius={{ base: 0, sm: "xl" }}
-        boxShadow="2xl"
-        border="1px solid"
-        borderColor={borderColor}
-        overflow="hidden"
-        mx={{ base: 0, sm: 4 }}
-        my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "90vh" }}
-        display="flex"
-        flexDirection="column"
-      >
-        {/* Gradient accent line */}
-        <Box
-          h="3px"
-          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
-        />
-        {/* Flat header */}
-        <Box
-          px={{ base: 4, sm: 8 }}
-          py={5}
-          borderBottom="1px solid"
-          borderColor={modalHeaderBorderColor}
-        >
-          <HStack spacing={3} align="flex-start">
-            <Icon as={RefreshCw} boxSize={5} mt="3px" color={modalIconColor} />
+      motionPreset="slide-in-bottom"
+      onOpenChange={e => {
+        if (!e.open) {
+          handleClose();
+        }
+      }}>
+      <Portal>
 
-            <Box>
-              <HStack spacing={3} mb={1}>
-                <Text
-                  fontSize="lg"
-                  fontWeight="800"
-                  letterSpacing="-0.02em"
-                  color={modalTitleColor}
-                >
-                  Update Price
-                </Text>
-                <Badge
-                  colorScheme="brand"
-                  variant="subtle"
-                  fontSize="sm"
-                  borderRadius="full"
-                  px={2}
-                  py={0.5}
-                >
-                  {asset.asset_type?.name}
-                </Badge>
-              </HStack>
-              <Text
-                fontSize="sm"
-                color={modalSubtitleColor}
-              >
-                {asset.name}
-              </Text>
-            </Box>
-          </HStack>
-        </Box>
-
-        <ModalBody
-          px={{ base: 4, sm: 8 }}
-          py={{ base: 4, sm: 6 }}
-          flex="1"
-          display="flex"
-          flexDirection="column"
-          overflowY="auto"
-          overflowX="hidden"
-          justifyContent={{ base: "space-between", sm: "flex-start" }}
-        >
-          <VStack spacing={{ base: 5, sm: 6 }} align="stretch" w="100%">
-            {/* Current Price Info Card */}
+        <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <Dialog.Positioner>
+          <Dialog.Content
+            bg={bgColor}
+            borderRadius={{ base: 0, sm: "xl" }}
+            boxShadow="2xl"
+            border="1px solid"
+            borderColor={borderColor}
+            overflow="hidden"
+            mx={{ base: 0, sm: 4 }}
+            my={{ base: 0, sm: "auto" }}
+            maxHeight={{ base: "100%", md: "90vh" }}
+            display="flex"
+            flexDirection="column">
+            {/* Gradient accent line */}
+            <Box h="3px" bgGradient="to-r" gradientFrom="brand.400" gradientVia="brand.600" gradientTo="teal.300"  />
+            {/* Flat header */}
             <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
+              px={{ base: 4, sm: 8 }}
+              py={5}
+              borderBottom="1px solid"
+              borderColor={modalHeaderBorderColor}
             >
-              <HStack spacing={3} mb={4}>
-                <Info size={20} color="teal" />
-                <Text fontWeight="semibold" color="teal.600">
-                  Current Information
-                </Text>
-              </HStack>
+              <HStack gap={3} align="flex-start">
+                <Icon boxSize={5} mt="3px" color={modalIconColor} asChild><RefreshCw /></Icon>
 
-              <Stack direction={{ base: "column", md: "row" }} spacing={4}>
-                <Box flex={1}>
-                  <HStack spacing={2} mb={2}>
-                     <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                       Current Price
-                     </Text>
-                  </HStack>
-                  <HStack spacing={0} align="baseline">
-                     <Text fontSize="xl" fontWeight="bold">
-                       {splitCurrencyForDisplay(currentPrice, currencySymbol || "$").main}
-                     </Text>
-                     <Text fontSize="lg" fontWeight="bold" opacity={0.7}>
-                       {splitCurrencyForDisplay(currentPrice, currencySymbol || "$").decimals}
-                     </Text>
-                  </HStack>
-                   <Text fontSize="sm" color={textColorSecondary}>
-                     per {asset.asset_type?.unit_symbol}
-                   </Text>
-                </Box>
-
-                {asset.last_price_update && (
-                  <Box flex={1}>
-                    <HStack spacing={2} mb={2}>
-                      <Clock size={16} />
-                       <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                         Last Updated
-                       </Text>
-                    </HStack>
-                    <Text fontSize="md" fontWeight="semibold">
-                      {format(
-                        new Date(asset.last_price_update),
-                        "MMM dd, yyyy",
-                      )}
-                    </Text>
-                                           <Text fontSize="sm" color={textColorSecondary}>
-                                             {format(new Date(asset.last_price_update), "h:mm a")}
-                                           </Text>
-                                        </Box>                )}
-              </Stack>
-            </Box>
-
-            {/* Price Update Form */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
-            >
-              <VStack spacing={5} align="stretch">
-                <FormControl isInvalid={!!errors.price}>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    <HStack spacing={2}>
-                      <TrendingUp size={16} />
-                      <Text>New Price per Unit</Text>
-                      <Text as="span" color="red.500">
-                        *
-                      </Text>
-                    </HStack>
-                  </FormLabel>
-                  <InputGroup size="lg">
-                    <InputLeftAddon
-                      bg={inputBorderColor}
-                      borderWidth="2px"
-                      borderColor={inputBorderColor}
-                       color={textColorTertiary}
-                      fontWeight="semibold"
+                <Box>
+                  <HStack gap={3} mb={1}>
+                    <Text
+                      fontSize="lg"
+                      fontWeight="800"
+                      letterSpacing="-0.02em"
+                      color={modalTitleColor}
                     >
-                      {currencySymbol}
-                    </InputLeftAddon>
-                    <Input
-                      type="text"
-                      value={newPrice}
-                      onChange={(e) => handleInputChange(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="0.00"
-                      size="lg"
-                      bg={inputBg}
-                      borderColor={inputBorderColor}
-                      borderWidth="2px"
-                      borderRadius="md"
-                      _hover={{ borderColor: "teal.300" }}
-                      _focus={{
-                        borderColor: focusBorderColor,
-                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                      }}
-                    />
-                  </InputGroup>
-                  <FormErrorMessage>{errors.price}</FormErrorMessage>
-                  <FormHelperText>
-                    Enter the new price per {asset.asset_type?.unit_symbol}
-                  </FormHelperText>
-                </FormControl>
+                      Update Price
+                    </Text>
+                    <Badge
+                      colorPalette="brand"
+                      variant="subtle"
+                      fontSize="sm"
+                      borderRadius="full"
+                      px={2}
+                      py={0.5}
+                    >
+                      {asset.asset_type?.name}
+                    </Badge>
+                  </HStack>
+                  <Text
+                    fontSize="sm"
+                    color={modalSubtitleColor}
+                  >
+                    {asset.name}
+                  </Text>
+                </Box>
+              </HStack>
+            </Box>
 
-                {/* Price Change Preview */}
-                {newPrice &&
-                  !errors.price &&
-                  newPriceValue !== currentPrice && (
-                     <Box
-                       p={4}
-                       bg={priceChange >= 0 ? positiveBg : negativeBg}
-                       borderRadius="md"
-                       border="1px solid"
-                       borderColor={priceChange >= 0 ? positiveBorder : negativeBorder}
-                     >
-                      <HStack spacing={3} mb={2}>
-                         <TrendingUp
-                           size={18}
-                           color={priceChange >= 0 ? positiveIconColor : negativeIconColor}
-                           style={{
-                             transform:
-                               priceChange < 0 ? "rotate(180deg)" : "none",
-                           }}
-                         />
-                         <Text
-                           fontWeight="semibold"
-                           color={priceChange >= 0 ? positiveText : negativeText}
-                         >
-                           Price Change Preview
+            <Dialog.Body
+              px={{ base: 4, sm: 8 }}
+              py={{ base: 4, sm: 6 }}
+              flex="1"
+              display="flex"
+              flexDirection="column"
+              overflowY="auto"
+              overflowX="hidden"
+              justifyContent={{ base: "space-between", sm: "flex-start" }}
+            >
+              <VStack gap={{ base: 5, sm: 6 }} align="stretch" w="100%">
+                {/* Current Price Info Card */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <HStack gap={3} mb={4}>
+                    <Info size={20} color="teal" />
+                    <Text fontWeight="semibold" color="teal.600">
+                      Current Information
+                    </Text>
+                  </HStack>
+
+                  <Stack direction={{ base: "column", md: "row" }} gap={4}>
+                    <Box flex={1}>
+                      <HStack gap={2} mb={2}>
+                         <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                           Current Price
                          </Text>
                       </HStack>
-                      <HStack justify="space-between" align="center">
-                        <VStack align="start" spacing={1}>
-                   <Text fontSize="sm" color={textColor}>
-                     Change Amount
-                   </Text>
-                          <HStack spacing={0} align="baseline">
-                             <Text
-                               fontSize="lg"
-                               fontWeight="bold"
-                               color={priceChange >= 0 ? positiveTextSecondary : negativeTextSecondary}
-                             >
-                               {splitCurrencyForDisplay(Math.abs(priceChange), currencySymbol || "$").main}
-                             </Text>
-                             <Text
-                               fontSize="md"
-                               fontWeight="bold"
-                               color={priceChange >= 0 ? positiveTextSecondary : negativeTextSecondary}
-                               opacity={0.7}
-                             >
-                              {splitCurrencyForDisplay(Math.abs(priceChange), currencySymbol || "$").decimals}
-                            </Text>
-                          </HStack>
-                        </VStack>
-                         <VStack align="end" spacing={1}>
-                           <Text fontSize="sm" color={textColor}>
-                             Percentage
-                           </Text>
-                          <Badge
-                            colorScheme={priceChange >= 0 ? "green" : "red"}
-                            fontSize="md"
-                            px={3}
-                            py={1}
-                          >
-                            {priceChange >= 0 ? "+" : ""}
-                            {priceChangePercent.toFixed(1)}%
-                          </Badge>
-                        </VStack>
+                      <HStack gap={0} align="baseline">
+                         <Text fontSize="xl" fontWeight="bold">
+                           {splitCurrencyForDisplay(currentPrice, currencySymbol || "$").main}
+                         </Text>
+                         <Text fontSize="lg" fontWeight="bold" opacity={0.7}>
+                           {splitCurrencyForDisplay(currentPrice, currencySymbol || "$").decimals}
+                         </Text>
                       </HStack>
+                       <Text fontSize="sm" color={textColorSecondary}>
+                         per {asset.asset_type?.unit_symbol}
+                       </Text>
                     </Box>
-                  )}
-              </VStack>
-            </Box>
 
-            {/* Error Display */}
-            {updatePriceMutation.isError && (
-              <Alert
-                status="error"
-                borderRadius="md"
-                border="1px solid"
-                borderColor="red.200"
-              >
-                <AlertIcon />
-                <Box>
-                  <AlertTitle fontWeight="bold">Update Failed!</AlertTitle>
-                  <AlertDescription>
-                    {(updatePriceMutation.error as any)?.response?.data
-                      ?.detail ||
-                      (updatePriceMutation.error as any)?.message ||
-                      "An error occurred while updating the price."}
-                  </AlertDescription>
+                    {asset.last_price_update && (
+                      <Box flex={1}>
+                        <HStack gap={2} mb={2}>
+                          <Clock size={16} />
+                           <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                             Last Updated
+                           </Text>
+                        </HStack>
+                        <Text fontSize="md" fontWeight="semibold">
+                          {format(
+                            new Date(asset.last_price_update),
+                            "MMM dd, yyyy",
+                          )}
+                        </Text>
+                                               <Text fontSize="sm" color={textColorSecondary}>
+                                                 {format(new Date(asset.last_price_update), "h:mm a")}
+                                               </Text>
+                                            </Box>                )}
+                  </Stack>
                 </Box>
-              </Alert>
-            )}
-          </VStack>
 
-          {/* Mobile-only action buttons that stay at bottom */}
-          <Box display={{ base: "block", sm: "none" }} mt={6}>
-            <Button
-              colorScheme="brand"
-              onClick={handleUpdate}
-              size="lg"
-              width="100%"
-              mb={3}
-              borderRadius="lg"
-              fontWeight="bold"
-              isLoading={isLoading}
-              loadingText="Updating Price..."
-              isDisabled={
-                !newPrice.trim() ||
-                !!errors.price ||
-                newPriceValue === currentPrice
-              }
-            >
-              Update Price
-            </Button>
-            <Button
-              variant="ghost"
-              colorScheme="gray"
-              onClick={handleClose}
-              size="lg"
-              width="100%"
-              borderRadius="lg"
-              isDisabled={isLoading}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </ModalBody>
+                {/* Price Update Form */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <VStack gap={5} align="stretch">
+                    <Field.Root invalid={!!errors.price}>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        <HStack gap={2}>
+                          <TrendingUp size={16} />
+                          <Text>New Price per Unit</Text>
+                          <Text as="span" color="red.500">
+                            *
+                          </Text>
+                        </HStack>
+                      </Field.Label>
+                      <InputGroup
+                        startAddon={currencySymbol}
+                        startAddonProps={{
+                          bg: inputBorderColor,
+                          borderWidth: "2px",
+                          borderColor: inputBorderColor,
+                          color: textColorTertiary,
+                          fontWeight: "semibold",
+                        }}
+                      >
+                        <Input
+                          type="text"
+                          value={newPrice}
+                          onChange={(e) => handleInputChange(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          placeholder="0.00"
+                          size="lg"
+                          bg={inputBg}
+                          borderColor={inputBorderColor}
+                          borderWidth="2px"
+                          borderRadius="md"
+                          _hover={{ borderColor: "teal.300" }}
+                          _focus={{
+                            borderColor: focusBorderColor,
+                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                          }}
+                        />
+                      </InputGroup>
+                      <Field.ErrorText>{errors.price}</Field.ErrorText>
+                      <Field.HelperText>
+                        Enter the new price per {asset.asset_type?.unit_symbol}
+                      </Field.HelperText>
+                    </Field.Root>
 
-        {/* Desktop-only footer */}
-        <ModalFooter
-          display={{ base: "none", sm: "flex" }}
-          px={8}
-          py={6}
-          bg={footerBg}
-          borderTop="1px solid"
-          borderColor={borderColor}
-        >
-          <Button
-            colorScheme="brand"
-            mr={3}
-            onClick={handleUpdate}
-            px={8}
-            py={3}
-            borderRadius="lg"
-            fontWeight="bold"
-            isLoading={isLoading}
-            loadingText="Updating Price..."
-            isDisabled={
-              !newPrice.trim() ||
-              !!errors.price ||
-              newPriceValue === currentPrice
-            }
-          >
-            Update Price
-          </Button>
-          <Button
-            variant="ghost"
-            colorScheme="gray"
-            onClick={handleClose}
-            isDisabled={isLoading}
-            px={6}
-            py={3}
-            borderRadius="lg"
-          >
-            Cancel
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+                    {/* Price Change Preview */}
+                    {newPrice &&
+                      !errors.price &&
+                      newPriceValue !== currentPrice && (
+                         <Box
+                           p={4}
+                           bg={priceChange >= 0 ? positiveBg : negativeBg}
+                           borderRadius="md"
+                           border="1px solid"
+                           borderColor={priceChange >= 0 ? positiveBorder : negativeBorder}
+                         >
+                          <HStack gap={3} mb={2}>
+                             <TrendingUp
+                               size={18}
+                               color={priceChange >= 0 ? positiveIconColor : negativeIconColor}
+                               style={{
+                                 transform:
+                                   priceChange < 0 ? "rotate(180deg)" : "none",
+                               }}
+                             />
+                             <Text
+                               fontWeight="semibold"
+                               color={priceChange >= 0 ? positiveText : negativeText}
+                             >
+                               Price Change Preview
+                             </Text>
+                          </HStack>
+                          <HStack justify="space-between" align="center">
+                            <VStack align="start" gap={1}>
+                       <Text fontSize="sm" color={textColor}>
+                         Change Amount
+                       </Text>
+                              <HStack gap={0} align="baseline">
+                                 <Text
+                                   fontSize="lg"
+                                   fontWeight="bold"
+                                   color={priceChange >= 0 ? positiveTextSecondary : negativeTextSecondary}
+                                 >
+                                   {splitCurrencyForDisplay(Math.abs(priceChange), currencySymbol || "$").main}
+                                 </Text>
+                                 <Text
+                                   fontSize="md"
+                                   fontWeight="bold"
+                                   color={priceChange >= 0 ? positiveTextSecondary : negativeTextSecondary}
+                                   opacity={0.7}
+                                 >
+                                  {splitCurrencyForDisplay(Math.abs(priceChange), currencySymbol || "$").decimals}
+                                </Text>
+                              </HStack>
+                            </VStack>
+                             <VStack align="end" gap={1}>
+                               <Text fontSize="sm" color={textColor}>
+                                 Percentage
+                               </Text>
+                              <Badge
+                                colorPalette={priceChange >= 0 ? "green" : "red"}
+                                fontSize="md"
+                                px={3}
+                                py={1}
+                              >
+                                {priceChange >= 0 ? "+" : ""}
+                                {priceChangePercent.toFixed(1)}%
+                              </Badge>
+                            </VStack>
+                          </HStack>
+                        </Box>
+                      )}
+                  </VStack>
+                </Box>
+
+                {/* Error Display */}
+                {updatePriceMutation.isError && (
+                  <Alert.Root
+                    status="error"
+                    borderRadius="md"
+                    border="1px solid"
+                    borderColor="red.200"
+                  >
+                    <Alert.Indicator />
+                    <Box>
+                      <Alert.Title fontWeight="bold">Update Failed!</Alert.Title>
+                      <Alert.Description>
+                        {(updatePriceMutation.error as any)?.response?.data
+                          ?.detail ||
+                          (updatePriceMutation.error as any)?.message ||
+                          "An error occurred while updating the price."}
+                      </Alert.Description>
+                    </Box>
+                  </Alert.Root>
+                )}
+              </VStack>
+
+              {/* Mobile-only action buttons that stay at bottom */}
+              <Box display={{ base: "block", sm: "none" }} mt={6}>
+                <Button
+                  colorPalette="brand"
+                  onClick={handleUpdate}
+                  size="lg"
+                  width="100%"
+                  mb={3}
+                  borderRadius="lg"
+                  fontWeight="bold"
+                  loading={isLoading}
+                  loadingText="Updating Price..."
+                  disabled={
+                    !newPrice.trim() ||
+                    !!errors.price ||
+                    newPriceValue === currentPrice
+                  }
+                >
+                  Update Price
+                </Button>
+                <Button
+                  variant="ghost"
+                  colorPalette="gray"
+                  onClick={handleClose}
+                  size="lg"
+                  width="100%"
+                  borderRadius="lg"
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+              </Box>
+            </Dialog.Body>
+
+            {/* Desktop-only footer */}
+            <Dialog.Footer
+              display={{ base: "none", sm: "flex" }}
+              px={8}
+              py={6}
+              bg={footerBg}
+              borderTop="1px solid"
+              borderColor={borderColor}
+            >
+              <Button
+                colorPalette="brand"
+                mr={3}
+                onClick={handleUpdate}
+                px={8}
+                py={3}
+                borderRadius="lg"
+                fontWeight="bold"
+                loading={isLoading}
+                loadingText="Updating Price..."
+                disabled={
+                  !newPrice.trim() ||
+                  !!errors.price ||
+                  newPriceValue === currentPrice
+                }
+              >
+                Update Price
+              </Button>
+              <Button
+                variant="ghost"
+                colorPalette="gray"
+                onClick={handleClose}
+                disabled={isLoading}
+                px={6}
+                py={3}
+                borderRadius="lg"
+              >
+                Cancel
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+
+      </Portal>
+    </Dialog.Root>
   );
 };
 

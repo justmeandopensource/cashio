@@ -1,13 +1,6 @@
 import React from "react";
-import {
-  Box,
-  Flex,
-  HStack,
-  Icon,
-  SimpleGrid,
-  Text,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box, Flex, HStack, Icon, SimpleGrid, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { TrendingUp, Building, ShieldAlert, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { splitCurrencyForDisplay } from "@/features/mutual-funds/utils";
@@ -69,7 +62,7 @@ const NetWorthSummary: React.FC<NetWorthSummaryProps> = ({
   ];
 
   return (
-    <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 3, md: 4 }}>
+    <SimpleGrid columns={{ base: 1, md: 3 }} gap={{ base: 3, md: 4 }}>
       {/* Hero net worth card — spans full width on mobile, 1 col on desktop */}
       <MotionBox
         initial={{ opacity: 0, y: 12 }}
@@ -97,7 +90,7 @@ const NetWorthSummary: React.FC<NetWorthSummaryProps> = ({
           </Text>
         </Flex>
 
-        <HStack spacing={0} align="baseline">
+        <HStack gap={0} align="baseline">
           <Text
             fontSize={{ base: "2xl", md: "3xl" }}
             fontWeight="800"
@@ -193,7 +186,7 @@ const NetWorthSummary: React.FC<NetWorthSummaryProps> = ({
             </Text>
           </Flex>
 
-          <HStack spacing={0} align="baseline">
+          <HStack gap={0} align="baseline">
             <Text
               fontSize={{ base: "lg", md: "xl" }}
               fontWeight="bold"

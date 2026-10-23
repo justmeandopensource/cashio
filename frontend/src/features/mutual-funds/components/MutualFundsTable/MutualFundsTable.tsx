@@ -1,29 +1,22 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
 import {
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Box,
   Text,
   HStack,
-  Collapse,
+  Collapsible,
   IconButton,
-  Select,
+  NativeSelect,
   Flex,
-  useColorModeValue,
-  Switch,
-  FormControl,
-  FormLabel,
   Input,
-  InputGroup,
-  InputLeftElement,
   useBreakpointValue,
   VStack,
-  Tooltip,
+  Field,
 } from "@chakra-ui/react";
+import { Tooltip } from '@/components/ui/tooltip';
+import { InputGroup } from "@/components/ui/input-group";
+import { Switch } from "@/components/ui/switch";
 import {
   ChevronDown,
   ChevronRight,
@@ -402,29 +395,28 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
 
   const renderExpandedRow = (fund: FundWithAmc) => {
     return (
-      <Tr key={`expanded-${fund.mutual_fund_id}`}>
-        <Td colSpan={11} p={0}>
-          <Collapse
-            in={expandedRows.has(fund.mutual_fund_id)}
-            animateOpacity
-          >
-            <ExpandedFundRow
-              fund={fund}
-              currencySymbol={currencySymbol}
-              mutedColor={mutedColor}
-              isExpanded={expandedRows.has(fund.mutual_fund_id)}
-              onTradeUnits={onTradeUnits}
-              onTransferUnits={onTransferUnits}
-              onUpdateNav={onUpdateNav}
-              onCloseFund={onCloseFund}
-              onViewTransactions={onViewTransactions}
-              onViewAnalytics={onViewAnalytics}
-              positiveColor={positiveColor}
-              negativeColor={negativeColor}
-            />
-          </Collapse>
-        </Td>
-      </Tr>
+      <Table.Row key={`expanded-${fund.mutual_fund_id}`}>
+        <Table.Cell colSpan={11} p={0}>
+          <Collapsible.Root open={expandedRows.has(fund.mutual_fund_id)}>
+            <Collapsible.Content>
+              <ExpandedFundRow
+                fund={fund}
+                currencySymbol={currencySymbol}
+                mutedColor={mutedColor}
+                isExpanded={expandedRows.has(fund.mutual_fund_id)}
+                onTradeUnits={onTradeUnits}
+                onTransferUnits={onTransferUnits}
+                onUpdateNav={onUpdateNav}
+                onCloseFund={onCloseFund}
+                onViewTransactions={onViewTransactions}
+                onViewAnalytics={onViewAnalytics}
+                positiveColor={positiveColor}
+                negativeColor={negativeColor}
+              />
+            </Collapsible.Content>
+          </Collapsible.Root>
+        </Table.Cell>
+      </Table.Row>
     );
   };
 
@@ -437,68 +429,66 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
         direction={{ base: "column", md: "row" }}
         align={{ md: "center" }}
       >
-        <Select
-          value={filters.selectedOwner}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, selectedOwner: e.target.value })
-          }
-          size="sm"
-          maxW={{ md: "200px" }}
-        >
-          <option value="all">All Owners</option>
-          {Array.from(
-            new Set(
-              mutualFunds.map((fund) => fund.owner).filter(Boolean),
-            ),
-          )
-            .sort()
-            .map((owner) => (
-              <option key={owner} value={owner}>
-                {owner}
+        <NativeSelect.Root size="sm" maxW={{ md: "200px" }}>
+          <NativeSelect.Field
+            value={filters.selectedOwner}
+            onChange={(e) =>
+              onFiltersChange({ ...filters, selectedOwner: e.target.value })
+            }>
+            <option value="all">All Owners</option>
+            {Array.from(
+              new Set(
+                mutualFunds.map((fund) => fund.owner).filter(Boolean),
+              ),
+            )
+              .sort()
+              .map((owner) => (
+                <option key={owner} value={owner}>
+                  {owner}
+                </option>
+              ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
+        <NativeSelect.Root size="sm" maxW={{ md: "200px" }}>
+          <NativeSelect.Field
+            value={filters.selectedAmc}
+            onChange={(e) =>
+              onFiltersChange({ ...filters, selectedAmc: e.target.value })
+            }>
+            <option value="all">All AMCs</option>
+            {availableAmcs.map((amc) => (
+              <option key={amc.amc_id} value={amc.name}>
+                {amc.name}
               </option>
             ))}
-        </Select>
-        <Select
-          value={filters.selectedAmc}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, selectedAmc: e.target.value })
-          }
-          size="sm"
-          maxW={{ md: "200px" }}
-        >
-          <option value="all">All AMCs</option>
-          {availableAmcs.map((amc) => (
-            <option key={amc.amc_id} value={amc.name}>
-              {amc.name}
-            </option>
-          ))}
-        </Select>
-        <Select
-          value={filters.selectedAssetClass}
-          onChange={(e) =>
-            onFiltersChange({
-              ...filters,
-              selectedAssetClass: e.target.value,
-            })
-          }
-          size="sm"
-          maxW={{ md: "200px" }}
-        >
-          <option value="all">All Classes</option>
-          <option value="Equity">Equity</option>
-          <option value="Debt">Debt</option>
-          <option value="Hybrid">Hybrid</option>
-          <option value="Others">Others</option>
-        </Select>
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
+        <NativeSelect.Root size="sm" maxW={{ md: "200px" }}>
+          <NativeSelect.Field
+            value={filters.selectedAssetClass}
+            onChange={(e) =>
+              onFiltersChange({
+                ...filters,
+                selectedAssetClass: e.target.value,
+              })
+            }>
+            <option value="all">All Classes</option>
+            <option value="Equity">Equity</option>
+            <option value="Debt">Debt</option>
+            <option value="Hybrid">Hybrid</option>
+            <option value="Others">Others</option>
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
         <InputGroup
-          size="sm"
           maxW={{ base: "full", md: "300px" }}
           flexGrow={1}
+          startElement={<Search size={16} />}
         >
-          <InputLeftElement>
-            <Search size={16} />
-          </InputLeftElement>
           <Input
+            size="sm"
             placeholder="Search funds..."
             value={filters.searchTerm || ""}
             onChange={(e) =>
@@ -506,37 +496,37 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
             }
           />
         </InputGroup>
-        <FormControl
+        <Field.Root
           display="flex"
           alignItems="center"
           w="auto"
           ml={{ md: "auto" }}
         >
-          <FormLabel
+          <Field.Label
             htmlFor="show-zero-balance"
             mb="0"
             fontSize="sm"
             whiteSpace="nowrap"
           >
             Zero Bal
-          </FormLabel>
+          </Field.Label>
           <Switch
-            id="show-zero-balance"
-            isChecked={filters.showZeroBalance}
-            onChange={(e) =>
+            ids={{ hiddenInput: "show-zero-balance" }}
+            checked={filters.showZeroBalance}
+            onCheckedChange={(e) =>
               onFiltersChange({
                 ...filters,
-                showZeroBalance: e.target.checked,
+                showZeroBalance: e.checked,
               })
             }
             size="sm"
-            colorScheme="teal"
+            colorPalette="teal"
           />
-        </FormControl>
+        </Field.Root>
       </Flex>
 
       {isMobile ? (
-        <VStack spacing={4} align="stretch" mt={4}>
+        <VStack gap={4} align="stretch" mt={4}>
           {sortedFunds.map((fund) => (
             <MobileFundCard
               key={fund.mutual_fund_id}
@@ -562,16 +552,16 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
         </VStack>
       ) : (
         <Box overflowX="auto">
-          <Table
-            variant="simple"
+          <Table.Root
+            variant="line"
             size="sm"
             minW="800px"
             borderColor={tableBorderColor}
           >
-            <Thead>
-              <Tr>
-                <Th width="2%"></Th>
-                <Th
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader width="2%"></Table.ColumnHeader>
+                <Table.ColumnHeader
                   width="12%"
                   cursor="pointer"
                   onClick={() => handleSort("amc")}
@@ -579,8 +569,8 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
                   <Flex align="center" gap={1}>
                     AMC {getSortIcon("amc")}
                   </Flex>
-                </Th>
-                <Th
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
                   width="24%"
                   cursor="pointer"
                   onClick={() => handleSort("fund")}
@@ -588,127 +578,123 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
                   <Flex align="center" gap={1}>
                     Fund {getSortIcon("fund")}
                   </Flex>
-                </Th>
-                <Th
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
                   width="8%"
-                  isNumeric
                   display={{ base: "none", lg: "table-cell" }}
+                  textAlign='end'
                 >
-                  <Tooltip label="Net Asset Value — the per-unit market price of a mutual fund" fontSize="xs">
+                  <Tooltip content="Net Asset Value — the per-unit market price of a mutual fund" contentProps={{ fontSize: "xs" }}>
                     <Text as="span">NAV</Text>
                   </Tooltip>
-                </Th>
-                <Th
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
                   width="8%"
-                  isNumeric
                   display={{ base: "none", md: "table-cell" }}
+                  textAlign='end'
                 >
                   Units
-                </Th>
-                <Th
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
                   width="10%"
-                  isNumeric
                   cursor="pointer"
                   onClick={() => handleSort("invested")}
                   display={{ base: "none", md: "table-cell" }}
+                  textAlign='end'
                 >
                   <Flex align="center" gap={1} justify="flex-end">
                     Invested {getSortIcon("invested")}
                   </Flex>
-                </Th>
-                <Th
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
                   width="10%"
-                  isNumeric
                   cursor="pointer"
                   onClick={() => handleSort("value")}
+                  textAlign='end'
                 >
                   <Flex align="center" gap={1} justify="flex-end">
                     Value {getSortIcon("value")}
                   </Flex>
-                </Th>
-                <Th
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
                   width="10%"
-                  isNumeric
                   cursor="pointer"
                   onClick={() => handleSort("unrealized_pnl")}
+                  textAlign='end'
                 >
                   <Flex align="center" gap={1} justify="flex-end">
                     P&L {getSortIcon("unrealized_pnl")}
                   </Flex>
-                </Th>
-                <Th
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
                   width="7%"
-                  isNumeric
                   cursor="pointer"
                   onClick={() => handleSort("unrealized_pnl_percentage")}
                   whiteSpace="nowrap"
+                  textAlign='end'
                 >
                   <Tooltip
-                    label="Absolute return: (Current Value - Invested) / Invested"
-                    fontSize="xs"
+                    content="Absolute return: (Current Value - Invested) / Invested"
+                    contentProps={{ fontSize: "xs" }}
                   >
                     <Flex align="center" gap={1} justify="flex-end">
                       Return % {getSortIcon("unrealized_pnl_percentage")}
                     </Flex>
                   </Tooltip>
-                </Th>
-                <Th
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
                   width="6%"
-                  isNumeric
                   cursor="pointer"
                   onClick={() => handleSort("cagr_percentage")}
                   whiteSpace="nowrap"
+                  textAlign='end'
                 >
                   <Tooltip
-                    label="Compound Annual Growth Rate. Shown for holdings over 1 year."
-                    fontSize="xs"
+                    content="Compound Annual Growth Rate. Shown for holdings over 1 year."
+                    contentProps={{ fontSize: "xs" }}
                   >
                     <Flex align="center" gap={1} justify="flex-end">
                       CAGR % {getSortIcon("cagr_percentage")}
                     </Flex>
                   </Tooltip>
-                </Th>
-                <Th
+                </Table.ColumnHeader>
+                <Table.ColumnHeader
                   width="6%"
-                  isNumeric
                   cursor="pointer"
                   onClick={() => handleSort("xirr_percentage")}
                   whiteSpace="nowrap"
+                  textAlign='end'
                 >
                   <Tooltip
-                    label="Annualized return accounting for cash flow timing. Shown for holdings over 1 year."
-                    fontSize="xs"
+                    content="Annualized return accounting for cash flow timing. Shown for holdings over 1 year."
+                    contentProps={{ fontSize: "xs" }}
                   >
                     <Flex align="center" gap={1} justify="flex-end">
                       XIRR % {getSortIcon("xirr_percentage")}
                     </Flex>
                   </Tooltip>
-                </Th>
-              </Tr>
-            </Thead>
-            <Tbody>
+                </Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {sortedFunds.map((fund) => (
                 <React.Fragment key={fund.mutual_fund_id}>
-                  <Tr _hover={{ bg: tableHoverBg }} data-fund-id={fund.mutual_fund_id}>
-                    <Td>
+                  <Table.Row _hover={{ bg: tableHoverBg }} data-fund-id={fund.mutual_fund_id}>
+                    <Table.Cell>
                       <IconButton
-                        icon={
-                          expandedRows.has(fund.mutual_fund_id) ? (
-                            <ChevronDown size={16} />
-                          ) : (
-                            <ChevronRight size={16} />
-                          )
-                        }
                         variant="ghost"
                         size="xs"
                         aria-label="Expand row"
                         onClick={() =>
                           toggleRowExpansion(fund.mutual_fund_id)
                         }
-                        cursor="pointer"
-                      />
-                    </Td>
-                    <Td fontWeight="medium">
+                        cursor="pointer">{expandedRows.has(fund.mutual_fund_id) ? (
+                          <ChevronDown size={16} />
+                        ) : (
+                          <ChevronRight size={16} />
+                        )}</IconButton>
+                    </Table.Cell>
+                    <Table.Cell fontWeight="medium">
                       <Text
                         as="span"
                         color={amcFundNameColor}
@@ -723,12 +709,12 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
                       >
                         {fund.amc_name}
                       </Text>
-                    </Td>
-                    <Td>
-                      <HStack spacing={1} align="baseline">
+                    </Table.Cell>
+                    <Table.Cell>
+                      <HStack gap={1} align="baseline">
                         <Text
                           fontWeight="medium"
-                          noOfLines={1}
+                          lineClamp={1}
                           color={amcFundNameColor}
                           cursor="pointer"
                           _hover={{ textDecoration: "underline" }}
@@ -757,30 +743,30 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
                           </Text>
                         )}
                       </HStack>
-                    </Td>
-                    <Td
-                      isNumeric
+                    </Table.Cell>
+                    <Table.Cell
                       display={{ base: "none", lg: "table-cell" }}
+                      textAlign='end'
                     >
                       <Text fontSize="sm" color={tertiaryTextColor}>
                         {currencySymbol || "₹"}
                         {formatNav(fund.latest_nav)}
                       </Text>
-                    </Td>
-                    <Td
-                      isNumeric
+                    </Table.Cell>
+                    <Table.Cell
                       display={{ base: "none", md: "table-cell" }}
+                      textAlign='end'
                     >
                       <Text fontSize="sm" color={tertiaryTextColor}>
                         {formatUnits(fund.total_units)}
                       </Text>
-                    </Td>
-                    <Td
-                      isNumeric
+                    </Table.Cell>
+                    <Table.Cell
                       display={{ base: "none", md: "table-cell" }}
+                      textAlign='end'
                     >
                       <HStack
-                        spacing={0}
+                        gap={0}
                         align="baseline"
                         justify="flex-end"
                       >
@@ -801,10 +787,10 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
                           }
                         </Text>
                       </HStack>
-                    </Td>
-                    <Td isNumeric>
+                    </Table.Cell>
+                    <Table.Cell textAlign='end'>
                       <HStack
-                        spacing={0}
+                        gap={0}
                         align="baseline"
                         justify="flex-end"
                       >
@@ -825,10 +811,10 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
                           }
                         </Text>
                       </HStack>
-                    </Td>
-                    <Td isNumeric>
+                    </Table.Cell>
+                    <Table.Cell textAlign='end'>
                       <HStack
-                        spacing={0}
+                        gap={0}
                         align="baseline"
                         justify="flex-end"
                       >
@@ -864,10 +850,10 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
                           }
                         </Text>
                       </HStack>
-                    </Td>
-                    <Td isNumeric>
+                    </Table.Cell>
+                    <Table.Cell textAlign='end'>
                       <HStack
-                        spacing={0}
+                        gap={0}
                         align="baseline"
                         justify="flex-end"
                       >
@@ -903,11 +889,11 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
                           }
                         </Text>
                       </HStack>
-                    </Td>
-                    <Td isNumeric>
+                    </Table.Cell>
+                    <Table.Cell textAlign='end'>
                       {fund.cagr_percentage != null ? (
                         <HStack
-                          spacing={0}
+                          gap={0}
                           align="baseline"
                           justify="flex-end"
                         >
@@ -946,11 +932,11 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
                           ---
                         </Text>
                       )}
-                    </Td>
-                    <Td isNumeric>
+                    </Table.Cell>
+                    <Table.Cell textAlign='end'>
                       {fund.xirr_percentage != null ? (
                         <HStack
-                          spacing={0}
+                          gap={0}
                           align="baseline"
                           justify="flex-end"
                         >
@@ -989,13 +975,13 @@ const MutualFundsTable: React.FC<MutualFundsTableProps> = ({
                           ---
                         </Text>
                       )}
-                    </Td>
-                  </Tr>
+                    </Table.Cell>
+                  </Table.Row>
                   {renderExpandedRow(fund)}
                 </React.Fragment>
               ))}
-            </Tbody>
-          </Table>
+            </Table.Body>
+          </Table.Root>
         </Box>
       )}
 

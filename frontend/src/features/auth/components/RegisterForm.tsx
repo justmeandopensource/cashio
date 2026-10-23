@@ -1,24 +1,19 @@
 import React, { useState, RefObject } from "react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import { Link as RouterLink } from "react-router-dom";
 import {
   Box,
   Button,
-  FormControl,
-  FormLabel,
   Input,
-  InputGroup,
-  InputRightElement,
-  InputLeftElement,
   VStack,
   Text,
-  FormErrorMessage,
-  useColorModeValue,
   Progress,
   HStack,
   Icon,
-  FormHelperText,
   Flex,
+  Field,
 } from "@chakra-ui/react";
+import { InputGroup } from "@/components/ui/input-group";
 import { motion } from "framer-motion";
 import { UserPlus, Eye, EyeOff, Mail, Lock, User, AtSign } from "lucide-react";
 
@@ -167,7 +162,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         {/* Gradient accent line */}
         <Box
           h="3px"
-          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
+          bgGradient="to-r"
+          gradientFrom="brand.400"
+          gradientVia="brand.600"
+          gradientTo="teal.300"
         />
 
         {/* Header */}
@@ -179,7 +177,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.15, ease: "easeOut" }}
         >
-          <HStack spacing={3} align="center" mb={2}>
+          <HStack gap={3} align="center" mb={2}>
             <Box
               p={2.5}
               bg={useColorModeValue("brand.50", "whiteAlpha.100")}
@@ -213,7 +211,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         <Box px={{ base: 6, sm: 8 }} py={{ base: 4, sm: 6 }}>
           <VStack
             as="form"
-            spacing={6}
+            gap={6}
             onSubmit={handleSubmit}
           >
             {/* Personal Information Card */}
@@ -228,20 +226,16 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
             >
-              <VStack spacing={5} align="stretch">
-                <FormControl isInvalid={nameError}>
-                  <FormLabel fontWeight="bold" mb={2} fontSize="sm">
+              <VStack gap={5} align="stretch">
+                <Field.Root invalid={nameError}>
+                  <Field.Label fontWeight="bold" mb={2} fontSize="sm">
                     Full Name
-                  </FormLabel>
-                  <InputGroup>
-                    <InputLeftElement
-                      pointerEvents="none"
-                      height="100%"
-                      display="flex"
-                      alignItems="center"
-                    >
-                      <Icon as={User} boxSize={4} color="gray.400" />
-                    </InputLeftElement>
+                  </Field.Label>
+                  <InputGroup
+                    w="full"
+                    startElement={<Icon as={User} boxSize={4} color="gray.400" />}
+                    startElementProps={{ height: "100%", display: "flex", alignItems: "center" }}
+                  >
                     <Input
                       ref={fullNameRef}
                       type="text"
@@ -263,29 +257,25 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                     />
                   </InputGroup>
                   {nameError ? (
-                    <FormErrorMessage mt={2}>
+                    <Field.ErrorText mt={2}>
                       Full name is required
-                    </FormErrorMessage>
+                    </Field.ErrorText>
                   ) : (
-                    <FormHelperText mt={2} fontSize="xs">
+                    <Field.HelperText mt={2} fontSize="xs">
                       Your full name for account identification
-                    </FormHelperText>
+                    </Field.HelperText>
                   )}
-                </FormControl>
+                </Field.Root>
 
-                <FormControl isInvalid={usernameError}>
-                  <FormLabel fontWeight="bold" mb={2} fontSize="sm">
+                <Field.Root invalid={usernameError}>
+                  <Field.Label fontWeight="bold" mb={2} fontSize="sm">
                     Username
-                  </FormLabel>
-                  <InputGroup>
-                    <InputLeftElement
-                      pointerEvents="none"
-                      height="100%"
-                      display="flex"
-                      alignItems="center"
-                    >
-                      <Icon as={AtSign} boxSize={4} color="gray.400" />
-                    </InputLeftElement>
+                  </Field.Label>
+                  <InputGroup
+                    w="full"
+                    startElement={<Icon as={AtSign} boxSize={4} color="gray.400" />}
+                    startElementProps={{ height: "100%", display: "flex", alignItems: "center" }}
+                  >
                     <Input
                       type="text"
                       placeholder="Create a unique username"
@@ -306,15 +296,15 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                     />
                   </InputGroup>
                   {usernameError ? (
-                    <FormErrorMessage mt={2}>
+                    <Field.ErrorText mt={2}>
                       Username is required
-                    </FormErrorMessage>
+                    </Field.ErrorText>
                   ) : (
-                    <FormHelperText mt={2} fontSize="xs">
+                    <Field.HelperText mt={2} fontSize="xs">
                       Choose a unique username for your account
-                    </FormHelperText>
+                    </Field.HelperText>
                   )}
-                </FormControl>
+                </Field.Root>
               </VStack>
             </MotionBox>
 
@@ -330,20 +320,16 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
             >
-              <VStack spacing={5} align="stretch">
-                <FormControl isInvalid={emailError}>
-                  <FormLabel fontWeight="bold" mb={2} fontSize="sm">
+              <VStack gap={5} align="stretch">
+                <Field.Root invalid={emailError}>
+                  <Field.Label fontWeight="bold" mb={2} fontSize="sm">
                     Email Address
-                  </FormLabel>
-                  <InputGroup>
-                    <InputLeftElement
-                      pointerEvents="none"
-                      height="100%"
-                      display="flex"
-                      alignItems="center"
-                    >
-                      <Icon as={Mail} boxSize={4} color="gray.400" />
-                    </InputLeftElement>
+                  </Field.Label>
+                  <InputGroup
+                    w="full"
+                    startElement={<Icon as={Mail} boxSize={4} color="gray.400" />}
+                    startElementProps={{ height: "100%", display: "flex", alignItems: "center" }}
+                  >
                     <Input
                       type="email"
                       placeholder="Enter your email address"
@@ -364,32 +350,43 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                     />
                   </InputGroup>
                   {emailError ? (
-                    <FormErrorMessage mt={2}>
+                    <Field.ErrorText mt={2}>
                       Valid email is required
-                    </FormErrorMessage>
+                    </Field.ErrorText>
                   ) : (
-                    <FormHelperText mt={2} fontSize="xs">
+                    <Field.HelperText mt={2} fontSize="xs">
                       We&apos;ll use this for account verification and updates
-                    </FormHelperText>
+                    </Field.HelperText>
                   )}
-                </FormControl>
+                </Field.Root>
 
-                <FormControl isInvalid={passwordError}>
-                  <FormLabel fontWeight="bold" mb={2} fontSize="sm">
+                <Field.Root invalid={passwordError}>
+                  <Field.Label fontWeight="bold" mb={2} fontSize="sm">
                     Password
-                  </FormLabel>
-                  <InputGroup size="lg">
-                    <InputLeftElement
-                      pointerEvents="none"
-                      height="100%"
-                      display="flex"
-                      alignItems="center"
-                    >
-                      <Icon as={Lock} boxSize={4} color="gray.400" />
-                    </InputLeftElement>
+                  </Field.Label>
+                  <InputGroup
+                    w="full"
+                    startElement={<Icon as={Lock} boxSize={4} color="gray.400" />}
+                    startElementProps={{ height: "100%", display: "flex", alignItems: "center" }}
+                    endElement={
+                      <Button
+                        variant="ghost"
+                        onClick={() => setShowPassword(!showPassword)}
+                        _hover={{ bg: "transparent" }}
+                        size="sm"
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
+                      >
+                        <Icon as={showPassword ? EyeOff : Eye} boxSize={4} />
+                      </Button>
+                    }
+                    endElementProps={{ height: "100%" }}
+                  >
                     <Input
                       type={showPassword ? "text" : "password"}
                       placeholder="Create a strong password"
+                      size="lg"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       onBlur={() => handleBlur("password")}
@@ -404,19 +401,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                       }}
                       autoComplete="new-password"
                     />
-                    <InputRightElement height="100%">
-                      <Button
-                        variant="ghost"
-                        onClick={() => setShowPassword(!showPassword)}
-                        _hover={{ bg: "transparent" }}
-                        size="sm"
-                        aria-label={
-                          showPassword ? "Hide password" : "Show password"
-                        }
-                      >
-                        <Icon as={showPassword ? EyeOff : Eye} boxSize={4} />
-                      </Button>
-                    </InputRightElement>
                   </InputGroup>
 
                   {/* Password strength indicator */}
@@ -440,26 +424,27 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                           {getStrengthText(passwordStrength)}
                         </Text>
                       </Flex>
-                      <Progress
+                      <Progress.Root
                         value={passwordStrength}
                         size="sm"
-                        colorScheme={getStrengthColorScheme(passwordStrength)}
-                        borderRadius="full"
-                        bg={progressBg}
-                      />
+                        colorPalette={getStrengthColorScheme(passwordStrength)}>
+                        <Progress.Track borderRadius="full" bg={progressBg}>
+                          <Progress.Range />
+                        </Progress.Track>
+                      </Progress.Root>
                     </Box>
                   )}
 
                   {passwordError ? (
-                    <FormErrorMessage mt={2}>
+                    <Field.ErrorText mt={2}>
                       Password must be at least 8 characters
-                    </FormErrorMessage>
+                    </Field.ErrorText>
                   ) : (
-                    <FormHelperText mt={2} fontSize="xs">
+                    <Field.HelperText mt={2} fontSize="xs">
                       Use mix of letters, numbers, and symbols
-                    </FormHelperText>
+                    </Field.HelperText>
                   )}
-                </FormControl>
+                </Field.Root>
               </VStack>
             </MotionBox>
 
@@ -473,7 +458,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                 type="submit"
                 size="lg"
                 w="full"
-                colorScheme="brand"
+                colorPalette="brand"
                 loadingText="Creating account"
                 borderRadius="xl"
                 fontWeight="800"
@@ -486,17 +471,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                   transform: "translateY(0)",
                 }}
                 transition="all 0.2s ease"
-                leftIcon={<Icon as={UserPlus} boxSize={4} />}
-                isDisabled={
+                disabled={
                   !full_name ||
                   !username ||
                   !email ||
                   !password ||
                   passwordStrength < 25
-                }
-              >
-                Create Account
-              </Button>
+                }><Icon as={UserPlus} boxSize={4} />Create Account
+                              </Button>
             </MotionBox>
 
             <MotionBox

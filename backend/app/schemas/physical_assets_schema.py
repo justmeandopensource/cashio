@@ -2,7 +2,7 @@ from datetime import datetime
 from app.schemas import JsonDecimal as Decimal
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # Asset Type Schemas
@@ -32,8 +32,7 @@ class AssetType(AssetTypeCreate, str_strip_whitespace=True):
     ledger_id: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Physical Asset Schemas
@@ -77,8 +76,7 @@ class PhysicalAsset(PhysicalAssetCreate, str_strip_whitespace=True):
     # Related data
     asset_type: Optional[AssetType] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Asset Transaction Schemas
@@ -117,8 +115,7 @@ class AssetTransaction(AssetTransactionCreate, str_strip_whitespace=True):
     physical_asset: Optional[PhysicalAsset] = None
     account_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Summary and Analytics Schemas

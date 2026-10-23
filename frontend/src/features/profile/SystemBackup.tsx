@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useColorModeValue } from "../../components/ui/color-mode";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -8,24 +9,18 @@ import {
   HStack,
   Tag,
   useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
   Spinner,
   Heading,
   Icon,
   Card,
-  CardBody,
   SimpleGrid,
   Flex,
   IconButton,
-  Tooltip,
   Badge,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
+import { Tooltip } from '@/components/ui/tooltip';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getBackups,
@@ -39,7 +34,6 @@ import {
   type RestoreStatus,
 } from "./api";
 import { setAuthToken, setRefreshToken } from "@/lib/api";
-import { useColorModeValue } from "@chakra-ui/react";
 import { notify } from "@/components/shared/notify";
 import { motion } from "framer-motion";
 import {
@@ -56,7 +50,7 @@ import {
 } from "lucide-react";
 
 const MotionBox = motion.create(Box);
-const MotionCard = motion.create(Card);
+const MotionCard = motion.create(Card.Root);
 
 const SystemBackup: React.FC = () => {
   const textColor = useColorModeValue("gray.800", "gray.100");
@@ -97,13 +91,13 @@ const SystemBackup: React.FC = () => {
   const inputFileRef = useRef<HTMLInputElement>(null);
 
   const {
-    isOpen: isRestoreOpen,
+    open: isRestoreOpen,
     onOpen: onRestoreOpen,
     onClose: onRestoreClose,
   } = useDisclosure();
 
   const {
-    isOpen: isUploadRestoreOpen,
+    open: isUploadRestoreOpen,
     onOpen: onUploadRestoreOpen,
     onClose: onUploadRestoreClose,
   } = useDisclosure();
@@ -357,7 +351,7 @@ const SystemBackup: React.FC = () => {
   if (isLoading) {
     return (
       <Box w="full" px={{ base: 4, md: 8 }} py={{ base: 6, md: 8 }}>
-        <VStack spacing={5} py={12}>
+        <VStack gap={5} py={12}>
           <MotionBox
             animate={{ rotate: [0, 360] }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
@@ -371,7 +365,7 @@ const SystemBackup: React.FC = () => {
               alignItems="center"
               justifyContent="center"
             >
-              <Icon as={Database} color={iconColor} boxSize={7} />
+              <Icon color={iconColor} boxSize={7} asChild><Database /></Icon>
             </Box>
           </MotionBox>
           <Text color={subtitleColor} fontSize="md" fontWeight="500">
@@ -398,9 +392,9 @@ const SystemBackup: React.FC = () => {
           justify="center"
           backdropFilter="blur(4px)"
         >
-          <VStack spacing={5}>
-            <Spinner size="xl" color="brand.400" thickness="3px" />
-            <VStack spacing={1}>
+          <VStack gap={5}>
+            <Spinner size="xl" color="brand.400" borderWidth="3px" />
+            <VStack gap={1}>
               <Heading size="md" color="white">
                 Restoring database...
               </Heading>
@@ -413,14 +407,14 @@ const SystemBackup: React.FC = () => {
       )}
 
       <Box px={{ base: 4, md: 8 }} py={{ base: 5, md: 8 }}>
-        <VStack spacing={{ base: 6, md: 8 }} align="stretch" maxW="4xl">
+        <VStack gap={{ base: 6, md: 8 }} align="stretch" maxW="4xl">
           {/* Header */}
           <MotionBox
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <HStack spacing={3} mb={1}>
+            <HStack gap={3} mb={1}>
               <Box
                 w={10}
                 h={10}
@@ -430,7 +424,7 @@ const SystemBackup: React.FC = () => {
                 alignItems="center"
                 justifyContent="center"
               >
-                <Icon as={ShieldCheck} color={iconColor} boxSize={5} />
+                <Icon color={iconColor} boxSize={5} asChild><ShieldCheck /></Icon>
               </Box>
               <Box>
                 <Heading size="md" color={textColor} fontWeight="700">
@@ -449,9 +443,9 @@ const SystemBackup: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.08 }}
           >
-            <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
+            <SimpleGrid columns={{ base: 1, sm: 2 }} gap={4}>
               {/* Create Backup Card */}
-              <Card
+              <Card.Root
                 bg={actionCardBg}
                 border="1px"
                 borderColor={actionCardBorder}
@@ -477,8 +471,8 @@ const SystemBackup: React.FC = () => {
                 opacity={createMutation.isPending ? 0.7 : 1}
                 pointerEvents={createMutation.isPending ? "none" : "auto"}
               >
-                <CardBody px={5} py={5}>
-                  <HStack spacing={4}>
+                <Card.Body px={5} py={5}>
+                  <HStack gap={4}>
                     <Box
                       w={11}
                       h={11}
@@ -492,7 +486,7 @@ const SystemBackup: React.FC = () => {
                       {createMutation.isPending ? (
                         <Spinner size="sm" color={iconColor} />
                       ) : (
-                        <Icon as={Plus} color={iconColor} boxSize={5} strokeWidth={2.5} />
+                        <Icon color={iconColor} boxSize={5} strokeWidth={2.5} asChild><Plus /></Icon>
                       )}
                     </Box>
                     <Box>
@@ -504,11 +498,11 @@ const SystemBackup: React.FC = () => {
                       </Text>
                     </Box>
                   </HStack>
-                </CardBody>
-              </Card>
+                </Card.Body>
+              </Card.Root>
 
               {/* Upload & Restore Card */}
-              <Card
+              <Card.Root
                 bg={uploadCardBg}
                 border="1px"
                 borderColor={uploadCardBorder}
@@ -534,8 +528,8 @@ const SystemBackup: React.FC = () => {
                 opacity={uploadMutation.isPending ? 0.7 : 1}
                 pointerEvents={uploadMutation.isPending ? "none" : "auto"}
               >
-                <CardBody px={5} py={5}>
-                  <HStack spacing={4}>
+                <Card.Body px={5} py={5}>
+                  <HStack gap={4}>
                     <Box
                       w={11}
                       h={11}
@@ -549,7 +543,7 @@ const SystemBackup: React.FC = () => {
                       {uploadMutation.isPending ? (
                         <Spinner size="sm" color={uploadIconColor} />
                       ) : (
-                        <Icon as={Upload} color={uploadIconColor} boxSize={5} strokeWidth={2.5} />
+                        <Icon color={uploadIconColor} boxSize={5} strokeWidth={2.5} asChild><Upload /></Icon>
                       )}
                     </Box>
                     <Box>
@@ -561,8 +555,8 @@ const SystemBackup: React.FC = () => {
                       </Text>
                     </Box>
                   </HStack>
-                </CardBody>
-              </Card>
+                </Card.Body>
+              </Card.Root>
             </SimpleGrid>
             <input
               type="file"
@@ -601,26 +595,26 @@ const SystemBackup: React.FC = () => {
             </HStack>
 
             {isError && (
-              <Card
+              <Card.Root
                 bg={errorBg}
                 borderRadius="xl"
                 border="1px"
                 borderColor={errorBorderColor}
                 shadow="none"
               >
-                <CardBody px={5} py={4}>
-                  <HStack spacing={3}>
-                    <Icon as={AlertTriangle} color={errorTextColor} boxSize={5} />
+                <Card.Body px={5} py={4}>
+                  <HStack gap={3}>
+                    <Icon color={errorTextColor} boxSize={5} asChild><AlertTriangle /></Icon>
                     <Text color={errorTextColor} fontWeight="500" fontSize="sm">
                       Failed to load backups. Please try again.
                     </Text>
                   </HStack>
-                </CardBody>
-              </Card>
+                </Card.Body>
+              </Card.Root>
             )}
 
             {backups && backups.length > 0 && (
-              <VStack spacing={3} align="stretch">
+              <VStack gap={3} align="stretch">
                 {backups.map((file, index) => {
                   const dateStr = parseBackupDate(file);
                   return (
@@ -641,7 +635,7 @@ const SystemBackup: React.FC = () => {
                       // @ts-expect-error chakra transition prop conflicts with framer-motion
                       cssTransition="border-color 0.2s, box-shadow 0.2s"
                     >
-                      <CardBody px={{ base: 4, md: 5 }} py={{ base: 3, md: 4 }}>
+                      <Card.Body px={{ base: 4, md: 5 }} py={{ base: 3, md: 4 }}>
                         <Flex
                           direction={{ base: "column", md: "row" }}
                           justify="space-between"
@@ -649,7 +643,7 @@ const SystemBackup: React.FC = () => {
                           gap={{ base: 3, md: 4 }}
                         >
                           {/* File info */}
-                          <HStack spacing={3} flex={1} minW={0}>
+                          <HStack gap={3} flex={1} minW={0}>
                             <Box
                               w={10}
                               h={10}
@@ -660,14 +654,14 @@ const SystemBackup: React.FC = () => {
                               justifyContent="center"
                               flexShrink={0}
                             >
-                              <Icon as={HardDrive} color={iconColor} boxSize={5} />
+                              <Icon color={iconColor} boxSize={5} asChild><HardDrive /></Icon>
                             </Box>
                             <Box flex={1} minW={0}>
                               <Text
                                 fontSize="sm"
                                 fontWeight="600"
                                 color={textColor}
-                                noOfLines={1}
+                                lineClamp={1}
                               >
                                 <Box
                                   as="span"
@@ -691,47 +685,47 @@ const SystemBackup: React.FC = () => {
 
                           {/* Actions */}
                           <HStack
-                            spacing={2}
+                            gap={2}
                             flexShrink={0}
                             justify={{ base: "flex-end", md: "flex-end" }}
                           >
-                            <Tooltip label="Download" hasArrow placement="top">
+                            <Tooltip content="Download" showArrow positioning={{
+                              placement: "top"
+                            }}>
                               <IconButton
                                 aria-label="Download backup"
-                                icon={<Icon as={Download} boxSize={4} />}
                                 size="sm"
                                 variant="ghost"
-                                colorScheme="blue"
+                                colorPalette="blue"
                                 borderRadius="lg"
-                                onClick={() => handleDownloadClick(file)}
-                              />
+                                onClick={() => handleDownloadClick(file)}><Icon boxSize={4} asChild><Download /></Icon></IconButton>
                             </Tooltip>
-                            <Tooltip label="Restore" hasArrow placement="top">
+                            <Tooltip content="Restore" showArrow positioning={{
+                              placement: "top"
+                            }}>
                               <IconButton
                                 aria-label="Restore backup"
-                                icon={<Icon as={RotateCcw} boxSize={4} />}
                                 size="sm"
                                 variant="ghost"
-                                colorScheme="brand"
+                                colorPalette="brand"
                                 borderRadius="lg"
-                                onClick={() => handleRestoreClick(file)}
-                              />
+                                onClick={() => handleRestoreClick(file)}><Icon boxSize={4} asChild><RotateCcw /></Icon></IconButton>
                             </Tooltip>
-                            <Tooltip label="Delete" hasArrow placement="top">
+                            <Tooltip content="Delete" showArrow positioning={{
+                              placement: "top"
+                            }}>
                               <IconButton
                                 aria-label="Delete backup"
-                                icon={<Icon as={Trash2} boxSize={4} />}
                                 size="sm"
                                 variant="ghost"
                                 color={dangerColor}
                                 borderRadius="lg"
                                 onClick={() => deleteMutation.mutate(file)}
-                                _hover={{ bg: deleteIconHoverBg }}
-                              />
+                                _hover={{ bg: deleteIconHoverBg }}><Icon boxSize={4} asChild><Trash2 /></Icon></IconButton>
                             </Tooltip>
                           </HStack>
                         </Flex>
-                      </CardBody>
+                      </Card.Body>
                     </MotionCard>
                   );
                 })}
@@ -744,15 +738,15 @@ const SystemBackup: React.FC = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
               >
-                <Card
+                <Card.Root
                   bg={emptyBg}
                   borderRadius="xl"
                   border="1px dashed"
                   borderColor={emptyBorderColor}
                   shadow="none"
                 >
-                  <CardBody px={6} py={10}>
-                    <VStack spacing={3}>
+                  <Card.Body px={6} py={10}>
+                    <VStack gap={3}>
                       <MotionBox
                         animate={{ y: [0, -4, 0] }}
                         transition={{
@@ -770,7 +764,7 @@ const SystemBackup: React.FC = () => {
                           alignItems="center"
                           justifyContent="center"
                         >
-                          <Icon as={Database} color={iconColor} boxSize={7} />
+                          <Icon color={iconColor} boxSize={7} asChild><Database /></Icon>
                         </Box>
                       </MotionBox>
                       <Text
@@ -803,8 +797,8 @@ const SystemBackup: React.FC = () => {
                         from the command line.
                       </Text>
                     </VStack>
-                  </CardBody>
-                </Card>
+                  </Card.Body>
+                </Card.Root>
               </MotionBox>
             )}
           </Box>
@@ -812,213 +806,239 @@ const SystemBackup: React.FC = () => {
       </Box>
 
       {/* Restore Confirmation Modal */}
-      <Modal isOpen={isRestoreOpen} returnFocusOnClose={false} onClose={onRestoreClose} isCentered size="md">
-        <ModalOverlay bg={overlayBg} backdropFilter="blur(4px)" />
-        <ModalContent
-          bg={modalBg}
-          border="1px"
-          borderColor={modalBorderColor}
-          borderRadius="xl"
-          mx={4}
-        >
-          <ModalHeader color={textColor} pb={2} fontSize="lg">
-            Confirm Restore
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Text color={subtitleColor} fontSize="sm">
-              Are you sure you want to restore the database from
-            </Text>
-            <Tag colorScheme="brand" size="sm" mt={2} fontFamily="mono">
-              {selectedFile}
-            </Tag>
-            <HStack mt={5} spacing={2} align="flex-start">
-              <Icon as={AlertTriangle} color={dangerColor} boxSize={4} mt={0.5} flexShrink={0} />
-              <Text fontSize="sm" fontWeight="500" color={dangerColor}>
-                This will overwrite all current data. This action cannot be undone.
-              </Text>
-            </HStack>
-          </ModalBody>
-          <ModalFooter pt={4}>
-            <Button
-              variant="ghost"
-              mr={3}
-              onClick={onRestoreClose}
-              size="sm"
-              borderRadius="lg"
-              color={subtitleColor}
-            >
-              Cancel
-            </Button>
-            <Button
-              colorScheme="red"
-              onClick={confirmRestore}
-              isLoading={restoreMutation.isPending}
-              size="sm"
-              borderRadius="lg"
-              leftIcon={<Icon as={RotateCcw} boxSize={3.5} />}
-            >
-              Restore
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <Dialog.Root
+        open={isRestoreOpen}
+        placement='center'
+        size='md'
+        onOpenChange={e => {
+          if (!e.open) {
+            onRestoreClose();
+          }
+        }}>
+        <Portal>
+
+          <Dialog.Backdrop bg={overlayBg} backdropFilter="blur(4px)" />
+          <Dialog.Positioner>
+            <Dialog.Content
+              bg={modalBg}
+              border="1px"
+              borderColor={modalBorderColor}
+              borderRadius="xl"
+              mx={4}>
+              <Dialog.Header color={textColor} pb={2} fontSize="lg">
+                Confirm Restore
+              </Dialog.Header>
+              <Dialog.CloseTrigger />
+              <Dialog.Body>
+                <Text color={subtitleColor} fontSize="sm">
+                  Are you sure you want to restore the database from
+                </Text>
+                <Tag.Root colorPalette="brand" size="sm" mt={2} fontFamily="mono">
+                  <Tag.Label>{selectedFile}</Tag.Label>
+                </Tag.Root>
+                <HStack mt={5} gap={2} align="flex-start">
+                  <Icon color={dangerColor} boxSize={4} mt={0.5} flexShrink={0} asChild><AlertTriangle /></Icon>
+                  <Text fontSize="sm" fontWeight="500" color={dangerColor}>
+                    This will overwrite all current data. This action cannot be undone.
+                  </Text>
+                </HStack>
+              </Dialog.Body>
+              <Dialog.Footer pt={4}>
+                <Button
+                  variant="ghost"
+                  mr={3}
+                  onClick={onRestoreClose}
+                  size="sm"
+                  borderRadius="lg"
+                  color={subtitleColor}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  colorPalette="red"
+                  onClick={confirmRestore}
+                  loading={restoreMutation.isPending}
+                  size="sm"
+                  borderRadius="lg"><Icon boxSize={3.5} asChild><RotateCcw /></Icon>Restore
+                              </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+
+        </Portal>
+      </Dialog.Root>
 
       {/* Upload and Restore Confirmation Modal */}
-      <Modal isOpen={isUploadRestoreOpen} returnFocusOnClose={false} onClose={onUploadRestoreClose} isCentered size="md">
-        <ModalOverlay bg={overlayBg} backdropFilter="blur(4px)" />
-        <ModalContent
-          bg={modalBg}
-          border="1px"
-          borderColor={modalBorderColor}
-          borderRadius="xl"
-          mx={4}
-        >
-          <ModalHeader color={textColor} pb={2} fontSize="lg">
-            Upload & Restore
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Text color={subtitleColor} fontSize="sm">
-              You are about to upload and restore from:
-            </Text>
-            <Tag mt={2} colorScheme="green" size="sm" fontFamily="mono">
-              {fileToUpload?.name}
-            </Tag>
-            <HStack mt={5} spacing={2} align="flex-start">
-              <Icon as={AlertTriangle} color={dangerColor} boxSize={4} mt={0.5} flexShrink={0} />
-              <Text fontSize="sm" fontWeight="500" color={dangerColor}>
-                This will upload the file and immediately begin restoring, overwriting all current
-                data. This cannot be undone.
-              </Text>
-            </HStack>
-          </ModalBody>
-          <ModalFooter pt={4}>
-            <Button
-              variant="ghost"
-              mr={3}
-              onClick={onUploadRestoreClose}
-              size="sm"
-              borderRadius="lg"
-              color={subtitleColor}
-            >
-              Cancel
-            </Button>
-            <Button
-              colorScheme="red"
-              onClick={confirmUploadAndRestore}
-              isLoading={uploadMutation.isPending}
-              size="sm"
-              borderRadius="lg"
-              leftIcon={<Icon as={Upload} boxSize={3.5} />}
-            >
-              Upload & Restore
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <Dialog.Root
+        open={isUploadRestoreOpen}
+        placement='center'
+        size='md'
+        onOpenChange={e => {
+          if (!e.open) {
+            onUploadRestoreClose();
+          }
+        }}>
+        <Portal>
+
+          <Dialog.Backdrop bg={overlayBg} backdropFilter="blur(4px)" />
+          <Dialog.Positioner>
+            <Dialog.Content
+              bg={modalBg}
+              border="1px"
+              borderColor={modalBorderColor}
+              borderRadius="xl"
+              mx={4}>
+              <Dialog.Header color={textColor} pb={2} fontSize="lg">
+                Upload & Restore
+              </Dialog.Header>
+              <Dialog.CloseTrigger />
+              <Dialog.Body>
+                <Text color={subtitleColor} fontSize="sm">
+                  You are about to upload and restore from:
+                </Text>
+                <Tag.Root mt={2} colorPalette="green" size="sm" fontFamily="mono">
+                  <Tag.Label>{fileToUpload?.name}</Tag.Label>
+                </Tag.Root>
+                <HStack mt={5} gap={2} align="flex-start">
+                  <Icon color={dangerColor} boxSize={4} mt={0.5} flexShrink={0} asChild><AlertTriangle /></Icon>
+                  <Text fontSize="sm" fontWeight="500" color={dangerColor}>
+                    This will upload the file and immediately begin restoring, overwriting all current
+                    data. This cannot be undone.
+                  </Text>
+                </HStack>
+              </Dialog.Body>
+              <Dialog.Footer pt={4}>
+                <Button
+                  variant="ghost"
+                  mr={3}
+                  onClick={onUploadRestoreClose}
+                  size="sm"
+                  borderRadius="lg"
+                  color={subtitleColor}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  colorPalette="red"
+                  onClick={confirmUploadAndRestore}
+                  loading={uploadMutation.isPending}
+                  size="sm"
+                  borderRadius="lg"><Icon boxSize={3.5} asChild><Upload /></Icon>Upload & Restore
+                              </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+
+        </Portal>
+      </Dialog.Root>
 
       {/* Restore Complete Modal */}
-      <Modal
-        isOpen={restoreStatus?.state === "restore_complete"}
-        onClose={() => {}}
-        isCentered
-        closeOnOverlayClick={false}
-        closeOnEsc={false}
-        size="md"
+      <Dialog.Root
+        open={restoreStatus?.state === "restore_complete"}
+        placement='center'
+        closeOnInteractOutside={false}
+        closeOnEscape={false}
+        size='md'
       >
-        <ModalOverlay bg={overlayBg} backdropFilter="blur(4px)" />
-        <ModalContent
-          bg={modalBg}
-          border="1px"
-          borderColor="green.300"
-          borderRadius="xl"
-          mx={4}
-        >
-          <ModalBody pt={8} pb={6} textAlign="center">
-            <VStack spacing={4}>
-              <Box
-                w={16}
-                h={16}
-                borderRadius="full"
-                bg="green.100"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <Icon as={CheckCircle} color="green.500" boxSize={9} />
-              </Box>
-              <Heading size="md" color={textColor}>
-                Restore Complete
-              </Heading>
-              <Text color={subtitleColor} fontSize="sm" maxW="sm">
-                Database restored successfully. Your session has expired. Please log in with your
-                credentials.
-              </Text>
-              <Button
-                colorScheme="brand"
-                size="lg"
-                borderRadius="lg"
-                mt={2}
-                onClick={() => {
-                  setAuthToken(null);
-                  setRefreshToken(null);
-                  navigate("/login");
-                }}
-              >
-                Go to Login
-              </Button>
-            </VStack>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+        <Portal>
+
+          <Dialog.Backdrop bg={overlayBg} backdropFilter="blur(4px)" />
+          <Dialog.Positioner>
+            <Dialog.Content
+              bg={modalBg}
+              border="1px"
+              borderColor="green.300"
+              borderRadius="xl"
+              mx={4}>
+              <Dialog.Body pt={8} pb={6} textAlign="center">
+                <VStack gap={4}>
+                  <Box
+                    w={16}
+                    h={16}
+                    borderRadius="full"
+                    bg="green.100"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Icon color="green.500" boxSize={9} asChild><CheckCircle /></Icon>
+                  </Box>
+                  <Heading size="md" color={textColor}>
+                    Restore Complete
+                  </Heading>
+                  <Text color={subtitleColor} fontSize="sm" maxW="sm">
+                    Database restored successfully. Your session has expired. Please log in with your
+                    credentials.
+                  </Text>
+                  <Button
+                    colorPalette="brand"
+                    size="lg"
+                    borderRadius="lg"
+                    mt={2}
+                    onClick={() => {
+                      setAuthToken(null);
+                      setRefreshToken(null);
+                      navigate("/login");
+                    }}
+                  >
+                    Go to Login
+                  </Button>
+                </VStack>
+              </Dialog.Body>
+            </Dialog.Content>
+          </Dialog.Positioner>
+
+        </Portal>
+      </Dialog.Root>
 
       {/* Restore Failed Modal */}
-      <Modal
-        isOpen={restoreStatus?.state === "restore_failed"}
-        onClose={() => {
-          resetRestoreStatus().catch(() => {});
-          setRestoreStatus(null);
+      <Dialog.Root
+        open={restoreStatus?.state === "restore_failed"}
+        placement='center'
+        size='md'
+        onOpenChange={e => {
+          if (!e.open) {
+            resetRestoreStatus().catch(() => {});
+            setRestoreStatus(null);
+          }
         }}
-        isCentered
-        size="md"
       >
-        <ModalOverlay bg={overlayBg} backdropFilter="blur(4px)" />
-        <ModalContent
-          bg={modalBg}
-          border="1px"
-          borderColor="red.300"
-          borderRadius="xl"
-          mx={4}
-        >
-          <ModalHeader color={textColor} pb={2} fontSize="lg">
-            Restore Failed
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <HStack spacing={2} align="flex-start">
-              <Icon as={AlertTriangle} color={dangerColor} boxSize={5} mt={0.5} flexShrink={0} />
-              <Text color={textColor} fontSize="sm">
-                {restoreStatus?.error || "An unknown error occurred during restore."}
-              </Text>
-            </HStack>
-          </ModalBody>
-          <ModalFooter pt={4}>
-            <Button
-              variant="solid"
-              colorScheme="brand"
-              onClick={() => {
-                resetRestoreStatus().catch(() => {});
-                setRestoreStatus(null);
-              }}
-              size="sm"
-              borderRadius="lg"
-            >
-              Dismiss
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+        <Portal>
+
+          <Dialog.Backdrop bg={overlayBg} backdropFilter="blur(4px)" />
+          <Dialog.Positioner>
+            <Dialog.Content bg={modalBg} border="1px" borderColor="red.300" borderRadius="xl" mx={4}>
+              <Dialog.Header color={textColor} pb={2} fontSize="lg">
+                Restore Failed
+              </Dialog.Header>
+              <Dialog.CloseTrigger />
+              <Dialog.Body>
+                <HStack gap={2} align="flex-start">
+                  <Icon color={dangerColor} boxSize={5} mt={0.5} flexShrink={0} asChild><AlertTriangle /></Icon>
+                  <Text color={textColor} fontSize="sm">
+                    {restoreStatus?.error || "An unknown error occurred during restore."}
+                  </Text>
+                </HStack>
+              </Dialog.Body>
+              <Dialog.Footer pt={4}>
+                <Button
+                  variant="solid"
+                  colorPalette="brand"
+                  onClick={() => {
+                    resetRestoreStatus().catch(() => {});
+                    setRestoreStatus(null);
+                  }}
+                  size="sm"
+                  borderRadius="lg"
+                >
+                  Dismiss
+                </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+
+        </Portal>
+      </Dialog.Root>
     </Box>
   );
 };

@@ -1,12 +1,6 @@
 import React from "react";
-import {
-  Box,
-  Flex,
-  Heading,
-  Button,
-  Icon,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../ui/color-mode";
+import { Box, Flex, Heading, Button, Icon } from "@chakra-ui/react";
 import { Menu, Search } from "lucide-react";
 
 export const MobileHeader: React.FC<{
@@ -39,7 +33,7 @@ export const MobileHeader: React.FC<{
           _hover={{ bg: useColorModeValue("brand.50", "whiteAlpha.100") }}
           _active={{ bg: useColorModeValue("brand.100", "whiteAlpha.200") }}
         >
-          <Icon as={Menu} boxSize={5} />
+          <Icon boxSize={5} asChild><Menu /></Icon>
         </Button>
 
         <Heading
@@ -63,7 +57,7 @@ export const MobileHeader: React.FC<{
           _hover={{ bg: useColorModeValue("brand.50", "whiteAlpha.100") }}
           _active={{ bg: useColorModeValue("brand.100", "whiteAlpha.200") }}
         >
-          <Icon as={Search} boxSize={5} />
+          <Icon boxSize={5} asChild><Search /></Icon>
         </Button>
       </Flex>
     </Box>

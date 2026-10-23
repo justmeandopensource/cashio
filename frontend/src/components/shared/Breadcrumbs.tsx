@@ -1,12 +1,7 @@
 import React from "react";
+import { useColorModeValue } from "../ui/color-mode";
 import { Link as RouterLink } from "react-router-dom";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Icon,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { Breadcrumb, Icon } from "@chakra-ui/react";
 import { ChevronRight, Home } from "lucide-react";
 
 export interface BreadcrumbEntry {
@@ -26,62 +21,67 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items }) => {
   const homeIconColor = useColorModeValue("gray.400", "gray.500");
 
   return (
-    <Breadcrumb
-      spacing="6px"
-      separator={
-        <Icon as={ChevronRight} boxSize={3} color={separatorColor} />
-      }
-      fontSize="xs"
-    >
-      {/* Home is always the first item */}
-      <BreadcrumbItem>
-        <BreadcrumbLink
-          as={RouterLink}
-          to="/"
-          color={linkColor}
-          _hover={{ color: linkHoverColor, textDecoration: "none" }}
-          display="flex"
-          alignItems="center"
-          gap={1}
-          transition="color 0.15s ease"
-        >
-          <Icon as={Home} boxSize={3} color={homeIconColor} />
-          Home
-        </BreadcrumbLink>
-      </BreadcrumbItem>
+    <Breadcrumb.Root fontSize="xs">
+      <Breadcrumb.List gap="6px">
+        {/* Home is always the first item */}
+        <Breadcrumb.Item>
+          <Breadcrumb.Link
+            color={linkColor}
+            _hover={{ color: linkHoverColor, textDecoration: "none" }}
+            display="flex"
+            alignItems="center"
+            gap={1}
+            transition="color 0.15s ease"
+            asChild
+          >
+            <RouterLink to="/">
+              <Icon boxSize={3} color={homeIconColor} asChild>
+                <Home />
+              </Icon>
+              Home
+            </RouterLink>
+          </Breadcrumb.Link>
+        </Breadcrumb.Item>
 
-      {items.map((item, index) => {
-        const isLast = index === items.length - 1;
-        return (
-          <BreadcrumbItem key={index} isCurrentPage={isLast}>
-            {isLast || !item.path ? (
-              <BreadcrumbLink
-                color={currentColor}
-                fontWeight="medium"
-                cursor="default"
-                _hover={{ textDecoration: "none" }}
-                noOfLines={1}
-                maxW={{ base: "120px", md: "200px" }}
-              >
-                {item.label}
-              </BreadcrumbLink>
-            ) : (
-              <BreadcrumbLink
-                as={RouterLink}
-                to={item.path}
-                color={linkColor}
-                _hover={{ color: linkHoverColor, textDecoration: "none" }}
-                transition="color 0.15s ease"
-                noOfLines={1}
-                maxW={{ base: "120px", md: "200px" }}
-              >
-                {item.label}
-              </BreadcrumbLink>
-            )}
-          </BreadcrumbItem>
-        );
-      })}
-    </Breadcrumb>
+        {items.map((item, index) => {
+          const isLast = index === items.length - 1;
+          return (
+            <React.Fragment key={index}>
+              <Breadcrumb.Separator>
+                <Icon boxSize={3} color={separatorColor} asChild>
+                  <ChevronRight />
+                </Icon>
+              </Breadcrumb.Separator>
+              <Breadcrumb.Item>
+                {isLast || !item.path ? (
+                  <Breadcrumb.CurrentLink
+                    color={currentColor}
+                    fontWeight="medium"
+                    cursor="default"
+                    _hover={{ textDecoration: "none" }}
+                    lineClamp={1}
+                    maxW={{ base: "120px", md: "200px" }}
+                  >
+                    {item.label}
+                  </Breadcrumb.CurrentLink>
+                ) : (
+                  <Breadcrumb.Link
+                    color={linkColor}
+                    _hover={{ color: linkHoverColor, textDecoration: "none" }}
+                    transition="color 0.15s ease"
+                    lineClamp={1}
+                    maxW={{ base: "120px", md: "200px" }}
+                    asChild
+                  >
+                    <RouterLink to={item.path}>{item.label}</RouterLink>
+                  </Breadcrumb.Link>
+                )}
+              </Breadcrumb.Item>
+            </React.Fragment>
+          );
+        })}
+      </Breadcrumb.List>
+    </Breadcrumb.Root>
   );
 };
 

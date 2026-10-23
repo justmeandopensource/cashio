@@ -1,17 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
-import {
-  Box,
-  VStack,
-  HStack,
-  Heading,
-  Text,
-  useColorModeValue,
-  Icon,
-  Center,
-  Grid,
-  GridItem,
-  Flex,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
+import { Box, VStack, HStack, Heading, Text, Icon, Center, Grid, GridItem, Flex } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ResponsiveTreeMap } from "@nivo/treemap";
@@ -175,7 +164,7 @@ const CategoryBarBreakdown: React.FC<CategoryBarBreakdownProps> = ({
           {type === "income" ? "Income" : "Expense"} Categories
         </Heading>
       </Flex>
-      <VStack align="stretch" spacing={0}>
+      <VStack align="stretch" gap={0}>
         {categories.map((category, idx) => {
           const pct = total > 0 ? (category.value / total) * 100 : 0;
           const hasChildren = category.children && category.children.length > 0;
@@ -210,12 +199,12 @@ const CategoryBarBreakdown: React.FC<CategoryBarBreakdownProps> = ({
                 {/* Name + bar */}
                 <Box flex={1} minW={0}>
                   <Flex justify="space-between" align="baseline" mb={1}>
-                    <HStack spacing={1.5}>
+                    <HStack gap={1.5}>
                       <Text
                         fontSize="sm"
                         fontWeight="medium"
                         color={primaryText}
-                        noOfLines={1}
+                        lineClamp={1}
                       >
                         {category.name}
                       </Text>
@@ -227,7 +216,7 @@ const CategoryBarBreakdown: React.FC<CategoryBarBreakdownProps> = ({
                         />
                       )}
                     </HStack>
-                    <HStack spacing={2} flexShrink={0}>
+                    <HStack gap={2} flexShrink={0}>
                       <Text fontSize="xs" color={secondaryText}>
                         {pct.toFixed(1)}%
                       </Text>
@@ -267,7 +256,7 @@ const CategoryBarBreakdown: React.FC<CategoryBarBreakdownProps> = ({
                   >
                     <VStack
                       align="stretch"
-                      spacing={0}
+                      gap={0}
                       ml={6}
                       pl={3}
                       borderLeftWidth="2px"
@@ -304,7 +293,7 @@ const CategoryBarBreakdown: React.FC<CategoryBarBreakdownProps> = ({
                               flex={1}
                               fontSize="xs"
                               color={secondaryText}
-                              noOfLines={1}
+                              lineClamp={1}
                             >
                               {child.name}
                             </Text>
@@ -455,7 +444,7 @@ const CurrentMonthOverview: React.FC = () => {
     const isGood = positiveIsGood ? isUp : isDown;
     return (
       <HStack
-        spacing={0.5}
+        gap={0.5}
         px={1.5}
         py={0.5}
         borderRadius="md"
@@ -481,7 +470,7 @@ const CurrentMonthOverview: React.FC = () => {
 
   if (isLoading) {
     return (
-      <VStack spacing={4} align="stretch" bg={cardBg} p={6} borderRadius="xl">
+      <VStack gap={4} align="stretch" bg={cardBg} p={6} borderRadius="xl">
         <Text color={secondaryTextColor}>Loading financial insights...</Text>
       </VStack>
     );
@@ -489,7 +478,7 @@ const CurrentMonthOverview: React.FC = () => {
 
   if (isError || !data) {
     return (
-      <VStack spacing={4} align="center" bg={cardBg} p={6} borderRadius="xl">
+      <VStack gap={4} align="center" bg={cardBg} p={6} borderRadius="xl">
         <Icon as={TrendingDown} color="red.500" boxSize={10} mb={4} />
         <Text color="red.500" fontWeight="bold" fontSize="lg">
           Unable to load financial insights
@@ -504,7 +493,7 @@ const CurrentMonthOverview: React.FC = () => {
   };
   const fadeUp = {
     hidden: { opacity: 0, y: 12 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
   };
 
   return (
@@ -517,7 +506,7 @@ const CurrentMonthOverview: React.FC = () => {
     >
       {/* Header */}
       <MotionBox variants={fadeUp}>
-        <VStack align="flex-start" spacing={1}>
+        <VStack align="flex-start" gap={1}>
           <Flex alignItems="center" gap={3}>
             <Icon as={Calendar} w={5} h={5} color={primaryTextColor} />
             <Heading as="h2" size="md" color={primaryTextColor} letterSpacing="-0.02em">

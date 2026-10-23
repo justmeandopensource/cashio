@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
+import { useColorModeValue } from "../ui/color-mode";
 import {
   Box,
   VStack,
@@ -6,13 +7,12 @@ import {
   Link as ChakraLink,
   Icon,
   useDisclosure,
-  useColorModeValue,
   Button,
   Text,
   HStack,
-  Tooltip,
   Kbd,
 } from "@chakra-ui/react";
+import { Tooltip } from '@/components/ui/tooltip';
 import { motion } from "framer-motion";
 
 import {
@@ -48,8 +48,8 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
     localStorage.removeItem("sidebar-collapsed");
     _handleLogout();
   };
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const { isOpen: isSearchOpen, onOpen: _onSearchOpen, onClose: _onSearchClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
+  const { open: isSearchOpen, onOpen: _onSearchOpen, onClose: _onSearchClose } = useDisclosure();
   const [isSearchTooltipDisabled, setIsSearchTooltipDisabled] = useState(false);
   const onSearchOpen = useCallback(() => {
     (document.activeElement as HTMLElement)?.blur();
@@ -148,7 +148,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
     const collapsed = forceExpanded ? false : isCollapsed;
 
     return (
-      <VStack align="stretch" spacing={0.5}>
+      <VStack align="stretch" gap={0.5}>
         <NavItem path="/" label="Dashboard" icon={Home} onClick={() => go("/")} collapsed={collapsed} isActive={isActivePath("/")} colors={navColors} />
 
         {ledgerId ? (
@@ -170,7 +170,9 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
 
             {/* Ledger name - parent item */}
             {collapsed ? (
-              <Tooltip label={ledgerName || "Ledger"} placement="right" hasArrow openDelay={200}>
+              <Tooltip content={ledgerName || "Ledger"} showArrow openDelay={200} positioning={{
+                placement: "right"
+              }}>
                 <ChakraLink
                   display="flex"
                   alignItems="center"
@@ -249,7 +251,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
                   flexShrink={0}
                   transition="all 0.2s ease"
                 />
-                <Text noOfLines={1} flex={1} letterSpacing="-0.01em">
+                <Text lineClamp={1} flex={1} letterSpacing="-0.01em">
                   {ledgerName || "Ledger"}
                 </Text>
               </ChakraLink>
@@ -319,10 +321,10 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
         overflowY="auto"
         overflowX="hidden"
         flexShrink={0}
-        sx={{
+        css={{
           "&::-webkit-scrollbar": {
             width: "0px",
-          },
+          }
         }}
       >
         {/* Brand Header */}
@@ -335,13 +337,15 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
           justifyContent={isCollapsed ? "center" : "flex-start"}
         >
           {isCollapsed ? (
-            <Tooltip label="Cashio" placement="right" hasArrow openDelay={200}>
+            <Tooltip content="Cashio" showArrow openDelay={200} positioning={{
+              placement: "right"
+            }}>
               <Box position="relative">
                 <Icon as={Wallet} boxSize={6} color={brandIconColor} flexShrink={0} />
               </Box>
             </Tooltip>
           ) : (
-            <HStack spacing={3} align="center">
+            <HStack gap={3} align="center">
               <Box
                 p={2}
                 borderRadius="xl"
@@ -374,7 +378,9 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
         {/* Search Button */}
         <Box px={isCollapsed ? 2 : 3} pt={3} pb={1}>
           {isCollapsed ? (
-            <Tooltip label="Search (⌘K)" placement="right" hasArrow openDelay={200} isDisabled={isSearchTooltipDisabled}>
+            <Tooltip content="Search (⌘K)" showArrow openDelay={200} disabled={isSearchTooltipDisabled} positioning={{
+              placement: "right"
+            }}>
               <Box
                 as="button"
                 display="flex"
@@ -429,7 +435,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
         </Box>
 
         {/* Bottom section */}
-        <VStack spacing={0} align="stretch">
+        <VStack gap={0} align="stretch">
           {/* Collapse toggle */}
           <Box
             px={isCollapsed ? 2 : 3}
@@ -438,10 +444,12 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
             justifyContent={isCollapsed ? "center" : "flex-end"}
           >
             <Tooltip
-              label={isCollapsed ? "Expand" : "Collapse"}
-              placement="right"
-              hasArrow
+              content={isCollapsed ? "Expand" : "Collapse"}
+              showArrow
               openDelay={200}
+              positioning={{
+                placement: "right"
+              }}
             >
               <Button
                 onClick={() =>
@@ -469,7 +477,9 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
           {/* Log Out */}
           <Box px={isCollapsed ? 2 : 3} py={1}>
             {isCollapsed ? (
-              <Tooltip label="Log Out" placement="right" hasArrow openDelay={200}>
+              <Tooltip content="Log Out" showArrow openDelay={200} positioning={{
+                placement: "right"
+              }}>
                 <ChakraLink
                   display="flex"
                   alignItems="center"
@@ -542,7 +552,7 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout: _handleLogout }) => {
 
       {/* Mobile Drawer */}
       <MobileDrawer
-        isOpen={isOpen}
+        isOpen={open}
         onClose={onClose}
         handleLogout={handleLogout}
         onSearchOpen={onSearchOpen}

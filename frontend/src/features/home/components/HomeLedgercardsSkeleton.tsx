@@ -1,11 +1,5 @@
-import {
-  Box,
-  Skeleton,
-  SkeletonText,
-  SimpleGrid,
-  useColorModeValue,
-  Flex,
-} from "@chakra-ui/react";
+import { Box, Skeleton, SkeletonText, SimpleGrid, Flex } from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import { keyframes } from "@emotion/react";
 import { motion } from "framer-motion";
 
@@ -24,7 +18,7 @@ const HomeLedgerCardsSkeleton = () => {
   const accentColor = useColorModeValue("gray.100", "gray.700");
 
   return (
-    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+    <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
       {skeletonCards.map((_, index) => (
         <MotionBox
           key={index}
@@ -52,7 +46,7 @@ const HomeLedgerCardsSkeleton = () => {
               />
               <Box flex={1}>
                 <Skeleton h="16px" w="55%" mb={2} borderRadius="md" />
-                <SkeletonText noOfLines={2} spacing={2} skeletonHeight="12px" />
+                <SkeletonText noOfLines={2} gap={2} height="12px" />
                 <Skeleton h="11px" w="30%" mt={3} borderRadius="md" />
               </Box>
             </Flex>

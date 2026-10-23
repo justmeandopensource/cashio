@@ -2,7 +2,7 @@ from datetime import datetime
 from app.schemas import JsonDecimal as Decimal
 from typing import List, Literal
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class BudgetCreate(BaseModel):
@@ -41,8 +41,7 @@ class Budget(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BudgetSummary(BaseModel):

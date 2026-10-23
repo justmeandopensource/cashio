@@ -1,17 +1,15 @@
 import React, { useState } from "react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
 import {
   Box,
   VStack,
   Heading,
   Text,
-  useColorModeValue,
   Flex,
   Button,
   Grid,
   GridItem,
   Stat,
-  StatLabel,
-  StatNumber,
   Icon,
   Center,
   HStack,
@@ -144,9 +142,9 @@ const TagTrendAnalysis: React.FC<TagTrendAnalysisProps> = () => {
   return (
     <Box bg={bgColor} borderRadius="lg" p={{ base: 4, md: 6 }} boxShadow="lg">
       {/* Header */}
-      <VStack align="flex-start" spacing={1} flex={1} mb={6}>
+      <VStack align="flex-start" gap={1} flex={1} mb={6}>
         <Flex alignItems="center" gap={3}>
-          <Icon as={Tag} w={5} h={5} color={primaryTextColor} />
+          <Icon w={5} h={5} color={primaryTextColor} asChild><Tag /></Icon>
           <Heading as="h2" size="md" color={primaryTextColor}>
             Tag Trend Analysis
           </Heading>
@@ -178,30 +176,24 @@ const TagTrendAnalysis: React.FC<TagTrendAnalysisProps> = () => {
             />
           </Box>
           <HStack
-            spacing={3}
+            gap={3}
             mt={{ base: 4, md: 0 }}
             justifyContent={{ base: "flex-start", md: "flex-end" }}
             width={{ base: "100%", md: "auto" }}
           >
             <Button
-              colorScheme={buttonColorScheme}
+              colorPalette={buttonColorScheme}
               onClick={handleAnalyze}
-              isLoading={isLoading || isAnalyzing}
+              loading={isLoading || isAnalyzing}
               loadingText="Analyzing"
-              isDisabled={selectedTags.length === 0}
-              minW="120px"
-              leftIcon={<BarChart size={18} />}
-            >
-              Analyze Trends
-            </Button>
+              disabled={selectedTags.length === 0}
+              minW="120px"><BarChart size={18} />Analyze Trends
+                          </Button>
             <Button
-              leftIcon={<RefreshCw size={18} />}
               variant="outline"
               onClick={handleReset}
-              isDisabled={selectedTags.length === 0}
-            >
-              Reset
-            </Button>
+              disabled={selectedTags.length === 0}><RefreshCw size={18} />Reset
+                          </Button>
           </HStack>
         </Flex>
       </Box>
@@ -209,7 +201,7 @@ const TagTrendAnalysis: React.FC<TagTrendAnalysisProps> = () => {
       {/* Loading State */}
       {isLoading && (
         <Center p={10}>
-          <VStack spacing={4}>
+          <VStack gap={4}>
             <Spinner size="xl" color="teal.500" />
             <Text color={secondaryTextColor}>Loading tag analysis...</Text>
           </VStack>
@@ -219,8 +211,8 @@ const TagTrendAnalysis: React.FC<TagTrendAnalysisProps> = () => {
       {/* Error State */}
       {isError && (
         <Center p={10} bg={cardBg} borderRadius="lg">
-          <VStack spacing={4}>
-            <Icon as={AlertCircle} color="red.500" boxSize={10} />
+          <VStack gap={4}>
+            <Icon color="red.500" boxSize={10} asChild><AlertCircle /></Icon>
             <Text color="red.500" fontWeight="bold">
               Unable to load tag analysis
             </Text>
@@ -234,8 +226,8 @@ const TagTrendAnalysis: React.FC<TagTrendAnalysisProps> = () => {
       {/* No Data State */}
       {!isLoading && !isError && !data && (
         <Center p={10} bg={cardBg} borderRadius="lg">
-          <VStack spacing={4}>
-            <Icon as={PieChartIcon} boxSize={16} color={tertiaryTextColor} />
+          <VStack gap={4}>
+            <Icon boxSize={16} color={tertiaryTextColor} asChild><PieChartIcon /></Icon>
             <Text color={secondaryTextColor} fontWeight="medium" fontSize="lg">
               Select tags to analyze your spending trends
             </Text>
@@ -249,7 +241,7 @@ const TagTrendAnalysis: React.FC<TagTrendAnalysisProps> = () => {
 
       {/* Results */}
       {data && (
-        <VStack spacing={6}>
+        <VStack gap={6}>
           {/* Total Amount Card */}
           <Box
             bg={cardBg}
@@ -259,17 +251,17 @@ const TagTrendAnalysis: React.FC<TagTrendAnalysisProps> = () => {
             boxShadow="md"
             textAlign="center"
           >
-            <Stat>
-              <StatLabel color={secondaryTextColor} fontSize="lg">
+            <Stat.Root>
+              <Stat.Label color={secondaryTextColor} fontSize="lg">
                 Total Amount for Selected Tags
-              </StatLabel>
-              <StatNumber color={primaryTextColor} fontSize="3xl">
+              </Stat.Label>
+              <Stat.ValueText color={primaryTextColor} fontSize="3xl">
                 {formatNumberAsCurrency(
                   data.summary.total_amount,
                   currencySymbol as string,
                 )}
-              </StatNumber>
-            </Stat>
+              </Stat.ValueText>
+            </Stat.Root>
           </Box>
 
           {/* Charts */}
@@ -390,7 +382,7 @@ const TagTrendAnalysis: React.FC<TagTrendAnalysisProps> = () => {
                 <Heading size="sm" mb={4}>
                   Detailed Tag Breakdown
                 </Heading>
-                <VStack spacing={2} align="stretch">
+                <VStack gap={2} align="stretch">
                   {data.tag_breakdown.map((item, index) => (
                     <HStack
                       key={index}
@@ -448,7 +440,7 @@ const TagTrendAnalysis: React.FC<TagTrendAnalysisProps> = () => {
                 <Heading size="sm" mb={4}>
                   Detailed Category Breakdown
                 </Heading>
-                <VStack spacing={2} align="stretch">
+                <VStack gap={2} align="stretch">
                   {data.category_breakdown.map((item, index) => (
                     <HStack
                       key={index}

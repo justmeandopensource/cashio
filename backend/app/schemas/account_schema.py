@@ -2,7 +2,7 @@ from datetime import datetime
 from app.schemas import JsonDecimal as Decimal
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 ACCOUNT_SUBTYPE_VALUES = Literal[
     "current_account", "savings_account", "isa", "fixed_deposit", "recurring_deposit",
@@ -70,8 +70,7 @@ class Account(BaseModel, str_strip_whitespace=True):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AccountSummary(BaseModel):

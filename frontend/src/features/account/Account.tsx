@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useColorModeValue } from "../../components/ui/color-mode";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLogout } from "@/lib/useLogout";
@@ -6,7 +7,7 @@ import Layout from "@components/Layout";
 import AccountMain from "@features/account/components/AccountMain";
 import PageContainer from "@components/shared/PageContainer";
 import PageHeader from "@components/shared/PageHeader";
-import { Button, Box, Text, HStack, Badge, useColorModeValue } from "@chakra-ui/react";
+import { Button, Box, Text, HStack, Badge } from "@chakra-ui/react";
 import { lazy, Suspense } from "react";
 import { Building, ShieldAlert, ChevronLeft, Plus, Repeat } from "lucide-react";
 import { formatNumberAsCurrency } from "@components/shared/utils";
@@ -66,7 +67,7 @@ const Account: React.FC = () => {
 
   // Modal state for account details
   const {
-    isOpen: isDetailsModalOpen,
+    open: isDetailsModalOpen,
     onOpen: onDetailsModalOpen,
     onClose: onDetailsModalClose,
   } = useDisclosure();
@@ -153,7 +154,7 @@ const Account: React.FC = () => {
         title={
           account ? (
             <HStack
-              spacing={3}
+              gap={3}
               align="center"
               onClick={onDetailsModalOpen}
               cursor="pointer"
@@ -204,30 +205,24 @@ const Account: React.FC = () => {
           { label: account?.name || "Account" },
         ] as BreadcrumbEntry[]}
         actions={
-          <HStack spacing={2} w={{ base: "100%", md: "auto" }}>
+          <HStack gap={2} w={{ base: "100%", md: "auto" }}>
             <Button
-              leftIcon={<Plus size={14} />}
-              colorScheme="brand"
+              colorPalette="brand"
               size="sm"
               borderRadius="md"
               fontWeight="medium"
               onClick={() => setIsCreateModalOpen(true)}
-              flex={{ base: 1, md: "none" }}
-            >
-              Add Transaction
-            </Button>
+              flex={{ base: 1, md: "none" }}><Plus size={14} />Add Transaction
+                          </Button>
             <Button
-              leftIcon={<Repeat size={14} />}
-              colorScheme="brand"
+              colorPalette="brand"
               variant="outline"
               size="sm"
               borderRadius="md"
               fontWeight="medium"
               onClick={() => setIsTransferModalOpen(true)}
-              flex={{ base: 1, md: "none" }}
-            >
-              Transfer Funds
-            </Button>
+              flex={{ base: 1, md: "none" }}><Repeat size={14} />Transfer Funds
+                          </Button>
           </HStack>
         }
       />

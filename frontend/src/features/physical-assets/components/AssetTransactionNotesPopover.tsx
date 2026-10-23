@@ -1,12 +1,7 @@
 import { FC, useState, useEffect } from "react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import {
   Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverArrow,
-  PopoverHeader,
-  PopoverBody,
-  useColorModeValue,
   Link as ChakraLink,
   Icon,
   IconButton,
@@ -118,107 +113,101 @@ const AssetTransactionNotesPopover: FC<AssetTransactionNotesPopoverProps> = ({
   };
 
   return (
-    <Popover
-      isOpen={isOpen}
-      onOpen={onOpen}
-      onClose={handleClose}
-      placement="left-start"
-      isLazy
-    >
-      <PopoverTrigger>
+    <Popover.Root
+      open={isOpen}
+      lazyMount
+      onOpenChange={e => {
+        if (e.open) {
+          onOpen();
+        } else {
+          handleClose();
+        }
+      }}
+      positioning={{
+        placement: 'left-start'
+      }}>
+      <Popover.Trigger asChild>
         <ChakraLink _hover={{ textDecoration: "none" }}>
           <Icon
-            as={FileText}
             boxSize={4}
             color={transaction.notes ? "blue.500" : "gray.400"}
             _hover={{ color: transaction.notes ? "blue.600" : "gray.500" }}
             transition="opacity 0.2s"
-          />
+            asChild><FileText /></Icon>
         </ChakraLink>
-      </PopoverTrigger>
-      <PopoverContent
-        bg={popoverBg}
-        borderRadius="xl"
-        boxShadow="2xl"
-        border="1px solid"
-        borderColor={popoverBorderColor}
-        overflow="hidden"
-        w="300px"
-      >
-        <PopoverArrow bg={popoverBg} />
-        <PopoverHeader
-          bg={popoverHeaderBg}
-          px={4}
-          py={3}
-          fontWeight="bold"
-          borderBottom="1px solid"
-          borderColor={popoverHeaderBorderColor}
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          <Flex align="center" gap={2}>
-            <Box p={1} bg={popoverIconBg} borderRadius="md">
-              <FileText size={14} color={popoverIconColor} />
-            </Box>
-            <Text fontSize="sm" fontWeight="bold" color={popoverTitleColor}>
-              Transaction Note
-            </Text>
-          </Flex>
-          {!isEditing && (
-            <IconButton
-              aria-label={transaction.notes ? "Edit note" : "Add note"}
-              icon={<Edit size={16} />}
-              size="xs"
-              variant="ghost"
-              colorScheme="teal"
-              onClick={() => setIsEditing(true)}
-            />
-          )}
-        </PopoverHeader>
-        <PopoverBody p={4}>
-          {isEditing ? (
-            <Box>
-              <Textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add a note for this transaction..."
-                size="sm"
-                borderRadius="md"
-                minH="100px"
-              />
-              <Flex justify="flex-end" mt={3}>
-                <Button
+      </Popover.Trigger>
+      <Popover.Positioner>
+        <Popover.Content
+          bg={popoverBg}
+          borderRadius="xl"
+          boxShadow="2xl"
+          border="1px solid"
+          borderColor={popoverBorderColor}
+          overflow="hidden"
+          w="300px">
+          <Popover.Arrow bg={popoverBg} />
+          <Popover.Title
+            bg={popoverHeaderBg}
+            px={4}
+            py={3}
+            fontWeight="bold"
+            borderBottom="1px solid"
+            borderColor={popoverHeaderBorderColor}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Flex align="center" gap={2}>
+              <Box p={1} bg={popoverIconBg} borderRadius="md">
+                <FileText size={14} color={popoverIconColor} />
+              </Box>
+              <Text fontSize="sm" fontWeight="bold" color={popoverTitleColor}>
+                Transaction Note
+              </Text>
+            </Flex>
+            {!isEditing && (
+              <IconButton
+                aria-label={transaction.notes ? "Edit note" : "Add note"}
+                size="xs"
+                variant="ghost"
+                colorPalette="teal"
+                onClick={() => setIsEditing(true)}><Edit size={16} /></IconButton>
+            )}
+          </Popover.Title>
+          <Popover.Body p={4}>
+            {isEditing ? (
+              <Box>
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Add a note for this transaction..."
                   size="sm"
-                  variant="ghost"
-                  onClick={() => setIsEditing(false)}
-                  leftIcon={<X size={16} />}
-                  mr={2}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  size="sm"
-                  colorScheme="teal"
-                  onClick={handleSave}
-                  isLoading={updateNotesMutation.isPending}
-                  leftIcon={<Save size={16} />}
-                >
-                  Save
-                </Button>
-              </Flex>
-            </Box>
-          ) : (
-            <Text
-              whiteSpace="pre-wrap"
-              color={notes ? "inherit" : "gray.500"}
-            >
-              {notes || "Click the edit icon to add a note."}
-            </Text>
-          )}
-        </PopoverBody>
-      </PopoverContent>
-    </Popover>
+                  borderRadius="md"
+                  minH="100px"
+                />
+                <Flex justify="flex-end" mt={3}>
+                  <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} mr={2}><X size={16} />Cancel
+                                    </Button>
+                  <Button
+                    size="sm"
+                    colorPalette="teal"
+                    onClick={handleSave}
+                    loading={updateNotesMutation.isPending}><Save size={16} />Save
+                                    </Button>
+                </Flex>
+              </Box>
+            ) : (
+              <Text
+                whiteSpace="pre-wrap"
+                color={notes ? "inherit" : "gray.500"}
+              >
+                {notes || "Click the edit icon to add a note."}
+              </Text>
+            )}
+          </Popover.Body>
+        </Popover.Content>
+      </Popover.Positioner>
+    </Popover.Root>
   );
 };
 

@@ -1,13 +1,6 @@
 import React from "react";
-import {
-  Box,
-  Flex,
-  HStack,
-  Icon,
-  SimpleGrid,
-  Text,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box, Flex, HStack, Icon, SimpleGrid, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Hash, Calendar } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
@@ -90,7 +83,7 @@ const AccountSummaryStats: React.FC<AccountSummaryStatsProps> = ({
   return (
     <MotionSimpleGrid
       columns={{ base: 2, md: 4 }}
-      spacing={{ base: 3, md: 4 }}
+      gap={{ base: 3, md: 4 }}
       mb={{ base: 4, md: 5 }}
       initial="hidden"
       animate="visible"
@@ -164,7 +157,7 @@ const AccountSummaryStats: React.FC<AccountSummaryStatsProps> = ({
               </Text>
             </Flex>
 
-            <HStack spacing={0} align="baseline">
+            <HStack gap={0} align="baseline">
               <Text
                 fontSize={{ base: "md", md: "lg" }}
                 fontWeight="bold"

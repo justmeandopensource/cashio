@@ -1,12 +1,6 @@
 import React, { useMemo } from "react";
-import {
-  Box,
-  Flex,
-  Heading,
-  Icon,
-  Text,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box, Flex, Heading, Icon, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { ResponsiveLine } from "@nivo/line";
 import { TrendingUp } from "lucide-react";
@@ -67,7 +61,7 @@ const AccountBalanceChart: React.FC<AccountBalanceChartProps> = ({ accountId }) 
         h="full"
       >
         <Flex align="center" gap={2} mb={4}>
-          <Icon as={TrendingUp} boxSize={4} color={iconColor} />
+          <Icon boxSize={4} color={iconColor} asChild><TrendingUp /></Icon>
           <Heading
             as="h3"
             size="sm"

@@ -1,14 +1,6 @@
 import React from "react";
-import {
-  Box,
-  Flex,
-  HStack,
-  Icon,
-  Skeleton,
-  Text,
-  useColorModeValue,
-  VStack,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box, Flex, HStack, Icon, Skeleton, Text, VStack } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -89,8 +81,8 @@ const HomeRecentTransactions: React.FC<HomeRecentTransactionsProps> = ({
       transition={{ duration: 0.3 }}
     >
       {/* Section header */}
-      <HStack spacing={1.5} mb={3}>
-        <Icon as={ArrowLeftRight} boxSize={3.5} color={labelColor} />
+      <HStack gap={1.5} mb={3}>
+        <Icon boxSize={3.5} color={labelColor} asChild><ArrowLeftRight /></Icon>
         <Text
           fontSize="xs"
           fontWeight="600"
@@ -109,10 +101,7 @@ const HomeRecentTransactions: React.FC<HomeRecentTransactionsProps> = ({
         borderColor={borderColor}
         overflow="hidden"
       >
-        <VStack spacing={0} align="stretch" divider={
-          <Box borderBottom="1px solid" borderColor={dividerColor} />
-        }>
-          {data.transactions.map((tx: Transaction) => {
+        <VStack gap={0} align="stretch">{data.transactions.map((tx: Transaction) => {
             const amount = formatAmount(tx.credit, tx.debit, sym);
             return (
               <Flex
@@ -145,11 +134,11 @@ const HomeRecentTransactions: React.FC<HomeRecentTransactionsProps> = ({
 
                 {/* Category + account */}
                 <Box flex={1} minW={0}>
-                  <HStack spacing={1}>
+                  <HStack gap={1}>
                     {tx.is_split && !tx.is_transfer && !tx.is_mf_transaction && tx.split_category_names?.length ? (
-                      <HStack spacing={0} overflow="hidden" flexWrap="nowrap">
+                      <HStack gap={0} overflow="hidden" flexWrap="nowrap">
                         {tx.split_category_names.map((name, i) => (
-                          <HStack key={name} spacing={0} flexShrink={i === 0 ? 0 : 1} minW={0}>
+                          <HStack key={name} gap={0} flexShrink={i === 0 ? 0 : 1} minW={0}>
                             {i > 0 && (
                               <Text fontSize="8px" color={splitColor} mx={1} flexShrink={0}>
                                 ·
@@ -173,7 +162,7 @@ const HomeRecentTransactions: React.FC<HomeRecentTransactionsProps> = ({
                         fontSize="xs"
                         fontWeight="600"
                         color={textColor}
-                        noOfLines={1}
+                        lineClamp={1}
                       >
                         {tx.is_mf_transaction ? (tx.notes || "Mutual Fund") : (tx.category_name || (tx.is_transfer ? "Fund Transfer" : "Uncategorized"))}
                       </Text>
@@ -186,31 +175,31 @@ const HomeRecentTransactions: React.FC<HomeRecentTransactionsProps> = ({
                     )}
                   </HStack>
                   {tx.is_transfer && tx.transfer_source_account_name && tx.transfer_destination_account_name ? (
-                    <HStack spacing={1} mt={0.5} overflow="hidden">
+                    <HStack gap={1} mt={0.5} overflow="hidden">
                       {tx.transfer_type === "destination" ? (
                         <>
-                          <Text fontSize="2xs" color={subtextColor} noOfLines={1} flexShrink={1} minW={0}>
+                          <Text fontSize="2xs" color={subtextColor} lineClamp={1} flexShrink={1} minW={0}>
                             {tx.transfer_destination_account_name}
                           </Text>
-                          <Icon as={MoveLeft} boxSize={2.5} color={transferColor} flexShrink={0} />
-                          <Text fontSize="2xs" color={subtextColor} noOfLines={1} flexShrink={1} minW={0}>
+                          <Icon boxSize={2.5} color={transferColor} flexShrink={0} asChild><MoveLeft /></Icon>
+                          <Text fontSize="2xs" color={subtextColor} lineClamp={1} flexShrink={1} minW={0}>
                             {tx.transfer_source_account_name}
                           </Text>
                         </>
                       ) : (
                         <>
-                          <Text fontSize="2xs" color={subtextColor} noOfLines={1} flexShrink={1} minW={0}>
+                          <Text fontSize="2xs" color={subtextColor} lineClamp={1} flexShrink={1} minW={0}>
                             {tx.transfer_source_account_name}
                           </Text>
-                          <Icon as={MoveRight} boxSize={2.5} color={transferColor} flexShrink={0} />
-                          <Text fontSize="2xs" color={subtextColor} noOfLines={1} flexShrink={1} minW={0}>
+                          <Icon boxSize={2.5} color={transferColor} flexShrink={0} asChild><MoveRight /></Icon>
+                          <Text fontSize="2xs" color={subtextColor} lineClamp={1} flexShrink={1} minW={0}>
                             {tx.transfer_destination_account_name}
                           </Text>
                         </>
                       )}
                     </HStack>
                   ) : tx.account_name ? (
-                    <Text fontSize="2xs" color={subtextColor} noOfLines={1} mt={0.5}>
+                    <Text fontSize="2xs" color={subtextColor} lineClamp={1} mt={0.5}>
                       {tx.account_name}
                       {tx.store ? ` · ${tx.store}` : ""}
                     </Text>
@@ -229,8 +218,7 @@ const HomeRecentTransactions: React.FC<HomeRecentTransactionsProps> = ({
                 </Text>
               </Flex>
             );
-          })}
-        </VStack>
+          })}</VStack>
 
         {/* View all link */}
         <Flex
@@ -250,7 +238,7 @@ const HomeRecentTransactions: React.FC<HomeRecentTransactionsProps> = ({
           <Text fontSize="2xs" fontWeight="600">
             View all transactions
           </Text>
-          <Icon as={ArrowRight} boxSize={3} />
+          <Icon boxSize={3} asChild><ArrowRight /></Icon>
         </Flex>
       </Box>
     </MotionBox>

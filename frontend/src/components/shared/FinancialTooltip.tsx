@@ -1,5 +1,7 @@
 import { type FC, type ReactNode } from "react";
-import { Tooltip, Text, useColorModeValue } from "@chakra-ui/react";
+import { useColorModeValue } from "../ui/color-mode";
+import { Text } from "@chakra-ui/react";
+import { Tooltip } from '@/components/ui/tooltip';
 import { Info } from "lucide-react";
 
 /**
@@ -74,18 +76,22 @@ const FinancialTooltip: FC<FinancialTooltipProps> = ({
 
   return (
     <Tooltip
-      label={tooltipText}
-      placement="top"
-      hasArrow
-      bg={tooltipBg}
-      color={tooltipColor}
-      fontSize="xs"
-      px={3}
-      py={2}
-      borderRadius="md"
-      maxW="260px"
-      textAlign="center"
+      content={tooltipText}
+      showArrow
+      contentProps={{
+        bg: tooltipBg,
+        color: tooltipColor,
+        fontSize: "xs",
+        px: 3,
+        py: 2,
+        borderRadius: "md",
+        maxW: "260px",
+        textAlign: "center",
+      }}
       openDelay={200}
+      positioning={{
+        placement: "top"
+      }}
     >
       {children || (
         <Text

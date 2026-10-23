@@ -1,9 +1,5 @@
-import {
-  Box,
-  Flex,
-  Text,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import { motion } from "framer-motion";
 import React from "react";
 import { formatNumberAsCurrency } from "@/components/shared/utils";
@@ -32,10 +28,8 @@ const BudgetSummaryCard: React.FC<BudgetSummaryCardProps> = ({
   const valueColor = useColorModeValue("gray.900", "gray.50");
   const remaining = Number(totalBudgeted) - Number(totalSpent);
   const remainingColor = getBudgetStatusColor(totalSpent, totalBudgeted);
-  const accentGradient = useColorModeValue(
-    "linear(to-r, brand.400, brand.500)",
-    "linear(to-r, brand.300, brand.400)"
-  );
+  const accentFrom = useColorModeValue("brand.400", "brand.300");
+  const accentTo = useColorModeValue("brand.500", "brand.400");
 
   return (
     <MotionBox
@@ -49,7 +43,7 @@ const BudgetSummaryCard: React.FC<BudgetSummaryCardProps> = ({
       transition={{ duration: 0.4, ease: "easeOut" }}
     >
       {/* Top accent */}
-      <Box h="2px" bgGradient={accentGradient} />
+      <Box h="2px" bgGradient="to-r" gradientFrom={accentFrom} gradientTo={accentTo} />
 
       <Box p={{ base: 4, md: 5 }}>
         <Text

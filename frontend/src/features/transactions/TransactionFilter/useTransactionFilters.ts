@@ -33,7 +33,7 @@ export function useTransactionFilters({
   onApplyFilters,
   onResetFilters,
 }: UseTransactionFiltersOptions) {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
 
   // State for filter form values
   const [filters, setFilters] = useState<InternalFilters>({
@@ -119,7 +119,7 @@ export function useTransactionFilters({
   const categories = categoriesQuery.data ?? [];
 
   // Computed filtered accounts
-  const selectedAccount = accounts.find(a => a.account_id === filters.account_id);
+  const selectedAccount = accounts.find(a => String(a.account_id) === filters.account_id);
   const filteredAssetAccounts = accounts.filter(
     a => a.type === "asset" && a.name.toLowerCase().includes(accountSearch.toLowerCase()),
   );
@@ -133,7 +133,7 @@ export function useTransactionFilters({
   const hasFilteredAccountResults = allFilteredAccounts.length > 0;
 
   // Computed filtered categories
-  const selectedCategory = categories.find(c => c.category_id === filters.category_id);
+  const selectedCategory = categories.find(c => String(c.category_id) === filters.category_id);
   const filteredIncomeCategories = categories.filter(
     c => c.type === "income" && c.name.toLowerCase().includes(categorySearch.toLowerCase()),
   );

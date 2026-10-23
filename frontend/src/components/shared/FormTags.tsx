@@ -1,15 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  Box,
-  FormControl,
-  FormHelperText,
-  FormLabel,
-  HStack,
-  Icon,
-  Input,
-  Text,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../ui/color-mode";
+import { Box, HStack, Icon, Input, Text, Field } from "@chakra-ui/react";
 import { X } from "lucide-react";
 import { AxiosError } from "axios";
 import api from "@/lib/api";
@@ -201,18 +192,18 @@ const FormTags: React.FC<FormTagsProps> = ({
   };
 
   return (
-    <FormControl>
-      <FormLabel fontWeight="semibold" mb={2}>
+    <Field.Root>
+      <Field.Label fontWeight="semibold" mb={2}>
         Tags
-      </FormLabel>
+      </Field.Label>
       <Box ref={containerRef}>
         {/* Selected tag chips — above the input */}
         {normalizedTags.length > 0 && (
-          <HStack spacing={2} mb={2} flexWrap="wrap">
+          <HStack gap={2} mb={2} flexWrap="wrap">
             {normalizedTags.map((tag, index) => (
               <HStack
                 key={tag.tag_id || `tag-${index}`}
-                spacing={1.5}
+                gap={1.5}
                 px={3}
                 py={1}
                 bg={chipBg}
@@ -225,13 +216,11 @@ const FormTags: React.FC<FormTagsProps> = ({
               >
                 <Text>{tag.name}</Text>
                 <Icon
-                  as={X}
                   boxSize={3.5}
                   color={chipRemoveColor}
                   cursor="pointer"
-                  onClick={() => removeTag(tag.name)}
                   _hover={{ opacity: 0.7 }}
-                />
+                  asChild><X onClick={() => removeTag(tag.name)} /></Icon>
               </HStack>
             ))}
           </HStack>
@@ -305,11 +294,11 @@ const FormTags: React.FC<FormTagsProps> = ({
           )}
         </Box>
 
-        <FormHelperText mt={2} color={helperTextColor} fontSize="xs">
+        <Field.HelperText mt={2} color={helperTextColor} fontSize="xs">
           Press Enter to add a custom tag or select from suggestions
-        </FormHelperText>
+        </Field.HelperText>
       </Box>
-    </FormControl>
+    </Field.Root>
   );
 };
 

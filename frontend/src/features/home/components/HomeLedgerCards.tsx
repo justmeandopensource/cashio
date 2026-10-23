@@ -1,14 +1,7 @@
 import { useMemo } from "react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import { useNavigate } from "react-router-dom";
-import {
-  Box,
-  SimpleGrid,
-  Text,
-  Icon,
-  useColorModeValue,
-  HStack,
-  Flex,
-} from "@chakra-ui/react";
+import { Box, SimpleGrid, Text, Icon, HStack, Flex } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { motion } from "framer-motion";
 import { Plus, ArrowRight, Calendar, BookOpen, Star } from "lucide-react";
@@ -110,11 +103,11 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
 
   // Rich gradients for currency badges — deeper, more saturated
   const gradients = useMemo(() => [
-    "linear(135deg, #2dd4bf, #0d9488)",
-    "linear(135deg, #a78bfa, #7c3aed)",
-    "linear(135deg, #38bdf8, #0284c7)",
-    "linear(135deg, #fb923c, #ea580c)",
-    "linear(135deg, #f472b6, #db2777)",
+    "linear-gradient(135deg, #2dd4bf, #0d9488)",
+    "linear-gradient(135deg, #a78bfa, #7c3aed)",
+    "linear-gradient(135deg, #38bdf8, #0284c7)",
+    "linear-gradient(135deg, #fb923c, #ea580c)",
+    "linear-gradient(135deg, #f472b6, #db2777)",
   ], []);
 
   // Solid accent colors matching gradients
@@ -142,7 +135,7 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         {/* Decorative dots */}
-        <HStack spacing={2} mb={6} opacity={0.5}>
+        <HStack gap={2} mb={6} opacity={0.5}>
           <Box w="4px" h="4px" borderRadius="full" bg={emptyDotColor} />
           <Box w="6px" h="6px" borderRadius="full" bg={emptyDotColor} />
           <Box w="4px" h="4px" borderRadius="full" bg={emptyDotColor} />
@@ -159,7 +152,7 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
           mb={6}
           css={{ animation: `${floatKeyframes} 3s ease-in-out infinite` }}
         >
-          <Icon as={BookOpen} boxSize={9} color="brand.500" strokeWidth={1.5} />
+          <Icon boxSize={9} color="brand.500" strokeWidth={1.5} asChild><BookOpen /></Icon>
         </Box>
 
         <Text
@@ -186,8 +179,6 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
           whileTap={{ scale: 0.96 }}
         >
           <Box
-            as="button"
-            onClick={onOpen}
             display="inline-flex"
             alignItems="center"
             gap={2}
@@ -204,14 +195,13 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
               boxShadow: "0 0 24px rgba(53,169,163,0.3)",
             }}
             transition="all 0.2s ease"
-          >
-            <Icon as={Plus} boxSize={4} strokeWidth={2.5} />
-            Create your first ledger
-          </Box>
+            asChild><button onClick={onOpen}>
+              <Icon boxSize={4} strokeWidth={2.5} asChild><Plus /></Icon>Create your first ledger
+                        </button></Box>
         </MotionBox>
 
         {/* Decorative dots */}
-        <HStack spacing={2} mt={8} opacity={0.3}>
+        <HStack gap={2} mt={8} opacity={0.3}>
           <Box w="4px" h="4px" borderRadius="full" bg={emptyDotColor} />
           <Box w="6px" h="6px" borderRadius="full" bg={emptyDotColor} />
           <Box w="4px" h="4px" borderRadius="full" bg={emptyDotColor} />
@@ -221,7 +211,7 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
   }
 
   return (
-    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+    <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
       {ledgers.map((ledger, index) => {
         const gradient = gradients[index % gradients.length];
         const accent = accentColors[index % accentColors.length];
@@ -247,7 +237,7 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
               borderRadius="xl"
               overflow="hidden"
               cursor="pointer"
-              role="group"
+              className="group"
               position="relative"
               onClick={() => handleLedgerClick(ledger)}
               _hover={{
@@ -273,7 +263,7 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
                   w="52px"
                   h="52px"
                   borderRadius="xl"
-                  bgGradient={gradient}
+                  bgImage={gradient}
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
@@ -297,7 +287,7 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
                     fontWeight="bold"
                     fontSize="md"
                     color={nameColor}
-                    noOfLines={1}
+                    lineClamp={1}
                     lineHeight="1.3"
                   >
                     {ledger.name}
@@ -306,7 +296,7 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
                     <Text
                       fontSize="sm"
                       color={descColor}
-                      noOfLines={2}
+                      lineClamp={2}
                       mt={1}
                       lineHeight="1.5"
                     >
@@ -317,22 +307,22 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
                       No description
                     </Text>
                   )}
-                  <HStack spacing={1.5} mt={2.5} justify="space-between">
-                    <HStack spacing={1.5}>
-                      <Icon as={Calendar} boxSize={3} color={dateColor} />
+                  <HStack gap={1.5} mt={2.5} justify="space-between">
+                    <HStack gap={1.5}>
+                      <Icon boxSize={3} color={dateColor} asChild><Calendar /></Icon>
                       <Text fontSize="xs" color={dateColor} letterSpacing="0.02em">
                         {formatDate(ledger.created_at ?? "")}
                       </Text>
                     </HStack>
                     {isDefault && (
                       <HStack
-                        spacing={1}
+                        gap={1}
                         px={2}
                         py={0.5}
                         borderRadius="full"
                         bg={defaultBadgeBg}
                       >
-                        <Icon as={Star} boxSize={2.5} color={defaultStarColor} fill="currentColor" />
+                        <Icon boxSize={2.5} color={defaultStarColor} fill="currentColor" asChild><Star /></Icon>
                         <Text fontSize="2xs" fontWeight="700" color={defaultStarColor} letterSpacing="0.03em">
                           DEFAULT
                         </Text>
@@ -340,8 +330,7 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
                     )}
                     {showSetDefault && (
                       <HStack
-                        as="button"
-                        spacing={1}
+                        gap={1}
                         px={2}
                         py={0.5}
                         borderRadius="full"
@@ -350,25 +339,25 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
                         transition="all 0.15s ease"
                         color={setDefaultColor}
                         _hover={{ color: setDefaultHoverColor }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDefaultLedger(Number(ledger.ledger_id), {
-                            onSuccess: () => {
-                              notify({
-                                title: "Default ledger updated",
-                                description: `${ledger.name} is now your default ledger.`,
-                                status: "success",
-                                duration: 3000,
-                              });
-                            },
-                          });
-                        }}
-                      >
-                        <Icon as={Star} boxSize={2.5} />
-                        <Text fontSize="2xs" fontWeight="600" letterSpacing="0.03em">
-                          Set as default
-                        </Text>
-                      </HStack>
+                        asChild><button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDefaultLedger(Number(ledger.ledger_id), {
+                              onSuccess: () => {
+                                notify({
+                                  title: "Default ledger updated",
+                                  description: `${ledger.name} is now your default ledger.`,
+                                  status: "success",
+                                  duration: 3000,
+                                });
+                              },
+                            });
+                          }}>
+                          <Icon boxSize={2.5} asChild><Star /></Icon>
+                          <Text fontSize="2xs" fontWeight="600" letterSpacing="0.03em">
+                            Set as default
+                          </Text>
+                        </button></HStack>
                     )}
                   </HStack>
                   <LedgerSparkline
@@ -379,7 +368,6 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
 
                 {/* Arrow */}
                 <Icon
-                  as={ArrowRight}
                   boxSize={4}
                   color={arrowColor}
                   alignSelf="center"
@@ -389,7 +377,7 @@ const HomeLedgerCards = ({ ledgers = [], defaultLedgerId, onOpen }: HomeLedgerCa
                     color: accent,
                     transform: "translateX(3px)",
                   }}
-                />
+                  asChild><ArrowRight /></Icon>
               </Flex>
             </Box>
           </MotionBox>

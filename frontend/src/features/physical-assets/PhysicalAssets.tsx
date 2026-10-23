@@ -1,39 +1,21 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { useColorModeValue } from "../../components/ui/color-mode";
 import { FC, useState, useRef, RefObject } from "react";
 
 import {
   Alert,
-  AlertDescription,
-  AlertIcon,
-  AlertTitle,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogContent,
-  AlertDialogOverlay,
   Badge,
   Box,
   Button,
   Flex,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
   Skeleton,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
   Tabs,
   Text,
-  useColorModeValue,
   useDisclosure,
   VStack,
   useBreakpointValue,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
@@ -68,7 +50,7 @@ const PhysicalAssets: FC = () => {
   });
 
   // Responsive modal settings
-  const modalSize = useBreakpointValue({ base: "full", md: "md" });
+  const modalSize = useBreakpointValue({ base: "full", md: "md" } as const);
   const isMobile = useBreakpointValue({ base: true, md: false });
 
   // Tab colors
@@ -84,25 +66,25 @@ const PhysicalAssets: FC = () => {
 
   // Modal states
   const {
-    isOpen: isBuySellModalOpen,
+    open: isBuySellModalOpen,
     onOpen: onBuySellModalOpen,
     onClose: onBuySellModalClose,
   } = useDisclosure();
 
   const {
-    isOpen: isCreateAssetTypeModalOpen,
+    open: isCreateAssetTypeModalOpen,
     onOpen: onCreateAssetTypeModalOpen,
     onClose: onCreateAssetTypeModalClose,
   } = useDisclosure();
 
   const {
-    isOpen: isCreateAssetModalOpen,
+    open: isCreateAssetModalOpen,
     onOpen: onCreateAssetModalOpen,
     onClose: onCreateAssetModalClose,
   } = useDisclosure();
 
   const {
-    isOpen: isUpdatePriceModalOpen,
+    open: isUpdatePriceModalOpen,
     onOpen: onUpdatePriceModalOpen,
     onClose: onUpdatePriceModalClose,
   } = useDisclosure();
@@ -191,14 +173,14 @@ const PhysicalAssets: FC = () => {
   if (assetsError) {
     return (
       <Box p={6}>
-        <Alert status="error" borderRadius="md">
-          <AlertIcon />
-          <AlertTitle>Failed to Load Physical Assets!</AlertTitle>
-          <AlertDescription>
+        <Alert.Root status="error" borderRadius="md">
+          <Alert.Indicator />
+          <Alert.Title>Failed to Load Physical Assets!</Alert.Title>
+          <Alert.Description>
             Unable to load your physical assets. This might be due to a network issue or server problem.
             Please check your connection and try refreshing the page. If the problem persists, contact support.
-          </AlertDescription>
-        </Alert>
+          </Alert.Description>
+        </Alert.Root>
       </Box>
     );
   }
@@ -209,15 +191,16 @@ const PhysicalAssets: FC = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <Tabs
-        variant="unstyled"
+      <Tabs.Root
+        unstyled
         size={{ base: "md", md: "md" }}
-        index={tabIndex}
-        onChange={handleTabChange}
+        value={String(tabIndex)}
+        onValueChange={(d) => handleTabChange(Number(d.value))}
       >
         <Box p={{ base: 2, md: 4 }}>
-          <TabList borderBottom="none" gap={1}>
-            <Tab
+          <Tabs.List borderBottom="none" gap={1}>
+            <Tabs.Trigger
+              value="0"
               px={{ base: 3, md: 4 }}
               py={2.5}
               fontWeight="medium"
@@ -252,8 +235,9 @@ const PhysicalAssets: FC = () => {
                   </Badge>
                 )}
               </Flex>
-            </Tab>
-            <Tab
+            </Tabs.Trigger>
+            <Tabs.Trigger
+              value="1"
               px={{ base: 3, md: 4 }}
               py={2.5}
               fontWeight="medium"
@@ -275,12 +259,11 @@ const PhysicalAssets: FC = () => {
               <Flex align="center">
                 <Text>Transactions</Text>
               </Flex>
-            </Tab>
-          </TabList>
+            </Tabs.Trigger>
+          </Tabs.List>
         </Box>
 
-        <TabPanels>
-          <TabPanel p={{ base: 2, md: 4 }}>
+        <Tabs.Content value="0" p={{ base: 2, md: 4 }}>
             {tabIndex === 0 && (
               <PhysicalAssetsOverview
                 assetTypes={assetTypes}
@@ -294,12 +277,12 @@ const PhysicalAssets: FC = () => {
                 onFiltersChange={setFilters}
               />
             )}
-          </TabPanel>
+        </Tabs.Content>
 
-          <TabPanel p={{ base: 2, md: 4 }}>
+        <Tabs.Content value="1" p={{ base: 2, md: 4 }}>
             {tabIndex === 1 && (
               assetsLoading ? (
-                <VStack spacing={3} align="stretch" p={{ base: 2, md: 4 }}>
+                <VStack gap={3} align="stretch" p={{ base: 2, md: 4 }}>
                   <Skeleton height="40px" borderRadius="lg" />
                   {[0, 1, 2, 3, 4].map((i) => (
                     <Skeleton key={i} height="56px" borderRadius="lg" />
@@ -321,144 +304,167 @@ const PhysicalAssets: FC = () => {
                 />
               )
             )}
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+        </Tabs.Content>
+      </Tabs.Root>
 
       {/* Asset Type Warning Dialog */}
-      <Modal
-        isOpen={isAssetTypeWarningOpen}
-        onClose={() => setIsAssetTypeWarningOpen(false)}
+      <Dialog.Root
+        open={isAssetTypeWarningOpen}
         size={{ base: "full", md: "lg" }}
+        onOpenChange={e => {
+          if (!e.open) {
+            setIsAssetTypeWarningOpen(false);
+          }
+        }}
       >
-        <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-        <ModalContent
-          bg={modalBg}
-          border="1px solid"
-          borderColor={modalBorderColor}
-          borderRadius={{ base: 0, md: "xl" }}
-          boxShadow="2xl"
-        >
-          <ModalHeader fontSize="lg" fontWeight="800" letterSpacing="-0.02em">
-            Create Asset Type First
-          </ModalHeader>
+        <Portal>
 
-          <ModalBody>
-            You need to create at least one asset type before you can create a physical asset.
-            Asset types define the kind of physical assets you want to track (e.g., Gold, Silver, etc.).
-          </ModalBody>
+          <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+          <Dialog.Positioner>
+            <Dialog.Content
+              bg={modalBg}
+              border="1px solid"
+              borderColor={modalBorderColor}
+              borderRadius={{ base: 0, md: "xl" }}
+              boxShadow="2xl">
+              <Dialog.Header fontSize="lg" fontWeight="800" letterSpacing="-0.02em">
+                Create Asset Type First
+              </Dialog.Header>
 
-          <ModalFooter>
-            <Button
-              ref={cancelRef}
-              variant="outline"
-              onClick={() => setIsAssetTypeWarningOpen(false)}
-              borderRadius="lg"
-            >
-              Cancel
-            </Button>
-            <Button
-              colorScheme="brand"
-              onClick={() => {
-                setIsAssetTypeWarningOpen(false);
-                onCreateAssetTypeModalOpen();
-              }}
-              ml={3}
-              borderRadius="lg"
-              fontWeight="bold"
-            >
-              Create Asset Type
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+              <Dialog.Body>
+                You need to create at least one asset type before you can create a physical asset.
+                Asset types define the kind of physical assets you want to track (e.g., Gold, Silver, etc.).
+              </Dialog.Body>
+
+              <Dialog.Footer>
+                <Button
+                  ref={cancelRef}
+                  variant="outline"
+                  onClick={() => setIsAssetTypeWarningOpen(false)}
+                  borderRadius="lg"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  colorPalette="brand"
+                  onClick={() => {
+                    setIsAssetTypeWarningOpen(false);
+                    onCreateAssetTypeModalOpen();
+                  }}
+                  ml={3}
+                  borderRadius="lg"
+                  fontWeight="bold"
+                >
+                  Create Asset Type
+                </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+
+        </Portal>
+      </Dialog.Root>
 
       {/* Delete Asset Type Confirmation Modal */}
-      <Modal
-        isOpen={isDeleteAssetTypeDialogOpen}
-        onClose={() => {
-          setIsDeleteAssetTypeDialogOpen(false);
-          setSelectedAssetType(null);
-        }}
+      <Dialog.Root
+        open={isDeleteAssetTypeDialogOpen}
         size={modalSize}
-        motionPreset="slideInBottom"
+        motionPreset="slide-in-bottom"
+        onOpenChange={e => {
+          if (!e.open) {
+            setIsDeleteAssetTypeDialogOpen(false);
+            setSelectedAssetType(null);
+          }
+        }}
       >
-        <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-        <ModalContent
-          margin={isMobile ? 0 : "auto"}
-          borderRadius={isMobile ? 0 : "xl"}
-          bg={modalBg}
-          border="1px solid"
-          borderColor={modalBorderColor}
-          boxShadow="2xl"
-        >
-          <ModalHeader fontWeight="800" letterSpacing="-0.02em">Delete Asset Type</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            Are you sure you want to delete the asset type &ldquo;{selectedAssetType?.name}&rdquo;?
-            This action cannot be undone.
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              variant="ghost"
-              mr={3}
-              onClick={() => {
-                setIsDeleteAssetTypeDialogOpen(false);
-                setSelectedAssetType(null);
-              }}
-              borderRadius="lg"
-            >
-              Cancel
-            </Button>
-            <Button
-              colorScheme="red"
-              onClick={confirmDeleteAssetType}
-              isLoading={deleteAssetTypeMutation.isPending}
-              loadingText="Deleting..."
-              borderRadius="lg"
-              fontWeight="bold"
-            >
-              Delete
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+        <Portal>
+
+          <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+          <Dialog.Positioner>
+            <Dialog.Content
+              margin={isMobile ? 0 : "auto"}
+              borderRadius={isMobile ? 0 : "xl"}
+              bg={modalBg}
+              border="1px solid"
+              borderColor={modalBorderColor}
+              boxShadow="2xl">
+              <Dialog.Header fontWeight="800" letterSpacing="-0.02em">Delete Asset Type</Dialog.Header>
+              <Dialog.CloseTrigger />
+              <Dialog.Body>
+                Are you sure you want to delete the asset type &ldquo;{selectedAssetType?.name}&rdquo;?
+                This action cannot be undone.
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Button
+                  variant="ghost"
+                  mr={3}
+                  onClick={() => {
+                    setIsDeleteAssetTypeDialogOpen(false);
+                    setSelectedAssetType(null);
+                  }}
+                  borderRadius="lg"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  colorPalette="red"
+                  onClick={confirmDeleteAssetType}
+                  loading={deleteAssetTypeMutation.isPending}
+                  loadingText="Deleting..."
+                  borderRadius="lg"
+                  fontWeight="bold"
+                >
+                  Delete
+                </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+
+        </Portal>
+      </Dialog.Root>
 
       {/* Delete Asset Type Error Dialog */}
-      <AlertDialog
-        isOpen={isDeleteAssetTypeErrorOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={() => {
-          setIsDeleteAssetTypeErrorOpen(false);
-          setSelectedAssetType(null);
-        }}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              <AlertIcon as={AlertTriangle} color="red.500" mr={2} />
-              Cannot Delete Asset Type
-            </AlertDialogHeader>
+      <Dialog.Root
+        open={isDeleteAssetTypeErrorOpen}
+        initialFocusEl={() => cancelRef.current}
+        role='alertdialog'
+        onOpenChange={e => {
+          if (!e.open) {
+            setIsDeleteAssetTypeErrorOpen(false);
+            setSelectedAssetType(null);
+          }
+        }}>
+        <Portal>
 
-            <AlertDialogBody>
-              The asset type &ldquo;{selectedAssetType?.name}&rdquo; cannot be deleted because
-              {assets.filter(asset => asset.asset_type_id === selectedAssetType?.asset_type_id).length} physical asset(s) are currently using it.
-              Please delete or reassign all associated assets first.
-            </AlertDialogBody>
+          <Dialog.Backdrop>
+            <Dialog.Positioner>
+              <Dialog.Content>
+                <Dialog.Header fontSize="lg" fontWeight="bold">
+                  <Alert.Indicator color="red.500" mr={2} asChild><AlertTriangle /></Alert.Indicator>
+                  Cannot Delete Asset Type
+                </Dialog.Header>
 
-            <AlertDialogFooter>
-              <Button
-                onClick={() => {
-                  setIsDeleteAssetTypeErrorOpen(false);
-                  setSelectedAssetType(null);
-                }}
-              >
-                OK
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
+                <Dialog.Body>
+                  The asset type &ldquo;{selectedAssetType?.name}&rdquo; cannot be deleted because
+                  {assets.filter(asset => asset.asset_type_id === selectedAssetType?.asset_type_id).length} physical asset(s) are currently using it.
+                  Please delete or reassign all associated assets first.
+                </Dialog.Body>
+
+                <Dialog.Footer>
+                  <Button
+                    onClick={() => {
+                      setIsDeleteAssetTypeErrorOpen(false);
+                      setSelectedAssetType(null);
+                    }}
+                  >
+                    OK
+                  </Button>
+                </Dialog.Footer>
+              </Dialog.Content>
+            </Dialog.Positioner>
+          </Dialog.Backdrop>
+
+        </Portal>
+</Dialog.Root>
 
       {/* Modals */}
       <BuySellAssetModal

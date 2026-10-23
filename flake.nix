@@ -10,7 +10,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
-        python = pkgs.python312;
+        python = pkgs.python313;
         pythonEnv = python.withPackages (ps: with ps; [
           pip
           virtualenv
@@ -21,9 +21,9 @@
 
           packages = with pkgs; [
             pythonEnv
-            nodejs_22
+            nodejs_24
             nodePackages.npm
-            postgresql_16
+            postgresql_18
             stdenv.cc.cc.lib
             lsof
           ];
@@ -62,7 +62,7 @@
               rm -rf backend/.venv
               python3 -m venv backend/.venv
             fi
-            if [ ! -d backend/.venv/lib/python3.12/site-packages/fastapi ]; then
+            if [ ! -d backend/.venv/lib/python3.13/site-packages/fastapi ]; then
               echo "[cashio] Installing Python dependencies..."
               backend/.venv/bin/pip install -r backend/requirements.txt
             fi

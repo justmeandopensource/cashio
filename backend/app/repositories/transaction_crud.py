@@ -1312,7 +1312,7 @@ def update_transaction(
         # Create new splits
         for split_data in transaction_update.splits:
             # Convert the split_data (Pydantic model) to a dictionary
-            split_dict = split_data.dict()
+            split_dict = split_data.model_dump()
             # Create a TransactionSplit instance
             split = TransactionSplit(
                 transaction_id=transaction_id,

@@ -1,16 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import {
-  FormControl,
-  FormLabel,
-  FormHelperText,
-  Input,
-  Box,
-  Text,
-  useColorModeValue,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../ui/color-mode";
+import { Input, Box, Text, Popover, Field } from "@chakra-ui/react";
 import { AxiosError } from "axios";
 import api from "@/lib/api";
 import { notify } from "@/components/shared/notify";
@@ -153,19 +143,21 @@ const FormOwnerSuggestionField: React.FC<FormOwnerSuggestionFieldProps> = ({
   };
 
   return (
-    <FormControl flex={1}>
-      <FormLabel fontWeight="semibold" mb={2}>
+    <Field.Root flex={1}>
+      <Field.Label fontWeight="semibold" mb={2}>
         {label}
-      </FormLabel>
-      <Popover
-        isOpen={isOpen && suggestions.length > 0}
-        onClose={() => { setSuggestions([]); openDropdown(false); setHighlightedIndex(-1); }}
-        matchWidth
-        placement="bottom-start"
+      </Field.Label>
+      <Popover.Root
+        open={isOpen && suggestions.length > 0}
         autoFocus={false}
-        returnFocusOnClose={false}
-      >
-        <PopoverTrigger>
+        onOpenChange={e => {
+          if (!(e.open)) { setSuggestions([]); openDropdown(false); setHighlightedIndex(-1); }
+        }}
+        positioning={{
+          sameWidth: true,
+          placement: 'bottom-start'
+        }}>
+        <Popover.Trigger asChild>
           <Input
             value={value}
             onChange={(e) => {
@@ -191,9 +183,9 @@ const FormOwnerSuggestionField: React.FC<FormOwnerSuggestionFieldProps> = ({
             }}
             autoComplete="off"
           />
-        </PopoverTrigger>
-        <PopoverContent
-          p={0}
+        </Popover.Trigger>
+        <Popover.Positioner>
+          <Popover.Content w="full" p={0}
           bg={bgColor}
           border="1px solid"
           borderColor={borderDropdownColor}
@@ -201,9 +193,7 @@ const FormOwnerSuggestionField: React.FC<FormOwnerSuggestionFieldProps> = ({
           boxShadow="lg"
           maxH="200px"
           overflowY="auto"
-          _focus={{ outline: "none" }}
-        >
-          {suggestions.map((suggestion, i) => (
+          _focus={{ outline: "none" }}>{suggestions.map((suggestion, i) => (
             <Box
               key={i}
               px={4}
@@ -221,13 +211,13 @@ const FormOwnerSuggestionField: React.FC<FormOwnerSuggestionFieldProps> = ({
                 {suggestion}
               </Text>
             </Box>
-          ))}
-        </PopoverContent>
-      </Popover>
+          ))}</Popover.Content>
+        </Popover.Positioner>
+      </Popover.Root>
       {helperText && (
-        <FormHelperText>{helperText}</FormHelperText>
+        <Field.HelperText>{helperText}</Field.HelperText>
       )}
-    </FormControl>
+    </Field.Root>
   );
 };
 

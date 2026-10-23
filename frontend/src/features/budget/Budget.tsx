@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
+import { useColorModeValue } from "../../components/ui/color-mode";
 import {
   Box,
   Button,
   Center,
   Flex,
-  FormControl,
   Heading,
   Icon,
-  Select,
+  NativeSelect,
   SimpleGrid,
   Text,
-  useColorModeValue,
   useDisclosure,
+  Field,
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 
@@ -35,7 +35,7 @@ const Budget: React.FC = () => {
   const setLedger = useLedgerStore((s) => s.setLedger);
   const [selectedLedgerId, setSelectedLedgerId] = useState<string | undefined>(ledgerId);
   const [modalPeriod, setModalPeriod] = useState<string>("monthly");
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     setSelectedLedgerId(ledgerId);
@@ -104,28 +104,27 @@ const Budget: React.FC = () => {
             >
               Ledger
             </Text>
-            <FormControl>
-              <Select
-                value={selectedLedgerId || ""}
-                onChange={handleLedgerChange}
-                isDisabled={isLoadingLedgers}
-                size="sm"
-                borderRadius="lg"
-                bg={selectBg}
-                borderColor={selectBorderColor}
-                color={selectColor}
-                focusBorderColor="brand.500"
-                _hover={{ borderColor: "brand.400" }}
-                minW="160px"
-              >
-                <option value="">Select Ledger</option>
-                {ledgers?.map((l) => (
-                  <option key={l.ledger_id} value={l.ledger_id}>
-                    {l.name}
-                  </option>
-                ))}
-              </Select>
-            </FormControl>
+            <Field.Root>
+              <NativeSelect.Root size="sm" disabled={isLoadingLedgers}>
+                <NativeSelect.Field
+                  value={selectedLedgerId || ""}
+                  onChange={handleLedgerChange}
+                  borderRadius="lg"
+                  bg={selectBg}
+                  borderColor={selectBorderColor}
+                  color={selectColor}
+                  _hover={{ borderColor: "brand.400" }}
+                  minW="160px">
+                  <option value="">Select Ledger</option>
+                  {ledgers?.map((l) => (
+                    <option key={l.ledger_id} value={l.ledger_id}>
+                      {l.name}
+                    </option>
+                  ))}
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
+            </Field.Root>
           </Box>
         }
         actions={
@@ -133,14 +132,11 @@ const Budget: React.FC = () => {
             <Box>
               <Box fontSize="2xs" mb={1} visibility="hidden">_</Box>
               <Button
-                leftIcon={<Icon as={Plus} boxSize={4} />}
-                colorScheme="teal"
+                colorPalette="teal"
                 size="sm"
                 borderRadius="lg"
-                onClick={() => openModalForPeriod("monthly")}
-              >
-                Add Budget
-              </Button>
+                onClick={() => openModalForPeriod("monthly")}><Icon boxSize={4} asChild><Plus /></Icon>Add Budget
+                              </Button>
             </Box>
           ) : undefined
         }
@@ -149,7 +145,7 @@ const Budget: React.FC = () => {
       <Box flex={1} overflowY="auto">
         {selectedLedgerId ? (
           <PageContainer>
-            <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={6}>
+            <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
               {/* Monthly column */}
               <Box
                 border="1px solid"
@@ -166,7 +162,7 @@ const Budget: React.FC = () => {
                   borderColor={columnBorderColor}
                   gap={2.5}
                 >
-                  <Icon as={Calendar} boxSize={4} color={periodIconColor} />
+                  <Icon boxSize={4} color={periodIconColor} asChild><Calendar /></Icon>
                   <Text fontWeight="bold" fontSize="sm" color={periodTitleColor} letterSpacing="-0.01em">
                     Monthly
                   </Text>
@@ -196,7 +192,7 @@ const Budget: React.FC = () => {
                   borderColor={columnBorderColor}
                   gap={2.5}
                 >
-                  <Icon as={CalendarDays} boxSize={4} color={periodIconColor} />
+                  <Icon boxSize={4} color={periodIconColor} asChild><CalendarDays /></Icon>
                   <Text fontWeight="bold" fontSize="sm" color={periodTitleColor} letterSpacing="-0.01em">
                     Yearly
                   </Text>
@@ -224,7 +220,7 @@ const Budget: React.FC = () => {
               mb={5}
               css={{ animation: `${floatAnimation} 3s ease-in-out infinite` }}
             >
-              <Icon as={Target} boxSize={8} color="brand.400" strokeWidth={1.5} />
+              <Icon boxSize={8} color="brand.400" strokeWidth={1.5} asChild><Target /></Icon>
             </Box>
             <Heading fontSize="xl" fontWeight="bold" color={emptyTitleColor} mb={2}>
               No ledger selected
@@ -238,7 +234,7 @@ const Budget: React.FC = () => {
 
       {selectedLedgerId && (
         <BudgetModal
-          isOpen={isOpen}
+          isOpen={open}
           onClose={onClose}
           ledgerId={selectedLedgerId}
           period={modalPeriod}

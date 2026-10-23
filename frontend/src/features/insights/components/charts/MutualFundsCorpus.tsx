@@ -1,16 +1,16 @@
 import React, { useState, useMemo } from "react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
 import {
   Box,
   VStack,
   HStack,
   Heading,
   Text,
-  useColorModeValue,
   useBreakpointValue,
   Flex,
   Icon,
   Center,
-  Select,
+  NativeSelect,
   SimpleGrid,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
@@ -19,7 +19,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   TrendingUp,
   Activity,
-  ChevronDown,
   ArrowUpRight,
   ArrowDownRight,
   Calendar,
@@ -165,7 +164,7 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
   if (isError) {
     return (
       <Box bg={cardBg} p={{ base: 4, md: 6 }} borderRadius="xl" border="1px solid" borderColor={sectionBorderColor} textAlign="center">
-        <Icon as={TrendingUp} color="red.500" boxSize={6} mb={4} />
+        <Icon color="red.500" boxSize={6} mb={4} asChild><TrendingUp /></Icon>
         <Text color="red.500" fontWeight="bold" fontSize="lg">Unable to load corpus growth data</Text>
       </Box>
     );
@@ -177,7 +176,7 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
       label: "Current Corpus",
       accentColor: portfolioAccentColor,
       renderValue: () => (
-        <HStack spacing={0} align="baseline">
+        <HStack gap={0} align="baseline">
           <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={pnlPositiveColor} lineHeight="short" letterSpacing="-0.01em">
             {splitCurrencyForDisplay(currentCorpus, sym).main}
           </Text>
@@ -195,8 +194,8 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
         const color = isGrowthPositive ? pnlPositiveColor : pnlNegativeColor;
         const pctDisplay = splitPercentageForDisplay(corpusGrowthPct);
         return (
-          <VStack spacing={0} align="flex-start">
-            <HStack spacing={0} align="baseline">
+          <VStack gap={0} align="flex-start">
+            <HStack gap={0} align="baseline">
               <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={color} lineHeight="short" letterSpacing="-0.01em">
                 {isGrowthPositive ? "+" : "-"}{splitCurrencyForDisplay(Math.abs(corpusGrowthAmt), sym).main}
               </Text>
@@ -216,8 +215,8 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
       label: "Peak Corpus",
       accentColor: peakAccentColor,
       renderValue: () => (
-        <VStack spacing={0} align="flex-start">
-          <HStack spacing={0} align="baseline">
+        <VStack gap={0} align="flex-start">
+          <HStack gap={0} align="baseline">
             <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
               {peakCorpus ? splitCurrencyForDisplay(peakCorpus.corpus, sym).main : "—"}
             </Text>
@@ -240,7 +239,7 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
       label: "Data Points",
       accentColor: periodAccentColor,
       renderValue: () => (
-        <HStack spacing={1.5} align="baseline">
+        <HStack gap={1.5} align="baseline">
           <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
             {totalDataPoints}
           </Text>
@@ -268,47 +267,49 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
           mb={{ base: 4, md: 5 }}
         >
           <Flex align="center" gap={2}>
-            <Icon as={Activity} boxSize={4} color={iconColor} />
+            <Icon boxSize={4} color={iconColor} asChild><Activity /></Icon>
             <Heading as="h2" size="md" color={primaryTextColor} letterSpacing="-0.02em">
               Mutual Funds - Corpus
             </Heading>
           </Flex>
 
           <Flex gap={{ base: 2, md: 3 }} direction={{ base: "column", md: "row" }} width={{ base: "full", md: "auto" }}>
-            <Select
-              value={selectedGranularity}
-              onChange={(e) => setSelectedGranularity(e.target.value)}
+            <NativeSelect.Root
               maxW={{ base: "full", md: "140px" }}
-              icon={<ChevronDown />}
-              variant="filled"
-              bg={selectBg}
-              size="sm"
-              borderRadius="lg"
-              fontWeight="medium"
-              fontSize="sm"
-            >
-              <option value="monthly">Monthly</option>
-              <option value="yearly">Yearly</option>
-            </Select>
-
-            {availableOwners.length > 0 && (
-              <Select
-                value={selectedOwner}
-                onChange={(e) => setSelectedOwner(e.target.value)}
-                maxW={{ base: "full", md: "220px" }}
-                icon={<ChevronDown />}
-                variant="filled"
+              variant="subtle"
+              size="sm">
+              <NativeSelect.Field
+                value={selectedGranularity}
+                onChange={(e) => setSelectedGranularity(e.target.value)}
                 bg={selectBg}
-                size="sm"
                 borderRadius="lg"
                 fontWeight="medium"
-                fontSize="sm"
-              >
-                <option value="all">All Owners</option>
-                {availableOwners.map((owner) => (
-                  <option key={owner} value={owner}>{owner}</option>
-                ))}
-              </Select>
+                fontSize="sm">
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
+
+            {availableOwners.length > 0 && (
+              <NativeSelect.Root
+                maxW={{ base: "full", md: "220px" }}
+                variant="subtle"
+                size="sm">
+                <NativeSelect.Field
+                  value={selectedOwner}
+                  onChange={(e) => setSelectedOwner(e.target.value)}
+                  bg={selectBg}
+                  borderRadius="lg"
+                  fontWeight="medium"
+                  fontSize="sm">
+                  <option value="all">All Owners</option>
+                  {availableOwners.map((owner) => (
+                    <option key={owner} value={owner}>{owner}</option>
+                  ))}
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
             )}
           </Flex>
         </Flex>
@@ -317,7 +318,7 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
         {chartPoints.length > 0 && (
           <MotionSimpleGrid
             columns={{ base: 2, sm: 4 }}
-            spacing={{ base: 3, md: 4 }}
+            gap={{ base: 3, md: 4 }}
             mb={{ base: 4, md: 5 }}
             initial="hidden"
             animate="visible"
@@ -430,7 +431,7 @@ const MutualFundsCorpus: React.FC<MutualFundsCorpusProps> = ({
             />
           ) : (
             <Center height="full" borderRadius="lg" flexDirection="column" textAlign="center" p={6}>
-              <Icon as={Activity} boxSize={6} color={tertiaryTextColor} mb={4} />
+              <Icon boxSize={6} color={tertiaryTextColor} mb={4} asChild><Activity /></Icon>
               <Heading size="md" mb={2} color={secondaryTextColor}>No Corpus Data Available</Heading>
               <Text color={secondaryTextColor} fontSize="sm">Add mutual fund investments to see your corpus growth.</Text>
             </Center>

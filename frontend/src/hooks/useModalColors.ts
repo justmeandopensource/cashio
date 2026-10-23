@@ -1,4 +1,4 @@
-import { useColorModeValue } from "@chakra-ui/react";
+import { useColorModeValue } from "../components/ui/color-mode";
 
 /**
  * Shared color mode values used across modal components.

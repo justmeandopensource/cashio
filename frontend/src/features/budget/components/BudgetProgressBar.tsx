@@ -1,4 +1,5 @@
-import { Box, Flex, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import { motion } from "framer-motion";
 import React from "react";
 import { getBudgetStatusColor } from "../utils";

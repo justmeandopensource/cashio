@@ -1,15 +1,6 @@
 import React from "react";
-import {
-  Box,
-  Flex,
-  HStack,
-  Icon,
-  Progress,
-  Skeleton,
-  Text,
-  useColorModeValue,
-  VStack,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box, Flex, HStack, Icon, Progress, Skeleton, Text, VStack } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ArrowRight, Target } from "lucide-react";
@@ -105,8 +96,8 @@ const HomeBudgetAlerts: React.FC<HomeBudgetAlertsProps> = ({
       transition={{ duration: 0.3, delay: 0.05 }}
     >
       {/* Section header */}
-      <HStack spacing={1.5} mb={3}>
-        <Icon as={Target} boxSize={3.5} color={labelColor} />
+      <HStack gap={1.5} mb={3}>
+        <Icon boxSize={3.5} color={labelColor} asChild><Target /></Icon>
         <Text
           fontSize="xs"
           fontWeight="600"
@@ -118,13 +109,13 @@ const HomeBudgetAlerts: React.FC<HomeBudgetAlertsProps> = ({
         </Text>
         {atRisk.length > 0 && (
           <HStack
-            spacing={1}
+            gap={1}
             px={1.5}
             py={0.5}
             borderRadius="full"
             bg={alertBadgeBg}
           >
-            <Icon as={AlertTriangle} boxSize={2.5} color={overColor} />
+            <Icon boxSize={2.5} color={overColor} asChild><AlertTriangle /></Icon>
             <Text fontSize="2xs" fontWeight="700" color={overColor}>
               {atRisk.length}
             </Text>
@@ -157,7 +148,7 @@ const HomeBudgetAlerts: React.FC<HomeBudgetAlertsProps> = ({
               alignItems="center"
               justifyContent="center"
             >
-              <Icon as={Target} boxSize={5} color={emptyTextColor} />
+              <Icon boxSize={5} color={emptyTextColor} asChild><Target /></Icon>
             </Box>
             <Text fontSize="xs" fontWeight="600" color={emptyTextColor}>
               No budgets configured
@@ -171,7 +162,6 @@ const HomeBudgetAlerts: React.FC<HomeBudgetAlertsProps> = ({
               Set up monthly budgets to track your spending limits.
             </Text>
             <Box
-              as="button"
               mt={1}
               px={3}
               py={1}
@@ -181,21 +171,12 @@ const HomeBudgetAlerts: React.FC<HomeBudgetAlertsProps> = ({
               color={viewAllColor}
               _hover={{ bg: viewAllHoverBg }}
               transition="background 0.15s ease"
-              onClick={() => navigate("/budget")}
-            >
-              Set up budgets
-            </Box>
+              asChild><button onClick={() => navigate("/budget")}>Set up budgets
+                          </button></Box>
           </Flex>
         ) : (
           <>
-            <VStack
-              spacing={0}
-              align="stretch"
-              divider={
-                <Box borderBottom="1px solid" borderColor={dividerColor} />
-              }
-            >
-              {display.map((b) => {
+            <VStack gap={0} align="stretch">{display.map((b) => {
                 const pct =
                   b.amount > 0
                     ? Math.min((b.actual_spend / b.amount) * 100, 100)
@@ -217,7 +198,7 @@ const HomeBudgetAlerts: React.FC<HomeBudgetAlertsProps> = ({
                         fontSize="xs"
                         fontWeight="600"
                         color={textColor}
-                        noOfLines={1}
+                        lineClamp={1}
                         flex={1}
                         minW={0}
                       >
@@ -235,13 +216,16 @@ const HomeBudgetAlerts: React.FC<HomeBudgetAlertsProps> = ({
                           : `${formatNumberAsCurrency(Math.abs(remaining), sym)} over`}
                       </Text>
                     </Flex>
-                    <Progress
+                    <Progress.Root
                       value={pct}
                       size="xs"
                       borderRadius="full"
-                      colorScheme={getProgressColorScheme(b)}
-                      bg={progressBg}
-                    />
+                      colorPalette={getProgressColorScheme(b)}
+                      bg={progressBg}>
+                      <Progress.Track>
+                        <Progress.Range />
+                      </Progress.Track>
+                    </Progress.Root>
                     <Flex justify="space-between" mt={0.5}>
                       <Text fontSize="2xs" color={subtextColor}>
                         {formatNumberAsCurrency(b.actual_spend, sym)}
@@ -252,8 +236,7 @@ const HomeBudgetAlerts: React.FC<HomeBudgetAlertsProps> = ({
                     </Flex>
                   </Box>
                 );
-              })}
-            </VStack>
+              })}</VStack>
 
             {/* View all link */}
             <Flex
@@ -273,7 +256,7 @@ const HomeBudgetAlerts: React.FC<HomeBudgetAlertsProps> = ({
               <Text fontSize="2xs" fontWeight="600">
                 View all budgets
               </Text>
-              <Icon as={ArrowRight} boxSize={3} />
+              <Icon boxSize={3} asChild><ArrowRight /></Icon>
             </Flex>
           </>
         )}

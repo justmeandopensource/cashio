@@ -1,19 +1,6 @@
 import React, { useState } from "react";
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  Button,
-  Text,
-  Box,
-  HStack,
-  useBreakpointValue,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../components/ui/color-mode";
+import { Button, Text, Box, HStack, useBreakpointValue, Dialog, Portal } from "@chakra-ui/react";
 import { Trash2 } from "lucide-react";
 import { formatDate } from "@/components/shared/utils";
 import { splitCurrencyForDisplay } from "../mutual-funds/utils";
@@ -43,7 +30,6 @@ const DeleteTransactionModal: React.FC<DeleteTransactionModalProps> = ({
   amountValue,
 }) => {
   const [isDeleting, setIsDeleting] = useState(false);
-  const modalSize = useBreakpointValue({ base: "full", md: "md" });
   const isMobile = useBreakpointValue({ base: true, md: false });
   const modalBg = useColorModeValue("white", "gray.800");
   const modalBorderColor = useColorModeValue("gray.100", "gray.700");
@@ -64,59 +50,63 @@ const DeleteTransactionModal: React.FC<DeleteTransactionModalProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      returnFocusOnClose={false}
-      onClose={onClose}
-      size={modalSize}
-      motionPreset="slideInBottom"
-    >
-      <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-      <ModalContent
-        margin={isMobile ? 0 : "auto"}
-        borderRadius={isMobile ? 0 : "xl"}
-        bg={modalBg}
-        border="1px solid"
-        borderColor={modalBorderColor}
-        boxShadow="2xl"
-      >
-        <ModalHeader fontWeight="800" letterSpacing="-0.02em">Delete Transaction</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Text>Are you sure you want to delete this transaction?</Text>
-          {transaction && currencySymbol && amountValue !== undefined && (
-            <Box mt={4} p={3} bg={modalDetailBg} borderRadius="xl" border="1px solid" borderColor={modalBorderColor}>
-              <Text fontWeight="bold">{transaction.category_name}</Text>
-              <Text fontSize="sm" color="secondaryTextColor">{formatDate(transaction.date)}</Text>
-              <HStack spacing={0} align="baseline" mt={1}>
-                <Text fontWeight="bold" color={amountColor}>
-                  {splitCurrencyForDisplay(amountValue, currencySymbol).main}
-                </Text>
-                <Text fontSize="xs" color={amountColor} opacity={0.6}>
-                  {splitCurrencyForDisplay(amountValue, currencySymbol).decimals}
-                </Text>
-              </HStack>
-            </Box>
-          )}
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={onClose} isDisabled={isDeleting} borderRadius="lg">
-            Cancel
-          </Button>
-          <Button
-            colorScheme="red"
-            onClick={handleDelete}
-            isLoading={isDeleting}
-            loadingText="Deleting"
-            leftIcon={<Trash2 size={16} />}
-            borderRadius="lg"
-            fontWeight="bold"
-          >
-            Delete
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+    <Dialog.Root
+      open={isOpen}
+      size={{ base: "full", md: "md" }}
+      motionPreset="slide-in-bottom"
+      onOpenChange={e => {
+        if (!e.open) {
+          onClose();
+        }
+      }}>
+      <Portal>
+
+        <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <Dialog.Positioner>
+          <Dialog.Content
+            margin={isMobile ? 0 : "auto"}
+            borderRadius={isMobile ? 0 : "xl"}
+            bg={modalBg}
+            border="1px solid"
+            borderColor={modalBorderColor}
+            boxShadow="2xl">
+            <Dialog.Header fontWeight="800" letterSpacing="-0.02em">Delete Transaction</Dialog.Header>
+            <Dialog.CloseTrigger />
+            <Dialog.Body>
+              <Text>Are you sure you want to delete this transaction?</Text>
+              {transaction && currencySymbol && amountValue !== undefined && (
+                <Box mt={4} p={3} bg={modalDetailBg} borderRadius="xl" border="1px solid" borderColor={modalBorderColor}>
+                  <Text fontWeight="bold">{transaction.category_name}</Text>
+                  <Text fontSize="sm" color="secondaryTextColor">{formatDate(transaction.date)}</Text>
+                  <HStack gap={0} align="baseline" mt={1}>
+                    <Text fontWeight="bold" color={amountColor}>
+                      {splitCurrencyForDisplay(amountValue, currencySymbol).main}
+                    </Text>
+                    <Text fontSize="xs" color={amountColor} opacity={0.6}>
+                      {splitCurrencyForDisplay(amountValue, currencySymbol).decimals}
+                    </Text>
+                  </HStack>
+                </Box>
+              )}
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Button variant="ghost" mr={3} onClick={onClose} disabled={isDeleting} borderRadius="lg">
+                Cancel
+              </Button>
+              <Button
+                colorPalette="red"
+                onClick={handleDelete}
+                loading={isDeleting}
+                loadingText="Deleting"
+                borderRadius="lg"
+                fontWeight="bold"><Trash2 size={16} />Delete
+                          </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+
+      </Portal>
+    </Dialog.Root>
   );
 };
 

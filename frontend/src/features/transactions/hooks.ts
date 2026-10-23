@@ -180,6 +180,8 @@ export function useTransactionPageState({
         cleaned[key] = value;
       }
     });
+    const tab = searchParams.get("tab");
+    if (tab) cleaned.tab = tab;
     setSearchParams(cleaned as Record<string, string>);
   };
 

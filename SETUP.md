@@ -22,8 +22,8 @@ Install the following before you begin.
 | Tool                                                              | Purpose                                                | Install                  |
 | ----------------------------------------------------------------- | ------------------------------------------------------ | ------------------------ |
 | [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Runs the database (and all services in container mode) | Download from docker.com |
-| [Node.js](https://nodejs.org/) (v18+)                             | Required for local frontend dev mode                   | `brew install node`      |
-| [Python](https://www.python.org/) (3.11+)                         | Required for local backend dev mode                    | `brew install python`    |
+| [Node.js](https://nodejs.org/) (v24+)                             | Required for local frontend dev mode                   | `brew install node`      |
+| [Python](https://www.python.org/) (3.13+)                         | Required for local backend dev mode                    | `brew install python`    |
 
 Node.js and Python are only needed if you plan to use `start-local` mode. Container mode only requires Docker.
 

@@ -1,15 +1,6 @@
 import { FC } from "react";
-import {
-  Box,
-  Text,
-  Button,
-  VStack,
-  HStack,
-  SimpleGrid,
-  Flex,
-  Icon,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box, Text, Button, VStack, HStack, SimpleGrid, Flex, Icon } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { motion } from "framer-motion";
 import {
@@ -42,7 +33,7 @@ const floatKeyframes = keyframes`
   50% { transform: translateY(-6px); }
 `;
 
- 
+
 interface PhysicalAssetsOverviewProps {
   assetTypes: AssetType[];
   physicalAssets: PhysicalAsset[];
@@ -62,7 +53,7 @@ interface PhysicalAssetsOverviewProps {
       searchTerm?: string;
     }) => void;
 }
- 
+
 
 const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
   assetTypes,
@@ -194,7 +185,7 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
 
   return (
     <Box>
-      <VStack spacing={6} align="stretch">
+      <VStack gap={6} align="stretch">
         {assetTypes.length > 0 && (
           <>
             <MotionBox
@@ -210,7 +201,7 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
                 gap={{ base: 4, md: 0 }}
               >
                 <Flex align="center" mb={{ base: 2, md: 0 }}>
-                  <Icon as={Coins} mr={2} color={iconColor} />
+                  <Icon mr={2} color={iconColor} asChild><Coins /></Icon>
                   <Text
                     fontSize={{ base: "lg", md: "xl" }}
                     fontWeight="800"
@@ -222,36 +213,30 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
                 </Flex>
                 <Flex gap={2} width={{ base: "full", md: "auto" }} direction={{ base: "column", md: "row" }}>
                   <Button
-                    leftIcon={<Package size={16} />}
-                    colorScheme="brand"
+                    colorPalette="brand"
                     variant="outline"
                     size={{ base: "md", md: "sm" }}
                     onClick={onCreateAssetType}
                     borderRadius="lg"
-                    fontWeight="bold"
-                  >
-                    Create Asset Type
-                  </Button>
+                    fontWeight="bold"><Package size={16} />Create Asset Type
+                                      </Button>
                   <Button
-                    leftIcon={<Plus size={16} />}
-                    colorScheme="brand"
+                    colorPalette="brand"
                     variant="solid"
                     size={{ base: "md", md: "sm" }}
                     onClick={onCreateAsset}
                     borderRadius="lg"
                     fontWeight="bold"
                     _hover={{ boxShadow: btnGlow }}
-                    transition="all 0.2s ease"
-                  >
-                    Add Physical Asset
-                  </Button>
+                    transition="all 0.2s ease"><Plus size={16} />Add Physical Asset
+                                      </Button>
                 </Flex>
               </Flex>
             </MotionBox>
 
             <MotionSimpleGrid
               columns={{ base: 2, sm: 2, lg: 4 }}
-              spacing={{ base: 3, md: 4 }}
+              gap={{ base: 3, md: 4 }}
               initial="hidden"
               animate="visible"
               variants={{
@@ -320,8 +305,8 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
                         {tooltipTerm && <FinancialTooltip term={tooltipTerm} />}
                       </Text>
                     </Flex>
-                    <VStack align="start" spacing={0}>
-                      <HStack spacing={0} align="baseline">
+                    <VStack align="start" gap={0}>
+                      <HStack gap={0} align="baseline">
                         <Text
                           fontSize={{ base: "lg", md: "xl" }}
                           fontWeight="bold"
@@ -373,7 +358,7 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
               mb={6}
               css={{ animation: `${floatKeyframes} 3s ease-in-out infinite` }}
             >
-              <Icon as={Coins} boxSize={9} color="brand.500" strokeWidth={1.5} />
+              <Icon boxSize={9} color="brand.500" strokeWidth={1.5} asChild><Coins /></Icon>
             </Box>
             <Text fontSize="xl" fontWeight="800" color={emptyTitleColor} mb={2} letterSpacing="-0.02em">
               No Asset Types Created Yet
@@ -383,7 +368,7 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
             </Text>
             <MotionBox whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Button
-                colorScheme="brand"
+                colorPalette="brand"
                 onClick={onCreateAssetType}
                 size="lg"
                 borderRadius="xl"
@@ -419,7 +404,7 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
               mb={6}
               css={{ animation: `${floatKeyframes} 3s ease-in-out infinite` }}
             >
-              <Icon as={BookOpen} boxSize={9} color="brand.500" strokeWidth={1.5} />
+              <Icon boxSize={9} color="brand.500" strokeWidth={1.5} asChild><BookOpen /></Icon>
             </Box>
             <Text fontSize="xl" fontWeight="800" color={emptyTitleColor} mb={2} letterSpacing="-0.02em">
               No Physical Assets Yet
@@ -429,7 +414,7 @@ const PhysicalAssetsOverview: FC<PhysicalAssetsOverviewProps> = ({
             </Text>
             <MotionBox whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Button
-                colorScheme="brand"
+                colorPalette="brand"
                 onClick={onCreateAsset}
                 size="lg"
                 borderRadius="xl"

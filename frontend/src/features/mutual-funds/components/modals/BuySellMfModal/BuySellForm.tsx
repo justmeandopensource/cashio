@@ -1,21 +1,10 @@
 import { FC } from "react";
+import { useColorModeValue } from "../../../../../components/ui/color-mode";
 import {
   VStack,
-  FormControl,
-  FormLabel,
   Input,
-  InputGroup,
-  InputLeftAddon,
-  InputLeftElement,
-  InputRightElement,
   Textarea,
   Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
-  useColorModeValue,
-  FormHelperText,
-  FormErrorMessage,
   HStack,
   Text,
   Box,
@@ -23,10 +12,10 @@ import {
   Spinner,
   Icon,
   Popover,
-  PopoverTrigger,
-  PopoverContent,
   Button,
+  Field,
 } from "@chakra-ui/react";
+import { InputGroup } from "@/components/ui/input-group";
 import {
   DollarSign,
   Calendar,
@@ -97,7 +86,7 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
   const addonColor = useColorModeValue("gray.600", "gray.200");
 
   return (
-    <VStack spacing={{ base: 5, sm: 6 }} align="stretch">
+    <VStack gap={{ base: 5, sm: 6 }} align="stretch">
       {/* Transaction Details Card */}
       <Box
         bg={cardBg}
@@ -106,18 +95,18 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
         border="1px solid"
         borderColor={borderColor}
       >
-        <VStack spacing={5} align="stretch">
-          <Stack direction={{ base: "column", md: "row" }} spacing={4}>
-            <FormControl flex={1} isInvalid={!!errors.units}>
-              <FormLabel fontWeight="semibold" mb={2}>
-                <HStack spacing={2}>
+        <VStack gap={5} align="stretch">
+          <Stack direction={{ base: "column", md: "row" }} gap={4}>
+            <Field.Root flex={1} invalid={!!errors.units}>
+              <Field.Label fontWeight="semibold" mb={2}>
+                <HStack gap={2}>
                   <Coins size={16} />
                   <Text>Units to {type}</Text>
                   {formData.units && parseFloat(formData.units) > 0 && (
-                    <Icon as={Check} boxSize={3.5} color="teal.500" />
+                    <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
                   )}
                 </HStack>
-              </FormLabel>
+              </Field.Label>
               <Input
                 type="number"
                 step="0.001"
@@ -138,35 +127,37 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                   boxShadow: `0 0 0 1px ${focusBorderColor}`,
                 }}
               />
-              <FormErrorMessage>{errors.units}</FormErrorMessage>
-              <FormHelperText>
+              <Field.ErrorText>{errors.units}</Field.ErrorText>
+              <Field.HelperText>
                 {type === "buy" ? "Current holdings" : "Available to sell"}:{" "}
                 {selectedFund ? formatUnits(totalUnits) : "0"}
-              </FormHelperText>
-            </FormControl>
+              </Field.HelperText>
+            </Field.Root>
 
-            <FormControl flex={1} isInvalid={!!errors.amount_excluding_charges}>
-              <FormLabel fontWeight="semibold" mb={2}>
-                <HStack spacing={2}>
+            <Field.Root flex={1} invalid={!!errors.amount_excluding_charges}>
+              <Field.Label fontWeight="semibold" mb={2}>
+                <HStack gap={2}>
                   <DollarSign size={16} />
                   <Text>Amount</Text>
                   {formData.amount_excluding_charges &&
                     parseFloat(formData.amount_excluding_charges) > 0 && (
-                      <Icon as={Check} boxSize={3.5} color="teal.500" />
+                      <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
                     )}
                 </HStack>
-              </FormLabel>
-              <InputGroup size="lg">
-                <InputLeftAddon
-                  bg={inputBorderColor}
-                  borderWidth="2px"
-                  borderColor={inputBorderColor}
-                  color={addonColor}
-                  fontWeight="semibold"
-                >
-                  {currencySymbol || "\u20B9"}
-                </InputLeftAddon>
+              </Field.Label>
+              <InputGroup
+                startAddon={currencySymbol || "\u20B9"}
+                startAddonProps={{
+                  size: "lg",
+                  bg: inputBorderColor,
+                  borderWidth: "2px",
+                  borderColor: inputBorderColor,
+                  color: addonColor,
+                  fontWeight: "semibold",
+                }}
+              >
                 <Input
+                  size="lg"
                   type="number"
                   step="0.01"
                   value={formData.amount_excluding_charges}
@@ -189,20 +180,20 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                   }}
                 />
               </InputGroup>
-              <FormErrorMessage>
+              <Field.ErrorText>
                 {errors.amount_excluding_charges}
-              </FormErrorMessage>
-              <FormHelperText>
+              </Field.ErrorText>
+              <Field.HelperText>
                 NAV per unit: {currencySymbol || "\u20B9"}
                 {formatAmount(navPerUnit)}
-              </FormHelperText>
-            </FormControl>
+              </Field.HelperText>
+            </Field.Root>
           </Stack>
 
-          <Stack direction={{ base: "column", md: "row" }} spacing={4}>
-            <FormControl flex={1} isInvalid={!!errors.account_id}>
-              <FormLabel fontWeight="semibold" mb={2}>
-                <HStack spacing={2}>
+          <Stack direction={{ base: "column", md: "row" }} gap={4}>
+            <Field.Root flex={1} invalid={!!errors.account_id}>
+              <Field.Label fontWeight="semibold" mb={2}>
+                <HStack gap={2}>
                   <Building2 size={16} />
                   <Text>
                     {type === "buy"
@@ -210,10 +201,10 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                       : "Destination Account"}
                   </Text>
                   {formData.account_id && (
-                    <Icon as={Check} boxSize={3.5} color="teal.500" />
+                    <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
                   )}
                 </HStack>
-              </FormLabel>
+              </Field.Label>
               {accountsLoading ? (
                 <HStack justify="center" p={4}>
                   <Spinner size="sm" color="teal.500" />
@@ -222,27 +213,38 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                   </Text>
                 </HStack>
               ) : (
-                <Popover
-                  isOpen={isAccountOpen}
-                  onClose={() => {
-                    setIsAccountOpen(false);
-                    setHighlightedAccountIndex(-1);
-                  }}
-                  matchWidth
-                  placement="bottom-start"
+                <Popover.Root
+                  open={isAccountOpen}
                   autoFocus={false}
-                  returnFocusOnClose={false}
-                >
-                  <PopoverTrigger>
-                    <InputGroup size="lg">
-                      <InputLeftElement pointerEvents="none" height="100%">
-                        <Icon
-                          as={Search}
-                          boxSize={4}
-                          color={helperTextColor}
-                        />
-                      </InputLeftElement>
+                  onOpenChange={e => {
+                    if (!(e.open)) { setIsAccountOpen(false);
+                    setHighlightedAccountIndex(-1); }
+                  }}
+                  positioning={{
+                    sameWidth: true,
+                    placement: 'bottom-start'
+                  }}>
+                  <Popover.Trigger asChild>
+                    <InputGroup
+                      w="full"
+                      startElement={<Icon boxSize={4} color={helperTextColor} asChild><Search /></Icon>}
+                      endElement={
+                        formData.account_id ? (
+                          <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><X
+                              onClick={() => {
+                                handleInputChange("account_id", "");
+                                setAccountSearch("");
+                                setIsAccountOpen(false);
+                                setHighlightedAccountIndex(-1);
+                              }} /></Icon>
+                        ) : (
+                          <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><ChevronDown onClick={() => setIsAccountOpen(!isAccountOpen)} /></Icon>
+                        )
+                      }
+                      endElementProps={{ pr: 1 }}
+                    >
                       <Input
+                        size="lg"
                         value={
                           isAccountOpen
                             ? accountSearch
@@ -276,34 +278,10 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                         }}
                         autoComplete="off"
                       />
-                      <InputRightElement height="100%" pr={1}>
-                        {formData.account_id ? (
-                          <Icon
-                            as={X}
-                            boxSize={4}
-                            color={helperTextColor}
-                            cursor="pointer"
-                            onClick={() => {
-                              handleInputChange("account_id", "");
-                              setAccountSearch("");
-                              setIsAccountOpen(false);
-                              setHighlightedAccountIndex(-1);
-                            }}
-                          />
-                        ) : (
-                          <Icon
-                            as={ChevronDown}
-                            boxSize={4}
-                            color={helperTextColor}
-                            cursor="pointer"
-                            onClick={() => setIsAccountOpen(!isAccountOpen)}
-                          />
-                        )}
-                      </InputRightElement>
                     </InputGroup>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    p={0}
+                  </Popover.Trigger>
+                  <Popover.Positioner>
+                    <Popover.Content w="full" p={0}
                     bg={bgColor}
                     border="1px solid"
                     borderColor={borderColor}
@@ -311,9 +289,7 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                     boxShadow="lg"
                     maxH="220px"
                     overflowY="auto"
-                    _focus={{ outline: "none" }}
-                  >
-                    {filteredAssetAccounts.length > 0 && (
+                    _focus={{ outline: "none" }}>{filteredAssetAccounts.length > 0 && (
                       <>
                         <Box
                           px={3}
@@ -373,11 +349,7 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                             </Text>
                             {formData.account_id ===
                               acc.account_id.toString() && (
-                              <Icon
-                                as={Check}
-                                boxSize={4}
-                                color="teal.500"
-                              />
+                              <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>
                             )}
                           </Box>
                         ))}
@@ -451,11 +423,7 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                               </Text>
                               {formData.account_id ===
                                 acc.account_id.toString() && (
-                                <Icon
-                                  as={Check}
-                                  boxSize={4}
-                                  color="teal.500"
-                                />
+                                <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>
                               )}
                             </Box>
                           );
@@ -468,32 +436,33 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                           No accounts found
                         </Text>
                       </Box>
-                    )}
-                  </PopoverContent>
-                </Popover>
+                    )}</Popover.Content>
+                  </Popover.Positioner>
+                </Popover.Root>
               )}
-              <FormErrorMessage>{errors.account_id}</FormErrorMessage>
-              <FormHelperText>
+              <Field.ErrorText>{errors.account_id}</Field.ErrorText>
+              <Field.HelperText>
                 {type === "buy"
                   ? "Account to deduct funds from"
                   : "Account to receive funds"}
-              </FormHelperText>
-            </FormControl>
+              </Field.HelperText>
+            </Field.Root>
 
-            <FormControl flex={1} isInvalid={!!errors.transaction_date}>
-              <FormLabel fontWeight="semibold" mb={2}>
-                <HStack spacing={2}>
+            <Field.Root flex={1} invalid={!!errors.transaction_date}>
+              <Field.Label fontWeight="semibold" mb={2}>
+                <HStack gap={2}>
                   <Calendar size={16} />
                   <Text>Date</Text>
-                  <Icon as={Check} boxSize={3.5} color="teal.500" />
+                  <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
                 </HStack>
-              </FormLabel>
+              </Field.Label>
               <Box
-                sx={{
-                  ".react-datepicker-wrapper": {
+                css={{
+                  '& .react-datepicker-wrapper': {
                     width: "100%",
                   },
-                  ".react-datepicker__input-container input": {
+
+                  '& .react-datepicker__input-container input': {
                     width: "100%",
                     height: "48px",
                     borderWidth: "2px",
@@ -506,7 +475,7 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                       borderColor: focusBorderColor,
                       boxShadow: `0 0 0 1px ${focusBorderColor}`,
                     },
-                  },
+                  }
                 }}
               >
                 <ChakraDatePicker
@@ -519,30 +488,32 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                   shouldCloseOnSelect={true}
                 />
               </Box>
-              <FormErrorMessage>{errors.transaction_date}</FormErrorMessage>
-              <FormHelperText>Transaction date</FormHelperText>
-            </FormControl>
+              <Field.ErrorText>{errors.transaction_date}</Field.ErrorText>
+              <Field.HelperText>Transaction date</Field.HelperText>
+            </Field.Root>
           </Stack>
 
-          <Stack direction={{ base: "column", md: "row" }} spacing={4}>
-            <FormControl flex={1} isInvalid={!!errors.other_charges}>
-              <FormLabel fontWeight="semibold" mb={2}>
-                <HStack spacing={2}>
+          <Stack direction={{ base: "column", md: "row" }} gap={4}>
+            <Field.Root flex={1} invalid={!!errors.other_charges}>
+              <Field.Label fontWeight="semibold" mb={2}>
+                <HStack gap={2}>
                   <DollarSign size={16} />
                   <Text>Other Charges</Text>
                 </HStack>
-              </FormLabel>
-              <InputGroup size="lg">
-                <InputLeftAddon
-                  bg={inputBorderColor}
-                  borderWidth="2px"
-                  borderColor={inputBorderColor}
-                  color={addonColor}
-                  fontWeight="semibold"
-                >
-                  {currencySymbol || "\u20B9"}
-                </InputLeftAddon>
+              </Field.Label>
+              <InputGroup
+                startAddon={currencySymbol || "\u20B9"}
+                startAddonProps={{
+                  size: "lg",
+                  bg: inputBorderColor,
+                  borderWidth: "2px",
+                  borderColor: inputBorderColor,
+                  color: addonColor,
+                  fontWeight: "semibold",
+                }}
+              >
                 <Input
+                  size="lg"
                   type="number"
                   step="0.01"
                   value={formData.other_charges}
@@ -562,19 +533,19 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                   }}
                 />
               </InputGroup>
-              <FormErrorMessage>{errors.other_charges}</FormErrorMessage>
-              <FormHelperText>
+              <Field.ErrorText>{errors.other_charges}</Field.ErrorText>
+              <Field.HelperText>
                 Stamp duty, transaction fees, etc.
-              </FormHelperText>
-            </FormControl>
+              </Field.HelperText>
+            </Field.Root>
 
-            <FormControl flex={1} isInvalid={!!errors.expense_category_id}>
-              <FormLabel fontWeight="semibold" mb={2}>
-                <HStack spacing={2}>
+            <Field.Root flex={1} invalid={!!errors.expense_category_id}>
+              <Field.Label fontWeight="semibold" mb={2}>
+                <HStack gap={2}>
                   <FileText size={16} />
                   <Text>Expense Category</Text>
                 </HStack>
-              </FormLabel>
+              </Field.Label>
               {categoriesLoading ? (
                 <HStack justify="center" p={4}>
                   <Spinner size="sm" color="teal.500" />
@@ -583,27 +554,41 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                   </Text>
                 </HStack>
               ) : (
-                <Popover
-                  isOpen={isCategoryOpen}
-                  onClose={() => {
-                    setIsCategoryOpen(false);
-                    setHighlightedCategoryIndex(-1);
-                  }}
-                  matchWidth
-                  placement="bottom-start"
+                <Popover.Root
+                  open={isCategoryOpen}
                   autoFocus={false}
-                  returnFocusOnClose={false}
-                >
-                  <PopoverTrigger>
-                    <InputGroup size="lg">
-                      <InputLeftElement pointerEvents="none" height="100%">
-                        <Icon
-                          as={Search}
-                          boxSize={4}
-                          color={helperTextColor}
-                        />
-                      </InputLeftElement>
+                  onOpenChange={e => {
+                    if (!(e.open)) { setIsCategoryOpen(false);
+                    setHighlightedCategoryIndex(-1); }
+                  }}
+                  positioning={{
+                    sameWidth: true,
+                    placement: 'bottom-start'
+                  }}>
+                  <Popover.Trigger asChild>
+                    <InputGroup
+                      w="full"
+                      startElement={<Icon boxSize={4} color={helperTextColor} asChild><Search /></Icon>}
+                      endElement={
+                        formData.expense_category_id ? (
+                          <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><X
+                              onClick={() => {
+                                handleInputChange("expense_category_id", "");
+                                setCategorySearch("");
+                                setIsCategoryOpen(false);
+                                setHighlightedCategoryIndex(-1);
+                              }} /></Icon>
+                        ) : (
+                          <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><ChevronDown
+                              onClick={() =>
+                                setIsCategoryOpen(!isCategoryOpen)
+                              } /></Icon>
+                        )
+                      }
+                      endElementProps={{ pr: 1 }}
+                    >
                       <Input
+                        size="lg"
                         value={
                           isCategoryOpen
                             ? categorySearch
@@ -637,36 +622,10 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                         }}
                         autoComplete="off"
                       />
-                      <InputRightElement height="100%" pr={1}>
-                        {formData.expense_category_id ? (
-                          <Icon
-                            as={X}
-                            boxSize={4}
-                            color={helperTextColor}
-                            cursor="pointer"
-                            onClick={() => {
-                              handleInputChange("expense_category_id", "");
-                              setCategorySearch("");
-                              setIsCategoryOpen(false);
-                              setHighlightedCategoryIndex(-1);
-                            }}
-                          />
-                        ) : (
-                          <Icon
-                            as={ChevronDown}
-                            boxSize={4}
-                            color={helperTextColor}
-                            cursor="pointer"
-                            onClick={() =>
-                              setIsCategoryOpen(!isCategoryOpen)
-                            }
-                          />
-                        )}
-                      </InputRightElement>
                     </InputGroup>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    p={0}
+                  </Popover.Trigger>
+                  <Popover.Positioner>
+                    <Popover.Content w="full" p={0}
                     bg={bgColor}
                     border="1px solid"
                     borderColor={borderColor}
@@ -674,9 +633,7 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                     boxShadow="lg"
                     maxH="220px"
                     overflowY="auto"
-                    _focus={{ outline: "none" }}
-                  >
-                    {filteredCategories.map((cat: any, i: number) => (
+                    _focus={{ outline: "none" }}>{filteredCategories.map((cat: any, i: number) => (
                       <Box
                         key={cat.category_id}
                         px={4}
@@ -717,7 +674,7 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                         </Text>
                         {formData.expense_category_id ===
                           cat.category_id.toString() && (
-                          <Icon as={Check} boxSize={4} color="teal.500" />
+                          <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>
                         )}
                       </Box>
                     ))}
@@ -727,26 +684,26 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
                           No categories found
                         </Text>
                       </Box>
-                    )}
-                  </PopoverContent>
-                </Popover>
+                    )}</Popover.Content>
+                  </Popover.Positioner>
+                </Popover.Root>
               )}
-              <FormErrorMessage>
+              <Field.ErrorText>
                 {errors.expense_category_id}
-              </FormErrorMessage>
-              <FormHelperText>
+              </Field.ErrorText>
+              <Field.HelperText>
                 Required if other charges &gt; 0
-              </FormHelperText>
-            </FormControl>
+              </Field.HelperText>
+            </Field.Root>
           </Stack>
 
-          <FormControl>
-            <FormLabel fontWeight="semibold" mb={2}>
-              <HStack spacing={2}>
+          <Field.Root>
+            <Field.Label fontWeight="semibold" mb={2}>
+              <HStack gap={2}>
                 <FileText size={16} />
                 <Text>Notes (Optional)</Text>
               </HStack>
-            </FormLabel>
+            </Field.Label>
             <Textarea
               value={formData.notes}
               onChange={(e) => handleInputChange("notes", e.target.value)}
@@ -764,54 +721,54 @@ const BuySellForm: FC<BuySellFormProps> = ({ type, form }) => {
               }}
               resize="vertical"
             />
-            <FormHelperText>
+            <Field.HelperText>
               Additional details about this {type} transaction
-            </FormHelperText>
-          </FormControl>
+            </Field.HelperText>
+          </Field.Root>
         </VStack>
       </Box>
 
       {/* Error Display */}
       {errors.general && (
-        <Alert
+        <Alert.Root
           status="error"
           borderRadius="md"
           border="1px solid"
           borderColor="red.200"
         >
-          <AlertIcon />
+          <Alert.Indicator />
           <Box>
-            <AlertTitle fontWeight="bold">Transaction Failed!</AlertTitle>
-            <AlertDescription>{errors.general}</AlertDescription>
+            <Alert.Title fontWeight="bold">Transaction Failed!</Alert.Title>
+            <Alert.Description>{errors.general}</Alert.Description>
           </Box>
-        </Alert>
+        </Alert.Root>
       )}
 
       {/* Mobile-only action buttons that stay at bottom */}
       <Box display={{ base: "block", sm: "none" }}>
         <Button
           onClick={() => handleSubmit()}
-          colorScheme={type === "buy" ? "brand" : "red"}
+          colorPalette={type === "buy" ? "brand" : "red"}
           size="lg"
           width="100%"
           mb={3}
           borderRadius="lg"
           fontWeight="bold"
-          isLoading={transactionMutation.isPending}
+          loading={transactionMutation.isPending}
           loadingText={`Processing ${type === "buy" ? "Purchase" : "Sale"}...`}
-          isDisabled={!isFormValid()}
+          disabled={!isFormValid()}
         >
           {type === "buy" ? "Buy Units" : "Sell Units"}
         </Button>
 
         <Button
           variant="ghost"
-          colorScheme="gray"
+          colorPalette="gray"
           onClick={handleClose}
           size="lg"
           width="100%"
           borderRadius="lg"
-          isDisabled={transactionMutation.isPending}
+          disabled={transactionMutation.isPending}
         >
           Cancel
         </Button>

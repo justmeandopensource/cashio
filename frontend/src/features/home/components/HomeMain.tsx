@@ -1,4 +1,5 @@
 import HomeLedgerCards from "@features/home/components/HomeLedgerCards";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import HomeNetWorthBanner from "./HomeNetWorthBanner";
 import HomeMonthSnapshot from "./HomeMonthSnapshot";
 import HomeRecentTransactions from "./HomeRecentTransactions";
@@ -7,7 +8,7 @@ import { lazy, Suspense, useEffect } from "react";
 const CreateLedgerModal = lazy(() => import("@components/modals/CreateLedgerModal"));
 import PageContainer from "@components/shared/PageContainer";
 import HomeMainHeader from "./HomeMainHeader";
-import { Box, Divider, Grid, GridItem, HStack, Icon, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Grid, GridItem, HStack, Icon, Text, Separator } from "@chakra-ui/react";
 import { LayoutDashboard } from "lucide-react";
 import { HomeFundFlow } from "./fund-flow";
 import useLedgerStore from "@/components/shared/store";
@@ -83,9 +84,9 @@ const HomeMain = ({
           {showDashboard && (
             <Box mt={10}>
               {/* Section separator with label */}
-              <HStack spacing={3} mb={6}>
-                <HStack spacing={2} flexShrink={0}>
-                  <Icon as={LayoutDashboard} boxSize={3.5} color={sectionLabelColor} />
+              <HStack gap={3} mb={6}>
+                <HStack gap={2} flexShrink={0}>
+                  <Icon boxSize={3.5} color={sectionLabelColor} asChild><LayoutDashboard /></Icon>
                   <Text
                     fontSize="xs"
                     fontWeight="700"
@@ -105,7 +106,7 @@ const HomeMain = ({
                     </Text>
                   )}
                 </HStack>
-                <Divider borderColor={dividerColor} />
+                <Separator borderColor={dividerColor} />
               </HStack>
 
               <HomeNetWorthBanner

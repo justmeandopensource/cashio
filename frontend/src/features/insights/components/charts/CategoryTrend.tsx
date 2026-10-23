@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from "react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
 import {
   Box,
   VStack,
   HStack,
   Heading,
   Text,
-  Select,
-  useColorModeValue,
+  NativeSelect,
   useBreakpointValue,
   Flex,
   Icon,
@@ -22,7 +22,6 @@ import api from "@/lib/api";
 import {
   TrendingUp,
   TrendingDown,
-  ChevronDown,
   BarChart2,
   Layers,
   Activity,
@@ -327,7 +326,7 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
   if (isError) {
     return (
       <Box bg={cardBg} p={{ base: 4, md: 6 }} borderRadius="xl" border="1px solid" borderColor={sectionBorderColor} textAlign="center">
-        <Icon as={TrendingDown} color="red.500" boxSize={6} mb={4} />
+        <Icon color="red.500" boxSize={6} mb={4} asChild><TrendingDown /></Icon>
         <Text color="red.500" fontWeight="bold" fontSize="lg">Unable to load category trend data</Text>
       </Box>
     );
@@ -339,7 +338,7 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
       label: `Total ${trendData.category_name}`,
       accentColor,
       renderValue: () => (
-        <HStack spacing={0} align="baseline">
+        <HStack gap={0} align="baseline">
           <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={valueColor} lineHeight="short" letterSpacing="-0.01em">
             {splitCurrencyForDisplay(trendData.summary.total, sym).main}
           </Text>
@@ -354,7 +353,7 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
       label: "Avg / Period",
       accentColor: avgAccentColor,
       renderValue: () => (
-        <HStack spacing={0} align="baseline">
+        <HStack gap={0} align="baseline">
           <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
             {splitCurrencyForDisplay(trendData.summary.average, sym).main}
           </Text>
@@ -369,8 +368,8 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
       label: "Peak Period",
       accentColor: peakAccentColor,
       renderValue: () => (
-        <VStack spacing={0} align="flex-start">
-          <HStack spacing={0} align="baseline">
+        <VStack gap={0} align="flex-start">
+          <HStack gap={0} align="baseline">
             <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
               {splitCurrencyForDisplay(trendData.summary.highest.amount, sym).main}
             </Text>
@@ -391,7 +390,7 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
       label: "Subcategories",
       accentColor: subcatAccentColor,
       renderValue: () => (
-        <HStack spacing={1.5} align="baseline">
+        <HStack gap={1.5} align="baseline">
           <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
             {uniqueSubcategories.length}
           </Text>
@@ -455,54 +454,56 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
           mb={{ base: 4, md: 5 }}
         >
           <Flex align="center" gap={2}>
-            <Icon as={TrendingUp} boxSize={4} color={iconColor} />
+            <Icon boxSize={4} color={iconColor} asChild><TrendingUp /></Icon>
             <Heading as="h2" size="md" color={primaryTextColor} letterSpacing="-0.02em">
               Category Trend Analysis
             </Heading>
           </Flex>
 
           <Flex direction={{ base: "column", md: "row" }} gap={{ base: 2, md: 3 }} width={{ base: "full", md: "auto" }}>
-            <Select
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                setHiddenSubcategories(new Set());
-                setSelectedSubcategory(null);
-              }}
+            <NativeSelect.Root
               maxW={{ base: "full", md: "220px" }}
-              icon={<ChevronDown />}
-              variant="filled"
-              bg={selectBg}
-              size="sm"
-              borderRadius="lg"
-              fontWeight="medium"
-              fontSize="sm"
-              placeholder="Select a category"
-            >
-              {renderOrganizedCategories()}
-            </Select>
+              variant="subtle"
+              size="sm">
+              <NativeSelect.Field
+                value={selectedCategory}
+                onChange={(e) => {
+                  setSelectedCategory(e.target.value);
+                  setHiddenSubcategories(new Set());
+                  setSelectedSubcategory(null);
+                }}
+                bg={selectBg}
+                borderRadius="lg"
+                fontWeight="medium"
+                fontSize="sm"
+                placeholder="Select a category">
+                {renderOrganizedCategories()}
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
 
-            <Select
-              value={periodType}
-              onChange={(e) => {
-                setPeriodType(e.target.value);
-                setSelectedSubcategory(null);
-              }}
+            <NativeSelect.Root
               maxW={{ base: "full", md: "220px" }}
-              icon={<ChevronDown />}
-              variant="filled"
-              bg={selectBg}
-              size="sm"
-              borderRadius="lg"
-              fontWeight="medium"
-              fontSize="sm"
-            >
-              {periodOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
+              variant="subtle"
+              size="sm">
+              <NativeSelect.Field
+                value={periodType}
+                onChange={(e) => {
+                  setPeriodType(e.target.value);
+                  setSelectedSubcategory(null);
+                }}
+                bg={selectBg}
+                borderRadius="lg"
+                fontWeight="medium"
+                fontSize="sm">
+                {periodOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
           </Flex>
         </Flex>
 
@@ -510,7 +511,7 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
         {summaryCards.length > 0 && (
           <MotionSimpleGrid
             columns={{ base: 2, sm: 4 }}
-            spacing={{ base: 3, md: 4 }}
+            gap={{ base: 3, md: 4 }}
             mb={{ base: 4, md: 5 }}
             initial="hidden"
             animate="visible"
@@ -677,7 +678,7 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
                     </Text>
                   </Flex>
 
-                  <VStack align="stretch" spacing={0}>
+                  <VStack align="stretch" gap={0}>
                     {subcategoryTotals.map((sub) => (
                       <Box key={sub.name}>
                         {/* Desktop row */}
@@ -696,9 +697,9 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
                         >
                           <Flex flex={1} align="center" gap={2} minW={0}>
                             <Box w={2} h={2} borderRadius="sm" bg={sub.color} flexShrink={0} />
-                            <Text fontSize="xs" fontWeight="600" color={primaryTextColor} isTruncated>{sub.name}</Text>
+                            <Text fontSize="xs" fontWeight="600" color={primaryTextColor} truncate>{sub.name}</Text>
                           </Flex>
-                          <HStack w="110px" spacing={0} justify="flex-end">
+                          <HStack w="110px" gap={0} justify="flex-end">
                             <Text fontSize="xs" fontWeight="600" color={primaryTextColor}>
                               {splitCurrencyForDisplay(sub.total, sym).main}
                             </Text>
@@ -711,7 +712,7 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
                               {sub.percentage.toFixed(1)}%
                             </Text>
                           </Box>
-                          <HStack w="100px" spacing={0} justify="flex-end">
+                          <HStack w="100px" gap={0} justify="flex-end">
                             <Text fontSize="xs" color={tertiaryTextColor}>
                               {splitCurrencyForDisplay(sub.average, sym).main}
                             </Text>
@@ -719,7 +720,7 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
                               {splitCurrencyForDisplay(sub.average, sym).decimals}
                             </Text>
                           </HStack>
-                          <HStack w="100px" spacing={0} justify="flex-end">
+                          <HStack w="100px" gap={0} justify="flex-end">
                             <Text fontSize="xs" color={tertiaryTextColor}>
                               {splitCurrencyForDisplay(sub.peak, sym).main}
                             </Text>
@@ -745,7 +746,7 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
                             <Text fontSize="xs" fontWeight="600" color={primaryTextColor}>{sub.name}</Text>
                             <Text fontSize="2xs" color={tertiaryTextColor} ml="auto">{sub.percentage.toFixed(1)}%</Text>
                           </Flex>
-                          <SimpleGrid columns={2} spacing={1} pl={4}>
+                          <SimpleGrid columns={2} gap={1} pl={4}>
                             <Box>
                               <Text fontSize="2xs" color={tertiaryTextColor}>Total</Text>
                               <Text fontSize="xs" fontWeight="600" color={primaryTextColor}>
@@ -802,25 +803,24 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
                           </Text>
                         </Flex>
                         <Flex
-                          as="button"
                           align="center"
                           justify="center"
-                          w={6} h={6}
+                          w={6}
+                          h={6}
                           borderRadius="md"
                           cursor="pointer"
-                          onClick={() => setSelectedSubcategory(null)}
                           _hover={{ bg: legendHoverBg }}
                           transition="background 0.15s ease"
-                        >
-                          <Icon as={X} boxSize={3.5} color={tertiaryTextColor} />
-                        </Flex>
+                          asChild><button onClick={() => setSelectedSubcategory(null)}>
+                            <Icon boxSize={3.5} color={tertiaryTextColor} asChild><X /></Icon>
+                          </button></Flex>
                       </Flex>
 
                       {/* Summary row */}
                       <Flex gap={{ base: 3, md: 6 }} mb={3} wrap="wrap">
-                        <VStack spacing={0} align="flex-start">
+                        <VStack gap={0} align="flex-start">
                           <Text fontSize="2xs" color={columnHeaderColor} fontWeight="semibold" textTransform="uppercase" letterSpacing="wider">Total</Text>
-                          <HStack spacing={0}>
+                          <HStack gap={0}>
                             <Text fontSize="sm" fontWeight="700" color={valueColor}>
                               {splitCurrencyForDisplay(selectedSubcatDetail.total, sym).main}
                             </Text>
@@ -829,13 +829,13 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
                             </Text>
                           </HStack>
                         </VStack>
-                        <VStack spacing={0} align="flex-start">
+                        <VStack gap={0} align="flex-start">
                           <Text fontSize="2xs" color={columnHeaderColor} fontWeight="semibold" textTransform="uppercase" letterSpacing="wider">Average</Text>
                           <Text fontSize="sm" fontWeight="600" color={primaryTextColor}>
                             {formatNumberAsCurrency(selectedSubcatDetail.average, sym)}
                           </Text>
                         </VStack>
-                        <VStack spacing={0} align="flex-start">
+                        <VStack gap={0} align="flex-start">
                           <Text fontSize="2xs" color={columnHeaderColor} fontWeight="semibold" textTransform="uppercase" letterSpacing="wider">Peak</Text>
                           <Text fontSize="sm" fontWeight="600" color={primaryTextColor}>
                             {formatNumberAsCurrency(selectedSubcatDetail.peak, sym)}
@@ -846,7 +846,7 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
                             )}
                           </Text>
                         </VStack>
-                        <VStack spacing={0} align="flex-start">
+                        <VStack gap={0} align="flex-start">
                           <Text fontSize="2xs" color={columnHeaderColor} fontWeight="semibold" textTransform="uppercase" letterSpacing="wider">Share</Text>
                           <Text fontSize="sm" fontWeight="600" color={primaryTextColor}>
                             {selectedSubcatDetail.percentage.toFixed(1)}%
@@ -864,7 +864,7 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
                         </Text>
                       </Flex>
 
-                      <VStack align="stretch" spacing={0} maxH="240px" overflowY="auto">
+                      <VStack align="stretch" gap={0} maxH="240px" overflowY="auto">
                         {selectedSubcatDetail.periodData.map((pd, idx) => (
                           <Box key={pd.period}>
                             {/* Desktop row */}
@@ -879,7 +879,7 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
                               <Text flex={1} fontSize="xs" color={primaryTextColor}>
                                 {formatPeriod(pd.period)}
                               </Text>
-                              <HStack w="120px" spacing={0} justify="flex-end">
+                              <HStack w="120px" gap={0} justify="flex-end">
                                 <Text fontSize="xs" fontWeight="600" color={primaryTextColor}>
                                   {splitCurrencyForDisplay(pd.amount, sym).main}
                                 </Text>
@@ -917,7 +917,7 @@ const CategoryTrend: React.FC<CategoryTrendProps> = () => {
             </>
           ) : (
             <Center height={{ base: "300px", md: "380px" }} borderRadius="lg" flexDirection="column" textAlign="center" p={6}>
-              <Icon as={BarChart2} boxSize={6} color={tertiaryTextColor} mb={4} />
+              <Icon boxSize={6} color={tertiaryTextColor} mb={4} asChild><BarChart2 /></Icon>
               <Heading size="md" mb={2} color={secondaryTextColor}>
                 No Category Data Available
               </Heading>

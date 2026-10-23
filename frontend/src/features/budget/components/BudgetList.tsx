@@ -1,15 +1,6 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Heading,
-  Text,
-  VStack,
-  Skeleton,
-  Center,
-  useDisclosure,
-  useColorModeValue,
-  Icon,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box, Heading, Text, VStack, Skeleton, Center, useDisclosure, Icon } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { Target } from "lucide-react";
 
@@ -30,7 +21,7 @@ interface BudgetListProps {
 }
 
 const BudgetList: React.FC<BudgetListProps> = ({ ledgerId, period, currencySymbol }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
   const [editingBudget, setEditingBudget] = useState<BudgetItemData | undefined>();
 
   const emptyIconBg = useColorModeValue("brand.50", "rgba(116, 207, 202, 0.12)");
@@ -73,7 +64,7 @@ const BudgetList: React.FC<BudgetListProps> = ({ ledgerId, period, currencySymbo
 
   if (isLoading) {
     return (
-      <VStack spacing={3} align="stretch">
+      <VStack gap={3} align="stretch">
         {/* Summary card skeleton */}
         <Skeleton height="140px" borderRadius="xl" />
         {/* Budget item skeletons */}
@@ -96,7 +87,7 @@ const BudgetList: React.FC<BudgetListProps> = ({ ledgerId, period, currencySymbo
 
   return (
     <>
-      <VStack spacing={3} align="stretch">
+      <VStack gap={3} align="stretch">
         {data && (
           <BudgetSummaryCard
             periodLabel={data.period_label}
@@ -108,7 +99,7 @@ const BudgetList: React.FC<BudgetListProps> = ({ ledgerId, period, currencySymbo
 
         {data?.budgets.length === 0 ? (
           <Center py={12}>
-            <VStack spacing={3} textAlign="center">
+            <VStack gap={3} textAlign="center">
               <Box
                 w="64px"
                 h="64px"
@@ -119,7 +110,7 @@ const BudgetList: React.FC<BudgetListProps> = ({ ledgerId, period, currencySymbo
                 justifyContent="center"
                 css={{ animation: `${floatAnimation} 3s ease-in-out infinite` }}
               >
-                <Icon as={Target} boxSize={7} color="brand.400" strokeWidth={1.5} />
+                <Icon boxSize={7} color="brand.400" strokeWidth={1.5} asChild><Target /></Icon>
               </Box>
               <Heading fontSize="lg" fontWeight="bold" color={emptyTitleColor}>
                 No Budgets Yet
@@ -144,7 +135,7 @@ const BudgetList: React.FC<BudgetListProps> = ({ ledgerId, period, currencySymbo
       </VStack>
 
       <BudgetModal
-        isOpen={isOpen}
+        isOpen={open}
         onClose={handleModalClose}
         ledgerId={ledgerId}
         period={period}

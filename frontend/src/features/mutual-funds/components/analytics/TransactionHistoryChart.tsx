@@ -1,5 +1,6 @@
 import { FC, useMemo } from "react";
-import { Box, Text, Flex, useColorModeValue, useBreakpointValue } from "@chakra-ui/react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
+import { Box, Text, Flex, useBreakpointValue } from "@chakra-ui/react";
 import { ResponsiveBar } from "@nivo/bar";
 import { TransactionBarDatum } from "./useFundAnalyticsData";
 

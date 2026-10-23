@@ -1,44 +1,30 @@
 import { FC, useState } from "react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import { Link } from "react-router-dom";
 import {
   Box,
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Text,
   Badge,
   VStack,
   Icon,
   Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
   Spinner,
   Center,
   Link as ChakraLink,
   Flex,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
   Button,
   useDisclosure,
   useBreakpointValue,
   HStack,
-  Tooltip,
   Square,
-  Select,
+  NativeSelect,
   Input,
-  InputGroup,
-  InputLeftElement,
-  useColorModeValue,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
+import { InputGroup } from "@/components/ui/input-group";
+import { Tooltip } from '@/components/ui/tooltip';
 import { motion } from "framer-motion";
 import { AlertTriangle, Trash2, Calendar, Search } from "lucide-react";
 import { useAllAssetTransactions, useDeleteAssetTransaction } from "../api";
@@ -66,7 +52,7 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
 }) => {
   const currencySymbol = useLedgerStore((s) => s.currencySymbol);
   const ledgerId = useLedgerStore((s) => s.ledgerId);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
   const [expandedCardId, setExpandedCardId] = useState<number | null>(null);
   const [openPopoverId, setOpenPopoverId] = useState<number | null>(null);
@@ -178,7 +164,7 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
 
   // Mobile card view
   const renderMobileCards = () => (
-    <VStack spacing={1} align="stretch">
+    <VStack gap={1} align="stretch">
       {filteredTransactions.map((transaction, index) => {
         const isExpanded = expandedCardId === transaction.asset_transaction_id;
         const isBuy = transaction.transaction_type === "buy";
@@ -203,13 +189,13 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
               _hover={{ borderColor: cardHoverBorder }}
             >
               <Flex justify="space-between" align="flex-start">
-                <VStack align="flex-start" spacing={1} maxW="70%">
-                  <HStack spacing={2}>
-                    <Icon as={Calendar} color={tertiaryTextColor} boxSize={3.5} />
+                <VStack align="flex-start" gap={1} maxW="70%">
+                  <HStack gap={2}>
+                    <Icon color={tertiaryTextColor} boxSize={3.5} asChild><Calendar /></Icon>
                     <Text fontSize="sm" color={tertiaryTextColor}>
                       {formatDate(transaction.transaction_date)}
                     </Text>
-                    <Tooltip label={isBuy ? "Buy Transaction" : "Sell Transaction"}>
+                    <Tooltip content={isBuy ? "Buy Transaction" : "Sell Transaction"}>
                       <Square
                         size="7px"
                         bg={isBuy ? "green.400" : "red.400"}
@@ -223,19 +209,17 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
                   </Text>
 
                   <ChakraLink
-                    as={Link}
-                    to={`/account/${transaction.account_id}`}
                     color={accountLinkColor}
                     fontSize="sm"
                     fontWeight="medium"
                     _hover={{ textDecoration: "underline" }}
-                  >
-                    {transaction.account_name || `Account ${transaction.account_id}`}
-                  </ChakraLink>
+                    asChild><Link to={`/account/${transaction.account_id}`}>
+                      {transaction.account_name || `Account ${transaction.account_id}`}
+                    </Link></ChakraLink>
                 </VStack>
 
-                <VStack align="flex-end" spacing={1}>
-                  <HStack spacing={0} align="baseline" justify="flex-end">
+                <VStack align="flex-end" gap={1}>
+                  <HStack gap={0} align="baseline" justify="flex-end">
                     <Text
                       fontSize="sm"
                       fontWeight="bold"
@@ -292,16 +276,14 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
                     <Button
                       size="sm"
                       variant="ghost"
-                      colorScheme="red"
-                      leftIcon={<Trash2 size={14} />}
+                      colorPalette="red"
                       borderRadius="lg"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedTransactionId(transaction.asset_transaction_id);
                         onOpen();
                       }}
-                      aria-label="Delete transaction"
-                    />
+                      aria-label="Delete transaction" />
                   </Flex>
                 </Box>
               )}
@@ -315,7 +297,7 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
   if (isLoading) {
     return (
       <Center p={8}>
-        <VStack spacing={4}>
+        <VStack gap={4}>
           <Spinner size="lg" color="brand.500" />
           <Text color={tertiaryTextColor}>Loading transaction history...</Text>
         </VStack>
@@ -326,14 +308,14 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
   if (error) {
     return (
       <Box p={6}>
-        <Alert status="error" borderRadius="md">
-          <AlertIcon as={AlertTriangle} />
-          <AlertTitle>Failed to Load Transactions!</AlertTitle>
-          <AlertDescription>
+        <Alert.Root status="error" borderRadius="md">
+          <Alert.Indicator asChild><AlertTriangle /></Alert.Indicator>
+          <Alert.Title>Failed to Load Transactions!</Alert.Title>
+          <Alert.Description>
             Unable to load transaction history for this asset. Please try
             refreshing the page or contact support if the problem persists.
-          </AlertDescription>
-        </Alert>
+          </Alert.Description>
+        </Alert.Root>
       </Box>
     );
   }
@@ -348,7 +330,7 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <VStack spacing={6} align="stretch">
+      <VStack gap={6} align="stretch">
         {/* Header */}
         <MotionBox
           mb={{ base: 0, md: 4 }}
@@ -384,53 +366,51 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
             align={{ base: "stretch", md: "center" }}
             wrap="wrap"
           >
-            <Select
-              size="sm"
-              maxW={{ base: "full", md: "150px" }}
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              borderRadius="lg"
-            >
-              <option value="all">All Types</option>
-              <option value="buy">Buy</option>
-              <option value="sell">Sell</option>
-            </Select>
+            <NativeSelect.Root size="sm" maxW={{ base: "full", md: "150px" }}>
+              <NativeSelect.Field
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                borderRadius="lg">
+                <option value="all">All Types</option>
+                <option value="buy">Buy</option>
+                <option value="sell">Sell</option>
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
 
-            <Select
-              size="sm"
-              maxW={{ base: "full", md: "200px" }}
-              value={assetTypeFilter}
-              onChange={(e) => setAssetTypeFilter(e.target.value)}
-              borderRadius="lg"
-            >
-              <option value="all">All Asset Types</option>
-              {assetTypes.map(assetType => (
-                <option key={assetType.asset_type_id} value={assetType.asset_type_id.toString()}>
-                  {assetType.name}
-                </option>
-              ))}
-            </Select>
+            <NativeSelect.Root size="sm" maxW={{ base: "full", md: "200px" }}>
+              <NativeSelect.Field
+                value={assetTypeFilter}
+                onChange={(e) => setAssetTypeFilter(e.target.value)}
+                borderRadius="lg">
+                <option value="all">All Asset Types</option>
+                {assetTypes.map(assetType => (
+                  <option key={assetType.asset_type_id} value={assetType.asset_type_id.toString()}>
+                    {assetType.name}
+                  </option>
+                ))}
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
 
-            <Select
-              size="sm"
-              maxW={{ base: "full", md: "200px" }}
-              value={assetFilter}
-              onChange={(e) => setAssetFilter(e.target.value)}
-              borderRadius="lg"
-            >
-              <option value="all">All Assets</option>
-              {physicalAssets.map(asset => (
-                <option key={asset.physical_asset_id} value={asset.physical_asset_id.toString()}>
-                  {asset.name}
-                </option>
-              ))}
-            </Select>
+            <NativeSelect.Root size="sm" maxW={{ base: "full", md: "200px" }}>
+              <NativeSelect.Field
+                value={assetFilter}
+                onChange={(e) => setAssetFilter(e.target.value)}
+                borderRadius="lg">
+                <option value="all">All Assets</option>
+                {physicalAssets.map(asset => (
+                  <option key={asset.physical_asset_id} value={asset.physical_asset_id.toString()}>
+                    {asset.name}
+                  </option>
+                ))}
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
 
-            <InputGroup size="sm" maxW={{ base: "full", md: "300px" }}>
-              <InputLeftElement>
-                <Search size={16} />
-              </InputLeftElement>
+            <InputGroup maxW={{ base: "full", md: "300px" }} startElement={<Search size={16} />}>
               <Input
+                size="sm"
                 placeholder="Search transactions..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -454,45 +434,45 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
             transition={{ duration: 0.35, delay: 0.1, ease: "easeOut" }}
           >
             <Box overflowX="auto">
-              <Table variant="simple" size="sm">
-                <Thead>
-                  <Tr>
-                    <Th color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Date</Th>
-                    <Th color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Asset</Th>
-                    <Th color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Type</Th>
-                    <Th isNumeric color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Quantity</Th>
-                    <Th isNumeric color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Price/Unit</Th>
-                    <Th isNumeric color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Total Amount</Th>
-                    <Th color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Account</Th>
-                    <Th width="2%" borderBottomColor={tableBorderColor}>Actions</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
+              <Table.Root variant="line" size="sm">
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Date</Table.ColumnHeader>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Asset</Table.ColumnHeader>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Type</Table.ColumnHeader>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor} textAlign='end'>Quantity</Table.ColumnHeader>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor} textAlign='end'>Price/Unit</Table.ColumnHeader>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor} textAlign='end'>Total Amount</Table.ColumnHeader>
+                    <Table.ColumnHeader color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Account</Table.ColumnHeader>
+                    <Table.ColumnHeader width="2%" color={headerColor} fontSize="2xs" fontWeight="bold" textTransform="uppercase" letterSpacing="wider" borderBottomColor={tableBorderColor}>Actions</Table.ColumnHeader>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
                   {filteredTransactions.map((transaction) => (
-                    <Tr
+                    <Table.Row
                       key={transaction.asset_transaction_id}
                       _hover={{ bg: tableRowHoverBg }}
                       transition="background 0.15s ease"
                       onMouseLeave={handleRowMouseLeave}
-                      sx={{
-                        "&:hover .action-icons": {
+                      css={{
+                        '&:hover .action-icons': {
                           opacity: 1,
-                        },
+                        }
                       }}
                     >
-                      <Td borderBottomColor={tableBorderColor}>
+                      <Table.Cell borderBottomColor={tableBorderColor}>
                         <Text fontSize="sm" color={tertiaryTextColor}>
                           {formatDate(transaction.transaction_date)}
                         </Text>
-                      </Td>
-                      <Td borderBottomColor={tableBorderColor}>
+                      </Table.Cell>
+                      <Table.Cell borderBottomColor={tableBorderColor}>
                         <Text fontSize="sm" fontWeight="medium" color={tertiaryTextColor}>
                           {transaction.physical_asset?.name || "N/A"}
                         </Text>
-                      </Td>
-                      <Td borderBottomColor={tableBorderColor}>
+                      </Table.Cell>
+                      <Table.Cell borderBottomColor={tableBorderColor}>
                         <Badge
-                          colorScheme={transaction.transaction_type === "buy" ? "green" : "red"}
+                          colorPalette={transaction.transaction_type === "buy" ? "green" : "red"}
                           variant="subtle"
                           px={1.5}
                           borderRadius="md"
@@ -502,20 +482,20 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
                         >
                           {transaction.transaction_type.toUpperCase()}
                         </Badge>
-                      </Td>
-                      <Td isNumeric borderBottomColor={tableBorderColor}>
+                      </Table.Cell>
+                      <Table.Cell borderBottomColor={tableBorderColor} textAlign='end'>
                         <Text fontSize="sm" fontWeight="medium" color={tertiaryTextColor}>
                           {formatQuantity(transaction.quantity)}{" "}
                           {transaction.physical_asset?.asset_type?.unit_symbol || ""}
                         </Text>
-                      </Td>
-                      <Td isNumeric borderBottomColor={tableBorderColor}>
+                      </Table.Cell>
+                      <Table.Cell borderBottomColor={tableBorderColor} textAlign='end'>
                         <Text fontSize="sm" fontWeight="medium" color={tertiaryTextColor}>
                           {formatCurrencyWithSymbol(transaction.price_per_unit, currencySymbol || "$")}
                         </Text>
-                      </Td>
-                      <Td isNumeric borderBottomColor={tableBorderColor}>
-                        <HStack spacing={0} align="baseline" justify="flex-end">
+                      </Table.Cell>
+                      <Table.Cell borderBottomColor={tableBorderColor} textAlign='end'>
+                        <HStack gap={0} align="baseline" justify="flex-end">
                           <Text
                             fontSize="sm"
                             fontWeight="semibold"
@@ -540,18 +520,13 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
                             {splitCurrencyForDisplay(transaction.total_amount, currencySymbol || "$").decimals}
                           </Text>
                         </HStack>
-                      </Td>
-                      <Td borderBottomColor={tableBorderColor}>
-                        <ChakraLink
-                          as={Link}
-                          to={`/account/${transaction.account_id}`}
-                          color={accountLinkColor}
-                          fontSize="sm"
-                        >
-                          {transaction.account_name || `Account ${transaction.account_id}`}
-                        </ChakraLink>
-                      </Td>
-                      <Td width="2%" borderBottomColor={tableBorderColor}>
+                      </Table.Cell>
+                      <Table.Cell borderBottomColor={tableBorderColor}>
+                        <ChakraLink color={accountLinkColor} fontSize="sm" asChild><Link to={`/account/${transaction.account_id}`}>
+                            {transaction.account_name || `Account ${transaction.account_id}`}
+                          </Link></ChakraLink>
+                      </Table.Cell>
+                      <Table.Cell width="2%" borderBottomColor={tableBorderColor}>
                         <Flex
                           gap={2}
                           opacity={0}
@@ -572,108 +547,111 @@ const AssetTransactionHistory: FC<AssetTransactionHistoryProps> = ({
                             _hover={{ textDecoration: "none" }}
                           >
                             <Icon
-                              as={Trash2}
                               boxSize={4}
                               color={deleteIconColor}
                               _hover={{ color: deleteIconHoverColor }}
                               transition="color 0.15s ease"
                               data-testid="asset-transaction-delete-icon"
-                            />
+                              asChild><Trash2 /></Icon>
                           </ChakraLink>
                         </Flex>
-                      </Td>
-                    </Tr>
+                      </Table.Cell>
+                    </Table.Row>
                   ))}
-                </Tbody>
-              </Table>
+                </Table.Body>
+              </Table.Root>
             </Box>
           </MotionBox>
         )}
 
         {/* Delete Confirmation Modal */}
-        <Modal
-          isOpen={isOpen}
-          returnFocusOnClose={false}
-          onClose={onClose}
+        <Dialog.Root
+          open={isOpen}
           size={isMobile ? "full" : "md"}
-          motionPreset="slideInBottom"
-        >
-          <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-          <ModalContent
-            margin={isMobile ? 0 : "auto"}
-            borderRadius={isMobile ? 0 : "xl"}
-            bg={modalBg}
-            border="1px solid"
-            borderColor={modalBorderColor}
-            boxShadow="2xl"
-          >
-            <ModalHeader fontWeight="800" letterSpacing="-0.02em">Delete Asset Transaction</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <Text mb={4}>
-                Are you sure you want to delete this asset transaction? This will
-                also delete the associated financial transaction and cannot be
-                undone.
-              </Text>
-              {selectedTransactionId && (
-                <Box p={3} bg={modalDetailBg} borderRadius="xl" border="1px solid" borderColor={modalBorderColor}>
-                  <Text fontWeight="bold">
-                    {filteredTransactions.find(t => t.asset_transaction_id === selectedTransactionId)?.physical_asset?.name || "Asset"}
+          motionPreset="slide-in-bottom"
+          onOpenChange={e => {
+            if (!e.open) {
+              onClose();
+            }
+          }}>
+          <Portal>
+
+            <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+            <Dialog.Positioner>
+              <Dialog.Content
+                margin={isMobile ? 0 : "auto"}
+                borderRadius={isMobile ? 0 : "xl"}
+                bg={modalBg}
+                border="1px solid"
+                borderColor={modalBorderColor}
+                boxShadow="2xl">
+                <Dialog.Header fontWeight="800" letterSpacing="-0.02em">Delete Asset Transaction</Dialog.Header>
+                <Dialog.CloseTrigger />
+                <Dialog.Body>
+                  <Text mb={4}>
+                    Are you sure you want to delete this asset transaction? This will
+                    also delete the associated financial transaction and cannot be
+                    undone.
                   </Text>
-                  <Text fontSize="sm" color={tertiaryTextColor}>
-                    {selectedTransactionId && formatDate(
-                      filteredTransactions.find(t => t.asset_transaction_id === selectedTransactionId)?.transaction_date || ""
-                    )}
-                  </Text>
-                  <HStack spacing={0} align="baseline" mt={1}>
-                    <Text fontSize="sm" fontWeight="bold" color={
-                      filteredTransactions.find(t => t.asset_transaction_id === selectedTransactionId)?.transaction_type === "buy"
-                        ? "red.500"
-                        : "green.500"
-                    }>
-                      {selectedTransactionId && splitCurrencyForDisplay(
-                        filteredTransactions.find(t => t.asset_transaction_id === selectedTransactionId)?.total_amount || 0,
-                        currencySymbol || "$"
-                      ).main}
-                    </Text>
-                    <Text fontSize="xs" fontWeight="semibold" opacity={0.6} color={
-                      filteredTransactions.find(t => t.asset_transaction_id === selectedTransactionId)?.transaction_type === "buy"
-                        ? "red.500"
-                        : "green.500"
-                    }>
-                      {selectedTransactionId && splitCurrencyForDisplay(
-                        filteredTransactions.find(t => t.asset_transaction_id === selectedTransactionId)?.total_amount || 0,
-                        currencySymbol || "$"
-                      ).decimals}
-                    </Text>
-                  </HStack>
-                </Box>
-              )}
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                variant="ghost"
-                mr={3}
-                onClick={onClose}
-                isDisabled={deleteAssetTransactionMutation.isPending}
-                borderRadius="lg"
-              >
-                Cancel
-              </Button>
-              <Button
-                colorScheme="red"
-                onClick={handleDelete}
-                isLoading={deleteAssetTransactionMutation.isPending}
-                loadingText="Deleting..."
-                leftIcon={<Trash2 size={16} />}
-                borderRadius="lg"
-                fontWeight="bold"
-              >
-                Delete
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+                  {selectedTransactionId && (
+                    <Box p={3} bg={modalDetailBg} borderRadius="xl" border="1px solid" borderColor={modalBorderColor}>
+                      <Text fontWeight="bold">
+                        {filteredTransactions.find(t => t.asset_transaction_id === selectedTransactionId)?.physical_asset?.name || "Asset"}
+                      </Text>
+                      <Text fontSize="sm" color={tertiaryTextColor}>
+                        {selectedTransactionId && formatDate(
+                          filteredTransactions.find(t => t.asset_transaction_id === selectedTransactionId)?.transaction_date || ""
+                        )}
+                      </Text>
+                      <HStack gap={0} align="baseline" mt={1}>
+                        <Text fontSize="sm" fontWeight="bold" color={
+                          filteredTransactions.find(t => t.asset_transaction_id === selectedTransactionId)?.transaction_type === "buy"
+                            ? "red.500"
+                            : "green.500"
+                        }>
+                          {selectedTransactionId && splitCurrencyForDisplay(
+                            filteredTransactions.find(t => t.asset_transaction_id === selectedTransactionId)?.total_amount || 0,
+                            currencySymbol || "$"
+                          ).main}
+                        </Text>
+                        <Text fontSize="xs" fontWeight="semibold" opacity={0.6} color={
+                          filteredTransactions.find(t => t.asset_transaction_id === selectedTransactionId)?.transaction_type === "buy"
+                            ? "red.500"
+                            : "green.500"
+                        }>
+                          {selectedTransactionId && splitCurrencyForDisplay(
+                            filteredTransactions.find(t => t.asset_transaction_id === selectedTransactionId)?.total_amount || 0,
+                            currencySymbol || "$"
+                          ).decimals}
+                        </Text>
+                      </HStack>
+                    </Box>
+                  )}
+                </Dialog.Body>
+                <Dialog.Footer>
+                  <Button
+                    variant="ghost"
+                    mr={3}
+                    onClick={onClose}
+                    disabled={deleteAssetTransactionMutation.isPending}
+                    borderRadius="lg"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    colorPalette="red"
+                    onClick={handleDelete}
+                    loading={deleteAssetTransactionMutation.isPending}
+                    loadingText="Deleting..."
+                    borderRadius="lg"
+                    fontWeight="bold"><Trash2 size={16} />Delete
+                                  </Button>
+                </Dialog.Footer>
+              </Dialog.Content>
+            </Dialog.Positioner>
+
+          </Portal>
+        </Dialog.Root>
       </VStack>
     </MotionBox>
   );

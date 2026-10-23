@@ -1,13 +1,6 @@
 import React, { useMemo } from "react";
-import {
-  Box,
-  Flex,
-  Heading,
-  Icon,
-  Text,
-  VStack,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box, Flex, Heading, Icon, Text, VStack } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { ResponsiveBar } from "@nivo/bar";
 import type { BarDatum, BarTooltipProps } from "@nivo/bar";
@@ -145,7 +138,7 @@ const AccountFundsFlowChart: React.FC<AccountFundsFlowChartProps> = ({
         {counterparties && counterparties.length > 0 && (
           <VStack
             align="stretch"
-            spacing={0.5}
+            gap={0.5}
             pt={1.5}
             borderTop="1px solid"
             borderColor={tooltipBorder}
@@ -168,7 +161,7 @@ const AccountFundsFlowChart: React.FC<AccountFundsFlowChartProps> = ({
                 gap={2}
                 align="baseline"
               >
-                <Text fontSize="2xs" color={tooltipText} noOfLines={1}>
+                <Text fontSize="2xs" color={tooltipText} lineClamp={1}>
                   {c.account_name}
                 </Text>
                 <Text
@@ -202,7 +195,7 @@ const AccountFundsFlowChart: React.FC<AccountFundsFlowChartProps> = ({
         h="full"
       >
         <Flex align="center" gap={2} mb={4}>
-          <Icon as={ArrowLeftRight} boxSize={4} color={iconColor} />
+          <Icon boxSize={4} color={iconColor} asChild><ArrowLeftRight /></Icon>
           <Heading
             as="h3"
             size="sm"

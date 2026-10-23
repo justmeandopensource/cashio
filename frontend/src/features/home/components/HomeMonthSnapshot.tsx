@@ -1,14 +1,6 @@
 import React from "react";
-import {
-  Box,
-  Flex,
-  HStack,
-  Icon,
-  SimpleGrid,
-  Skeleton,
-  Text,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box, Flex, HStack, Icon, SimpleGrid, Skeleton, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -147,7 +139,7 @@ const HomeMonthSnapshot: React.FC<HomeMonthSnapshotProps> = ({
   return (
     <Box>
       {/* Section label */}
-      <HStack spacing={1.5} mb={3}>
+      <HStack gap={1.5} mb={3}>
         <Icon as={Calendar} boxSize={3.5} color={labelColor} />
         <Text
           fontSize="xs"
@@ -160,7 +152,7 @@ const HomeMonthSnapshot: React.FC<HomeMonthSnapshotProps> = ({
         </Text>
       </HStack>
 
-      <SimpleGrid columns={2} spacing={2.5}>
+      <SimpleGrid columns={2} gap={2.5}>
         {stats.map(({ icon, label, value, color, accent, delay, change, positiveIsGood }) => {
           const isUp = change !== null && change > 0;
           const isDown = change !== null && change < 0;
@@ -218,7 +210,7 @@ const HomeMonthSnapshot: React.FC<HomeMonthSnapshotProps> = ({
                 </Text>
                 {change !== null && (
                   <HStack
-                    spacing={0.5}
+                    gap={0.5}
                     px={1}
                     py={0.5}
                     borderRadius="md"
@@ -283,7 +275,7 @@ const HomeMonthSnapshot: React.FC<HomeMonthSnapshotProps> = ({
               Savings Rate
             </Text>
           </Flex>
-          <HStack spacing={1.5} align="baseline">
+          <HStack gap={1.5} align="baseline">
             <Text
               fontSize="md"
               fontWeight="bold"

@@ -1,13 +1,6 @@
 import React from "react";
-import {
-  Box,
-  Flex,
-  HStack,
-  Icon,
-  Text,
-  useColorModeValue,
-  VStack,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box, Flex, HStack, Icon, Text, VStack } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { Landmark, TrendingUp, Gem, BarChart2 } from "lucide-react";
 import { splitCurrencyForDisplay } from "@/features/mutual-funds/utils";
@@ -83,7 +76,7 @@ const PortfolioComposition: React.FC<PortfolioCompositionProps> = ({
     >
       {/* Card header */}
       <Flex align="center" gap={1.5} mb={2}>
-        <Icon as={BarChart2} boxSize={3.5} color={labelColor} />
+        <Icon boxSize={3.5} color={labelColor} asChild><BarChart2 /></Icon>
         <Text
           fontSize="xs"
           fontWeight="semibold"
@@ -118,7 +111,7 @@ const PortfolioComposition: React.FC<PortfolioCompositionProps> = ({
       )}
 
       {/* Composition rows */}
-      <VStack align="stretch" spacing={0} flex={1}>
+      <VStack align="stretch" gap={0} flex={1}>
         {rows.map(({ label, value, percentage, icon, colorIdx }, idx) => {
           const { main, decimals } = splitCurrencyForDisplay(value, sym);
           const barColor = ALLOCATION_COLORS[colorIdx];
@@ -153,7 +146,7 @@ const PortfolioComposition: React.FC<PortfolioCompositionProps> = ({
                     </Text>
                   </Box>
                 </Flex>
-                <HStack spacing={0} align="baseline">
+                <HStack gap={0} align="baseline">
                   <Text fontSize="sm" fontWeight="bold" color={primaryText} letterSpacing="-0.01em">
                     {main}
                   </Text>
@@ -197,7 +190,7 @@ const PortfolioComposition: React.FC<PortfolioCompositionProps> = ({
             <Text fontSize="xs" color={secondaryText} fontWeight="500">
               MF unrealised gain
             </Text>
-            <HStack spacing={0} align="baseline">
+            <HStack gap={0} align="baseline">
               <Text
                 fontSize="sm"
                 fontWeight="bold"

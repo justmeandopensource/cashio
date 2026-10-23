@@ -1,14 +1,6 @@
 import React from "react";
-import {
-  Box,
-  Flex,
-  HStack,
-  Icon,
-  SimpleGrid,
-  Skeleton,
-  Text,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box, Flex, HStack, Icon, SimpleGrid, Skeleton, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingUp, Building, ShieldAlert, ArrowUpRight, ArrowDownRight } from "lucide-react";
@@ -59,7 +51,7 @@ const HomeNetWorthBanner: React.FC<HomeNetWorthBannerProps> = ({
 
   if (isLoading) {
     return (
-      <SimpleGrid columns={{ base: 1, md: 3 }} spacing={3} mb={6}>
+      <SimpleGrid columns={{ base: 1, md: 3 }} gap={3} mb={6}>
         <Skeleton borderRadius="xl" h="120px" />
         <Skeleton borderRadius="xl" h="120px" />
         <Skeleton borderRadius="xl" h="120px" />
@@ -79,7 +71,7 @@ const HomeNetWorthBanner: React.FC<HomeNetWorthBannerProps> = ({
 
   return (
     <Box mb={6}>
-      <SimpleGrid columns={{ base: 1, md: 3 }} spacing={3}>
+      <SimpleGrid columns={{ base: 1, md: 3 }} gap={3}>
         {/* Hero: Net Worth */}
         <MotionBox
           initial={{ opacity: 0, y: 10 }}
@@ -108,7 +100,7 @@ const HomeNetWorthBanner: React.FC<HomeNetWorthBannerProps> = ({
             </Text>
           </Flex>
 
-          <HStack spacing={0} align="baseline">
+          <HStack gap={0} align="baseline">
             <Text
               fontSize={{ base: "2xl", md: "3xl" }}
               fontWeight="800"
@@ -194,7 +186,7 @@ const HomeNetWorthBanner: React.FC<HomeNetWorthBannerProps> = ({
               Total Assets
             </Text>
           </Flex>
-          <HStack spacing={0} align="baseline">
+          <HStack gap={0} align="baseline">
             <Text
               fontSize={{ base: "lg", md: "xl" }}
               fontWeight="bold"
@@ -250,7 +242,7 @@ const HomeNetWorthBanner: React.FC<HomeNetWorthBannerProps> = ({
               Total Liabilities
             </Text>
           </Flex>
-          <HStack spacing={0} align="baseline">
+          <HStack gap={0} align="baseline">
             <Text
               fontSize={{ base: "lg", md: "xl" }}
               fontWeight="bold"

@@ -1,5 +1,6 @@
 import { memo, useMemo } from "react";
-import { Box, useColorModeValue } from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
 import { getIncomeExpenseTrend } from "@/features/insights/api";
 import { queryKeys } from "@/lib/queryKeys";

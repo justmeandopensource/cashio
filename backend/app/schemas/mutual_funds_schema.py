@@ -4,7 +4,7 @@ from typing import Literal, Optional
 
 from app.schemas import JsonDecimal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # AMC Schemas
@@ -30,8 +30,7 @@ class Amc(AmcCreate, str_strip_whitespace=True):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Mutual Fund Schemas
@@ -90,8 +89,7 @@ class MutualFund(MutualFundCreate, str_strip_whitespace=True):
     # Related data
     amc: Optional[Amc] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # MF Transaction Schemas
@@ -149,8 +147,7 @@ class MfTransaction(MfTransactionCreate, str_strip_whitespace=True):
     account_name: Optional[str] = None
     target_fund_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MfSwitchCreate(BaseModel, str_strip_whitespace=True):

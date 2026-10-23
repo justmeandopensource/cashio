@@ -1,11 +1,7 @@
 import { FC } from "react";
-import {
-  Box,
-  Text,
-  Flex,
-  useColorModeValue,
-  Tooltip,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
+import { Box, Text, Flex } from "@chakra-ui/react";
+import { Tooltip } from '@/components/ui/tooltip';
 import { CostBasisRange } from "./useFundAnalyticsData";
 
 interface CostBasisIndicatorProps {
@@ -76,12 +72,12 @@ const CostBasisIndicator: FC<CostBasisIndicatorProps> = ({
           width={`${highestPos - lowestPos}%`}
           h="8px"
           borderRadius="full"
-          bgGradient={`linear(to-r, ${gradientStart}, ${gradientEnd})`}
+          bgGradient="to-r" gradientFrom={gradientStart} gradientTo={gradientEnd}
           opacity={0.6}
         />
 
         {/* Lowest marker */}
-        <Tooltip label={`Lowest Purchase: ${format(min)}`} fontSize="xs">
+        <Tooltip content={`Lowest Purchase: ${format(min)}`} contentProps={{ fontSize: "xs" }}>
           <Box
             position="absolute"
             top="12px"
@@ -98,7 +94,7 @@ const CostBasisIndicator: FC<CostBasisIndicatorProps> = ({
         </Tooltip>
 
         {/* Average marker */}
-        <Tooltip label={`Avg. Cost: ${format(range.average)}`} fontSize="xs">
+        <Tooltip content={`Avg. Cost: ${format(range.average)}`} contentProps={{ fontSize: "xs" }}>
           <Box
             position="absolute"
             top="10px"
@@ -115,7 +111,7 @@ const CostBasisIndicator: FC<CostBasisIndicatorProps> = ({
         </Tooltip>
 
         {/* Highest marker */}
-        <Tooltip label={`Highest Purchase: ${format(max)}`} fontSize="xs">
+        <Tooltip content={`Highest Purchase: ${format(max)}`} contentProps={{ fontSize: "xs" }}>
           <Box
             position="absolute"
             top="12px"
@@ -132,7 +128,7 @@ const CostBasisIndicator: FC<CostBasisIndicatorProps> = ({
         </Tooltip>
 
         {/* Current NAV marker (diamond) */}
-        <Tooltip label={`Current NAV: ${format(range.current)}`} fontSize="xs">
+        <Tooltip content={`Current NAV: ${format(range.current)}`} contentProps={{ fontSize: "xs" }}>
           <Box
             position="absolute"
             top="10px"

@@ -1,33 +1,23 @@
 import { FC, useState, useEffect } from "react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
 import React from "react";
- import {
-   Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalBody,
-  ModalFooter,
+import {
   Button,
   VStack,
-  FormControl,
-  FormLabel,
   Input,
-  Select,
+  NativeSelect,
   Textarea,
   Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
-  useColorModeValue,
-  FormHelperText,
-  FormErrorMessage,
-  InputGroup,
-  InputLeftAddon,
   HStack,
   Text,
   Box,
   Stack,
   Icon,
+  Field,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
+import { InputGroup } from "@/components/ui/input-group";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import {
@@ -271,246 +261,368 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
   const targetNav = targetUnits > 0 ? targetAmount / targetUnits : 0;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      returnFocusOnClose={false}
-      onClose={handleClose}
+    <Dialog.Root
+      open={isOpen}
       size={{ base: "full", sm: "xl" }}
-      motionPreset="slideInBottom"
-      isCentered
-    >
-      <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-      <ModalContent
-        bg={bgColor}
-        borderRadius={{ base: 0, sm: "xl" }}
-        boxShadow="2xl"
-        border="1px solid"
-        borderColor={borderColor}
-        overflow="hidden"
-        mx={{ base: 0, sm: 4 }}
-        my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "90vh" }}
-        display="flex"
-        flexDirection="column"
-      >
-        {/* Gradient accent line */}
-        <Box
-          h="3px"
-          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
-        />
-        {/* Flat header */}
-        <Box
-          px={{ base: 4, sm: 8 }}
-          py={5}
-          borderBottom="1px solid"
-          borderColor={modalHeaderBorderColor}
-        >
-          <HStack spacing={3} align="flex-start">
-            <Icon as={ArrowRightLeft} boxSize={5} mt="3px" color={modalIconColor} />
+      motionPreset="slide-in-bottom"
+      placement='center'
+      onOpenChange={e => {
+        if (!e.open) {
+          handleClose();
+        }
+      }}>
+      <Portal>
 
-            <Box>
-              <Box
-                fontSize="lg"
-                fontWeight="800"
-                letterSpacing="-0.02em"
-                color={modalTitleColor}
-              >
-                Transfer Mutual Fund Units
-              </Box>
-              <Box
-                fontSize="sm"
-                color={modalSubtitleColor}
-              >
-                 {sourceFund ? `From ${sourceFund.name}` : 'Switch units between funds'}
-              </Box>
-            </Box>
-          </HStack>
-        </Box>
+        <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <Dialog.Positioner>
+          <Dialog.Content
+            bg={bgColor}
+            borderRadius={{ base: 0, sm: "xl" }}
+            boxShadow="2xl"
+            border="1px solid"
+            borderColor={borderColor}
+            overflow="hidden"
+            mx={{ base: 0, sm: 4 }}
+            my={{ base: 0, sm: "auto" }}
+            maxHeight={{ base: "100%", md: "90vh" }}
+            display="flex"
+            flexDirection="column">
+            {/* Gradient accent line */}
+            <Box h="3px" bgGradient="to-r" gradientFrom="brand.400" gradientVia="brand.600" gradientTo="teal.300"  />
+            {/* Flat header */}
+            <Box
+              px={{ base: 4, sm: 8 }}
+              py={5}
+              borderBottom="1px solid"
+              borderColor={modalHeaderBorderColor}
+            >
+              <HStack gap={3} align="flex-start">
+                <Icon boxSize={5} mt="3px" color={modalIconColor} asChild><ArrowRightLeft /></Icon>
 
-        <ModalBody
-          px={{ base: 4, sm: 8 }}
-          py={{ base: 4, sm: 6 }}
-          flex="1"
-          overflow="auto"
-        >
-          <form id="transfer-units-form" onSubmit={handleSubmit}>
-            <VStack spacing={{ base: 5, sm: 6 }} align="stretch">
-
-              {/* Error Display */}
-              {errors.general && (
-                <Alert
-                  status="error"
-                  borderRadius="md"
-                  border="1px solid"
-                  borderColor="red.200"
-                >
-                  <AlertIcon />
-                  <Box>
-                    <AlertTitle fontWeight="bold">Transfer Failed!</AlertTitle>
-                    <AlertDescription>
-                      {errors.general}
-                    </AlertDescription>
+                <Box>
+                  <Box
+                    fontSize="lg"
+                    fontWeight="800"
+                    letterSpacing="-0.02em"
+                    color={modalTitleColor}
+                  >
+                    Transfer Mutual Fund Units
                   </Box>
-                </Alert>
-              )}
+                  <Box
+                    fontSize="sm"
+                    color={modalSubtitleColor}
+                  >
+                     {sourceFund ? `From ${sourceFund.name}` : 'Switch units between funds'}
+                  </Box>
+                </Box>
+              </HStack>
+            </Box>
 
-              {/* Fund Selection Card */}
-              <Box
-                bg={cardBg}
-                p={{ base: 4, sm: 6 }}
-                borderRadius="xl"
-                border="1px solid"
-                borderColor={borderColor}
-              >
-                <VStack spacing={5} align="stretch">
+            <Dialog.Body
+              px={{ base: 4, sm: 8 }}
+              py={{ base: 4, sm: 6 }}
+              flex="1"
+              overflow="auto"
+            >
+              <form id="transfer-units-form" onSubmit={handleSubmit}>
+                <VStack gap={{ base: 5, sm: 6 }} align="stretch">
 
-                  <FormControl isInvalid={!!errors.to_fund_id}>
-                      <FormLabel fontWeight="semibold" mb={2}>
-                        <HStack spacing={2}>
-                          <TrendingUp size={16} />
-                          <Text>To Fund</Text>
-                          {formData.to_fund_id && (
-                            <Icon as={Check} boxSize={3.5} color="teal.500" />
-                          )}
-                        </HStack>
-                      </FormLabel>
-                         <Select
-                         value={formData.to_fund_id}
-                         onChange={(e) => handleInputChange("to_fund_id", e.target.value)}
-                         placeholder="Select target fund"
-                         size="lg"
-                         bg={inputBg}
-                         borderColor={inputBorderColor}
-                         borderWidth="2px"
-                         borderRadius="md"
-                         autoFocus
-                         _hover={{ borderColor: "teal.300" }}
-                         _focus={{
-                           borderColor: focusBorderColor,
-                           boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                         }}
-                       >
-                      {mutualFunds
-                        .filter(fund => fund.mutual_fund_id !== fromFundId && fund.amc_id === sourceFund?.amc_id && fund.owner === sourceFund?.owner)
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map((fund) => (
-                             <option key={fund.mutual_fund_id} value={fund.mutual_fund_id.toString()}>
-                               {fund.name} ({fund.amc?.name})
-                             </option>
-                           ))}
-                      </Select>
-                       <FormErrorMessage>{errors.to_fund_id}</FormErrorMessage>
-                     </FormControl>
+                  {/* Error Display */}
+                  {errors.general && (
+                    <Alert.Root
+                      status="error"
+                      borderRadius="md"
+                      border="1px solid"
+                      borderColor="red.200"
+                    >
+                      <Alert.Indicator />
+                      <Box>
+                        <Alert.Title fontWeight="bold">Transfer Failed!</Alert.Title>
+                        <Alert.Description>
+                          {errors.general}
+                        </Alert.Description>
+                      </Box>
+                    </Alert.Root>
+                  )}
 
-                 </VStack>
-              </Box>
+                  {/* Fund Selection Card */}
+                  <Box
+                    bg={cardBg}
+                    p={{ base: 4, sm: 6 }}
+                    borderRadius="xl"
+                    border="1px solid"
+                    borderColor={borderColor}
+                  >
+                    <VStack gap={5} align="stretch">
 
-              {/* Transfer Details Card */}
-              <Box
-                bg={cardBg}
-                p={{ base: 4, sm: 6 }}
-                borderRadius="xl"
-                border="1px solid"
-                borderColor={borderColor}
-              >
-                <VStack spacing={5} align="stretch">
-                   {/* Row 1: Source Units and Amount */}
-                   <Stack direction={{ base: "column", md: "row" }} spacing={4}>
-                     <FormControl flex={1} isInvalid={!!errors.source_units}>
-                       <FormLabel fontWeight="semibold" mb={2}>
-                         <HStack spacing={2}>
-                           <Coins size={16} />
-                           <Text>Source Units</Text>
-                           {formData.source_units && parseFloat(formData.source_units) > 0 && (
-                             <Icon as={Check} boxSize={3.5} color="teal.500" />
-                           )}
-                         </HStack>
-                       </FormLabel>
-                         <Input
-                           type="number"
-                           step="0.001"
-                           value={formData.source_units}
-                           onChange={(e) => handleInputChange("source_units", e.target.value)}
-                           placeholder="0.000"
-                           min={0}
-                           max={availableUnits}
-                           size="lg"
-                           bg={inputBg}
-                           borderColor={inputBorderColor}
-                           borderWidth="2px"
-                           borderRadius="md"
-                           _hover={{ borderColor: "teal.300" }}
-                           _focus={{
-                             borderColor: focusBorderColor,
-                             boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                           }}
-                         />
-                         <FormHelperText color={helperTextColor}>Available units: {formatUnits(availableUnits)}</FormHelperText>
-                       <FormErrorMessage>{errors.source_units}</FormErrorMessage>
-                     </FormControl>
+                      <Field.Root invalid={!!errors.to_fund_id}>
+                          <Field.Label fontWeight="semibold" mb={2}>
+                            <HStack gap={2}>
+                              <TrendingUp size={16} />
+                              <Text>To Fund</Text>
+                              {formData.to_fund_id && (
+                                <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
+                              )}
+                            </HStack>
+                          </Field.Label>
+                             <NativeSelect.Root size="lg">
+                               <NativeSelect.Field
+                                 value={formData.to_fund_id}
+                                 onChange={(e) => handleInputChange("to_fund_id", e.target.value)}
+                                 placeholder="Select target fund"
+                                 bg={inputBg}
+                                 borderColor={inputBorderColor}
+                                 borderWidth="2px"
+                                 borderRadius="md"
+                                 autoFocus
+                                 _hover={{ borderColor: "teal.300" }}
+                                 _focus={{
+                                   borderColor: focusBorderColor,
+                                   boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                                 }}>
+                                 {mutualFunds
+                                   .filter(fund => fund.mutual_fund_id !== fromFundId && fund.amc_id === sourceFund?.amc_id && fund.owner === sourceFund?.owner)
+                                   .sort((a, b) => a.name.localeCompare(b.name))
+                                   .map((fund) => (
+                                        <option key={fund.mutual_fund_id} value={fund.mutual_fund_id.toString()}>
+                                          {fund.name} ({fund.amc?.name})
+                                        </option>
+                                      ))}
+                               </NativeSelect.Field>
+                               <NativeSelect.Indicator />
+                             </NativeSelect.Root>
+                           <Field.ErrorText>{errors.to_fund_id}</Field.ErrorText>
+                         </Field.Root>
 
-                     <FormControl flex={1} isInvalid={!!errors.source_amount}>
-                       <FormLabel fontWeight="semibold" mb={2}>
-                         <HStack spacing={2}>
-                           <DollarSign size={16} />
-                           <Text>Source Amount</Text>
-                           {formData.source_amount && parseFloat(formData.source_amount) > 0 && (
-                             <Icon as={Check} boxSize={3.5} color="teal.500" />
-                           )}
-                         </HStack>
-                       </FormLabel>
-                       <InputGroup size="lg">
-                         <InputLeftAddon
-                           bg={inputBorderColor}
-                           borderWidth="2px"
-                           borderColor={inputBorderColor}
-                           color={addonColor}
-                           fontWeight="semibold"
-                         >
-                           {currencySymbol}
-                         </InputLeftAddon>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={formData.source_amount}
-                            onChange={(e) => handleInputChange("source_amount", e.target.value)}
-                            placeholder="0.00"
-                            min={0}
-                            bg={inputBg}
-                            borderColor={inputBorderColor}
-                            borderWidth="2px"
-                            borderRadius="md"
-                            _hover={{ borderColor: "teal.300" }}
-                            _focus={{
-                              borderColor: focusBorderColor,
-                              boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                            }}
-                          />
-                       </InputGroup>
-                        <FormHelperText color={helperTextColor}>Source NAV: {currencySymbol}{formatAmount(sourceNav)}</FormHelperText>
-                       <FormErrorMessage>{errors.source_amount}</FormErrorMessage>
-                     </FormControl>
-                   </Stack>
+                     </VStack>
+                  </Box>
 
-                   {/* Row 2: Target Units and Amount */}
-                   <Stack direction={{ base: "column", md: "row" }} spacing={4}>
-                     <FormControl flex={1} isInvalid={!!errors.target_units}>
-                       <FormLabel fontWeight="semibold" mb={2}>
-                         <HStack spacing={2}>
-                           <Coins size={16} />
-                           <Text>Target Units</Text>
-                           {formData.target_units && parseFloat(formData.target_units) > 0 && (
-                             <Icon as={Check} boxSize={3.5} color="teal.500" />
-                           )}
-                         </HStack>
-                       </FormLabel>
-                        <Input
-                          type="number"
-                          step="0.001"
-                          value={formData.target_units}
-                          onChange={(e) => handleInputChange("target_units", e.target.value)}
-                          placeholder="0.000"
-                          min={0}
+                  {/* Transfer Details Card */}
+                  <Box
+                    bg={cardBg}
+                    p={{ base: 4, sm: 6 }}
+                    borderRadius="xl"
+                    border="1px solid"
+                    borderColor={borderColor}
+                  >
+                    <VStack gap={5} align="stretch">
+                       {/* Row 1: Source Units and Amount */}
+                       <Stack direction={{ base: "column", md: "row" }} gap={4}>
+                         <Field.Root flex={1} invalid={!!errors.source_units}>
+                           <Field.Label fontWeight="semibold" mb={2}>
+                             <HStack gap={2}>
+                               <Coins size={16} />
+                               <Text>Source Units</Text>
+                               {formData.source_units && parseFloat(formData.source_units) > 0 && (
+                                 <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
+                               )}
+                             </HStack>
+                           </Field.Label>
+                             <Input
+                               type="number"
+                               step="0.001"
+                               value={formData.source_units}
+                               onChange={(e) => handleInputChange("source_units", e.target.value)}
+                               placeholder="0.000"
+                               min={0}
+                               max={availableUnits}
+                               size="lg"
+                               bg={inputBg}
+                               borderColor={inputBorderColor}
+                               borderWidth="2px"
+                               borderRadius="md"
+                               _hover={{ borderColor: "teal.300" }}
+                               _focus={{
+                                 borderColor: focusBorderColor,
+                                 boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                               }}
+                             />
+                             <Field.HelperText color={helperTextColor}>Available units: {formatUnits(availableUnits)}</Field.HelperText>
+                           <Field.ErrorText>{errors.source_units}</Field.ErrorText>
+                         </Field.Root>
+
+                         <Field.Root flex={1} invalid={!!errors.source_amount}>
+                           <Field.Label fontWeight="semibold" mb={2}>
+                             <HStack gap={2}>
+                               <DollarSign size={16} />
+                               <Text>Source Amount</Text>
+                               {formData.source_amount && parseFloat(formData.source_amount) > 0 && (
+                                 <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
+                               )}
+                             </HStack>
+                           </Field.Label>
+                           <InputGroup
+                             startAddon={currencySymbol}
+                             startAddonProps={{
+                               size: "lg",
+                               bg: inputBorderColor,
+                               borderWidth: "2px",
+                               borderColor: inputBorderColor,
+                               color: addonColor,
+                               fontWeight: "semibold",
+                             }}
+                           >
+                              <Input
+                                size="lg"
+                                type="number"
+                                step="0.01"
+                                value={formData.source_amount}
+                                onChange={(e) => handleInputChange("source_amount", e.target.value)}
+                                placeholder="0.00"
+                                min={0}
+                                bg={inputBg}
+                                borderColor={inputBorderColor}
+                                borderWidth="2px"
+                                borderRadius="md"
+                                _hover={{ borderColor: "teal.300" }}
+                                _focus={{
+                                  borderColor: focusBorderColor,
+                                  boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                                }}
+                              />
+                           </InputGroup>
+                            <Field.HelperText color={helperTextColor}>Source NAV: {currencySymbol}{formatAmount(sourceNav)}</Field.HelperText>
+                           <Field.ErrorText>{errors.source_amount}</Field.ErrorText>
+                         </Field.Root>
+                       </Stack>
+
+                       {/* Row 2: Target Units and Amount */}
+                       <Stack direction={{ base: "column", md: "row" }} gap={4}>
+                         <Field.Root flex={1} invalid={!!errors.target_units}>
+                           <Field.Label fontWeight="semibold" mb={2}>
+                             <HStack gap={2}>
+                               <Coins size={16} />
+                               <Text>Target Units</Text>
+                               {formData.target_units && parseFloat(formData.target_units) > 0 && (
+                                 <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
+                               )}
+                             </HStack>
+                           </Field.Label>
+                            <Input
+                              type="number"
+                              step="0.001"
+                              value={formData.target_units}
+                              onChange={(e) => handleInputChange("target_units", e.target.value)}
+                              placeholder="0.000"
+                              min={0}
+                              size="lg"
+                              bg={inputBg}
+                              borderColor={inputBorderColor}
+                              borderWidth="2px"
+                              borderRadius="md"
+                              _hover={{ borderColor: "teal.300" }}
+                              _focus={{
+                                borderColor: focusBorderColor,
+                                boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                              }}
+                            />
+                             <Field.HelperText color={helperTextColor}>units to purchase</Field.HelperText>
+                            <Field.ErrorText>{errors.target_units}</Field.ErrorText>
+                         </Field.Root>
+
+                         <Field.Root flex={1} invalid={!!errors.target_amount}>
+                           <Field.Label fontWeight="semibold" mb={2}>
+                             <HStack gap={2}>
+                               <DollarSign size={16} />
+                               <Text>Target Amount</Text>
+                               {formData.target_amount && parseFloat(formData.target_amount) > 0 && (
+                                 <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
+                               )}
+                             </HStack>
+                           </Field.Label>
+                           <InputGroup
+                             startAddon={currencySymbol}
+                             startAddonProps={{
+                               size: "lg",
+                               bg: inputBorderColor,
+                               borderWidth: "2px",
+                               borderColor: inputBorderColor,
+                               color: addonColor,
+                               fontWeight: "semibold",
+                             }}
+                           >
+                              <Input
+                                size="lg"
+                                type="number"
+                                step="0.01"
+                                value={formData.target_amount}
+                                onChange={(e) => handleInputChange("target_amount", e.target.value)}
+                                placeholder="0.00"
+                                min={0}
+                                bg={inputBg}
+                                borderColor={inputBorderColor}
+                                borderWidth="2px"
+                                borderRadius="md"
+                                _hover={{ borderColor: "teal.300" }}
+                                _focus={{
+                                  borderColor: focusBorderColor,
+                                  boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                                }}
+                              />
+                           </InputGroup>
+                             <Field.HelperText color={helperTextColor}>Target NAV: {currencySymbol}{formatAmount(targetNav)}</Field.HelperText>
+                            <Field.ErrorText>{errors.target_amount}</Field.ErrorText>
+                          </Field.Root>
+                       </Stack>
+
+                       {/* Row 3: Transfer Date */}
+                        <Stack direction={{ base: "column", md: "row" }} gap={4}>
+                          <Field.Root maxW={{ md: "50%" }}>
+                           <Field.Label fontWeight="semibold" mb={2}>
+                             <HStack gap={2}>
+                               <Calendar size={16} />
+                               <Text>Transfer Date</Text>
+                               <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
+                             </HStack>
+                           </Field.Label>
+                           <Box
+                             css={{
+                               '& .react-datepicker-wrapper': {
+                                 width: "100%",
+                               },
+
+                               '& .react-datepicker__input-container input': {
+                                 width: "100%",
+                                 height: "48px",
+                                 borderWidth: "2px",
+                                 borderColor: inputBorderColor,
+                                 borderRadius: "md",
+                                 bg: inputBg,
+                                 fontSize: "lg",
+                                 _hover: { borderColor: "teal.300" },
+                                 _focus: {
+                                   borderColor: focusBorderColor,
+                                   boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                                 },
+                               }
+                             }}
+                           >
+                              <ChakraDatePicker
+                                selected={formData.transaction_date}
+                                onChange={(date: Date | null) => {
+                                  if (date) {
+                                    handleInputChange("transaction_date", date);
+                                  }
+                                }}
+                              />
+                           </Box>
+
+                         </Field.Root>
+                       </Stack>
+
+                      {/* Row 3: Notes (full width) */}
+                      <Field.Root invalid={!!errors.notes}>
+                        <Field.Label fontWeight="semibold" mb={2}>
+                          <HStack gap={2}>
+                            <FileText size={16} />
+                            <Text>Notes (Optional)</Text>
+                          </HStack>
+                        </Field.Label>
+                        <Textarea
+                          value={formData.notes}
+                          onChange={(e) => handleInputChange("notes", e.target.value)}
+                          placeholder="Add any notes about this transfer..."
+                          rows={3}
                           size="lg"
                           bg={inputBg}
                           borderColor={inputBorderColor}
@@ -521,224 +633,112 @@ const TransferUnitsModal: FC<TransferUnitsModalProps> = ({
                             borderColor: focusBorderColor,
                             boxShadow: `0 0 0 1px ${focusBorderColor}`,
                           }}
+                          resize="vertical"
                         />
-                         <FormHelperText color={helperTextColor}>units to purchase</FormHelperText>
-                        <FormErrorMessage>{errors.target_units}</FormErrorMessage>
-                     </FormControl>
+                        <Field.HelperText color={helperTextColor}>Additional details about this transfer</Field.HelperText>
+                        <Field.ErrorText>{errors.notes}</Field.ErrorText>
+                      </Field.Root>
 
-                     <FormControl flex={1} isInvalid={!!errors.target_amount}>
-                       <FormLabel fontWeight="semibold" mb={2}>
-                         <HStack spacing={2}>
-                           <DollarSign size={16} />
-                           <Text>Target Amount</Text>
-                           {formData.target_amount && parseFloat(formData.target_amount) > 0 && (
-                             <Icon as={Check} boxSize={3.5} color="teal.500" />
-                           )}
-                         </HStack>
-                       </FormLabel>
-                       <InputGroup size="lg">
-                         <InputLeftAddon
-                           bg={inputBorderColor}
-                           borderWidth="2px"
-                           borderColor={inputBorderColor}
-                           color={addonColor}
-                           fontWeight="semibold"
-                         >
-                           {currencySymbol}
-                         </InputLeftAddon>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={formData.target_amount}
-                            onChange={(e) => handleInputChange("target_amount", e.target.value)}
-                            placeholder="0.00"
-                            min={0}
-                            bg={inputBg}
-                            borderColor={inputBorderColor}
-                            borderWidth="2px"
-                            borderRadius="md"
-                            _hover={{ borderColor: "teal.300" }}
-                            _focus={{
-                              borderColor: focusBorderColor,
-                              boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                            }}
-                          />
-                       </InputGroup>
-                         <FormHelperText color={helperTextColor}>Target NAV: {currencySymbol}{formatAmount(targetNav)}</FormHelperText>
-                        <FormErrorMessage>{errors.target_amount}</FormErrorMessage>
-                      </FormControl>
-                   </Stack>
 
-                   {/* Row 3: Transfer Date */}
-                    <Stack direction={{ base: "column", md: "row" }} spacing={4}>
-                      <FormControl maxW={{ md: "50%" }}>
-                       <FormLabel fontWeight="semibold" mb={2}>
-                         <HStack spacing={2}>
-                           <Calendar size={16} />
-                           <Text>Transfer Date</Text>
-                           <Icon as={Check} boxSize={3.5} color="teal.500" />
-                         </HStack>
-                       </FormLabel>
-                       <Box
-                         sx={{
-                           ".react-datepicker-wrapper": {
-                             width: "100%",
-                           },
-                           ".react-datepicker__input-container input": {
-                             width: "100%",
-                             height: "48px",
-                             borderWidth: "2px",
-                             borderColor: inputBorderColor,
-                             borderRadius: "md",
-                             bg: inputBg,
-                             fontSize: "lg",
-                             _hover: { borderColor: "teal.300" },
-                             _focus: {
-                               borderColor: focusBorderColor,
-                               boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                             },
-                           },
-                         }}
+
+
+
+                    </VStack>
+                  </Box>
+
+                  {/* Mobile-only action buttons that stay at bottom */}
+                  <Box display={{ base: "block", sm: "none" }} mt={6}>
+                    <Stack direction="row" gap={3} width="full">
+                       <Button
+                         type="submit"
+                         colorPalette="brand"
+                         size="lg"
+                         flex={1}
+                         borderRadius="lg"
+                         fontWeight="bold"
+                         loading={transferMutation.isPending}
+                         loadingText="Processing Transfer..."
+                         disabled={
+                           !formData.to_fund_id ||
+                           !formData.source_units ||
+                           !formData.source_amount ||
+                           !formData.target_units ||
+                           !formData.target_amount ||
+                           sourceUnits > availableUnits ||
+                           Object.keys(errors).length > 0
+                         }
                        >
-                          <ChakraDatePicker
-                            selected={formData.transaction_date}
-                            onChange={(date: Date | null) => {
-                              if (date) {
-                                handleInputChange("transaction_date", date);
-                              }
-                            }}
-                          />
-                       </Box>
+                         Transfer Units
+                       </Button>
 
-                     </FormControl>
-                   </Stack>
-
-                  {/* Row 3: Notes (full width) */}
-                  <FormControl isInvalid={!!errors.notes}>
-                    <FormLabel fontWeight="semibold" mb={2}>
-                      <HStack spacing={2}>
-                        <FileText size={16} />
-                        <Text>Notes (Optional)</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Textarea
-                      value={formData.notes}
-                      onChange={(e) => handleInputChange("notes", e.target.value)}
-                      placeholder="Add any notes about this transfer..."
-                      rows={3}
-                      size="lg"
-                      bg={inputBg}
-                      borderColor={inputBorderColor}
-                      borderWidth="2px"
-                      borderRadius="md"
-                      _hover={{ borderColor: "teal.300" }}
-                      _focus={{
-                        borderColor: focusBorderColor,
-                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                      }}
-                      resize="vertical"
-                    />
-                    <FormHelperText color={helperTextColor}>Additional details about this transfer</FormHelperText>
-                    <FormErrorMessage>{errors.notes}</FormErrorMessage>
-                  </FormControl>
-
-
-
-
-
+                      <Button
+                        variant="ghost"
+                        colorPalette="gray"
+                        onClick={handleClose}
+                        size="lg"
+                        flex={1}
+                        borderRadius="lg"
+                        disabled={transferMutation.isPending}
+                      >
+                        Cancel
+                      </Button>
+                    </Stack>
+                  </Box>
                 </VStack>
-              </Box>
+              </form>
+            </Dialog.Body>
 
-              {/* Mobile-only action buttons that stay at bottom */}
-              <Box display={{ base: "block", sm: "none" }} mt={6}>
-                <Stack direction="row" spacing={3} width="full">
-                   <Button
-                     type="submit"
-                     colorScheme="brand"
-                     size="lg"
-                     flex={1}
-                     borderRadius="lg"
-                     fontWeight="bold"
-                     isLoading={transferMutation.isPending}
-                     loadingText="Processing Transfer..."
-                     isDisabled={
-                       !formData.to_fund_id ||
-                       !formData.source_units ||
-                       !formData.source_amount ||
-                       !formData.target_units ||
-                       !formData.target_amount ||
-                       sourceUnits > availableUnits ||
-                       Object.keys(errors).length > 0
-                     }
-                   >
-                     Transfer Units
-                   </Button>
+            {/* Desktop-only footer */}
+            <Dialog.Footer
+              display={{ base: "none", sm: "flex" }}
+              px={8}
+              py={6}
+              bg={footerBg}
+              borderTop="1px solid"
+              borderColor={borderColor}
+            >
+              <Button
+                type="submit"
+                form="transfer-units-form"
+                colorPalette="brand"
+                mr={3}
+                px={8}
+                py={3}
+                borderRadius="lg"
+                fontWeight="bold"
+                loading={transferMutation.isPending}
+                loadingText="Processing Transfer..."
+                disabled={
+                  !formData.to_fund_id ||
+                  !formData.source_units ||
+                  !formData.source_amount ||
+                  !formData.target_units ||
+                  !formData.target_amount ||
+                  sourceUnits > availableUnits ||
+                  Object.keys(errors).length > 0
+                }
+                onClick={handleSubmit}
+              >
+                Transfer Units
+              </Button>
 
-                  <Button
-                    variant="ghost"
-                    colorScheme="gray"
-                    onClick={handleClose}
-                    size="lg"
-                    flex={1}
-                    borderRadius="lg"
-                    isDisabled={transferMutation.isPending}
-                  >
-                    Cancel
-                  </Button>
-                </Stack>
-              </Box>
-            </VStack>
-          </form>
-        </ModalBody>
+              <Button
+                variant="ghost"
+                colorPalette="gray"
+                onClick={handleClose}
+                disabled={transferMutation.isPending}
+                px={6}
+                py={3}
+                borderRadius="lg"
+              >
+                Cancel
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
 
-        {/* Desktop-only footer */}
-        <ModalFooter
-          display={{ base: "none", sm: "flex" }}
-          px={8}
-          py={6}
-          bg={footerBg}
-          borderTop="1px solid"
-          borderColor={borderColor}
-        >
-          <Button
-            type="submit"
-            form="transfer-units-form"
-            colorScheme="brand"
-            mr={3}
-            px={8}
-            py={3}
-            borderRadius="lg"
-            fontWeight="bold"
-            isLoading={transferMutation.isPending}
-            loadingText="Processing Transfer..."
-            isDisabled={
-              !formData.to_fund_id ||
-              !formData.source_units ||
-              !formData.source_amount ||
-              !formData.target_units ||
-              !formData.target_amount ||
-              sourceUnits > availableUnits ||
-              Object.keys(errors).length > 0
-            }
-            onClick={handleSubmit}
-          >
-            Transfer Units
-          </Button>
-
-          <Button
-            variant="ghost"
-            colorScheme="gray"
-            onClick={handleClose}
-            isDisabled={transferMutation.isPending}
-            px={6}
-            py={3}
-            borderRadius="lg"
-          >
-            Cancel
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

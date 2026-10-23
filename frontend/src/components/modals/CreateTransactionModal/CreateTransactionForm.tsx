@@ -1,26 +1,20 @@
 import React from "react";
+import { useColorModeValue } from "../../ui/color-mode";
 import {
-  ModalBody,
-  FormControl,
-  FormLabel,
   Input,
   InputGroup,
-  InputLeftElement,
-  InputRightElement,
-  Switch,
   Text,
   VStack,
   HStack,
   Box,
-  useColorModeValue,
   Stack,
-  FormHelperText,
   Icon,
   Popover,
-  PopoverTrigger,
-  PopoverContent,
   Button,
+  Field,
+  Dialog,
 } from "@chakra-ui/react";
+import { Switch } from "@/components/ui/switch";
 import { motion } from "framer-motion";
 import { Check, X, Search, ChevronDown } from "lucide-react";
 import ChakraDatePicker from "@components/shared/ChakraDatePicker";
@@ -119,7 +113,7 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
   const heroIncomePlaceholder = useColorModeValue("teal.300", "teal.700");
 
   return (
-    <ModalBody
+    <Dialog.Body
       px={{ base: 4, sm: 8 }}
       py={{ base: 4, sm: 6 }}
       flex="1"
@@ -130,10 +124,9 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
       justifyContent={{ base: "space-between", sm: "flex-start" }}
     >
       <VStack
-        spacing={{ base: 5, sm: 6 }}
+        gap={{ base: 5, sm: 6 }}
         align="stretch"
         w="100%"
-        sx={{ "& .chakra-form__required-indicator": { display: "none" } }}
       >
         {/* Transaction Type Toggle */}
         <Box
@@ -164,7 +157,6 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
           />
           <Button
             flex={1}
-            variant="unstyled"
             position="relative"
             zIndex={1}
             onClick={() => setType("expense")}
@@ -176,12 +168,12 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
             transition="color 0.2s"
             _hover={{}}
             _active={{}}
+            unstyled
           >
             Expense
           </Button>
           <Button
             flex={1}
-            variant="unstyled"
             position="relative"
             zIndex={1}
             onClick={() => setType("income")}
@@ -193,6 +185,7 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
             transition="color 0.2s"
             _hover={{}}
             _active={{}}
+            unstyled
           >
             Income
           </Button>
@@ -206,9 +199,11 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
           border="2px solid"
           borderColor={type === "expense" ? heroExpenseBorder : heroIncomeBorder}
           textAlign="center"
-          sx={{ transition: "background-color 0.2s, border-color 0.2s" }}
+          css={{
+            transition: "background-color 0.2s, border-color 0.2s"
+          }}
         >
-          <HStack justify="center" spacing={1.5} mb={3}>
+          <HStack justify="center" gap={1.5} mb={3}>
             <Text
               fontSize="xs"
               fontWeight="semibold"
@@ -216,18 +211,21 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
               textTransform="uppercase"
               color={type === "expense" ? heroExpenseColor : heroIncomeColor}
               opacity={0.7}
-              sx={{ transition: "color 0.2s" }}
+              css={{
+                transition: "color 0.2s"
+              }}
             >
               {type === "expense" ? "Expense Amount" : "Income Amount"}
             </Text>
             {amount && parseFloat(amount) > 0 && (
               <Icon
-                as={Check}
                 boxSize={3.5}
                 color={type === "expense" ? heroExpenseColor : heroIncomeColor}
                 opacity={0.8}
-                sx={{ transition: "color 0.2s" }}
-              />
+                css={{
+                  transition: "color 0.2s"
+                }}
+                asChild><Check /></Icon>
             )}
           </HStack>
           <Box position="relative" width="100%" display="flex" alignItems="center">
@@ -238,7 +236,9 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
               fontWeight="bold"
               color={type === "expense" ? heroExpenseColor : heroIncomeColor}
               lineHeight="1"
-              sx={{ transition: "color 0.2s" }}
+              css={{
+                transition: "color 0.2s"
+              }}
               userSelect="none"
               pointerEvents="none"
             >
@@ -261,10 +261,12 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
                   : heroIncomePlaceholder,
               }}
               textAlign="center"
-              variant="unstyled"
+              unstyled
               autoFocus
               width="100%"
-              sx={{ transition: "color 0.2s" }}
+              css={{
+                transition: "color 0.2s"
+              }}
               data-testid="createtransactionmodal-amount-input"
             />
           </Box>
@@ -278,19 +280,20 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
           border="1px solid"
           borderColor={borderColor}
         >
-          <VStack spacing={5} align="stretch">
+          <VStack gap={5} align="stretch">
             {/* Date Picker */}
-            <FormControl isRequired>
-              <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+            <Field.Root required>
+              <Field.Label fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                 Transaction date
-                <Icon as={Check} boxSize={3.5} color="teal.500" />
-              </FormLabel>
+                <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
+              </Field.Label>
               <Box
-                sx={{
-                  ".react-datepicker-wrapper": {
+                css={{
+                  '& .react-datepicker-wrapper': {
                     width: "100%",
                   },
-                  ".react-datepicker__input-container input": {
+
+                  '& .react-datepicker__input-container input': {
                     width: "100%",
                     height: "48px",
                     borderWidth: "2px",
@@ -303,7 +306,7 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
                       borderColor: focusBorderColor,
                       boxShadow: `0 0 0 1px ${focusBorderColor}`,
                     },
-                  },
+                  }
                 }}
               >
                 <ChakraDatePicker
@@ -317,29 +320,45 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
                   data-testid="createtransactionmodal-date-picker"
                 />
               </Box>
-            </FormControl>
+            </Field.Root>
 
             {/* Account Dropdown */}
             {!accountId && accounts.length > 0 && (
-              <FormControl isRequired>
-                <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+              <Field.Root required>
+                <Field.Label fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                   Account
-                  {selectedAccountId && <Icon as={Check} boxSize={3.5} color="teal.500" />}
-                </FormLabel>
-                <Popover
-                  isOpen={isAccountOpen}
-                  onClose={() => { setIsAccountOpen(false); setHighlightedAccountIndex(-1); }}
-                  matchWidth
-                  placement="bottom-start"
+                  {selectedAccountId && <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>}
+                </Field.Label>
+                <Popover.Root
+                  open={isAccountOpen}
                   autoFocus={false}
-                  returnFocusOnClose={false}
-                >
-                  <PopoverTrigger>
-                    <InputGroup size="lg">
-                      <InputLeftElement pointerEvents="none" height="100%">
-                        <Icon as={Search} boxSize={4} color={helperTextColor} />
-                      </InputLeftElement>
+                  onOpenChange={e => {
+                    if (!(e.open)) { setIsAccountOpen(false); setHighlightedAccountIndex(-1); }
+                  }}
+                  positioning={{
+                    sameWidth: true,
+                    placement: 'bottom-start'
+                  }}>
+                  <Popover.Trigger asChild>
+                    <InputGroup
+                      startElement={<Icon boxSize={4} color={helperTextColor} asChild><Search /></Icon>}
+                      endElement={
+                        selectedAccountId ? (
+                          <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><X
+                              onClick={() => {
+                                setSelectedAccountId("");
+                                setAccountSearch("");
+                                setIsAccountOpen(false);
+                                setHighlightedAccountIndex(-1);
+                              }} /></Icon>
+                        ) : (
+                          <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><ChevronDown onClick={() => setIsAccountOpen(!isAccountOpen)} /></Icon>
+                        )
+                      }
+                      endElementProps={{ pr: 1 }}
+                    >
                       <Input
+                        size="lg"
                         value={isAccountOpen ? accountSearch : (selectedAccount?.name ?? "")}
                         onChange={(e) => {
                           setAccountSearch(e.target.value);
@@ -366,34 +385,10 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
                         autoComplete="off"
                         data-testid="createtransactionmodal-account-dropdown"
                       />
-                      <InputRightElement height="100%" pr={1}>
-                        {selectedAccountId ? (
-                          <Icon
-                            as={X}
-                            boxSize={4}
-                            color={helperTextColor}
-                            cursor="pointer"
-                            onClick={() => {
-                              setSelectedAccountId("");
-                              setAccountSearch("");
-                              setIsAccountOpen(false);
-                              setHighlightedAccountIndex(-1);
-                            }}
-                          />
-                        ) : (
-                          <Icon
-                            as={ChevronDown}
-                            boxSize={4}
-                            color={helperTextColor}
-                            cursor="pointer"
-                            onClick={() => setIsAccountOpen(!isAccountOpen)}
-                          />
-                        )}
-                      </InputRightElement>
                     </InputGroup>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    p={0}
+                  </Popover.Trigger>
+                  <Popover.Positioner>
+                    <Popover.Content w="full" p={0}
                     bg={bgColor}
                     border="1px solid"
                     borderColor={borderColor}
@@ -401,9 +396,7 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
                     boxShadow="lg"
                     maxH="220px"
                     overflowY="auto"
-                    _focus={{ outline: "none" }}
-                  >
-                    {filteredAssetAccounts.length > 0 && (
+                    _focus={{ outline: "none" }}>{filteredAssetAccounts.length > 0 && (
                       <>
                         <Box px={3} py={2} bg={cardBg} borderBottom="1px solid" borderColor={borderColor}>
                           <Text fontSize="xs" fontWeight="semibold" color={helperTextColor} textTransform="uppercase" letterSpacing="wider">
@@ -431,7 +424,7 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
                             <Text fontSize="sm" fontWeight={selectedAccountId === acc.account_id ? "semibold" : "normal"}>
                               {acc.name}
                             </Text>
-                            {selectedAccountId === acc.account_id && <Icon as={Check} boxSize={4} color="teal.500" />}
+                            {selectedAccountId === acc.account_id && <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>}
                           </Box>
                         ))}
                       </>
@@ -471,7 +464,7 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
                               <Text fontSize="sm" fontWeight={selectedAccountId === acc.account_id ? "semibold" : "normal"}>
                                 {acc.name}
                               </Text>
-                              {selectedAccountId === acc.account_id && <Icon as={Check} boxSize={4} color="teal.500" />}
+                              {selectedAccountId === acc.account_id && <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>}
                             </Box>
                           );
                         })}
@@ -481,13 +474,13 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
                       <Box px={4} py={5} textAlign="center">
                         <Text fontSize="sm" color={helperTextColor}>No accounts found</Text>
                       </Box>
-                    )}
-                  </PopoverContent>
-                </Popover>
-                <FormHelperText mt={2} color={helperTextColor}>
+                    )}</Popover.Content>
+                  </Popover.Positioner>
+                </Popover.Root>
+                <Field.HelperText mt={2} color={helperTextColor}>
                   Choose which account this transaction belongs to
-                </FormHelperText>
-              </FormControl>
+                </Field.HelperText>
+              </Field.Root>
             )}
           </VStack>
         </Box>
@@ -510,11 +503,11 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
               </Text>
             </Box>
             <Switch
-              colorScheme="brand"
+              colorPalette="brand"
               size="lg"
-              isChecked={isSplit}
-              onChange={(e) => handleSplitToggle(e.target.checked)}
-              isDisabled={!amount}
+              checked={isSplit}
+              onCheckedChange={(e) => handleSplitToggle(e.checked)}
+              disabled={!amount}
             />
           </HStack>
         </Box>
@@ -545,25 +538,41 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
             border="1px solid"
             borderColor={borderColor}
           >
-            <FormControl isRequired>
-              <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+            <Field.Root required>
+              <Field.Label fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
                 Category
-                {categoryId && <Icon as={Check} boxSize={3.5} color="teal.500" />}
-              </FormLabel>
-              <Popover
-                isOpen={isCategoryOpen}
-                onClose={() => { setIsCategoryOpen(false); setHighlightedIndex(-1); }}
-                matchWidth
-                placement="bottom-start"
+                {categoryId && <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>}
+              </Field.Label>
+              <Popover.Root
+                open={isCategoryOpen}
                 autoFocus={false}
-                returnFocusOnClose={false}
-              >
-                <PopoverTrigger>
-                  <InputGroup size="lg">
-                    <InputLeftElement pointerEvents="none" height="100%">
-                      <Icon as={Search} boxSize={4} color={helperTextColor} />
-                    </InputLeftElement>
+                onOpenChange={e => {
+                  if (!(e.open)) { setIsCategoryOpen(false); setHighlightedIndex(-1); }
+                }}
+                positioning={{
+                  sameWidth: true,
+                  placement: 'bottom-start'
+                }}>
+                <Popover.Trigger asChild>
+                  <InputGroup
+                    startElement={<Icon boxSize={4} color={helperTextColor} asChild><Search /></Icon>}
+                    endElement={
+                      categoryId ? (
+                        <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><X
+                            onClick={() => {
+                              setCategoryId("");
+                              setCategorySearch("");
+                              setIsCategoryOpen(false);
+                              setHighlightedIndex(-1);
+                            }} /></Icon>
+                      ) : (
+                        <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><ChevronDown onClick={() => setIsCategoryOpen(!isCategoryOpen)} /></Icon>
+                      )
+                    }
+                    endElementProps={{ pr: 1 }}
+                  >
                     <Input
+                      size="lg"
                       value={isCategoryOpen ? categorySearch : (selectedCategory?.name ?? "")}
                       onChange={(e) => {
                         setCategorySearch(e.target.value);
@@ -590,34 +599,10 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
                       autoComplete="off"
                       data-testid="createtransactionmodal-category-dropdown"
                     />
-                    <InputRightElement height="100%" pr={1}>
-                      {categoryId ? (
-                        <Icon
-                          as={X}
-                          boxSize={4}
-                          color={helperTextColor}
-                          cursor="pointer"
-                          onClick={() => {
-                            setCategoryId("");
-                            setCategorySearch("");
-                            setIsCategoryOpen(false);
-                            setHighlightedIndex(-1);
-                          }}
-                        />
-                      ) : (
-                        <Icon
-                          as={ChevronDown}
-                          boxSize={4}
-                          color={helperTextColor}
-                          cursor="pointer"
-                          onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                        />
-                      )}
-                    </InputRightElement>
                   </InputGroup>
-                </PopoverTrigger>
-                <PopoverContent
-                  p={0}
+                </Popover.Trigger>
+                <Popover.Positioner>
+                  <Popover.Content w="full" p={0}
                   bg={bgColor}
                   border="1px solid"
                   borderColor={borderColor}
@@ -625,9 +610,7 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
                   boxShadow="lg"
                   maxH="220px"
                   overflowY="auto"
-                  _focus={{ outline: "none" }}
-                >
-                  {filteredIncomeCategories.length > 0 && (
+                  _focus={{ outline: "none" }}>{filteredIncomeCategories.length > 0 && (
                     <>
                       <Box px={3} py={2} bg={cardBg} borderBottom="1px solid" borderColor={borderColor}>
                         <Text fontSize="xs" fontWeight="semibold" color={helperTextColor} textTransform="uppercase" letterSpacing="wider">
@@ -655,7 +638,7 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
                           <Text fontSize="sm" fontWeight={categoryId === cat.category_id ? "semibold" : "normal"}>
                             {cat.name}
                           </Text>
-                          {categoryId === cat.category_id && <Icon as={Check} boxSize={4} color="teal.500" />}
+                          {categoryId === cat.category_id && <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>}
                         </Box>
                       ))}
                     </>
@@ -695,7 +678,7 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
                             <Text fontSize="sm" fontWeight={categoryId === cat.category_id ? "semibold" : "normal"}>
                               {cat.name}
                             </Text>
-                            {categoryId === cat.category_id && <Icon as={Check} boxSize={4} color="teal.500" />}
+                            {categoryId === cat.category_id && <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>}
                           </Box>
                         );
                       })}
@@ -705,13 +688,13 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
                     <Box px={4} py={5} textAlign="center">
                       <Text fontSize="sm" color={helperTextColor}>No categories found</Text>
                     </Box>
-                  )}
-                </PopoverContent>
-              </Popover>
-              <FormHelperText mt={2} color={helperTextColor}>
+                  )}</Popover.Content>
+                </Popover.Positioner>
+              </Popover.Root>
+              <Field.HelperText mt={2} color={helperTextColor}>
                 Choose the category for this {type}
-              </FormHelperText>
-            </FormControl>
+              </Field.HelperText>
+            </Field.Root>
           </Box>
         )}
 
@@ -723,7 +706,7 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
           border="1px solid"
           borderColor={borderColor}
         >
-          <VStack spacing={5} align="stretch">
+          <VStack gap={5} align="stretch">
             <FormNotes
               ledgerId={ledgerId}
               notes={notes}
@@ -732,7 +715,7 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
               onDropdownOpenChange={setIsNotesSuggestionsOpen}
             />
             {type === "expense" && (
-              <Stack direction={{ base: "column", md: "row" }} spacing={4}>
+              <Stack direction={{ base: "column", md: "row" }} gap={4}>
                 <FormStore
                   ledgerId={ledgerId}
                   store={store}
@@ -764,31 +747,31 @@ const CreateTransactionForm: React.FC<CreateTransactionFormProps> = ({
       <Box display={{ base: "block", sm: "none" }} mt={6}>
         <Button
           onClick={handleSubmit}
-          colorScheme="brand"
+          colorPalette="brand"
           size="lg"
           width="100%"
           mb={3}
           borderRadius="lg"
-          isLoading={isLoading}
+          loading={isLoading}
           loadingText="Saving..."
-          isDisabled={isSaveDisabled}
+          disabled={isSaveDisabled}
           fontWeight="bold"
         >
           Save Transaction
         </Button>
         <Button
           variant="ghost"
-          colorScheme="gray"
+          colorPalette="gray"
           onClick={onClose}
           size="lg"
           width="100%"
           borderRadius="lg"
-          isDisabled={isLoading}
+          disabled={isLoading}
         >
           Cancel
         </Button>
       </Box>
-    </ModalBody>
+    </Dialog.Body>
   );
 };
 

@@ -1,31 +1,23 @@
 import React, { useState, useCallback, useMemo } from "react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import {
   Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalFooter,
-  ModalBody,
-  FormControl,
-  FormLabel,
   Icon,
   IconButton,
   Input,
-  InputGroup,
-  InputLeftElement,
-  InputRightElement,
   Badge,
   Grid,
   GridItem,
   Box,
   VStack,
   HStack,
-  useColorModeValue,
   Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverBody,
+  Field,
+  Text,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
+import { InputGroup } from "@/components/ui/input-group";
 import { Filter, X, RotateCcw, Search, Check } from "lucide-react";
 import { AxiosError } from "axios";
 import api from "@/lib/api";
@@ -152,24 +144,32 @@ const StoreLocationFilter: React.FC<StoreLocationFilterProps> = ({
   };
 
   return (
-    <FormControl>
-      <FormLabel fontWeight="semibold" mb={2}>
+    <Field.Root>
+      <Field.Label fontWeight="semibold" mb={2}>
         {label}
-      </FormLabel>
-      <Popover
-        isOpen={showSuggestions && suggestions.length > 0}
-        onClose={() => { setShowSuggestions(false); setHighlightedIndex(-1); }}
-        placement="bottom-start"
-        matchWidth
-        closeOnBlur={false}
-        returnFocusOnClose={false}
-      >
-        <PopoverTrigger>
-          <InputGroup size="lg">
-            <InputLeftElement pointerEvents="none" height="100%">
-              <Icon as={Search} boxSize={4} color={helperTextColor} />
-            </InputLeftElement>
+      </Field.Label>
+      <Popover.Root
+        open={showSuggestions && suggestions.length > 0}
+        closeOnInteractOutside={false}
+        onOpenChange={e => {
+          if (!(e.open)) { setShowSuggestions(false); setHighlightedIndex(-1); }
+        }}
+        positioning={{
+          placement: 'bottom-start',
+          sameWidth: true
+        }}>
+        <Popover.Trigger asChild>
+          <InputGroup
+            startElement={<Icon boxSize={4} color={helperTextColor} asChild><Search /></Icon>}
+            startElementProps={{ pointerEvents: "none", height: "100%" }}
+            endElementProps={{ height: "100%", pr: 1, pointerEvents: "auto" }}
+            endElement={
+              filterValue ? (
+                <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><X onClick={() => handleSuggestionClick("")} /></Icon>
+              ) : undefined
+            }>
             <Input
+              size="lg"
               placeholder={`Filter by ${label.toLowerCase()}`}
               value={filterValue}
               onChange={handleInputChange}
@@ -184,53 +184,43 @@ const StoreLocationFilter: React.FC<StoreLocationFilterProps> = ({
                 boxShadow: `0 0 0 1px ${focusBorderColor}`,
               }}
             />
-            {filterValue && (
-              <InputRightElement height="100%" pr={1}>
-                <Icon
-                  as={X}
-                  boxSize={4}
-                  color={helperTextColor}
-                  cursor="pointer"
-                  onClick={() => handleSuggestionClick("")}
-                />
-              </InputRightElement>
-            )}
           </InputGroup>
-        </PopoverTrigger>
-        <PopoverContent
-          bg={suggestionBg}
-          borderColor={suggestionBorderColor}
-          borderWidth="1px"
-          boxShadow="lg"
-          borderRadius="md"
-          maxH="200px"
-          overflowY="auto"
-          _focus={{ boxShadow: "none" }}
-          autoFocus={false}
-          width="100%"
-          onKeyDown={(e) => { handleKeyDown(e); e.stopPropagation(); }}
-        >
-          <PopoverBody p={1}>
-            {suggestions.map((suggestion, index) => (
-              <Box
-                key={index}
-                px={3}
-                py={2.5}
-                cursor="pointer"
-                borderRadius="md"
-                fontSize="sm"
-                bg={index === highlightedIndex ? suggestionHighlightBg : "transparent"}
-                _hover={{ bg: index === highlightedIndex ? suggestionHighlightBg : suggestionHoverBg }}
-                onMouseDown={(e) => { e.preventDefault(); handleSuggestionClick(suggestion); }}
-                onMouseEnter={() => setHighlightedIndex(index)}
-              >
-                {suggestion}
-              </Box>
-            ))}
-          </PopoverBody>
-        </PopoverContent>
-      </Popover>
-    </FormControl>
+        </Popover.Trigger>
+        <Popover.Positioner>
+          <Popover.Content
+            bg={suggestionBg}
+            borderColor={suggestionBorderColor}
+            borderWidth="1px"
+            boxShadow="lg"
+            borderRadius="md"
+            maxH="200px"
+            overflowY="auto"
+            _focus={{ boxShadow: "none" }}
+            autoFocus={false}
+            width="100%"
+            onKeyDown={(e) => { handleKeyDown(e); e.stopPropagation(); }}>
+            <Popover.Body p={1}>
+              {suggestions.map((suggestion, index) => (
+                <Box
+                  key={index}
+                  px={3}
+                  py={2.5}
+                  cursor="pointer"
+                  borderRadius="md"
+                  fontSize="sm"
+                  bg={index === highlightedIndex ? suggestionHighlightBg : "transparent"}
+                  _hover={{ bg: index === highlightedIndex ? suggestionHighlightBg : suggestionHoverBg }}
+                  onMouseDown={(e) => { e.preventDefault(); handleSuggestionClick(suggestion); }}
+                  onMouseEnter={() => setHighlightedIndex(index)}
+                >
+                  {suggestion}
+                </Box>
+              ))}
+            </Popover.Body>
+          </Popover.Content>
+        </Popover.Positioner>
+      </Popover.Root>
+    </Field.Root>
   );
 };
 
@@ -285,328 +275,322 @@ const TransactionFilter: React.FC<TransactionFilterProps> = ({
     <>
       <IconButton
         aria-label="Filter transactions"
-        icon={
-          <Box>
-            <Icon as={Filter} />
-            {activeFilterCount > 0 && (
-              <Badge
-                colorScheme="teal"
-                borderRadius="full"
-                position="absolute"
-                top="-1"
-                right="-1"
-                fontSize="xs"
-              >
-                {activeFilterCount}
-              </Badge>
-            )}
-          </Box>
-        }
         onClick={hook.onOpen}
         variant="outline"
         size="sm"
         position="relative"
-        colorScheme="teal"
-      />
+        colorPalette="teal"><Box>
+          <Icon asChild><Filter /></Icon>
+          {activeFilterCount > 0 && (
+            <Badge
+              colorPalette="teal"
+              borderRadius="full"
+              position="absolute"
+              top="-1"
+              right="-1"
+              fontSize="xs"
+            >
+              {activeFilterCount}
+            </Badge>
+          )}
+        </Box></IconButton>
 
-      <Modal
-        isOpen={hook.isOpen}
-        returnFocusOnClose={false}
-        onClose={hook.onClose}
+      <Dialog.Root
+        open={hook.isOpen}
         size={{ base: "full", sm: "xl" }}
-        motionPreset="slideInBottom"
-      >
-        <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-        <ModalContent
-          bg={bgColor}
-          borderRadius={{ base: 0, sm: "md" }}
-          boxShadow="2xl"
-          border="1px solid"
-          borderColor={borderColor}
-          overflow="hidden"
-          mx={{ base: 0, sm: 4 }}
-          my={{ base: 0, sm: "auto" }}
-          maxHeight={{ base: "100%", md: "90vh" }}
-          display="flex"
-          flexDirection="column"
-        >
-          {/* Flat header */}
-          <Box
-            px={{ base: 4, sm: 8 }}
-            py={5}
-            borderBottom="1px solid"
-            borderColor={modalHeaderBorderColor}
-          >
-            <HStack spacing={3} align="center" justify="space-between">
-              <HStack spacing={3} align="flex-start">
-                <Icon as={Filter} boxSize={5} mt="3px" color={modalIconColor} />
-                <Box>
-                  <Box fontSize="lg" fontWeight="bold" color={modalTitleColor}>
-                    Filter Transactions
-                  </Box>
-                  <Box fontSize="sm" color={modalSubtitleColor}>
-                    Refine your transaction search
-                  </Box>
-                </Box>
-              </HStack>
+        motionPreset="slide-in-bottom"
+        onOpenChange={e => {
+          if (!e.open) {
+            hook.onClose();
+          }
+        }}>
+        <Portal>
 
-              <Button
-                size="sm"
-                onClick={hook.handleResetFilters}
-                leftIcon={<RotateCcw size={14} />}
-                variant="ghost"
-                colorScheme="teal"
-                borderRadius="md"
-              >
-                Reset
-              </Button>
-            </HStack>
-          </Box>
-
-          <ModalBody
-            px={{ base: 4, sm: 8 }}
-            py={{ base: 4, sm: 6 }}
-            flex="1"
-            display="flex"
-            flexDirection="column"
-            overflow="auto"
-            justifyContent={{ base: "space-between", sm: "flex-start" }}
-          >
-            <VStack
-              spacing={{ base: 5, sm: 6 }}
-              align="stretch"
-              w="100%"
-              sx={{ "& .chakra-form__required-indicator": { display: "none" } }}
-            >
-              {/* Account Selection Card */}
-              {!accountId && (
-                <FilterAccountSelector
-                  filters={hook.filters}
-                  handleInputChange={hook.handleInputChange}
-                  isAccountsLoading={hook.isAccountsLoading}
-                  selectedAccount={hook.selectedAccount}
-                  accountSearch={hook.accountSearch}
-                  setAccountSearch={hook.setAccountSearch}
-                  isAccountOpen={hook.isAccountOpen}
-                  setIsAccountOpen={hook.setIsAccountOpen}
-                  highlightedAccountIndex={hook.highlightedAccountIndex}
-                  setHighlightedAccountIndex={hook.setHighlightedAccountIndex}
-                  filteredAssetAccounts={hook.filteredAssetAccounts}
-                  filteredLiabilityAccounts={hook.filteredLiabilityAccounts}
-                  hasFilteredAccountResults={hook.hasFilteredAccountResults}
-                  handleAccountKeyDown={hook.handleAccountKeyDown}
-                  colors={colors}
-                />
-              )}
-
-              {/* Category Selection Card */}
-              <FilterCategorySelector
-                filters={hook.filters}
-                handleInputChange={hook.handleInputChange}
-                isCategoriesLoading={hook.isCategoriesLoading}
-                selectedCategory={hook.selectedCategory}
-                categorySearch={hook.categorySearch}
-                setCategorySearch={hook.setCategorySearch}
-                isCategoryOpen={hook.isCategoryOpen}
-                setIsCategoryOpen={hook.setIsCategoryOpen}
-                highlightedCategoryIndex={hook.highlightedCategoryIndex}
-                setHighlightedCategoryIndex={hook.setHighlightedCategoryIndex}
-                filteredIncomeCategories={hook.filteredIncomeCategories}
-                filteredExpenseCategories={hook.filteredExpenseCategories}
-                hasFilteredCategoryResults={hook.hasFilteredCategoryResults}
-                handleCategoryKeyDown={hook.handleCategoryKeyDown}
-                colors={colors}
-              />
-
-              {/* Tags Card */}
-              <FilterTagsSection
-                filters={hook.filters}
-                handleInputChange={hook.handleInputChange}
-                colors={colors}
-              />
-
-              {/* Search Notes Card */}
+          <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+          <Dialog.Positioner>
+            <Dialog.Content
+              bg={bgColor}
+              borderRadius={{ base: 0, sm: "md" }}
+              boxShadow="2xl"
+              border="1px solid"
+              borderColor={borderColor}
+              overflow="hidden"
+              mx={{ base: 0, sm: 4 }}
+              my={{ base: 0, sm: "auto" }}
+              maxHeight={{ base: "100%", md: "90vh" }}
+              display="flex"
+              flexDirection="column">
+              {/* Flat header */}
               <Box
-                bg={cardBg}
-                p={{ base: 4, sm: 6 }}
-                borderRadius="md"
-                border="1px solid"
-                borderColor={borderColor}
+                px={{ base: 4, sm: 8 }}
+                py={5}
+                borderBottom="1px solid"
+                borderColor={modalHeaderBorderColor}
               >
-                <FormControl>
-                  <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
-                    Search Notes
-                    {hook.filters.search_text && <Icon as={Check} boxSize={3.5} color="teal.500" />}
-                  </FormLabel>
-                  <InputGroup size="lg">
-                    <InputLeftElement pointerEvents="none" height="100%">
-                      <Icon as={Search} boxSize={4} color={helperTextColor} />
-                    </InputLeftElement>
-                    <Input
-                      placeholder="Search in transaction notes"
-                      value={hook.filters.search_text}
-                      onChange={(e) => hook.handleInputChange("search_text", e.target.value)}
-                      borderWidth="2px"
-                      borderColor={hook.filters.search_text ? "teal.400" : inputBorderColor}
-                      bg={inputBg}
-                      borderRadius="md"
-                      _hover={{ borderColor: "teal.300" }}
-                      _focus={{
-                        borderColor: focusBorderColor,
-                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                      }}
+                <HStack gap={3} align="center" justify="space-between">
+                  <HStack gap={3} align="flex-start">
+                    <Icon boxSize={5} mt="3px" color={modalIconColor} asChild><Filter /></Icon>
+                    <Box>
+                      <Box fontSize="lg" fontWeight="bold" color={modalTitleColor}>
+                        Filter Transactions
+                      </Box>
+                      <Box fontSize="sm" color={modalSubtitleColor}>
+                        Refine your transaction search
+                      </Box>
+                    </Box>
+                  </HStack>
+
+                  <Button
+                    size="sm"
+                    onClick={hook.handleResetFilters}
+                    variant="ghost"
+                    colorPalette="teal"
+                    borderRadius="md"><RotateCcw size={14} />Reset
+                                  </Button>
+                </HStack>
+              </Box>
+
+              <Dialog.Body
+                px={{ base: 4, sm: 8 }}
+                py={{ base: 4, sm: 6 }}
+                flex="1"
+                display="flex"
+                flexDirection="column"
+                overflow="auto"
+                justifyContent={{ base: "space-between", sm: "flex-start" }}
+              >
+                <VStack
+                  gap={{ base: 5, sm: 6 }}
+                  align="stretch"
+                  w="100%"
+                >
+                  {/* Account Selection Card */}
+                  {!accountId && (
+                    <FilterAccountSelector
+                      filters={hook.filters}
+                      handleInputChange={hook.handleInputChange}
+                      isAccountsLoading={hook.isAccountsLoading}
+                      selectedAccount={hook.selectedAccount}
+                      accountSearch={hook.accountSearch}
+                      setAccountSearch={hook.setAccountSearch}
+                      isAccountOpen={hook.isAccountOpen}
+                      setIsAccountOpen={hook.setIsAccountOpen}
+                      highlightedAccountIndex={hook.highlightedAccountIndex}
+                      setHighlightedAccountIndex={hook.setHighlightedAccountIndex}
+                      filteredAssetAccounts={hook.filteredAssetAccounts}
+                      filteredLiabilityAccounts={hook.filteredLiabilityAccounts}
+                      hasFilteredAccountResults={hook.hasFilteredAccountResults}
+                      handleAccountKeyDown={hook.handleAccountKeyDown}
+                      colors={colors}
                     />
-                    {hook.filters.search_text && (
-                      <InputRightElement height="100%" pr={1}>
-                        <Icon
-                          as={X}
-                          boxSize={4}
-                          color={helperTextColor}
-                          cursor="pointer"
-                          onClick={() => hook.handleInputChange("search_text", "")}
+                  )}
+
+                  {/* Category Selection Card */}
+                  <FilterCategorySelector
+                    filters={hook.filters}
+                    handleInputChange={hook.handleInputChange}
+                    isCategoriesLoading={hook.isCategoriesLoading}
+                    selectedCategory={hook.selectedCategory}
+                    categorySearch={hook.categorySearch}
+                    setCategorySearch={hook.setCategorySearch}
+                    isCategoryOpen={hook.isCategoryOpen}
+                    setIsCategoryOpen={hook.setIsCategoryOpen}
+                    highlightedCategoryIndex={hook.highlightedCategoryIndex}
+                    setHighlightedCategoryIndex={hook.setHighlightedCategoryIndex}
+                    filteredIncomeCategories={hook.filteredIncomeCategories}
+                    filteredExpenseCategories={hook.filteredExpenseCategories}
+                    hasFilteredCategoryResults={hook.hasFilteredCategoryResults}
+                    handleCategoryKeyDown={hook.handleCategoryKeyDown}
+                    colors={colors}
+                  />
+
+                  {/* Tags Card */}
+                  <FilterTagsSection
+                    filters={hook.filters}
+                    handleInputChange={hook.handleInputChange}
+                    colors={colors}
+                  />
+
+                  {/* Search Notes Card */}
+                  <Box
+                    bg={cardBg}
+                    p={{ base: 4, sm: 6 }}
+                    borderRadius="md"
+                    border="1px solid"
+                    borderColor={borderColor}
+                  >
+                    <Field.Root>
+                      <Field.Label fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+                        Search Notes
+                        {hook.filters.search_text && <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>}
+                      </Field.Label>
+                      <InputGroup
+                        startElement={<Icon boxSize={4} color={helperTextColor} asChild><Search /></Icon>}
+                        startElementProps={{ pointerEvents: "none", height: "100%" }}
+                        endElementProps={{ height: "100%", pr: 1, pointerEvents: "auto" }}
+                        endElement={
+                          hook.filters.search_text ? (
+                            <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><X onClick={() => hook.handleInputChange("search_text", "")} /></Icon>
+                          ) : undefined
+                        }>
+                        <Input
+                          size="lg"
+                          placeholder="Search in transaction notes"
+                          value={hook.filters.search_text}
+                          onChange={(e) => hook.handleInputChange("search_text", e.target.value)}
+                          borderWidth="2px"
+                          borderColor={hook.filters.search_text ? "teal.400" : inputBorderColor}
+                          bg={inputBg}
+                          borderRadius="md"
+                          _hover={{ borderColor: "teal.300" }}
+                          _focus={{
+                            borderColor: focusBorderColor,
+                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                          }}
                         />
-                      </InputRightElement>
-                    )}
-                  </InputGroup>
-                </FormControl>
-              </Box>
+                      </InputGroup>
+                    </Field.Root>
+                  </Box>
 
-              {/* Store and Location Filter Card */}
-              <Box
-                bg={cardBg}
-                p={{ base: 4, sm: 6 }}
-                borderRadius="md"
-                border="1px solid"
+                  {/* Store and Location Filter Card */}
+                  <Box
+                    bg={cardBg}
+                    p={{ base: 4, sm: 6 }}
+                    borderRadius="md"
+                    border="1px solid"
+                    borderColor={borderColor}
+                  >
+                    <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
+                      <GridItem>
+                        <StoreLocationFilter
+                          label="Store"
+                          filterValue={hook.filters.store}
+                          onChange={(value) => hook.handleInputChange("store", value)}
+                          ledgerId={ledgerId}
+                          field="store"
+                          inputBorderColor={inputBorderColor}
+                          inputBg={inputBg}
+                          focusBorderColor={focusBorderColor}
+                        />
+                      </GridItem>
+                      <GridItem>
+                        <StoreLocationFilter
+                          label="Location"
+                          filterValue={hook.filters.location}
+                          onChange={(value) => hook.handleInputChange("location", value)}
+                          ledgerId={ledgerId}
+                          field="location"
+                          inputBorderColor={inputBorderColor}
+                          inputBg={inputBg}
+                          focusBorderColor={focusBorderColor}
+                        />
+                      </GridItem>
+                    </Grid>
+                  </Box>
+
+                  {/* Transaction Type Card */}
+                  <Box
+                    bg={cardBg}
+                    p={{ base: 4, sm: 6 }}
+                    borderRadius="md"
+                    border="1px solid"
+                    borderColor={borderColor}
+                  >
+                    <Text fontWeight="semibold" mb={3}>
+                      Transaction Type
+                    </Text>
+                    <Grid templateColumns="repeat(2, 1fr)" gap={3}>
+                      {TRANSACTION_TYPE_OPTIONS.map(({ value, label, scheme }) => {
+                        const isSelected = hook.filters.transaction_type === value;
+                        return (
+                          <Button
+                            key={label}
+                            variant={isSelected ? "solid" : "outline"}
+                            colorPalette={isSelected ? scheme : "gray"}
+                            onClick={() => hook.handleInputChange("transaction_type", value)}
+                            size="md"
+                            borderWidth="2px"
+                            borderRadius="md"
+                            fontWeight={isSelected ? "semibold" : "normal"}
+                            transition="all 0.15s"
+                          >
+                            {label}
+                          </Button>
+                        );
+                      })}
+                    </Grid>
+                  </Box>
+
+                  {/* Date Range Card */}
+                  <FilterDateRange
+                    filters={hook.filters}
+                    handleInputChange={hook.handleInputChange}
+                    colors={colors}
+                  />
+                </VStack>
+
+                {/* Mobile-only action buttons that stay at bottom */}
+                <Box display={{ base: "block", sm: "none" }} mt={6}>
+                  <Button
+                    onClick={hook.handleApplyFilters}
+                    colorPalette="teal"
+                    size="lg"
+                    width="100%"
+                    mb={3}
+                    borderRadius="md"
+                    disabled={!hook.hasChanged}
+                  >
+                    Apply Filters
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    colorPalette="gray"
+                    onClick={hook.onClose}
+                    size="lg"
+                    width="100%"
+                    borderRadius="md"
+                  >
+                    Cancel
+                  </Button>
+                </Box>
+              </Dialog.Body>
+
+              {/* Desktop-only footer */}
+              <Dialog.Footer
+                display={{ base: "none", sm: "flex" }}
+                px={8}
+                py={6}
+                bg={footerBg}
+                borderTop="1px solid"
                 borderColor={borderColor}
               >
-                <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
-                  <GridItem>
-                    <StoreLocationFilter
-                      label="Store"
-                      filterValue={hook.filters.store}
-                      onChange={(value) => hook.handleInputChange("store", value)}
-                      ledgerId={ledgerId}
-                      field="store"
-                      inputBorderColor={inputBorderColor}
-                      inputBg={inputBg}
-                      focusBorderColor={focusBorderColor}
-                    />
-                  </GridItem>
-                  <GridItem>
-                    <StoreLocationFilter
-                      label="Location"
-                      filterValue={hook.filters.location}
-                      onChange={(value) => hook.handleInputChange("location", value)}
-                      ledgerId={ledgerId}
-                      field="location"
-                      inputBorderColor={inputBorderColor}
-                      inputBg={inputBg}
-                      focusBorderColor={focusBorderColor}
-                    />
-                  </GridItem>
-                </Grid>
-              </Box>
+                <Button
+                  colorPalette="teal"
+                  mr={3}
+                  onClick={hook.handleApplyFilters}
+                  px={8}
+                  py={3}
+                  borderRadius="md"
+                  disabled={!hook.hasChanged}
+                >
+                  Apply Filters
+                </Button>
+                <Button
+                  variant="ghost"
+                  colorPalette="gray"
+                  onClick={hook.onClose}
+                  px={6}
+                  py={3}
+                  borderRadius="md"
+                >
+                  Cancel
+                </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
 
-              {/* Transaction Type Card */}
-              <Box
-                bg={cardBg}
-                p={{ base: 4, sm: 6 }}
-                borderRadius="md"
-                border="1px solid"
-                borderColor={borderColor}
-              >
-                <FormLabel fontWeight="semibold" mb={3}>
-                  Transaction Type
-                </FormLabel>
-                <Grid templateColumns="repeat(2, 1fr)" gap={3}>
-                  {TRANSACTION_TYPE_OPTIONS.map(({ value, label, scheme }) => {
-                    const isSelected = hook.filters.transaction_type === value;
-                    return (
-                      <Button
-                        key={label}
-                        variant={isSelected ? "solid" : "outline"}
-                        colorScheme={isSelected ? scheme : "gray"}
-                        onClick={() => hook.handleInputChange("transaction_type", value)}
-                        size="md"
-                        borderWidth="2px"
-                        borderRadius="md"
-                        fontWeight={isSelected ? "semibold" : "normal"}
-                        transition="all 0.15s"
-                      >
-                        {label}
-                      </Button>
-                    );
-                  })}
-                </Grid>
-              </Box>
-
-              {/* Date Range Card */}
-              <FilterDateRange
-                filters={hook.filters}
-                handleInputChange={hook.handleInputChange}
-                colors={colors}
-              />
-            </VStack>
-
-            {/* Mobile-only action buttons that stay at bottom */}
-            <Box display={{ base: "block", sm: "none" }} mt={6}>
-              <Button
-                onClick={hook.handleApplyFilters}
-                colorScheme="teal"
-                size="lg"
-                width="100%"
-                mb={3}
-                borderRadius="md"
-                isDisabled={!hook.hasChanged}
-              >
-                Apply Filters
-              </Button>
-              <Button
-                variant="ghost"
-                colorScheme="gray"
-                onClick={hook.onClose}
-                size="lg"
-                width="100%"
-                borderRadius="md"
-              >
-                Cancel
-              </Button>
-            </Box>
-          </ModalBody>
-
-          {/* Desktop-only footer */}
-          <ModalFooter
-            display={{ base: "none", sm: "flex" }}
-            px={8}
-            py={6}
-            bg={footerBg}
-            borderTop="1px solid"
-            borderColor={borderColor}
-          >
-            <Button
-              colorScheme="teal"
-              mr={3}
-              onClick={hook.handleApplyFilters}
-              px={8}
-              py={3}
-              borderRadius="md"
-              isDisabled={!hook.hasChanged}
-            >
-              Apply Filters
-            </Button>
-            <Button
-              variant="ghost"
-              colorScheme="gray"
-              onClick={hook.onClose}
-              px={6}
-              py={3}
-              borderRadius="md"
-            >
-              Cancel
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+        </Portal>
+      </Dialog.Root>
     </>
   );
 };

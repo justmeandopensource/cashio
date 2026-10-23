@@ -1,22 +1,11 @@
 import React, { useCallback, useState } from "react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
 import { useNavigate } from "react-router-dom";
-import {
-  Box,
-  VStack,
-  HStack,
-  Heading,
-  Text,
-  useColorModeValue,
-  Flex,
-  Icon,
-  Center,
-  Select,
-  SimpleGrid,
-} from "@chakra-ui/react";
+import { Box, VStack, HStack, Heading, Text, Flex, Icon, Center, NativeSelect, SimpleGrid } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ResponsivePie } from "@nivo/pie";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, TrendingUp, PieChart as PieChartIcon, ChevronDown, X } from "lucide-react";
+import { MapPin, TrendingUp, PieChart as PieChartIcon, X } from "lucide-react";
 import useLedgerStore from "@/components/shared/store";
 import { splitCurrencyForDisplay } from "../../../mutual-funds/utils";
 import api from "@/lib/api";
@@ -198,7 +187,7 @@ const ExpenseByLocation: React.FC<ExpenseByLocationProps> = ({ ledgerId }) => {
         borderColor={sectionBorderColor}
         textAlign="center"
       >
-        <Icon as={TrendingUp} color="red.500" boxSize={6} mb={4} />
+        <Icon color="red.500" boxSize={6} mb={4} asChild><TrendingUp /></Icon>
         <Text color="red.500" fontWeight="bold" fontSize="lg">
           Unable to load expense by location data
         </Text>
@@ -212,7 +201,7 @@ const ExpenseByLocation: React.FC<ExpenseByLocationProps> = ({ ledgerId }) => {
       label: "Total Expense",
       accentColor: expenseAccentColor,
       renderValue: () => (
-        <HStack spacing={0} align="baseline">
+        <HStack gap={0} align="baseline">
           <Text
             fontSize={{ base: "lg", md: "xl" }}
             fontWeight="bold"
@@ -262,7 +251,7 @@ const ExpenseByLocation: React.FC<ExpenseByLocationProps> = ({ ledgerId }) => {
           mb={{ base: 4, md: 5 }}
         >
           <Flex align="center" gap={2}>
-            <Icon as={MapPin} boxSize={4} color={iconColor} />
+            <Icon boxSize={4} color={iconColor} asChild><MapPin /></Icon>
             <Heading
               as="h2"
               size="md"
@@ -273,34 +262,35 @@ const ExpenseByLocation: React.FC<ExpenseByLocationProps> = ({ ledgerId }) => {
             </Heading>
           </Flex>
 
-          <Select
-            value={periodType}
-            onChange={(e) => {
-              setPeriodType(e.target.value);
-              setSelectedLocationName(null);
-            }}
+          <NativeSelect.Root
             maxW={{ base: "full", md: "220px" }}
-            icon={<ChevronDown />}
-            variant="filled"
-            bg={selectBg}
-            size="sm"
-            borderRadius="lg"
-            fontWeight="medium"
-            fontSize="sm"
-          >
-            {periodOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+            variant="subtle"
+            size="sm">
+            <NativeSelect.Field
+              value={periodType}
+              onChange={(e) => {
+                setPeriodType(e.target.value);
+                setSelectedLocationName(null);
+              }}
+              bg={selectBg}
+              borderRadius="lg"
+              fontWeight="medium"
+              fontSize="sm">
+              {periodOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
         </Flex>
 
         {/* Summary Cards */}
         {data?.location_data && data.location_data.length > 0 && (
           <MotionSimpleGrid
             columns={{ base: 1, sm: 2 }}
-            spacing={{ base: 3, md: 4 }}
+            gap={{ base: 3, md: 4 }}
             mb={{ base: 4, md: 5 }}
             initial="hidden"
             animate="visible"
@@ -466,7 +456,7 @@ const ExpenseByLocation: React.FC<ExpenseByLocationProps> = ({ ledgerId }) => {
               {/* Legend */}
               <VStack
                 align="stretch"
-                spacing={1}
+                gap={1}
                 w={{ base: "full", md: "auto" }}
                 minW={{ md: "220px" }}
                 flex={{ md: 1 }}
@@ -508,9 +498,9 @@ const ExpenseByLocation: React.FC<ExpenseByLocationProps> = ({ ledgerId }) => {
                       <Flex align="center" justify="space-between" gap={2}>
                         <Flex align="center" gap={2} minW={0} flex={1}>
                           <Box w={2.5} h={2.5} borderRadius="sm" bg={item.color} flexShrink={0} />
-                          <Text fontSize="xs" color={primaryTextColor} fontWeight="600" isTruncated>{item.label}</Text>
+                          <Text fontSize="xs" color={primaryTextColor} fontWeight="600" truncate>{item.label}</Text>
                         </Flex>
-                        <HStack spacing={0} flexShrink={0}>
+                        <HStack gap={0} flexShrink={0}>
                           <Text fontSize="xs" color={primaryTextColor} fontWeight="700">
                             {splitCurrencyForDisplay(item.value, sym).main}
                           </Text>
@@ -538,12 +528,7 @@ const ExpenseByLocation: React.FC<ExpenseByLocationProps> = ({ ledgerId }) => {
               textAlign="center"
               p={6}
             >
-              <Icon
-                as={PieChartIcon}
-                boxSize={6}
-                color={tertiaryTextColor}
-                mb={4}
-              />
+              <Icon boxSize={6} color={tertiaryTextColor} mb={4} asChild><PieChartIcon /></Icon>
               <Heading size="md" mb={2} color={secondaryTextColor}>
                 No Location Data Available
               </Heading>
@@ -588,18 +573,17 @@ const ExpenseByLocation: React.FC<ExpenseByLocationProps> = ({ ledgerId }) => {
                       </Text>
                     </Flex>
                     <Flex
-                      as="button"
                       align="center"
                       justify="center"
-                      w={6} h={6}
+                      w={6}
+                      h={6}
                       borderRadius="md"
                       cursor="pointer"
-                      onClick={() => setSelectedLocationName(null)}
                       _hover={{ bg: legendHoverBg }}
                       transition="background 0.15s ease"
-                    >
-                      <Icon as={X} boxSize={3.5} color={tertiaryTextColor} />
-                    </Flex>
+                      asChild><button onClick={() => setSelectedLocationName(null)}>
+                        <Icon boxSize={3.5} color={tertiaryTextColor} asChild><X /></Icon>
+                      </button></Flex>
                   </Flex>
 
                   {isCategoryLoading ? (
@@ -607,7 +591,7 @@ const ExpenseByLocation: React.FC<ExpenseByLocationProps> = ({ ledgerId }) => {
                       Loading category breakdown...
                     </Text>
                   ) : categoryData?.category_data && categoryData.category_data.length > 0 ? (
-                    <VStack align="stretch" spacing={0}>
+                    <VStack align="stretch" gap={0}>
                       {/* Column headers */}
                       <Flex
                         display={{ base: "none", md: "flex" }}
@@ -641,11 +625,11 @@ const ExpenseByLocation: React.FC<ExpenseByLocationProps> = ({ ledgerId }) => {
                           >
                             <Flex flex={1} align="center" gap={2} minW={0}>
                               <Box w={2} h={2} borderRadius="sm" bg={CATEGORY_COLORS[idx % CATEGORY_COLORS.length]} flexShrink={0} />
-                              <Text fontSize="xs" fontWeight="600" color={primaryTextColor} isTruncated>
+                              <Text fontSize="xs" fontWeight="600" color={primaryTextColor} truncate>
                                 {cat.category}
                               </Text>
                             </Flex>
-                            <HStack w="120px" spacing={0} justify="flex-end">
+                            <HStack w="120px" gap={0} justify="flex-end">
                               <Text fontSize="xs" fontWeight="600" color={primaryTextColor}>
                                 {splitCurrencyForDisplay(cat.amount, sym).main}
                               </Text>

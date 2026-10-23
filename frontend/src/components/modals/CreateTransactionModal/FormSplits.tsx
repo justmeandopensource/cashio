@@ -1,15 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useColorModeValue } from "../../ui/color-mode";
 import { motion } from "framer-motion";
-import {
-  Box,
-  Divider,
-  Flex,
-  VStack,
-  Text,
-  HStack,
-  Button,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { Box, Flex, VStack, Text, HStack, Button, Separator } from "@chakra-ui/react";
 import { Plus } from "lucide-react";
 import { AxiosError } from "axios";
 import api from "@/lib/api";
@@ -374,9 +366,8 @@ const FormSplits: React.FC<FormSplitsProps> = ({
       borderColor={borderColor}
     >
       <VStack
-        spacing={{ base: 4, sm: 5 }}
+        gap={{ base: 4, sm: 5 }}
         align="stretch"
-        sx={{ "& .chakra-form__required-indicator": { display: "none" } }}
       >
         <Flex justifyContent="space-between" alignItems="center">
           <Box>
@@ -389,9 +380,9 @@ const FormSplits: React.FC<FormSplitsProps> = ({
           </Box>
         </Flex>
 
-        <Divider borderColor={borderColor} />
+        <Separator borderColor={borderColor} />
 
-        <VStack spacing={4} align="stretch">
+        <VStack gap={4} align="stretch">
           {splits.map((split, index) => {
             const isCategoryOpen = openCategoryIndex === index;
             const isNotesOpen =
@@ -496,15 +487,14 @@ const FormSplits: React.FC<FormSplitsProps> = ({
 
         {/* Add Split Button */}
         <Button
-          leftIcon={<Plus size={16} />}
           variant="outline"
           size="md"
           onClick={addSplit}
           alignSelf="flex-start"
-          colorScheme={buttonColorScheme}
+          colorPalette={buttonColorScheme}
           borderWidth="2px"
           px={6}
-          isDisabled={
+          disabled={
             displayRemainingAmount() <= 0 &&
             splits.some(
               (split) => roundToTwoDecimals(parseFloat(split.amount)) === 0,
@@ -515,10 +505,8 @@ const FormSplits: React.FC<FormSplitsProps> = ({
             borderColor: `${buttonColorScheme}.300`,
             transform: "translateY(-1px)",
           }}
-          transition="all 0.2s"
-        >
-          Add Split
-        </Button>
+          transition="all 0.2s"><Plus size={16} />Add Split
+                  </Button>
 
         {/* Allocation Progress */}
         {(() => {
@@ -550,9 +538,11 @@ const FormSplits: React.FC<FormSplitsProps> = ({
               borderRadius="md"
               border="1px solid"
               borderColor={summaryBorder}
-              sx={{ transition: "border-color 0.3s" }}
+              css={{
+                transition: "border-color 0.3s"
+              }}
             >
-              <VStack spacing={2} align="stretch">
+              <VStack gap={2} align="stretch">
                 <HStack justifyContent="space-between">
                   <Text
                     fontSize="xs"

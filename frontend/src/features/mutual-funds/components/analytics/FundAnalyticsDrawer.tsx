@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
 import {
   Box,
   Text,
@@ -6,16 +7,11 @@ import {
   VStack,
   HStack,
   Drawer,
-  DrawerOverlay,
-  DrawerContent,
-  DrawerHeader,
-  DrawerBody,
-  DrawerCloseButton,
   Spinner,
   Icon,
   Badge,
-  useColorModeValue,
   useBreakpointValue,
+  Portal,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { BarChart3, TrendingUp } from "lucide-react";
@@ -73,7 +69,7 @@ const AnalyticsContent: FC<AnalyticsContentProps> = ({ fund }) => {
   }
 
   return (
-    <VStack spacing={6} align="stretch">
+    <VStack gap={6} align="stretch">
       {/* Summary Cards */}
       <MotionBox
         initial={{ opacity: 0, y: 8 }}
@@ -155,7 +151,7 @@ const AnalyticsContent: FC<AnalyticsContentProps> = ({ fund }) => {
         </>
       ) : (
         <Flex direction="column" align="center" py={12}>
-          <Icon as={BarChart3} boxSize={10} color="gray.400" mb={3} />
+          <Icon boxSize={10} color="gray.400" mb={3} asChild><BarChart3 /></Icon>
           <Text fontWeight="bold" color="gray.500">
             No Transactions Yet
           </Text>
@@ -182,51 +178,61 @@ const FundAnalyticsDrawer: FC<FundAnalyticsDrawerProps> = ({
   const planBadgeColor = useColorModeValue("brand.600", "brand.200");
 
   return (
-    <Drawer
-      isOpen={isOpen}
-      placement="right"
-      onClose={onClose}
+    <Drawer.Root
+      open={isOpen}
+      placement='end'
       size={drawerSize}
+      onOpenChange={e => {
+        if (!e.open) {
+          onClose();
+        }
+      }}
     >
-      <DrawerOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-      <DrawerContent bg={bodyBg} maxW={{ base: "100%", md: "75%" }}>
-        <DrawerCloseButton />
-        <DrawerHeader
-          bg={headerBg}
-          borderBottom="1px solid"
-          borderColor={headerBorder}
-          pb={3}
-        >
-          <VStack align="start" spacing={1}>
-            <HStack spacing={2}>
-              <Icon as={TrendingUp} color="brand.500" />
-              <Text fontWeight="800" fontSize="lg" letterSpacing="-0.02em" noOfLines={2}>
-                {fund?.name || "Fund Analytics"}
-              </Text>
-            </HStack>
-            {fund?.plan && (
-              <Badge
-                bg={planBadgeBg}
-                color={planBadgeColor}
-                borderRadius="full"
-                px={2}
-                fontSize="2xs"
-              >
-                {fund.plan}
-              </Badge>
-            )}
-            {fund?.amc?.name && (
-              <Text fontSize="xs" color="gray.500">
-                {fund.amc.name}
-              </Text>
-            )}
-          </VStack>
-        </DrawerHeader>
-        <DrawerBody py={6} px={{ base: 3, md: 6 }}>
-          {fund && <AnalyticsContent fund={fund} />}
-        </DrawerBody>
-      </DrawerContent>
-    </Drawer>
+      <Portal>
+
+        <Drawer.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <Drawer.Positioner>
+          <Drawer.Content bg={bodyBg} maxW={{ base: "100%", md: "75%" }}>
+            <Drawer.CloseTrigger />
+            <Drawer.Header
+              bg={headerBg}
+              borderBottom="1px solid"
+              borderColor={headerBorder}
+              pb={3}
+            >
+              <VStack align="start" gap={1}>
+                <HStack gap={2}>
+                  <Icon color="brand.500" asChild><TrendingUp /></Icon>
+                  <Text fontWeight="800" fontSize="lg" letterSpacing="-0.02em" lineClamp={2}>
+                    {fund?.name || "Fund Analytics"}
+                  </Text>
+                </HStack>
+                {fund?.plan && (
+                  <Badge
+                    bg={planBadgeBg}
+                    color={planBadgeColor}
+                    borderRadius="full"
+                    px={2}
+                    fontSize="2xs"
+                  >
+                    {fund.plan}
+                  </Badge>
+                )}
+                {fund?.amc?.name && (
+                  <Text fontSize="xs" color="gray.500">
+                    {fund.amc.name}
+                  </Text>
+                )}
+              </VStack>
+            </Drawer.Header>
+            <Drawer.Body py={6} px={{ base: 3, md: 6 }}>
+              {fund && <AnalyticsContent fund={fund} />}
+            </Drawer.Body>
+          </Drawer.Content>
+        </Drawer.Positioner>
+
+      </Portal>
+    </Drawer.Root>
   );
 };
 

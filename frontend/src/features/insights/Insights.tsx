@@ -1,10 +1,11 @@
 import { useSearchParams } from "react-router-dom";
+import { useColorModeValue } from "../../components/ui/color-mode";
 import Layout from "@components/Layout";
 import InsightsMain from "./components/InsightsMain";
 import PageContainer from "@components/shared/PageContainer";
 import PageHeader from "@components/shared/PageHeader";
 import { PieChart } from "lucide-react";
-import { Box, Flex, FormControl, Select, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex, NativeSelect, Text, Field } from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
 import useLedgerStore from "@/components/shared/store";
 import { useLedgers } from "@features/ledger/hooks";
@@ -141,28 +142,27 @@ const Insights = () => {
               >
                 Ledger
               </Text>
-              <FormControl>
-                <Select
-                  value={selectedLedgerId || ""}
-                  onChange={handleLedgerChange}
-                  isDisabled={isLoading}
-                  size="sm"
-                  w="100%"
-                  borderRadius="md"
-                  bg={selectBg}
-                  borderColor={selectBorderColor}
-                  color={selectColor}
-                  focusBorderColor="brand.500"
-                  _hover={{ borderColor: selectHoverBorderColor }}
-                >
-                  <option value="">Select Ledger</option>
-                  {ledgers?.map((ledger) => (
-                    <option key={ledger.ledger_id} value={ledger.ledger_id}>
-                      {ledger.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
+              <Field.Root>
+                <NativeSelect.Root disabled={isLoading} size="sm">
+                  <NativeSelect.Field
+                    value={selectedLedgerId || ""}
+                    onChange={handleLedgerChange}
+                    w="100%"
+                    borderRadius="md"
+                    bg={selectBg}
+                    borderColor={selectBorderColor}
+                    color={selectColor}
+                    _hover={{ borderColor: selectHoverBorderColor }}>
+                    <option value="">Select Ledger</option>
+                    {ledgers?.map((ledger) => (
+                      <option key={ledger.ledger_id} value={ledger.ledger_id}>
+                        {ledger.name}
+                      </option>
+                    ))}
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
+              </Field.Root>
             </Box>
 
             <Box w="100%">
@@ -176,27 +176,26 @@ const Insights = () => {
               >
                 Visualization
               </Text>
-              <FormControl>
-                <Select
-                  value={selectedVisualization}
-                  onChange={handleVisualizationChange}
-                  size="sm"
-                  minW={{ base: "100%", lg: "260px" }}
-                  w="100%"
-                  borderRadius="md"
-                  bg={selectBg}
-                  borderColor={selectBorderColor}
-                  color={selectColor}
-                  focusBorderColor="brand.500"
-                  _hover={{ borderColor: selectHoverBorderColor }}
-                >
-                  {visualizationOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
+              <Field.Root>
+                <NativeSelect.Root size="sm" minW={{ base: "100%", lg: "260px" }}>
+                  <NativeSelect.Field
+                    value={selectedVisualization}
+                    onChange={handleVisualizationChange}
+                    w="100%"
+                    borderRadius="md"
+                    bg={selectBg}
+                    borderColor={selectBorderColor}
+                    color={selectColor}
+                    _hover={{ borderColor: selectHoverBorderColor }}>
+                    {visualizationOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
+              </Field.Root>
             </Box>
           </Flex>
         }

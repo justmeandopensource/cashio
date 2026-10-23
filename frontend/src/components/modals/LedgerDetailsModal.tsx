@@ -1,20 +1,17 @@
 import React from "react";
+import { useColorModeValue } from "../ui/color-mode";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalFooter,
-  ModalBody,
   VStack,
   HStack,
   Box,
   Text,
   Flex,
   Badge,
-  Divider,
-  useColorModeValue,
   Icon,
   Button,
+  Separator,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
 import { BookText, FileText } from "lucide-react";
 
@@ -69,230 +66,234 @@ const LedgerDetailsModal: React.FC<LedgerDetailsModalProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      returnFocusOnClose={false}
-      onClose={onClose}
+    <Dialog.Root
+      open={isOpen}
       size={{ base: "full", sm: "xl" }}
-      motionPreset="slideInBottom"
-    >
-      <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-      <ModalContent
-        bg={bgColor}
-        borderRadius={{ base: 0, sm: "xl" }}
-        boxShadow="2xl"
-        border="1px solid"
-        borderColor={borderColor}
-        overflow="hidden"
-        mx={{ base: 0, sm: 4 }}
-        my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "90vh" }}
-        display="flex"
-        flexDirection="column"
-      >
-        {/* Gradient accent line */}
-        <Box
-          h="3px"
-          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
-        />
-        {/* Flat header */}
-        <Box
-          px={{ base: 4, sm: 8 }}
-          py={5}
-          borderBottom="1px solid"
-          borderColor={modalHeaderBorderColor}
-        >
-          <HStack spacing={3} align="flex-start">
-            <Icon as={BookText} boxSize={5} mt="3px" color={modalIconColor} />
+      motionPreset="slide-in-bottom"
+      onOpenChange={e => {
+        if (!e.open) {
+          onClose();
+        }
+      }}>
+      <Portal>
 
-            <VStack align="start" spacing={1} flex={1}>
-              <HStack
-                spacing={3}
-                align="center"
-                flexWrap={{ base: "wrap", sm: "nowrap" }}
-              >
-                <Text
-                  fontSize="lg"
-                  fontWeight="800"
-                  letterSpacing="-0.02em"
-                  color={modalTitleColor}
-                >
-                  {ledgerName}
-                </Text>
-                <Badge
-                  colorScheme="brand"
-                  variant="subtle"
-                  fontSize="sm"
-                  px={2}
-                  py={0.5}
-                  borderRadius="full"
-                  flexShrink={0}
-                >
-                  {currencySymbol}
-                </Badge>
-              </HStack>
-
-              <Text
-                fontSize="sm"
-                color={modalSubtitleColor}
-                fontStyle={!description ? "italic" : "normal"}
-              >
-                {description || "No description"}
-              </Text>
-            </VStack>
-          </HStack>
-        </Box>
-
-        <ModalBody p={{ base: 4, sm: 8 }} flex="1" overflowY="auto" overflowX="hidden">
-          <VStack spacing={{ base: 4, sm: 6 }} align="stretch">
-            {/* Notes Section - Always shown */}
+        <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <Dialog.Positioner>
+          <Dialog.Content
+            bg={bgColor}
+            borderRadius={{ base: 0, sm: "xl" }}
+            boxShadow="2xl"
+            border="1px solid"
+            borderColor={borderColor}
+            overflow="hidden"
+            mx={{ base: 0, sm: 4 }}
+            my={{ base: 0, sm: "auto" }}
+            maxHeight={{ base: "100%", md: "90vh" }}
+            display="flex"
+            flexDirection="column">
+            {/* Gradient accent line */}
+            <Box h="3px" bgGradient="to-r" gradientFrom="brand.400" gradientVia="brand.600" gradientTo="teal.300"  />
+            {/* Flat header */}
             <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
+              px={{ base: 4, sm: 8 }}
+              py={5}
+              borderBottom="1px solid"
+              borderColor={modalHeaderBorderColor}
             >
-              <HStack spacing={3} mb={4}>
-                <Icon as={FileText} color={iconColor} boxSize={6} />
-                <Text fontSize={{ base: "lg", sm: "xl" }} fontWeight="semibold">
-                  Notes
-                </Text>
-              </HStack>
+              <HStack gap={3} align="flex-start">
+                <Icon boxSize={5} mt="3px" color={modalIconColor} asChild><BookText /></Icon>
 
-              <Text
-                color={notes ? textSecondary : textMuted}
-                lineHeight="1.7"
-                whiteSpace="pre-wrap"
-                fontSize={{ base: "md", sm: "lg" }}
-                fontStyle={!notes ? "italic" : "normal"}
-              >
-                {notes || "No notes available for this ledger."}
-              </Text>
+                <VStack align="start" gap={1} flex={1}>
+                  <HStack
+                    gap={3}
+                    align="center"
+                    flexWrap={{ base: "wrap", sm: "nowrap" }}
+                  >
+                    <Text
+                      fontSize="lg"
+                      fontWeight="800"
+                      letterSpacing="-0.02em"
+                      color={modalTitleColor}
+                    >
+                      {ledgerName}
+                    </Text>
+                    <Badge
+                      colorPalette="brand"
+                      variant="subtle"
+                      fontSize="sm"
+                      px={2}
+                      py={0.5}
+                      borderRadius="full"
+                      flexShrink={0}
+                    >
+                      {currencySymbol}
+                    </Badge>
+                  </HStack>
+
+                  <Text
+                    fontSize="sm"
+                    color={modalSubtitleColor}
+                    fontStyle={!description ? "italic" : "normal"}
+                  >
+                    {description || "No description"}
+                  </Text>
+                </VStack>
+              </HStack>
             </Box>
 
-            {/* Metadata Section - Always at bottom */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
-            >
-              <VStack spacing={4}>
-                <Flex justify="space-between" align="center" w="full">
-                  <HStack spacing={2}>
-                    <Box w={2} h={2} bg="green.400" borderRadius="full" />
-                    <Text
-                      fontSize={{ base: "sm", sm: "md" }}
-                      color={textSecondary}
-                      fontWeight="medium"
-                    >
-                      Created
+            <Dialog.Body p={{ base: 4, sm: 8 }} flex="1" overflowY="auto" overflowX="hidden">
+              <VStack gap={{ base: 4, sm: 6 }} align="stretch">
+                {/* Notes Section - Always shown */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <HStack gap={3} mb={4}>
+                    <Icon color={iconColor} boxSize={6} asChild><FileText /></Icon>
+                    <Text fontSize={{ base: "lg", sm: "xl" }} fontWeight="semibold">
+                      Notes
                     </Text>
                   </HStack>
+
                   <Text
-                    fontSize={{ base: "sm", sm: "md" }}
-                    color={textMuted}
-                    fontFamily="mono"
+                    color={notes ? textSecondary : textMuted}
+                    lineHeight="1.7"
+                    whiteSpace="pre-wrap"
+                    fontSize={{ base: "md", sm: "lg" }}
+                    fontStyle={!notes ? "italic" : "normal"}
                   >
-                    {formatDate(createdAt)}
+                    {notes || "No notes available for this ledger."}
                   </Text>
-                </Flex>
+                </Box>
 
-                <Divider />
+                {/* Metadata Section - Always at bottom */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <VStack gap={4}>
+                    <Flex justify="space-between" align="center" w="full">
+                      <HStack gap={2}>
+                        <Box w={2} h={2} bg="green.400" borderRadius="full" />
+                        <Text
+                          fontSize={{ base: "sm", sm: "md" }}
+                          color={textSecondary}
+                          fontWeight="medium"
+                        >
+                          Created
+                        </Text>
+                      </HStack>
+                      <Text
+                        fontSize={{ base: "sm", sm: "md" }}
+                        color={textMuted}
+                        fontFamily="mono"
+                      >
+                        {formatDate(createdAt)}
+                      </Text>
+                    </Flex>
 
-                <Flex justify="space-between" align="center" w="full">
-                  <HStack spacing={2}>
-                    <Box w={2} h={2} bg="blue.400" borderRadius="full" />
-                    <Text
-                      fontSize={{ base: "sm", sm: "md" }}
-                      color={textSecondary}
-                      fontWeight="medium"
+                    <Separator />
+
+                    <Flex justify="space-between" align="center" w="full">
+                      <HStack gap={2}>
+                        <Box w={2} h={2} bg="blue.400" borderRadius="full" />
+                        <Text
+                          fontSize={{ base: "sm", sm: "md" }}
+                          color={textSecondary}
+                          fontWeight="medium"
+                        >
+                          Last Updated
+                        </Text>
+                      </HStack>
+                      <Text
+                        fontSize={{ base: "sm", sm: "md" }}
+                        color={textMuted}
+                        fontFamily="mono"
+                      >
+                        {formatDate(updatedAt)}
+                      </Text>
+                    </Flex>
+                  </VStack>
+                </Box>
+                {/* Mobile-only action buttons */}
+                <Box display={{ base: "block", sm: "none" }}>
+                  {onEditLedger && (
+                    <Button
+                      colorPalette="brand"
+                      size="lg"
+                      width="100%"
+                      mb={3}
+                      borderRadius="lg"
+                      fontWeight="bold"
+                      onClick={() => {
+                        onEditLedger();
+                        onClose();
+                      }}
                     >
-                      Last Updated
-                    </Text>
-                  </HStack>
-                  <Text
-                    fontSize={{ base: "sm", sm: "md" }}
-                    color={textMuted}
-                    fontFamily="mono"
+                      Edit Ledger
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    colorPalette="gray"
+                    onClick={onClose}
+                    width="100%"
+                    size="lg"
+                    borderRadius="lg"
                   >
-                    {formatDate(updatedAt)}
-                  </Text>
-                </Flex>
+                    Cancel
+                  </Button>
+                </Box>
               </VStack>
-            </Box>
-            {/* Mobile-only action buttons */}
-            <Box display={{ base: "block", sm: "none" }}>
+            </Dialog.Body>
+
+            {/* Desktop-only footer */}
+            <Dialog.Footer
+              display={{ base: "none", sm: "flex" }}
+              px={8}
+              py={6}
+              bg={footerBg}
+              borderTop="1px solid"
+              borderColor={borderColor}
+            >
               {onEditLedger && (
                 <Button
-                  colorScheme="brand"
-                  size="lg"
-                  width="100%"
-                  mb={3}
-                  borderRadius="lg"
-                  fontWeight="bold"
+                  colorPalette="brand"
+                  mr={3}
                   onClick={() => {
                     onEditLedger();
                     onClose();
                   }}
+                  px={8}
+                  py={3}
+                  borderRadius="lg"
+                  fontWeight="bold"
                 >
                   Edit Ledger
                 </Button>
               )}
               <Button
                 variant="ghost"
-                colorScheme="gray"
+                colorPalette="gray"
                 onClick={onClose}
-                width="100%"
-                size="lg"
+                px={6}
+                py={3}
                 borderRadius="lg"
               >
                 Cancel
               </Button>
-            </Box>
-          </VStack>
-        </ModalBody>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
 
-        {/* Desktop-only footer */}
-        <ModalFooter
-          display={{ base: "none", sm: "flex" }}
-          px={8}
-          py={6}
-          bg={footerBg}
-          borderTop="1px solid"
-          borderColor={borderColor}
-        >
-          {onEditLedger && (
-            <Button
-              colorScheme="brand"
-              mr={3}
-              onClick={() => {
-                onEditLedger();
-                onClose();
-              }}
-              px={8}
-              py={3}
-              borderRadius="lg"
-              fontWeight="bold"
-            >
-              Edit Ledger
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            colorScheme="gray"
-            onClick={onClose}
-            px={6}
-            py={3}
-            borderRadius="lg"
-          >
-            Cancel
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

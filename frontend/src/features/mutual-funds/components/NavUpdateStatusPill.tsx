@@ -1,22 +1,7 @@
 import { FC, useMemo } from "react";
-import {
-  HStack,
-  Icon,
-  Text,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverArrow,
-  PopoverBody,
-  PopoverHeader,
-  VStack,
-  Button,
-  Box,
-  Spinner,
-  useColorModeValue,
-  Tooltip,
-  Divider,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { HStack, Icon, Text, Popover, VStack, Button, Box, Spinner, Separator } from "@chakra-ui/react";
+import { Tooltip } from '@/components/ui/tooltip';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -196,7 +181,7 @@ const NavUpdateStatusPill: FC<NavUpdateStatusPillProps> = ({ compact = false }) 
     return compact ? (
       <Text fontSize="xs" color={mutedText}>Auto-update: loading…</Text>
     ) : (
-      <HStack spacing={2} px={3} py={1} bg={pillBgIdle} borderRadius="full" border="1px solid" borderColor={pillBorderIdle}>
+      <HStack gap={2} px={3} py={1} bg={pillBgIdle} borderRadius="full" border="1px solid" borderColor={pillBorderIdle}>
         <Spinner size="xs" />
         <Text fontSize="xs" color={subText}>Auto-update</Text>
       </HStack>
@@ -207,8 +192,8 @@ const NavUpdateStatusPill: FC<NavUpdateStatusPillProps> = ({ compact = false }) 
     return compact ? (
       <Text fontSize="xs" color={failedColor}>Auto-update: unavailable</Text>
     ) : (
-      <HStack spacing={2} px={3} py={1} bg={pillBgFailed} borderRadius="full" border="1px solid" borderColor={pillBorderFailed}>
-        <Icon as={XCircle} boxSize={3.5} color={failedColor} />
+      <HStack gap={2} px={3} py={1} bg={pillBgFailed} borderRadius="full" border="1px solid" borderColor={pillBorderFailed}>
+        <Icon boxSize={3.5} color={failedColor} asChild><XCircle /></Icon>
         <Text fontSize="xs" color={failedColor}>Auto-update unavailable</Text>
       </HStack>
     );
@@ -236,8 +221,8 @@ const NavUpdateStatusPill: FC<NavUpdateStatusPillProps> = ({ compact = false }) 
 
   if (compact) {
     return (
-      <HStack spacing={2}>
-        <Icon as={visual.icon} boxSize={3.5} color={visual.color} />
+      <HStack gap={2}>
+        <Icon boxSize={3.5} color={visual.color} asChild><visual.icon /></Icon>
         <Text fontSize="xs" color={subText}>{summaryLine}</Text>
         {effective.status !== "running" && (
           <Text
@@ -255,99 +240,111 @@ const NavUpdateStatusPill: FC<NavUpdateStatusPillProps> = ({ compact = false }) 
   }
 
   return (
-    <Popover placement="bottom-end">
-      <PopoverTrigger>
-        <Box as="button" type="button" cursor="pointer" _focus={{ outline: "none", boxShadow: "outline" }} borderRadius="full">
-          <Tooltip label="Auto NAV update — click for details" placement="top">
-            <HStack
-              spacing={2}
-              px={3}
-              py={1}
-              bg={visual.bg}
-              borderRadius="full"
-              border="1px solid"
-              borderColor={visual.border}
-              transition="all 0.15s ease"
-              _hover={{ filter: "brightness(0.97)" }}
-            >
-              {effective.status === "running" ? (
-                <Spinner size="xs" color={visual.color} />
-              ) : (
-                <Icon as={visual.icon} boxSize={3.5} color={visual.color} />
-              )}
-              <Text fontSize="xs" fontWeight="semibold" color={visual.color}>
-                {effective.label}
+    <Popover.Root positioning={{
+      placement: 'bottom-end'
+    }}>
+      <Popover.Trigger asChild>
+        <Box
+          cursor="pointer"
+          _focus={{ outline: "none", boxShadow: "outline" }}
+          borderRadius="full"
+          asChild><button type="button">
+            <Tooltip content="Auto NAV update — click for details" positioning={{
+              placement: "top"
+            }}>
+              <HStack
+                gap={2}
+                px={3}
+                py={1}
+                bg={visual.bg}
+                borderRadius="full"
+                border="1px solid"
+                borderColor={visual.border}
+                transition="all 0.15s ease"
+                _hover={{ filter: "brightness(0.97)" }}
+              >
+                {effective.status === "running" ? (
+                  <Spinner size="xs" color={visual.color} />
+                ) : (
+                  <Icon boxSize={3.5} color={visual.color} asChild><visual.icon /></Icon>
+                )}
+                <Text fontSize="xs" fontWeight="semibold" color={visual.color}>
+                  {effective.label}
+                </Text>
+                {headlineRelative && effective.status !== "idle" && effective.status !== "no_funds" && (
+                  <Text fontSize="xs" color={subText}>
+                    · {headlineRelative}
+                  </Text>
+                )}
+                {showCounts && (
+                  <Text fontSize="xs" color={subText}>
+                    · {updatedCount}/{totalFunds}
+                  </Text>
+                )}
+              </HStack>
+            </Tooltip>
+          </button></Box>
+      </Popover.Trigger>
+      <Popover.Positioner>
+        <Popover.Content
+          bg={popoverBg}
+          borderRadius="lg"
+          boxShadow="lg"
+          maxW="340px"
+          _focus={{ outline: "none" }}>
+          <Popover.Arrow bg={popoverBg} />
+          <Popover.Title fontWeight="bold" border="none" pb={2}>
+            Auto NAV update
+            {effective.ledgerName && (
+              <Text as="span" fontSize="xs" color={mutedText} fontWeight="normal" ml={2}>
+                · {effective.ledgerName}
               </Text>
-              {headlineRelative && effective.status !== "idle" && effective.status !== "no_funds" && (
-                <Text fontSize="xs" color={subText}>
-                  · {headlineRelative}
-                </Text>
+            )}
+          </Popover.Title>
+          <Popover.Body pt={0}>
+            <VStack align="stretch" gap={2}>
+              <DetailRow label="Status" value={effective.label} valueColor={visual.color} />
+              <DetailRow label="Last run" value={formatAbsolute(data.finished_at ?? data.started_at)} />
+              <DetailRow label="Triggered by" value={data.triggered_by ?? "—"} />
+              {(effective.status === "success" ||
+                effective.status === "partial" ||
+                effective.status === "failed" ||
+                effective.status === "running") && (
+                <DetailRow
+                  label="Funds updated"
+                  value={`${effective.updatedCount} / ${effective.totalFunds}`}
+                />
               )}
-              {showCounts && (
-                <Text fontSize="xs" color={subText}>
-                  · {updatedCount}/{totalFunds}
-                </Text>
+              {effective.failedCount > 0 && (
+                <DetailRow label="Failed" value={String(effective.failedCount)} valueColor={failedColor} />
               )}
-            </HStack>
-          </Tooltip>
-        </Box>
-      </PopoverTrigger>
-      <PopoverContent bg={popoverBg} borderRadius="lg" boxShadow="lg" maxW="340px" _focus={{ outline: "none" }}>
-        <PopoverArrow bg={popoverBg} />
-        <PopoverHeader fontWeight="bold" border="none" pb={2}>
-          Auto NAV update
-          {effective.ledgerName && (
-            <Text as="span" fontSize="xs" color={mutedText} fontWeight="normal" ml={2}>
-              · {effective.ledgerName}
-            </Text>
-          )}
-        </PopoverHeader>
-        <PopoverBody pt={0}>
-          <VStack align="stretch" spacing={2}>
-            <DetailRow label="Status" value={effective.label} valueColor={visual.color} />
-            <DetailRow label="Last run" value={formatAbsolute(data.finished_at ?? data.started_at)} />
-            <DetailRow label="Triggered by" value={data.triggered_by ?? "—"} />
-            {(effective.status === "success" ||
-              effective.status === "partial" ||
-              effective.status === "failed" ||
-              effective.status === "running") && (
-              <DetailRow
-                label="Funds updated"
-                value={`${effective.updatedCount} / ${effective.totalFunds}`}
-              />
-            )}
-            {effective.failedCount > 0 && (
-              <DetailRow label="Failed" value={String(effective.failedCount)} valueColor={failedColor} />
-            )}
-            {data.error && (
-              <Box mt={1}>
-                <Text fontSize="xs" color={failedColor} noOfLines={3}>
-                  {data.error}
-                </Text>
-              </Box>
-            )}
+              {data.error && (
+                <Box mt={1}>
+                  <Text fontSize="xs" color={failedColor} lineClamp={3}>
+                    {data.error}
+                  </Text>
+                </Box>
+              )}
 
-            <Divider my={1} />
-            <Button
-              leftIcon={<Play size={14} />}
-              size="sm"
-              colorScheme="brand"
-              onClick={() => triggerMutation.mutate()}
-              isLoading={triggerMutation.isPending || effective.status === "running"}
-              loadingText={effective.status === "running" ? "Running…" : "Starting…"}
-              isDisabled={effective.status === "running"}
-            >
-              Run now in background
-            </Button>
-            {triggerMutation.isError && (
-              <Text fontSize="xs" color={failedColor}>
-                Could not start a run. Try again in a moment.
-              </Text>
-            )}
-          </VStack>
-        </PopoverBody>
-      </PopoverContent>
-    </Popover>
+              <Separator my={1} />
+              <Button
+                size="sm"
+                colorPalette="brand"
+                onClick={() => triggerMutation.mutate()}
+                loading={triggerMutation.isPending || effective.status === "running"}
+                loadingText={effective.status === "running" ? "Running…" : "Starting…"}
+                disabled={effective.status === "running"}><Play size={14} />Run now in background
+                            </Button>
+              {triggerMutation.isError && (
+                <Text fontSize="xs" color={failedColor}>
+                  Could not start a run. Try again in a moment.
+                </Text>
+              )}
+            </VStack>
+          </Popover.Body>
+        </Popover.Content>
+      </Popover.Positioner>
+    </Popover.Root>
   );
 };
 

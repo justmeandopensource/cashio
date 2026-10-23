@@ -26,7 +26,7 @@ const Categories: React.FC = () => {
       alignItems={{ base: "center", md: "center", lg: "flex-start" }}
     >
       <Button
-        colorScheme="brand"
+        colorPalette="brand"
         size="sm"
         borderRadius="lg"
         fontWeight="semibold"
@@ -36,7 +36,7 @@ const Categories: React.FC = () => {
         Create Income Category
       </Button>
       <Button
-        colorScheme="brand"
+        colorPalette="brand"
         variant="outline"
         size="sm"
         borderRadius="lg"

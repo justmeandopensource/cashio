@@ -1,5 +1,6 @@
 import React from "react";
-import { Box, Flex, Skeleton, useColorModeValue } from "@chakra-ui/react";
+import { useColorModeValue } from "../../components/ui/color-mode";
+import { Box, Flex, Skeleton } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 
 const shimmer = keyframes`

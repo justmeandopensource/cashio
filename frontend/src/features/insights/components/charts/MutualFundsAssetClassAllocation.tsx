@@ -1,24 +1,12 @@
 import React, { useState, useMemo } from "react";
-import {
-  Box,
-  VStack,
-  HStack,
-  Heading,
-  Text,
-  useColorModeValue,
-  Flex,
-  Icon,
-  Center,
-  Select,
-  SimpleGrid,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
+import { Box, VStack, HStack, Heading, Text, Flex, Icon, Center, NativeSelect, SimpleGrid } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ResponsivePie } from "@nivo/pie";
 import { useQuery } from "@tanstack/react-query";
 import {
   PieChart as PieChartIcon,
   TrendingUp,
-  ChevronDown,
   Layers,
   Wallet,
   ArrowUpRight,
@@ -262,7 +250,7 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
   if (isError) {
     return (
       <Box bg={cardBg} p={{ base: 4, md: 6 }} borderRadius="xl" border="1px solid" borderColor={sectionBorderColor} textAlign="center">
-        <Icon as={TrendingUp} color="red.500" boxSize={6} mb={4} />
+        <Icon color="red.500" boxSize={6} mb={4} asChild><TrendingUp /></Icon>
         <Text color="red.500" fontWeight="bold" fontSize="lg">Unable to load mutual funds data</Text>
       </Box>
     );
@@ -274,7 +262,7 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
       label: "Current Value",
       accentColor: portfolioAccentColor,
       renderValue: () => (
-        <HStack spacing={0} align="baseline">
+        <HStack gap={0} align="baseline">
           <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={pnlPositiveColor} lineHeight="short" letterSpacing="-0.01em">
             {splitCurrencyForDisplay(totalPortfolioValue, sym).main}
           </Text>
@@ -289,7 +277,7 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
       label: "Total Invested",
       accentColor: investedAccentColor,
       renderValue: () => (
-        <HStack spacing={0} align="baseline">
+        <HStack gap={0} align="baseline">
           <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
             {splitCurrencyForDisplay(totalInvested, sym).main}
           </Text>
@@ -307,8 +295,8 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
         const pnlColor = isPnlPositive ? pnlPositiveColor : pnlNegativeColor;
         const pctDisplay = splitPercentageForDisplay(totalPnlPct);
         return (
-          <VStack spacing={0} align="flex-start">
-            <HStack spacing={0} align="baseline">
+          <VStack gap={0} align="flex-start">
+            <HStack gap={0} align="baseline">
               <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={pnlColor} lineHeight="short" letterSpacing="-0.01em">
                 {isPnlPositive ? "+" : "-"}{splitCurrencyForDisplay(Math.abs(totalPnl), sym).main}
               </Text>
@@ -328,7 +316,7 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
       label: "Breakdown",
       accentColor: classesAccentColor,
       renderValue: () => (
-        <HStack spacing={1.5} align="baseline">
+        <HStack gap={1.5} align="baseline">
           <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={primaryTextColor} lineHeight="short" letterSpacing="-0.01em">
             {totalFundCount}
           </Text>
@@ -356,30 +344,31 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
           mb={{ base: 4, md: 5 }}
         >
           <Flex align="center" gap={2}>
-            <Icon as={PieChartIcon} boxSize={4} color={iconColor} />
+            <Icon boxSize={4} color={iconColor} asChild><PieChartIcon /></Icon>
             <Heading as="h2" size="md" color={primaryTextColor} letterSpacing="-0.02em">
               Asset Class Allocation
             </Heading>
           </Flex>
 
           {availableOwners.length > 0 && (
-            <Select
-              value={selectedOwner}
-              onChange={(e) => setSelectedOwner(e.target.value)}
+            <NativeSelect.Root
               maxW={{ base: "full", md: "220px" }}
-              icon={<ChevronDown />}
-              variant="filled"
-              bg={selectBg}
-              size="sm"
-              borderRadius="lg"
-              fontWeight="medium"
-              fontSize="sm"
-            >
-              <option value="all">All Owners</option>
-              {availableOwners.map((owner) => (
-                <option key={owner} value={owner}>{owner}</option>
-              ))}
-            </Select>
+              variant="subtle"
+              size="sm">
+              <NativeSelect.Field
+                value={selectedOwner}
+                onChange={(e) => setSelectedOwner(e.target.value)}
+                bg={selectBg}
+                borderRadius="lg"
+                fontWeight="medium"
+                fontSize="sm">
+                <option value="all">All Owners</option>
+                {availableOwners.map((owner) => (
+                  <option key={owner} value={owner}>{owner}</option>
+                ))}
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
           )}
         </Flex>
 
@@ -387,7 +376,7 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
         {chartData.length > 0 && (
           <MotionSimpleGrid
             columns={{ base: 2, sm: 4 }}
-            spacing={{ base: 3, md: 4 }}
+            gap={{ base: 3, md: 4 }}
             mb={{ base: 4, md: 5 }}
             initial="hidden"
             animate="visible"
@@ -503,7 +492,7 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
 
               {/* Legend */}
               <VStack
-                align="stretch" spacing={1}
+                align="stretch" gap={1}
                 w={{ base: "full", md: "auto" }}
                 minW={{ md: "240px" }}
                 flex={{ md: 1 }}
@@ -538,9 +527,9 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
                       <Flex align="center" justify="space-between" gap={2}>
                         <Flex align="center" gap={2} minW={0} flex={1}>
                           <Box w={2.5} h={2.5} borderRadius="sm" bg={item.color} flexShrink={0} />
-                          <Text fontSize="xs" color={primaryTextColor} fontWeight="600" isTruncated>{item.label}</Text>
+                          <Text fontSize="xs" color={primaryTextColor} fontWeight="600" truncate>{item.label}</Text>
                         </Flex>
-                        <HStack spacing={0} flexShrink={0}>
+                        <HStack gap={0} flexShrink={0}>
                           <Text fontSize="xs" color={primaryTextColor} fontWeight="700">
                             {splitCurrencyForDisplay(item.value, sym).main}
                           </Text>
@@ -565,7 +554,7 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
             </Flex>
           ) : (
             <Center height="300px" borderRadius="lg" flexDirection="column" textAlign="center" p={6}>
-              <Icon as={PieChartIcon} boxSize={6} color={tertiaryTextColor} mb={4} />
+              <Icon boxSize={6} color={tertiaryTextColor} mb={4} asChild><PieChartIcon /></Icon>
               <Heading size="md" mb={2} color={secondaryTextColor}>No Mutual Funds Data Available</Heading>
               <Text color={secondaryTextColor} fontSize="sm">Add mutual fund investments to see your asset class allocation.</Text>
             </Center>
@@ -605,22 +594,21 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
                       </Text>
                     </Flex>
                     <Flex
-                      as="button"
                       align="center"
                       justify="center"
-                      w={6} h={6}
+                      w={6}
+                      h={6}
                       borderRadius="md"
                       cursor="pointer"
-                      onClick={() => setSelectedClassName(null)}
                       _hover={{ bg: legendHoverBg }}
                       transition="background 0.15s ease"
-                    >
-                      <Icon as={X} boxSize={3.5} color={tertiaryTextColor} />
-                    </Flex>
+                      asChild><button onClick={() => setSelectedClassName(null)}>
+                        <Icon boxSize={3.5} color={tertiaryTextColor} asChild><X /></Icon>
+                      </button></Flex>
                   </Flex>
 
                   {/* Sub-class groups */}
-                  <VStack align="stretch" spacing={3}>
+                  <VStack align="stretch" gap={3}>
                     {selectedClass.subClasses.map((subClass) => {
                       const subPnlPositive = subClass.pnl >= 0;
                       return (
@@ -649,7 +637,7 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
                               </Text>
                             </Flex>
                             <Flex align="center" gap={3}>
-                              <HStack spacing={0}>
+                              <HStack gap={0}>
                                 <Text fontSize="xs" fontWeight="600" color={primaryTextColor}>
                                   {splitCurrencyForDisplay(subClass.value, sym).main}
                                 </Text>
@@ -706,14 +694,14 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
                                   transition="background 0.15s ease"
                                 >
                                   <Box flex={1} minW={0}>
-                                    <Text fontSize="xs" fontWeight="600" color={primaryTextColor} isTruncated>
+                                    <Text fontSize="xs" fontWeight="600" color={primaryTextColor} truncate>
                                       {fund.name}
                                     </Text>
                                     {fund.owner && (
                                       <Text fontSize="2xs" color={tertiaryTextColor}>{fund.owner}</Text>
                                     )}
                                   </Box>
-                                  <HStack w="100px" spacing={0} justify="flex-end">
+                                  <HStack w="100px" gap={0} justify="flex-end">
                                     <Text fontSize="xs" fontWeight="600" color={primaryTextColor}>
                                       {splitCurrencyForDisplay(currentValue, sym).main}
                                     </Text>
@@ -721,7 +709,7 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
                                       {splitCurrencyForDisplay(currentValue, sym).decimals}
                                     </Text>
                                   </HStack>
-                                  <HStack w="100px" spacing={0} justify="flex-end">
+                                  <HStack w="100px" gap={0} justify="flex-end">
                                     <Text fontSize="xs" color={tertiaryTextColor}>
                                       {splitCurrencyForDisplay(invested, sym).main}
                                     </Text>
@@ -750,14 +738,14 @@ const MutualFundsAssetClassAllocation: React.FC<MutualFundsAssetClassAllocationP
                                   borderColor={sectionBorderColor}
                                 >
                                   <Flex justify="space-between" align="center" mb={1}>
-                                    <Text fontSize="xs" fontWeight="600" color={primaryTextColor} isTruncated flex={1}>
+                                    <Text fontSize="xs" fontWeight="600" color={primaryTextColor} truncate flex={1}>
                                       {fund.name}
                                     </Text>
                                     {fund.owner && (
                                       <Text fontSize="2xs" color={tertiaryTextColor} ml={2}>{fund.owner}</Text>
                                     )}
                                   </Flex>
-                                  <SimpleGrid columns={2} spacing={1}>
+                                  <SimpleGrid columns={2} gap={1}>
                                     <Box>
                                       <Text fontSize="2xs" color={tertiaryTextColor}>Value</Text>
                                       <Text fontSize="xs" fontWeight="600" color={primaryTextColor}>

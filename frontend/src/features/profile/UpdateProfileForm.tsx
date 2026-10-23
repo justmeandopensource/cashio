@@ -1,10 +1,9 @@
 import React, { useEffect } from "react";
+import { useColorModeValue } from "../../components/ui/color-mode";
 import { Save, User, Mail, Calendar, Clock, AtSign } from "lucide-react";
 import { useForm } from "react-hook-form";
 import {
   Box,
-  FormControl,
-  FormLabel,
   Input,
   Button,
   VStack,
@@ -13,10 +12,9 @@ import {
   Icon,
   Heading,
   SimpleGrid,
-  InputGroup,
-  InputLeftElement,
-  useColorModeValue,
+  Field,
 } from "@chakra-ui/react";
+import { InputGroup } from "@/components/ui/input-group";
 import { motion } from "framer-motion";
 import { useUpdateUserProfile, useUserProfile } from "./hooks";
 import { UserUpdate } from "./api";
@@ -96,7 +94,7 @@ const UpdateProfileForm: React.FC = () => {
   if (isUserLoading) {
     return (
       <Box w="full" px={{ base: 4, md: 8 }} py={{ base: 6, md: 8 }}>
-        <VStack spacing={5} py={12}>
+        <VStack gap={5} py={12}>
           <MotionBox
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -110,7 +108,7 @@ const UpdateProfileForm: React.FC = () => {
               alignItems="center"
               justifyContent="center"
             >
-              <Icon as={User} color={headerIconColor} boxSize={7} />
+              <Icon color={headerIconColor} boxSize={7} asChild><User /></Icon>
             </Box>
           </MotionBox>
           <Text color={subtitleColor} fontSize="md" fontWeight="500">
@@ -131,7 +129,7 @@ const UpdateProfileForm: React.FC = () => {
           transition={{ duration: 0.3 }}
           mb={8}
         >
-          <HStack spacing={3}>
+          <HStack gap={3}>
             <Box
               w={10}
               h={10}
@@ -141,7 +139,7 @@ const UpdateProfileForm: React.FC = () => {
               alignItems="center"
               justifyContent="center"
             >
-              <Icon as={User} color={headerIconColor} boxSize={5} />
+              <Icon color={headerIconColor} boxSize={5} asChild><User /></Icon>
             </Box>
             <Box>
               <Heading size="md" color={textColor} fontWeight="700">
@@ -156,212 +154,210 @@ const UpdateProfileForm: React.FC = () => {
 
         {/* Form */}
         <MotionBox
-          as="form"
-          onSubmit={handleSubmit(onSubmit)}
           maxW="2xl"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.08 }}
-        >
-          <VStack spacing={6} align="stretch">
-            {/* Username (read-only) */}
-            <FormControl>
-              <FormLabel fontSize="sm" fontWeight="600" color={labelColor} mb={2}>
-                Username
-              </FormLabel>
-              <InputGroup>
-                <InputLeftElement h="48px" pointerEvents="none">
-                  <Icon as={AtSign} boxSize={4} color={iconColor} />
-                </InputLeftElement>
-                <Input
-                  type="text"
-                  value={user?.username || ""}
-                  isReadOnly
-                  bg={inputReadOnlyBg}
-                  borderColor={inputBorderColor}
+          asChild><form onSubmit={handleSubmit(onSubmit)}>
+            <VStack gap={6} align="stretch">
+              {/* Username (read-only) */}
+              <Field.Root>
+                <Field.Label fontSize="sm" fontWeight="600" color={labelColor} mb={2}>
+                  Username
+                </Field.Label>
+                <InputGroup
+                  w="full"
+                  startElement={<Icon boxSize={4} color={iconColor} asChild><AtSign /></Icon>}
+                  startElementProps={{ h: "48px" }}
+                >
+                  <Input
+                    type="text"
+                    value={user?.username || ""}
+                    readOnly
+                    bg={inputReadOnlyBg}
+                    borderColor={inputBorderColor}
+                    borderRadius="lg"
+                    h="48px"
+                    fontSize="sm"
+                    fontWeight="500"
+                    color={readOnlyTextColor}
+                    pl={10}
+                    cursor="default"
+                    _hover={{ borderColor: inputBorderColor }}
+                    _focus={{ borderColor: inputBorderColor, boxShadow: "none" }}
+                  />
+                </InputGroup>
+              </Field.Root>
+
+              {/* Full Name and Email */}
+              <Box
+                display={{ base: "flex", lg: "grid" }}
+                flexDirection="column"
+                gridTemplateColumns="1fr 1fr"
+                gap={{ base: 5, lg: 8 }}
+              >
+                <Field.Root>
+                  <Field.Label fontSize="sm" fontWeight="600" color={labelColor} mb={2}>
+                    Full Name
+                  </Field.Label>
+                  <InputGroup
+                    w="full"
+                    startElement={<Icon boxSize={4} color={iconColor} asChild><User /></Icon>}
+                    startElementProps={{ h: "48px" }}
+                  >
+                    <Input
+                      type="text"
+                      placeholder="Enter your full name"
+                      {...register("full_name")}
+                      bg={inputBg}
+                      borderColor={inputBorderColor}
+                      borderRadius="lg"
+                      h="48px"
+                      fontSize="sm"
+                      pl={10}
+                      _hover={{ borderColor: inputHoverBorderColor }}
+                      _focus={{
+                        borderColor: focusBorderColor,
+                        boxShadow: focusBoxShadow,
+                      }}
+                      _placeholder={{ color: iconColor, fontSize: "sm" }}
+                    />
+                  </InputGroup>
+                </Field.Root>
+
+                <Field.Root>
+                  <Field.Label fontSize="sm" fontWeight="600" color={labelColor} mb={2}>
+                    Email Address
+                  </Field.Label>
+                  <InputGroup
+                    w="full"
+                    startElement={<Icon boxSize={4} color={iconColor} asChild><Mail /></Icon>}
+                    startElementProps={{ h: "48px" }}
+                  >
+                    <Input
+                      type="email"
+                      placeholder="Enter your email"
+                      {...register("email")}
+                      bg={inputBg}
+                      borderColor={inputBorderColor}
+                      borderRadius="lg"
+                      h="48px"
+                      fontSize="sm"
+                      pl={10}
+                      _hover={{ borderColor: inputHoverBorderColor }}
+                      _focus={{
+                        borderColor: focusBorderColor,
+                        boxShadow: focusBoxShadow,
+                      }}
+                      _placeholder={{ color: iconColor, fontSize: "sm" }}
+                    />
+                  </InputGroup>
+                </Field.Root>
+              </Box>
+
+              {/* Account Metadata */}
+              <Box pt={2}>
+                <Text
+                  fontSize="xs"
+                  fontWeight="600"
+                  textTransform="uppercase"
+                  letterSpacing="wider"
+                  color={sectionLabelColor}
+                  mb={3}
+                >
+                  Account Info
+                </Text>
+                <SimpleGrid columns={{ base: 1, md: 2 }} gap={3}>
+                  <HStack
+                    gap={3}
+                    bg={metaCardBg}
+                    border="1px solid"
+                    borderColor={metaCardBorder}
+                    borderRadius="xl"
+                    px={4}
+                    py={3}
+                  >
+                    <Box
+                      w={9}
+                      h={9}
+                      borderRadius="lg"
+                      bg={metaIconBg}
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      flexShrink={0}
+                    >
+                      <Icon color={metaIconColor} boxSize={4} asChild><Calendar /></Icon>
+                    </Box>
+                    <Box>
+                      <Text fontSize="xs" color={subtitleColor} fontWeight="500">
+                        Created
+                      </Text>
+                      <Text fontSize="sm" fontWeight="600" color={metaValueColor}>
+                        {formatDate(user?.created_at)}
+                      </Text>
+                    </Box>
+                  </HStack>
+
+                  <HStack
+                    gap={3}
+                    bg={metaCardBg}
+                    border="1px solid"
+                    borderColor={metaCardBorder}
+                    borderRadius="xl"
+                    px={4}
+                    py={3}
+                  >
+                    <Box
+                      w={9}
+                      h={9}
+                      borderRadius="lg"
+                      bg={metaIconBg}
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      flexShrink={0}
+                    >
+                      <Icon color={metaIconColor} boxSize={4} asChild><Clock /></Icon>
+                    </Box>
+                    <Box>
+                      <Text fontSize="xs" color={subtitleColor} fontWeight="500">
+                        Last Updated
+                      </Text>
+                      <Text fontSize="sm" fontWeight="600" color={metaValueColor}>
+                        {formatDate(user?.updated_at)}
+                      </Text>
+                    </Box>
+                  </HStack>
+                </SimpleGrid>
+              </Box>
+
+              {/* Save Button */}
+              <Box pt={2}>
+                <Button
+                  type="submit"
+                  loading={isUpdating}
+                  loadingText="Saving..."
+                  disabled={!isDirty}
+                  size="md"
                   borderRadius="lg"
                   h="48px"
                   fontSize="sm"
-                  fontWeight="500"
-                  color={readOnlyTextColor}
-                  pl={10}
-                  cursor="default"
-                  _hover={{ borderColor: inputBorderColor }}
-                  _focus={{ borderColor: inputBorderColor, boxShadow: "none" }}
-                />
-              </InputGroup>
-            </FormControl>
-
-            {/* Full Name and Email */}
-            <Box
-              display={{ base: "flex", lg: "grid" }}
-              flexDirection="column"
-              gridTemplateColumns="1fr 1fr"
-              gap={{ base: 5, lg: 8 }}
-            >
-              <FormControl>
-                <FormLabel fontSize="sm" fontWeight="600" color={labelColor} mb={2}>
-                  Full Name
-                </FormLabel>
-                <InputGroup>
-                  <InputLeftElement h="48px" pointerEvents="none">
-                    <Icon as={User} boxSize={4} color={iconColor} />
-                  </InputLeftElement>
-                  <Input
-                    type="text"
-                    placeholder="Enter your full name"
-                    {...register("full_name")}
-                    bg={inputBg}
-                    borderColor={inputBorderColor}
-                    borderRadius="lg"
-                    h="48px"
-                    fontSize="sm"
-                    pl={10}
-                    _hover={{ borderColor: inputHoverBorderColor }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: focusBoxShadow,
-                    }}
-                    _placeholder={{ color: iconColor, fontSize: "sm" }}
-                  />
-                </InputGroup>
-              </FormControl>
-
-              <FormControl>
-                <FormLabel fontSize="sm" fontWeight="600" color={labelColor} mb={2}>
-                  Email Address
-                </FormLabel>
-                <InputGroup>
-                  <InputLeftElement h="48px" pointerEvents="none">
-                    <Icon as={Mail} boxSize={4} color={iconColor} />
-                  </InputLeftElement>
-                  <Input
-                    type="email"
-                    placeholder="Enter your email"
-                    {...register("email")}
-                    bg={inputBg}
-                    borderColor={inputBorderColor}
-                    borderRadius="lg"
-                    h="48px"
-                    fontSize="sm"
-                    pl={10}
-                    _hover={{ borderColor: inputHoverBorderColor }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: focusBoxShadow,
-                    }}
-                    _placeholder={{ color: iconColor, fontSize: "sm" }}
-                  />
-                </InputGroup>
-              </FormControl>
-            </Box>
-
-            {/* Account Metadata */}
-            <Box pt={2}>
-              <Text
-                fontSize="xs"
-                fontWeight="600"
-                textTransform="uppercase"
-                letterSpacing="wider"
-                color={sectionLabelColor}
-                mb={3}
-              >
-                Account Info
-              </Text>
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
-                <HStack
-                  spacing={3}
-                  bg={metaCardBg}
-                  border="1px solid"
-                  borderColor={metaCardBorder}
-                  borderRadius="xl"
-                  px={4}
-                  py={3}
-                >
-                  <Box
-                    w={9}
-                    h={9}
-                    borderRadius="lg"
-                    bg={metaIconBg}
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    flexShrink={0}
-                  >
-                    <Icon as={Calendar} color={metaIconColor} boxSize={4} />
-                  </Box>
-                  <Box>
-                    <Text fontSize="xs" color={subtitleColor} fontWeight="500">
-                      Created
-                    </Text>
-                    <Text fontSize="sm" fontWeight="600" color={metaValueColor}>
-                      {formatDate(user?.created_at)}
-                    </Text>
-                  </Box>
-                </HStack>
-
-                <HStack
-                  spacing={3}
-                  bg={metaCardBg}
-                  border="1px solid"
-                  borderColor={metaCardBorder}
-                  borderRadius="xl"
-                  px={4}
-                  py={3}
-                >
-                  <Box
-                    w={9}
-                    h={9}
-                    borderRadius="lg"
-                    bg={metaIconBg}
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    flexShrink={0}
-                  >
-                    <Icon as={Clock} color={metaIconColor} boxSize={4} />
-                  </Box>
-                  <Box>
-                    <Text fontSize="xs" color={subtitleColor} fontWeight="500">
-                      Last Updated
-                    </Text>
-                    <Text fontSize="sm" fontWeight="600" color={metaValueColor}>
-                      {formatDate(user?.updated_at)}
-                    </Text>
-                  </Box>
-                </HStack>
-              </SimpleGrid>
-            </Box>
-
-            {/* Save Button */}
-            <Box pt={2}>
-              <Button
-                type="submit"
-                isLoading={isUpdating}
-                loadingText="Saving..."
-                isDisabled={!isDirty}
-                leftIcon={<Icon as={Save} boxSize={4} />}
-                size="md"
-                borderRadius="lg"
-                h="48px"
-                fontSize="sm"
-                fontWeight="600"
-                px={6}
-                _hover={{
-                  transform: "translateY(-1px)",
-                  shadow: "md",
-                }}
-                _active={{
-                  transform: "translateY(0)",
-                }}
-                transition="all 0.2s"
-                shadow="sm"
-              >
-                Save Changes
-              </Button>
-            </Box>
-          </VStack>
-        </MotionBox>
+                  fontWeight="600"
+                  px={6}
+                  _hover={{
+                    transform: "translateY(-1px)",
+                    shadow: "md",
+                  }}
+                  _active={{
+                    transform: "translateY(0)",
+                  }}
+                  transition="all 0.2s"
+                  shadow="sm"><Icon boxSize={4} asChild><Save /></Icon>Save Changes
+                                </Button>
+              </Box>
+            </VStack>
+          </form></MotionBox>
       </Box>
     </Box>
   );

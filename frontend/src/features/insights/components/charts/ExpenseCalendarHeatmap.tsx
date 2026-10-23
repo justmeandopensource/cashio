@@ -1,22 +1,11 @@
 import React, { useState } from "react";
+import { useColorModeValue, useColorMode } from "../../../../components/ui/color-mode";
 import { useNavigate } from "react-router-dom";
-import {
-  Box,
-  VStack,
-  HStack,
-  Heading,
-  Text,
-  useColorModeValue,
-  Flex,
-  Icon,
-  Center,
-  Select,
-  Tooltip,
-  useColorMode,
-} from "@chakra-ui/react";
+import { Box, VStack, HStack, Heading, Text, Flex, Icon, Center, NativeSelect } from "@chakra-ui/react";
+import { Tooltip } from '@/components/ui/tooltip';
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, TrendingUp, ChevronDown } from "lucide-react";
+import { Calendar, TrendingUp } from "lucide-react";
 import CalendarHeatmap from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
 import useLedgerStore from "@/components/shared/store";
@@ -157,7 +146,7 @@ const ExpenseCalendarHeatmap: React.FC<ExpenseCalendarHeatmapProps> = ({ ledgerI
         borderColor={sectionBorderColor}
         textAlign="center"
       >
-        <Icon as={TrendingUp} color="red.500" boxSize={6} mb={4} />
+        <Icon color="red.500" boxSize={6} mb={4} asChild><TrendingUp /></Icon>
         <Text color="red.500" fontWeight="bold" fontSize="lg">
           Unable to load expense calendar data
         </Text>
@@ -181,7 +170,7 @@ const ExpenseCalendarHeatmap: React.FC<ExpenseCalendarHeatmapProps> = ({ ledgerI
           mb={{ base: 4, md: 5 }}
         >
           <Flex align="center" gap={2}>
-            <Icon as={Calendar} boxSize={4} color={iconColor} />
+            <Icon boxSize={4} color={iconColor} asChild><Calendar /></Icon>
             <Heading
               as="h2"
               size="md"
@@ -192,24 +181,25 @@ const ExpenseCalendarHeatmap: React.FC<ExpenseCalendarHeatmapProps> = ({ ledgerI
             </Heading>
           </Flex>
 
-          <Select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+          <NativeSelect.Root
             maxW={{ base: "full", md: "150px" }}
-            icon={<ChevronDown />}
-            variant="filled"
-            bg={selectBg}
-            size="sm"
-            borderRadius="lg"
-            fontWeight="medium"
-            fontSize="sm"
-          >
-            {yearOptions.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </Select>
+            variant="subtle"
+            size="sm">
+            <NativeSelect.Field
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              bg={selectBg}
+              borderRadius="lg"
+              fontWeight="medium"
+              fontSize="sm">
+              {yearOptions.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
         </Flex>
 
         {/* Heatmap */}
@@ -236,7 +226,7 @@ const ExpenseCalendarHeatmap: React.FC<ExpenseCalendarHeatmapProps> = ({ ledgerI
                     }
 
                     const tooltipLabel = (
-                      <VStack spacing={0} align="center">
+                      <VStack gap={0} align="center">
                         <Text fontWeight="bold" fontSize="md">
                           {formatNumberAsCurrency(value.count, currencySymbol as string)}
                         </Text>
@@ -245,7 +235,9 @@ const ExpenseCalendarHeatmap: React.FC<ExpenseCalendarHeatmapProps> = ({ ledgerI
                     );
 
                     return (
-                      <Tooltip label={tooltipLabel} placement="top" hasArrow>
+                      <Tooltip content={tooltipLabel} showArrow positioning={{
+                        placement: "top"
+                      }}>
                         {rect}
                       </Tooltip>
                     );
@@ -261,7 +253,7 @@ const ExpenseCalendarHeatmap: React.FC<ExpenseCalendarHeatmapProps> = ({ ledgerI
               textAlign="center"
               p={6}
             >
-              <Icon as={Calendar} boxSize={6} color={tertiaryTextColor} mb={4} />
+              <Icon boxSize={6} color={tertiaryTextColor} mb={4} asChild><Calendar /></Icon>
               <Heading size="md" mb={2} color={secondaryTextColor}>
                 No Expense Data Available
               </Heading>
@@ -284,9 +276,9 @@ const ExpenseCalendarHeatmap: React.FC<ExpenseCalendarHeatmapProps> = ({ ledgerI
           >
             Legend
           </Text>
-          <HStack spacing={3} wrap="wrap">
+          <HStack gap={3} wrap="wrap">
             {legendItems.map(({ color, label }) => (
-              <HStack spacing={1.5} key={label}>
+              <HStack gap={1.5} key={label}>
                 <Box w={2.5} h={2.5} bg={color} borderRadius="sm" />
                 <Text fontSize="2xs" color={tertiaryTextColor} fontWeight="500">
                   {label}

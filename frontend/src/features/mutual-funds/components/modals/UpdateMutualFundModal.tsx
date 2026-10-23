@@ -1,24 +1,18 @@
 import React, { useState, useEffect } from "react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalFooter,
-  ModalBody,
-  FormControl,
-  FormLabel,
-  FormHelperText,
-  FormErrorMessage,
   Input,
   Textarea,
-  Select,
+  NativeSelect,
   Button,
   Box,
   VStack,
   HStack,
-  useColorModeValue,
   Text,
   Icon,
+  Field,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
 import { AxiosError } from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -275,147 +269,347 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
     formData.notes !== (fund.notes || "");
 
   return (
-    <Modal
-      isOpen={isOpen}
-      returnFocusOnClose={false}
-      onClose={onClose}
+    <Dialog.Root
+      open={isOpen}
       size={{ base: "full", sm: "xl" }}
-      motionPreset="slideInBottom"
-    >
-      <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-      <ModalContent
-        bg={bgColor}
-        borderRadius={{ base: 0, sm: "xl" }}
-        boxShadow="2xl"
-        border="1px solid"
-        borderColor={borderColor}
-        overflow="hidden"
-        mx={{ base: 0, sm: 4 }}
-        my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "90vh" }}
-        display="flex"
-        flexDirection="column"
-      >
-        {/* Gradient accent line */}
-        <Box
-          h="3px"
-          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
-        />
-        {/* Flat header */}
-        <Box
-          px={{ base: 4, sm: 8 }}
-          py={5}
-          borderBottom="1px solid"
-          borderColor={modalHeaderBorderColor}
-        >
-          <HStack spacing={3} align="flex-start">
-            <Icon as={Edit} boxSize={5} mt="3px" color={modalIconColor} />
+      motionPreset="slide-in-bottom"
+      onOpenChange={e => {
+        if (!e.open) {
+          onClose();
+        }
+      }}>
+      <Portal>
 
-            <Box>
-              <Box
-                fontSize="lg"
-                fontWeight="800"
-                letterSpacing="-0.02em"
-                color={modalTitleColor}
-              >
-                Update Mutual Fund
-              </Box>
-              <Box
-                fontSize="sm"
-                color={modalSubtitleColor}
-              >
-                Modify mutual fund details and settings
-              </Box>
-            </Box>
-          </HStack>
-        </Box>
-
-        <ModalBody
-          px={{ base: 4, sm: 8 }}
-          py={{ base: 4, sm: 6 }}
-          flex="1"
-          display="flex"
-          flexDirection="column"
-          overflowY="auto"
-          overflowX="hidden"
-          justifyContent={{ base: "space-between", sm: "flex-start" }}
-        >
-          <VStack spacing={{ base: 5, sm: 6 }} align="stretch" w="100%">
-            {/* Fund Name Card */}
+        <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <Dialog.Positioner>
+          <Dialog.Content
+            bg={bgColor}
+            borderRadius={{ base: 0, sm: "xl" }}
+            boxShadow="2xl"
+            border="1px solid"
+            borderColor={borderColor}
+            overflow="hidden"
+            mx={{ base: 0, sm: 4 }}
+            my={{ base: 0, sm: "auto" }}
+            maxHeight={{ base: "100%", md: "90vh" }}
+            display="flex"
+            flexDirection="column">
+            {/* Gradient accent line */}
+            <Box h="3px" bgGradient="to-r" gradientFrom="brand.400" gradientVia="brand.600" gradientTo="teal.300"  />
+            {/* Flat header */}
             <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
+              px={{ base: 4, sm: 8 }}
+              py={5}
+              borderBottom="1px solid"
+              borderColor={modalHeaderBorderColor}
             >
-              <FormControl isRequired isInvalid={!!errors.name}>
-                <FormLabel fontWeight="semibold" mb={2}>
-                  <HStack spacing={2}>
-                    <TrendingUp size={16} />
-                    <Text>Mutual Fund Name</Text>
-                  </HStack>
-                </FormLabel>
-                <Input
-                  placeholder="e.g., HDFC Mid Cap Fund"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  borderWidth="2px"
-                  borderColor={inputBorderColor}
-                  bg={inputBg}
-                  size="lg"
-                  borderRadius="md"
-                  _hover={{ borderColor: "teal.300" }}
-                  _focus={{
-                    borderColor: focusBorderColor,
-                    boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                  }}
-                  autoFocus
-                  maxLength={100}
-                />
-                <FormErrorMessage>{errors.name}</FormErrorMessage>
-                <FormHelperText mt={2}>
-                  Update the complete name of the mutual fund scheme
-                </FormHelperText>
-              </FormControl>
+              <HStack gap={3} align="flex-start">
+                <Icon boxSize={5} mt="3px" color={modalIconColor} asChild><Edit /></Icon>
+
+                <Box>
+                  <Box
+                    fontSize="lg"
+                    fontWeight="800"
+                    letterSpacing="-0.02em"
+                    color={modalTitleColor}
+                  >
+                    Update Mutual Fund
+                  </Box>
+                  <Box
+                    fontSize="sm"
+                    color={modalSubtitleColor}
+                  >
+                    Modify mutual fund details and settings
+                  </Box>
+                </Box>
+              </HStack>
             </Box>
 
-            {/* Plan and Code Card */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
+            <Dialog.Body
+              px={{ base: 4, sm: 8 }}
+              py={{ base: 4, sm: 6 }}
+              flex="1"
+              display="flex"
+              flexDirection="column"
+              overflowY="auto"
+              overflowX="hidden"
+              justifyContent={{ base: "space-between", sm: "flex-start" }}
             >
-              <VStack spacing={5} align="stretch">
-                <HStack spacing={4} align="start">
+              <VStack gap={{ base: 5, sm: 6 }} align="stretch" w="100%">
+                {/* Fund Name Card */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <Field.Root required invalid={!!errors.name}>
+                    <Field.Label fontWeight="semibold" mb={2}>
+                      <HStack gap={2}>
+                        <TrendingUp size={16} />
+                        <Text>Mutual Fund Name</Text>
+                      </HStack>
+                    </Field.Label>
+                    <Input
+                      placeholder="e.g., HDFC Mid Cap Fund"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      borderWidth="2px"
+                      borderColor={inputBorderColor}
+                      bg={inputBg}
+                      size="lg"
+                      borderRadius="md"
+                      _hover={{ borderColor: "teal.300" }}
+                      _focus={{
+                        borderColor: focusBorderColor,
+                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                      }}
+                      autoFocus
+                      maxLength={100}
+                    />
+                    <Field.ErrorText>{errors.name}</Field.ErrorText>
+                    <Field.HelperText mt={2}>
+                      Update the complete name of the mutual fund scheme
+                    </Field.HelperText>
+                  </Field.Root>
+                </Box>
+
+                {/* Plan and Code Card */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <VStack gap={5} align="stretch">
+                    <HStack gap={4} align="start">
+                      <FormMutualFundSuggestionField
+                        ledgerId={fund.ledger_id.toString()}
+                        field="plan"
+                        label="Plan (Optional)"
+                        value={formData.plan}
+                        setValue={(val) => handleInputChange("plan", val)}
+                        placeholder="Direct Growth"
+                        helperText="Enter the plan type"
+                        borderColor={inputBorderColor}
+                        inputBg={inputBg}
+                      />
+
+                      <Field.Root invalid={!!errors.code} flex={1}>
+                        <Field.Label fontWeight="semibold" mb={2}>
+                          <HStack gap={2}>
+                            <FileText size={16} />
+                            <Text>Code (Optional)</Text>
+                          </HStack>
+                        </Field.Label>
+                        <Input
+                          value={formData.code}
+                          onChange={(e) => handleInputChange("code", e.target.value)}
+                          placeholder="HDFC001"
+                          maxLength={50}
+                          size="lg"
+                          bg={inputBg}
+                          borderColor={inputBorderColor}
+                          borderWidth="2px"
+                          borderRadius="md"
+                          _hover={{ borderColor: "teal.300" }}
+                          _focus={{
+                            borderColor: focusBorderColor,
+                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                          }}
+                        />
+                        <Field.ErrorText>{errors.code}</Field.ErrorText>
+                        <Field.HelperText>Enter a unique code</Field.HelperText>
+                      </Field.Root>
+                    </HStack>
+
+                  </VStack>
+                </Box>
+
+                {/* Owner Card */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
                   <FormMutualFundSuggestionField
                     ledgerId={fund.ledger_id.toString()}
-                    field="plan"
-                    label="Plan (Optional)"
-                    value={formData.plan}
-                    setValue={(val) => handleInputChange("plan", val)}
-                    placeholder="Direct Growth"
-                    helperText="Enter the plan type"
+                    field="owner"
+                    label="Owner (Optional)"
+                    value={formData.owner}
+                    setValue={(val) => handleInputChange("owner", val)}
+                    placeholder="e.g., John Doe"
+                    helperText="Enter the owner name to allow same fund names for different owners"
                     borderColor={inputBorderColor}
                     inputBg={inputBg}
                   />
+                </Box>
 
-                  <FormControl isInvalid={!!errors.code} flex={1}>
-                    <FormLabel fontWeight="semibold" mb={2}>
-                      <HStack spacing={2}>
-                        <FileText size={16} />
-                        <Text>Code (Optional)</Text>
+                {/* Asset Classification Card */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <VStack gap={5} align="stretch">
+                    {/* Asset Class */}
+                    <Field.Root invalid={!!errors.asset_class}>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        <HStack gap={2}>
+                          <FileText size={16} />
+                          <Text>Asset Class (Optional)</Text>
+                        </HStack>
+                      </Field.Label>
+                      <NativeSelect.Root size="lg">
+                        <NativeSelect.Field
+                          value={formData.asset_class}
+                          onChange={(e) => handleInputChange("asset_class", e.target.value)}
+                          placeholder="Select asset class"
+                          bg={inputBg}
+                          borderColor={inputBorderColor}
+                          borderWidth="2px"
+                          borderRadius="md"
+                          _hover={{ borderColor: "teal.300" }}
+                          _focus={{
+                            borderColor: focusBorderColor,
+                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                          }}>
+                          {ASSET_CLASSES.map((assetClass) => (
+                            <option key={assetClass.value} value={assetClass.value}>
+                              {assetClass.label}
+                            </option>
+                          ))}
+                        </NativeSelect.Field>
+                        <NativeSelect.Indicator />
+                      </NativeSelect.Root>
+                      <Field.ErrorText>{errors.asset_class}</Field.ErrorText>
+                      <Field.HelperText>
+                        Choose the asset class for this mutual fund
+                      </Field.HelperText>
+                    </Field.Root>
+
+                    {/* Asset Sub Class */}
+                    {formData.asset_class &&
+                      ASSET_SUB_CLASSES[
+                        formData.asset_class as keyof typeof ASSET_SUB_CLASSES
+                      ]?.length > 0 && (
+                        <Field.Root invalid={!!errors.asset_sub_class}>
+                          <Field.Label fontWeight="semibold" mb={2}>
+                            <HStack gap={2}>
+                              <FileText size={16} />
+                              <Text>Asset Sub-Class (Optional)</Text>
+                            </HStack>
+                          </Field.Label>
+                          <NativeSelect.Root size="lg">
+                            <NativeSelect.Field
+                              value={formData.asset_sub_class}
+                              onChange={(e) => handleInputChange("asset_sub_class", e.target.value)}
+                              placeholder="Select asset sub-class"
+                              bg={inputBg}
+                              borderColor={inputBorderColor}
+                              borderWidth="2px"
+                              borderRadius="md"
+                              _hover={{ borderColor: "teal.300" }}
+                              _focus={{
+                                borderColor: focusBorderColor,
+                                boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                              }}>
+                              {ASSET_SUB_CLASSES[
+                                formData.asset_class as keyof typeof ASSET_SUB_CLASSES
+                              ].map((subClass) => (
+                                <option key={subClass.value} value={subClass.value}>
+                                  {subClass.label}
+                                </option>
+                              ))}
+                            </NativeSelect.Field>
+                            <NativeSelect.Indicator />
+                          </NativeSelect.Root>
+                          <Field.ErrorText>{errors.asset_sub_class}</Field.ErrorText>
+                          <Field.HelperText>
+                            Choose the asset sub-class for this mutual fund
+                          </Field.HelperText>
+                        </Field.Root>
+                      )}
+                  </VStack>
+                </Box>
+
+                {/* AMC Selection Card */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <Field.Root invalid={!!errors.amc_id}>
+                    <Field.Label fontWeight="semibold" mb={2}>
+                      <HStack gap={2}>
+                        <Building2 size={16} />
+                        <Text>Asset Management Company</Text>
+                        <Text as="span" color="red.500">
+                          *
+                        </Text>
                       </HStack>
-                    </FormLabel>
-                    <Input
-                      value={formData.code}
-                      onChange={(e) => handleInputChange("code", e.target.value)}
-                      placeholder="HDFC001"
-                      maxLength={50}
-                      size="lg"
+                    </Field.Label>
+                     <NativeSelect.Root size="lg">
+                       <NativeSelect.Field
+                         value={formData.amc_id}
+                         onChange={(e) => handleInputChange("amc_id", e.target.value)}
+                         placeholder="Select the AMC"
+                         bg={inputBg}
+                         borderColor={inputBorderColor}
+                         borderWidth="2px"
+                         borderRadius="md"
+                         _hover={{ borderColor: "teal.300" }}
+                         _focus={{
+                           borderColor: focusBorderColor,
+                           boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                         }}>
+                         {amcs
+                           .sort((a, b) => a.name.localeCompare(b.name))
+                           .map((amc) => (
+                             <option key={amc.amc_id} value={amc.amc_id.toString()}>
+                               {amc.name}
+                             </option>
+                           ))}
+                       </NativeSelect.Field>
+                       <NativeSelect.Indicator />
+                     </NativeSelect.Root>
+                    <Field.ErrorText>{errors.amc_id}</Field.ErrorText>
+                    <Field.HelperText mt={2}>
+                      Choose the AMC that manages this mutual fund
+                    </Field.HelperText>
+                  </Field.Root>
+                </Box>
+
+                {/* Notes Card */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <Field.Root invalid={!!errors.notes}>
+                    <Field.Label fontWeight="semibold" mb={2}>
+                      <HStack gap={2}>
+                        <FileText size={16} />
+                        <Text>Notes (Optional)</Text>
+                      </HStack>
+                    </Field.Label>
+                    <Textarea
+                      placeholder="Other details..."
+                      value={formData.notes}
+                      onChange={(e) => handleInputChange("notes", e.target.value)}
+                      rows={4}
+                      maxLength={500}
                       bg={inputBg}
                       borderColor={inputBorderColor}
                       borderWidth="2px"
@@ -425,281 +619,88 @@ const UpdateMutualFundModal: React.FC<UpdateMutualFundModalProps> = ({
                         borderColor: focusBorderColor,
                         boxShadow: `0 0 0 1px ${focusBorderColor}`,
                       }}
+                      resize="vertical"
+                      disabled={isLoading}
                     />
-                    <FormErrorMessage>{errors.code}</FormErrorMessage>
-                    <FormHelperText>Enter a unique code</FormHelperText>
-                  </FormControl>
-                </HStack>
-
+                    <Field.ErrorText>{errors.notes}</Field.ErrorText>
+                    <Field.HelperText mt={2}>
+                      Additional information about this fund (
+                      {formData.notes.length}/500 characters)
+                    </Field.HelperText>
+                  </Field.Root>
+                </Box>
               </VStack>
-            </Box>
 
-            {/* Owner Card */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
+              {/* Mobile-only action buttons that stay at bottom */}
+              <Box display={{ base: "block", sm: "none" }} mt={6}>
+                <Button
+                  onClick={handleSubmit}
+                  colorPalette="brand"
+                  size="lg"
+                  width="100%"
+                  mb={3}
+                  borderRadius="lg"
+                  fontWeight="bold"
+                  loading={isLoading}
+                  loadingText="Updating..."
+                  disabled={!hasChanges}
+                >
+                  Update Mutual Fund
+                </Button>
+                <Button
+                  variant="ghost"
+                  colorPalette="gray"
+                  onClick={onClose}
+                  size="lg"
+                  width="100%"
+                  borderRadius="lg"
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+              </Box>
+            </Dialog.Body>
+
+            {/* Desktop-only footer */}
+            <Dialog.Footer
+              display={{ base: "none", sm: "flex" }}
+              px={8}
+              py={6}
+              bg={footerBg}
+              borderTop="1px solid"
               borderColor={borderColor}
             >
-              <FormMutualFundSuggestionField
-                ledgerId={fund.ledger_id.toString()}
-                field="owner"
-                label="Owner (Optional)"
-                value={formData.owner}
-                setValue={(val) => handleInputChange("owner", val)}
-                placeholder="e.g., John Doe"
-                helperText="Enter the owner name to allow same fund names for different owners"
-                borderColor={inputBorderColor}
-                inputBg={inputBg}
-              />
-            </Box>
+              <Button
+                colorPalette="brand"
+                mr={3}
+                onClick={handleSubmit}
+                px={8}
+                py={3}
+                borderRadius="lg"
+                fontWeight="bold"
+                loading={isLoading}
+                loadingText="Updating..."
+                disabled={!hasChanges}
+              >
+                Update Mutual Fund
+              </Button>
+              <Button
+                variant="ghost"
+                colorPalette="gray"
+                onClick={onClose}
+                disabled={isLoading}
+                px={6}
+                py={3}
+                borderRadius="lg"
+              >
+                Cancel
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
 
-            {/* Asset Classification Card */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
-            >
-              <VStack spacing={5} align="stretch">
-                {/* Asset Class */}
-                <FormControl isInvalid={!!errors.asset_class}>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    <HStack spacing={2}>
-                      <FileText size={16} />
-                      <Text>Asset Class (Optional)</Text>
-                    </HStack>
-                  </FormLabel>
-                  <Select
-                    value={formData.asset_class}
-                    onChange={(e) => handleInputChange("asset_class", e.target.value)}
-                    placeholder="Select asset class"
-                    size="lg"
-                    bg={inputBg}
-                    borderColor={inputBorderColor}
-                    borderWidth="2px"
-                    borderRadius="md"
-                    _hover={{ borderColor: "teal.300" }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                    }}
-                  >
-                    {ASSET_CLASSES.map((assetClass) => (
-                      <option key={assetClass.value} value={assetClass.value}>
-                        {assetClass.label}
-                      </option>
-                    ))}
-                  </Select>
-                  <FormErrorMessage>{errors.asset_class}</FormErrorMessage>
-                  <FormHelperText>
-                    Choose the asset class for this mutual fund
-                  </FormHelperText>
-                </FormControl>
-
-                {/* Asset Sub Class */}
-                {formData.asset_class &&
-                  ASSET_SUB_CLASSES[
-                    formData.asset_class as keyof typeof ASSET_SUB_CLASSES
-                  ]?.length > 0 && (
-                    <FormControl isInvalid={!!errors.asset_sub_class}>
-                      <FormLabel fontWeight="semibold" mb={2}>
-                        <HStack spacing={2}>
-                          <FileText size={16} />
-                          <Text>Asset Sub-Class (Optional)</Text>
-                        </HStack>
-                      </FormLabel>
-                      <Select
-                        value={formData.asset_sub_class}
-                        onChange={(e) => handleInputChange("asset_sub_class", e.target.value)}
-                        placeholder="Select asset sub-class"
-                        size="lg"
-                        bg={inputBg}
-                        borderColor={inputBorderColor}
-                        borderWidth="2px"
-                        borderRadius="md"
-                        _hover={{ borderColor: "teal.300" }}
-                        _focus={{
-                          borderColor: focusBorderColor,
-                          boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                        }}
-                      >
-                        {ASSET_SUB_CLASSES[
-                          formData.asset_class as keyof typeof ASSET_SUB_CLASSES
-                        ].map((subClass) => (
-                          <option key={subClass.value} value={subClass.value}>
-                            {subClass.label}
-                          </option>
-                        ))}
-                      </Select>
-                      <FormErrorMessage>{errors.asset_sub_class}</FormErrorMessage>
-                      <FormHelperText>
-                        Choose the asset sub-class for this mutual fund
-                      </FormHelperText>
-                    </FormControl>
-                  )}
-              </VStack>
-            </Box>
-
-            {/* AMC Selection Card */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
-            >
-              <FormControl isInvalid={!!errors.amc_id}>
-                <FormLabel fontWeight="semibold" mb={2}>
-                  <HStack spacing={2}>
-                    <Building2 size={16} />
-                    <Text>Asset Management Company</Text>
-                    <Text as="span" color="red.500">
-                      *
-                    </Text>
-                  </HStack>
-                </FormLabel>
-                 <Select
-                   value={formData.amc_id}
-                   onChange={(e) => handleInputChange("amc_id", e.target.value)}
-                   placeholder="Select the AMC"
-                   size="lg"
-                   bg={inputBg}
-                   borderColor={inputBorderColor}
-                   borderWidth="2px"
-                   borderRadius="md"
-                   _hover={{ borderColor: "teal.300" }}
-                   _focus={{
-                     borderColor: focusBorderColor,
-                     boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                   }}
-                 >
-                   {amcs
-                     .sort((a, b) => a.name.localeCompare(b.name))
-                     .map((amc) => (
-                       <option key={amc.amc_id} value={amc.amc_id.toString()}>
-                         {amc.name}
-                       </option>
-                     ))}
-                 </Select>
-                <FormErrorMessage>{errors.amc_id}</FormErrorMessage>
-                <FormHelperText mt={2}>
-                  Choose the AMC that manages this mutual fund
-                </FormHelperText>
-              </FormControl>
-            </Box>
-
-            {/* Notes Card */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
-            >
-              <FormControl isInvalid={!!errors.notes}>
-                <FormLabel fontWeight="semibold" mb={2}>
-                  <HStack spacing={2}>
-                    <FileText size={16} />
-                    <Text>Notes (Optional)</Text>
-                  </HStack>
-                </FormLabel>
-                <Textarea
-                  placeholder="Other details..."
-                  value={formData.notes}
-                  onChange={(e) => handleInputChange("notes", e.target.value)}
-                  rows={4}
-                  maxLength={500}
-                  bg={inputBg}
-                  borderColor={inputBorderColor}
-                  borderWidth="2px"
-                  borderRadius="md"
-                  _hover={{ borderColor: "teal.300" }}
-                  _focus={{
-                    borderColor: focusBorderColor,
-                    boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                  }}
-                  resize="vertical"
-                  isDisabled={isLoading}
-                />
-                <FormErrorMessage>{errors.notes}</FormErrorMessage>
-                <FormHelperText mt={2}>
-                  Additional information about this fund (
-                  {formData.notes.length}/500 characters)
-                </FormHelperText>
-              </FormControl>
-            </Box>
-          </VStack>
-
-          {/* Mobile-only action buttons that stay at bottom */}
-          <Box display={{ base: "block", sm: "none" }} mt={6}>
-            <Button
-              onClick={handleSubmit}
-              colorScheme="brand"
-              size="lg"
-              width="100%"
-              mb={3}
-              borderRadius="lg"
-              fontWeight="bold"
-              isLoading={isLoading}
-              loadingText="Updating..."
-              isDisabled={!hasChanges}
-            >
-              Update Mutual Fund
-            </Button>
-            <Button
-              variant="ghost"
-              colorScheme="gray"
-              onClick={onClose}
-              size="lg"
-              width="100%"
-              borderRadius="lg"
-              isDisabled={isLoading}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </ModalBody>
-
-        {/* Desktop-only footer */}
-        <ModalFooter
-          display={{ base: "none", sm: "flex" }}
-          px={8}
-          py={6}
-          bg={footerBg}
-          borderTop="1px solid"
-          borderColor={borderColor}
-        >
-          <Button
-            colorScheme="brand"
-            mr={3}
-            onClick={handleSubmit}
-            px={8}
-            py={3}
-            borderRadius="lg"
-            fontWeight="bold"
-            isLoading={isLoading}
-            loadingText="Updating..."
-            isDisabled={!hasChanges}
-          >
-            Update Mutual Fund
-          </Button>
-          <Button
-            variant="ghost"
-            colorScheme="gray"
-            onClick={onClose}
-            isDisabled={isLoading}
-            px={6}
-            py={3}
-            borderRadius="lg"
-          >
-            Cancel
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

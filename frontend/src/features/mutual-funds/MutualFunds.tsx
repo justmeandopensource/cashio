@@ -1,20 +1,10 @@
 import { useState, FC } from "react";
+import { useColorModeValue } from "../../components/ui/color-mode";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Box,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
   Tabs,
   useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
   Button,
   Text,
   Skeleton,
@@ -23,7 +13,8 @@ import {
   useBreakpointValue,
   Badge,
   Flex,
-  useColorModeValue,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import useLedgerStore from "@/components/shared/store";
@@ -52,7 +43,7 @@ import { notify } from "@/components/shared/notify";
 
 const MotionBox = motion.create(Box);
 
- 
+
 interface MutualFundsProps {
   onAccountDataChange?: () => void;
     filters: {
@@ -70,7 +61,7 @@ interface MutualFundsProps {
       searchTerm?: string;
     }) => void;
 }
- 
+
 
 const MutualFunds: FC<MutualFundsProps> = (props) => {
   const { onAccountDataChange, filters, onFiltersChange } = props;
@@ -81,43 +72,43 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
 
   // Modal states
   const {
-    isOpen: isCreateAmcModalOpen,
+    open: isCreateAmcModalOpen,
     onOpen: onCreateAmcModalOpen,
     onClose: onCreateAmcModalClose,
   } = useDisclosure();
 
   const {
-    isOpen: isCreateFundModalOpen,
+    open: isCreateFundModalOpen,
     onOpen: onCreateFundModalOpen,
     onClose: onCreateFundModalClose,
   } = useDisclosure();
 
   const {
-    isOpen: isBuySellModalOpen,
+    open: isBuySellModalOpen,
     onOpen: onBuySellModalOpen,
     onClose: onBuySellModalClose,
   } = useDisclosure();
 
   const {
-    isOpen: isTransferModalOpen,
+    open: isTransferModalOpen,
     onOpen: onTransferModalOpen,
     onClose: onTransferModalClose,
   } = useDisclosure();
 
   const {
-    isOpen: isUpdateNavModalOpen,
+    open: isUpdateNavModalOpen,
     onOpen: onUpdateNavModalOpen,
     onClose: onUpdateNavModalClose,
   } = useDisclosure();
 
   const {
-    isOpen: isDeleteFundModalOpen,
+    open: isDeleteFundModalOpen,
     onOpen: onDeleteFundModalOpen,
     onClose: onDeleteFundModalClose,
   } = useDisclosure();
 
   const {
-    isOpen: isAnalyticsDrawerOpen,
+    open: isAnalyticsDrawerOpen,
     onOpen: onAnalyticsDrawerOpen,
     onClose: onAnalyticsDrawerClose,
   } = useDisclosure();
@@ -271,15 +262,16 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <Tabs
-        variant="unstyled"
+      <Tabs.Root
+        unstyled
         size={{ base: "md", md: "md" }}
-        index={subTabIndex}
-        onChange={handleSubTabChange}
+        value={String(subTabIndex)}
+        onValueChange={(d) => handleSubTabChange(Number(d.value))}
       >
         <Box p={{ base: 2, md: 4 }}>
-          <TabList borderBottom="none" gap={1}>
-            <Tab
+          <Tabs.List borderBottom="none" gap={1}>
+            <Tabs.Trigger
+              value="0"
               px={{ base: 3, md: 4 }}
               py={2.5}
               fontWeight="medium"
@@ -314,8 +306,9 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
                   </Badge>
                 )}
               </Flex>
-            </Tab>
-            <Tab
+            </Tabs.Trigger>
+            <Tabs.Trigger
+              value="1"
               px={{ base: 3, md: 4 }}
               py={2.5}
               fontWeight="medium"
@@ -337,17 +330,16 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
               <Flex align="center">
                 <Text>Transactions</Text>
               </Flex>
-            </Tab>
-          </TabList>
+            </Tabs.Trigger>
+          </Tabs.List>
         </Box>
 
-         <TabPanels>
-           <TabPanel p={{ base: 2, md: 4 }}>
+           <Tabs.Content value="0" p={{ base: 2, md: 4 }}>
              {subTabIndex === 0 &&
                (isLoading ? (
-                 <VStack spacing={4} align="stretch">
+                 <VStack gap={4} align="stretch">
                    <Skeleton height="40px" borderRadius="lg" />
-                   <SimpleGrid columns={{ base: 2, sm: 3, lg: 5 }} spacing={{ base: 3, md: 4 }}>
+                   <SimpleGrid columns={{ base: 2, sm: 3, lg: 5 }} gap={{ base: 3, md: 4 }}>
                      {[0, 1, 2, 3, 4].map((i) => (
                        <Skeleton key={i} height="100px" borderRadius="xl" />
                      ))}
@@ -370,11 +362,11 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
                        onFiltersChange={onFiltersChange}
                      />
                ))}
-           </TabPanel>
-           <TabPanel p={{ base: 2, md: 4 }}>
+           </Tabs.Content>
+           <Tabs.Content value="1" p={{ base: 2, md: 4 }}>
              {subTabIndex === 1 && (
                isLoading ? (
-                 <VStack spacing={3} align="stretch">
+                 <VStack gap={3} align="stretch">
                    <Skeleton height="40px" borderRadius="lg" />
                    {[0, 1, 2, 3, 4].map((i) => (
                      <Skeleton key={i} height="56px" borderRadius="lg" />
@@ -391,9 +383,8 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
                   />
                )
              )}
-           </TabPanel>
-         </TabPanels>
-      </Tabs>
+           </Tabs.Content>
+      </Tabs.Root>
 
       {/* Modals */}
       <CreateAmcModal
@@ -416,69 +407,73 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
         preselectedAmcId={preselectedAmcId}
       />
 
-       <BuySellMfModal
-         isOpen={isBuySellModalOpen}
-         onClose={onBuySellModalClose}
-         fund={selectedFund || undefined}
-         onSuccess={handleDataChange}
-       />
+      <BuySellMfModal
+        isOpen={isBuySellModalOpen}
+        onClose={onBuySellModalClose}
+        fund={selectedFund || undefined}
+        onSuccess={handleDataChange}
+      />
 
-       <TransferUnitsModal
-         isOpen={isTransferModalOpen}
-         onClose={onTransferModalClose}
-         fromFundId={selectedFundId!}
-         mutualFunds={mutualFunds}
-         onSuccess={handleDataChange}
-       />
+      <TransferUnitsModal
+        isOpen={isTransferModalOpen}
+        onClose={onTransferModalClose}
+        fromFundId={selectedFundId!}
+        mutualFunds={mutualFunds}
+        onSuccess={handleDataChange}
+      />
 
-       <UpdateNavModal
-         isOpen={isUpdateNavModalOpen}
-         onClose={onUpdateNavModalClose}
-         fund={selectedFund}
-         onSuccess={handleDataChange}
-       />
+      <UpdateNavModal
+        isOpen={isUpdateNavModalOpen}
+        onClose={onUpdateNavModalClose}
+        fund={selectedFund}
+        onSuccess={handleDataChange}
+      />
 
-      <Modal
-        isOpen={isDeleteFundModalOpen}
-        returnFocusOnClose={false}
-        onClose={onDeleteFundModalClose}
-        size={modalSize}
-        motionPreset="slideInBottom"
-      >
-        <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-        <ModalContent
-          margin={isMobile ? 0 : "auto"}
-          borderRadius={isMobile ? 0 : "xl"}
-          bg={modalBg}
-          border="1px solid"
-          borderColor={modalBorderColor}
-          boxShadow="2xl"
-        >
-          <ModalHeader fontWeight="800" letterSpacing="-0.02em">Close Mutual Fund</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            Are you sure you want to close &quot;{fundToDelete?.name}&quot;?
-            <br />
-            This action cannot be undone.
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onDeleteFundModalClose} borderRadius="lg">
-              Cancel
-            </Button>
-            <Button
-              colorScheme="red"
-              onClick={confirmDeleteFund}
-              isLoading={deleteFundMutation.isPending}
-              loadingText="Closing..."
-              leftIcon={<Trash2 size={16} />}
-              borderRadius="lg"
-              fontWeight="bold"
-            >
-              Close Fund
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <Dialog.Root
+        open={isDeleteFundModalOpen}
+        size={modalSize as "full" | "md"}
+        motionPreset="slide-in-bottom"
+        onOpenChange={e => {
+          if (!e.open) {
+            onDeleteFundModalClose();
+          }
+        }}>
+        <Portal>
+
+          <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+          <Dialog.Positioner>
+            <Dialog.Content
+              margin={isMobile ? 0 : "auto"}
+              borderRadius={isMobile ? 0 : "xl"}
+              bg={modalBg}
+              border="1px solid"
+              borderColor={modalBorderColor}
+              boxShadow="2xl">
+              <Dialog.Header fontWeight="800" letterSpacing="-0.02em">Close Mutual Fund</Dialog.Header>
+              <Dialog.CloseTrigger />
+              <Dialog.Body>
+                Are you sure you want to close &quot;{fundToDelete?.name}&quot;?
+                <br />
+                This action cannot be undone.
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Button variant="ghost" mr={3} onClick={onDeleteFundModalClose} borderRadius="lg">
+                  Cancel
+                </Button>
+                <Button
+                  colorPalette="red"
+                  onClick={confirmDeleteFund}
+                  loading={deleteFundMutation.isPending}
+                  loadingText="Closing..."
+                  borderRadius="lg"
+                  fontWeight="bold"><Trash2 size={16} />Close Fund
+                              </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+
+        </Portal>
+      </Dialog.Root>
 
       {/* Fund Analytics Drawer */}
       <FundAnalyticsDrawer
@@ -491,57 +486,60 @@ const MutualFunds: FC<MutualFundsProps> = (props) => {
       />
 
       {/* AMC Warning Dialog */}
-      <Modal
-        isOpen={isAmcWarningOpen}
-        returnFocusOnClose={false}
-        onClose={() => setIsAmcWarningOpen(false)}
+      <Dialog.Root
+        open={isAmcWarningOpen}
         size={{ base: "full", md: "lg" }}
-      >
-        <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-        <ModalContent
-          bg={modalBg}
-          border="1px solid"
-          borderColor={modalBorderColor}
-          borderRadius={{ base: 0, md: "xl" }}
-          boxShadow="2xl"
-        >
-          <ModalHeader fontSize="lg" fontWeight="800" display="flex" alignItems="center" gap={2} letterSpacing="-0.02em">
-            <Building2 size={20} />
-            Create AMC First
-          </ModalHeader>
+        onOpenChange={e => {
+          if (!e.open) {
+            setIsAmcWarningOpen(false);
+          }
+        }}>
+        <Portal>
 
-          <ModalBody>
-            <Text>
-              You need to create at least one Asset Management Company (AMC) before you can create a mutual fund.
-              AMCs are the organizations that manage your mutual fund investments (e.g., HDFC, ICICI, SBI, etc.).
-            </Text>
-          </ModalBody>
+          <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+          <Dialog.Positioner>
+            <Dialog.Content
+              bg={modalBg}
+              border="1px solid"
+              borderColor={modalBorderColor}
+              borderRadius={{ base: 0, md: "xl" }}
+              boxShadow="2xl">
+              <Dialog.Header fontSize="lg" fontWeight="800" display="flex" alignItems="center" gap={2} letterSpacing="-0.02em">
+                <Building2 size={20} />
+                Create AMC First
+              </Dialog.Header>
 
-          <ModalFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsAmcWarningOpen(false)}
-              mr={3}
-              borderRadius="lg"
-            >
-              Cancel
-            </Button>
-            <Button
-              colorScheme="brand"
-              onClick={() => {
-                setIsAmcWarningOpen(false);
-                onCreateAmcModalOpen();
-              }}
-              leftIcon={<Building2 size={16} />}
-              borderRadius="lg"
-              fontWeight="bold"
-            >
-              Create AMC
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+              <Dialog.Body>
+                <Text>
+                  You need to create at least one Asset Management Company (AMC) before you can create a mutual fund.
+                  AMCs are the organizations that manage your mutual fund investments (e.g., HDFC, ICICI, SBI, etc.).
+                </Text>
+              </Dialog.Body>
 
+              <Dialog.Footer>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAmcWarningOpen(false)}
+                  mr={3}
+                  borderRadius="lg"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  colorPalette="brand"
+                  onClick={() => {
+                    setIsAmcWarningOpen(false);
+                    onCreateAmcModalOpen();
+                  }}
+                  borderRadius="lg"
+                  fontWeight="bold"><Building2 size={16} />Create AMC
+                              </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+
+        </Portal>
+      </Dialog.Root>
 
     </MotionBox>
   );

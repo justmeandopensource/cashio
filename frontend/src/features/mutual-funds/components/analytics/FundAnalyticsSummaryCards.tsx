@@ -1,13 +1,6 @@
 import { FC } from "react";
-import {
-  Box,
-  Text,
-  Flex,
-  VStack,
-  SimpleGrid,
-  Icon,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
+import { Box, Text, Flex, VStack, SimpleGrid, Icon } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import {
   Wallet,
@@ -156,7 +149,7 @@ const FundAnalyticsSummaryCards: FC<FundAnalyticsSummaryCardsProps> = ({
   return (
     <MotionSimpleGrid
       columns={{ base: 2, sm: 3 }}
-      spacing={{ base: 3, md: 4 }}
+      gap={{ base: 3, md: 4 }}
       initial="hidden"
       animate="visible"
       variants={{
@@ -209,7 +202,7 @@ const FundAnalyticsSummaryCards: FC<FundAnalyticsSummaryCardsProps> = ({
                 {label}
               </Text>
             </Flex>
-            <VStack align="start" spacing={0}>
+            <VStack align="start" gap={0}>
               <Flex align="baseline" wrap="nowrap">
                 <Text
                   fontSize={{ base: "md", md: "lg" }}

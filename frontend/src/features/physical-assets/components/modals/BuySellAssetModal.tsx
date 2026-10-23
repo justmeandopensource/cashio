@@ -1,38 +1,25 @@
 import { FC, useState, useEffect } from "react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalBody,
   Tabs,
-  TabList,
-  Tab,
-  TabPanels,
-  TabPanel,
   Button,
   VStack,
   Text,
   Box,
-  FormControl,
-  FormLabel,
   Input,
-  Select,
+  NativeSelect,
   Textarea,
   Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
   Spinner,
   HStack,
   Badge,
   Stack,
-  useColorModeValue,
-  FormHelperText,
-  FormErrorMessage,
-  InputGroup,
-  InputLeftAddon,
   Icon,
+  Field,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
+import { InputGroup } from "@/components/ui/input-group";
 import { useQuery } from "@tanstack/react-query";
 
 import {
@@ -252,7 +239,7 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
   const isLoading = buyAssetMutation.isPending || sellAssetMutation.isPending;
 
   const renderForm = (type: "buy" | "sell") => (
-    <VStack spacing={{ base: 5, sm: 6 }} align="stretch">
+    <VStack gap={{ base: 5, sm: 6 }} align="stretch">
       {/* Transaction Details Card */}
       <Box
         bg={cardBg}
@@ -261,18 +248,18 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
         border="1px solid"
         borderColor={borderColor}
       >
-        <VStack spacing={5} align="stretch">
-          <Stack direction={{ base: "column", md: "row" }} spacing={4}>
-            <FormControl flex={1} isInvalid={!!errors.quantity}>
-              <FormLabel fontWeight="semibold" mb={2}>
-                <HStack spacing={2}>
+        <VStack gap={5} align="stretch">
+          <Stack direction={{ base: "column", md: "row" }} gap={4}>
+            <Field.Root flex={1} invalid={!!errors.quantity}>
+              <Field.Label fontWeight="semibold" mb={2}>
+                <HStack gap={2}>
                   <TrendingUp size={16} />
                   <Text>Quantity to {type}</Text>
                   {formData.quantity && parseFloat(formData.quantity) > 0 && (
-                    <Icon as={Check} boxSize={3.5} color="teal.500" />
+                    <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
                   )}
                 </HStack>
-              </FormLabel>
+              </Field.Label>
                 <Input
                   type="number"
                   value={formData.quantity}
@@ -293,32 +280,33 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
                     boxShadow: `0 0 0 1px ${focusBorderColor}`,
                   }}
                 />
-              <FormErrorMessage>{errors.quantity}</FormErrorMessage>
-               <FormHelperText color={textColor}>
+              <Field.ErrorText>{errors.quantity}</Field.ErrorText>
+               <Field.HelperText color={textColor}>
                  {type === "buy" ? "Current Holdings" : "Available to Sell"}:{" "}
                  {asset.total_quantity} {asset.asset_type?.unit_symbol}
-               </FormHelperText>
-            </FormControl>
+               </Field.HelperText>
+            </Field.Root>
 
-            <FormControl flex={1} isInvalid={!!errors.price_per_unit}>
-              <FormLabel fontWeight="semibold" mb={2}>
-                <HStack spacing={2}>
+            <Field.Root flex={1} invalid={!!errors.price_per_unit}>
+              <Field.Label fontWeight="semibold" mb={2}>
+                <HStack gap={2}>
                   <DollarSign size={16} />
                   <Text>Price per Unit</Text>
                   {formData.price_per_unit && parseFloat(formData.price_per_unit) > 0 && (
-                    <Icon as={Check} boxSize={3.5} color="teal.500" />
+                    <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
                   )}
                 </HStack>
-              </FormLabel>
-              <InputGroup size="lg">
-                                 <InputLeftAddon
-                                   bg={inputBorderColor}
-                                   borderWidth="2px"
-                                   borderColor={inputBorderColor}
-                                    color={textColorSecondary}
-                                   fontWeight="semibold"
-                                  >                   {currencySymbol || "$"}
-                 </InputLeftAddon>
+              </Field.Label>
+              <InputGroup
+                startAddon={currencySymbol || "$"}
+                startAddonProps={{
+                  bg: inputBorderColor,
+                  borderWidth: "2px",
+                  borderColor: inputBorderColor,
+                  color: textColorSecondary,
+                  fontWeight: "semibold",
+                }}
+              >
                 <Input
                   type="number"
                   value={formData.price_per_unit}
@@ -341,24 +329,24 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
                   }}
                 />
               </InputGroup>
-              <FormErrorMessage>{errors.price_per_unit}</FormErrorMessage>
-                 <FormHelperText color={textColor}>
+              <Field.ErrorText>{errors.price_per_unit}</Field.ErrorText>
+                 <Field.HelperText color={textColor}>
                    Total: {formatCurrencyWithSymbol(totalAmount, currencySymbol || "$")}
-                 </FormHelperText>
-            </FormControl>
+                 </Field.HelperText>
+            </Field.Root>
           </Stack>
 
-          <Stack direction={{ base: "column", md: "row" }} spacing={4}>
-            <FormControl flex={1} isInvalid={!!errors.account_id}>
-              <FormLabel fontWeight="semibold" mb={2}>
-                <HStack spacing={2}>
+          <Stack direction={{ base: "column", md: "row" }} gap={4}>
+            <Field.Root flex={1} invalid={!!errors.account_id}>
+              <Field.Label fontWeight="semibold" mb={2}>
+                <HStack gap={2}>
                   <Building2 size={16} />
                   <Text>{type === "buy" ? "Source Account" : "Destination Account"}</Text>
                   {formData.account_id && (
-                    <Icon as={Check} boxSize={3.5} color="teal.500" />
+                    <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
                   )}
                 </HStack>
-              </FormLabel>
+              </Field.Label>
               {accountsLoading ? (
                 <HStack justify="center" p={4}>
                   <Spinner size="sm" />
@@ -367,71 +355,73 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
                    </Text>
                 </HStack>
               ) : (
-                <Select
-                  value={formData.account_id}
-                  onChange={(e) =>
-                    handleInputChange("account_id", e.target.value)
-                  }
-                  placeholder="Select account"
-                  bg={inputBg}
-                  borderColor={inputBorderColor}
-                  borderWidth="2px"
-                  size="lg"
-                  borderRadius="md"
-                  _hover={{ borderColor: "teal.300" }}
-                  _focus={{
-                    borderColor: focusBorderColor,
-                    boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                  }}
-                >
-                  <optgroup label="Asset Accounts">
-                    {filteredAccounts
-                      .filter((account) => account.type === "asset")
-                      .map((account) => (
-                        <option
-                          key={account.account_id}
-                          value={account.account_id.toString()}
-                        >
-                          {account.name}
-                        </option>
-                      ))}
-                  </optgroup>
-                  <optgroup label="Liability Accounts">
-                    {filteredAccounts
-                      .filter((account) => account.type === "liability")
-                      .map((account) => (
-                        <option
-                          key={account.account_id}
-                          value={account.account_id.toString()}
-                        >
-                          {account.name}
-                        </option>
-                      ))}
-                  </optgroup>
-                </Select>
+                <NativeSelect.Root size="lg">
+                  <NativeSelect.Field
+                    value={formData.account_id}
+                    onChange={(e) =>
+                      handleInputChange("account_id", e.target.value)
+                    }
+                    placeholder="Select account"
+                    bg={inputBg}
+                    borderColor={inputBorderColor}
+                    borderWidth="2px"
+                    borderRadius="md"
+                    _hover={{ borderColor: "teal.300" }}
+                    _focus={{
+                      borderColor: focusBorderColor,
+                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                    }}>
+                    <optgroup label="Asset Accounts">
+                      {filteredAccounts
+                        .filter((account) => account.type === "asset")
+                        .map((account) => (
+                          <option
+                            key={account.account_id}
+                            value={account.account_id.toString()}
+                          >
+                            {account.name}
+                          </option>
+                        ))}
+                    </optgroup>
+                    <optgroup label="Liability Accounts">
+                      {filteredAccounts
+                        .filter((account) => account.type === "liability")
+                        .map((account) => (
+                          <option
+                            key={account.account_id}
+                            value={account.account_id.toString()}
+                          >
+                            {account.name}
+                          </option>
+                        ))}
+                    </optgroup>
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
               )}
-              <FormErrorMessage>{errors.account_id}</FormErrorMessage>
-               <FormHelperText color={textColor}>
+              <Field.ErrorText>{errors.account_id}</Field.ErrorText>
+               <Field.HelperText color={textColor}>
                  {type === "buy"
                    ? "Account to deduct funds from"
                    : "Account to receive funds"}
-               </FormHelperText>
-            </FormControl>
+               </Field.HelperText>
+            </Field.Root>
 
-             <FormControl flex={1} isInvalid={!!errors.transaction_date}>
-               <FormLabel fontWeight="semibold" mb={2}>
-                 <HStack spacing={2}>
+             <Field.Root flex={1} invalid={!!errors.transaction_date}>
+               <Field.Label fontWeight="semibold" mb={2}>
+                 <HStack gap={2}>
                    <Calendar size={16} />
                    <Text>Date</Text>
-                   <Icon as={Check} boxSize={3.5} color="teal.500" />
+                   <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
                  </HStack>
-               </FormLabel>
+               </Field.Label>
                <Box
-                 sx={{
-                   ".react-datepicker-wrapper": {
+                 css={{
+                   '& .react-datepicker-wrapper': {
                      width: "100%",
                    },
-                   ".react-datepicker__input-container input": {
+
+                   '& .react-datepicker__input-container input': {
                      width: "100%",
                      height: "48px",
                      borderWidth: "2px",
@@ -444,7 +434,7 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
                        borderColor: focusBorderColor,
                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
                      },
-                   },
+                   }
                  }}
                >
                  <ChakraDatePicker
@@ -457,18 +447,18 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
                    shouldCloseOnSelect={true}
                  />
                </Box>
-               <FormErrorMessage>{errors.transaction_date}</FormErrorMessage>
-                <FormHelperText color={textColor}>Transaction date</FormHelperText>
-             </FormControl>
+               <Field.ErrorText>{errors.transaction_date}</Field.ErrorText>
+                <Field.HelperText color={textColor}>Transaction date</Field.HelperText>
+             </Field.Root>
           </Stack>
 
-          <FormControl>
-            <FormLabel fontWeight="semibold" mb={2}>
-              <HStack spacing={2}>
+          <Field.Root>
+            <Field.Label fontWeight="semibold" mb={2}>
+              <HStack gap={2}>
                 <FileText size={16} />
                 <Text>Notes (Optional)</Text>
               </HStack>
-            </FormLabel>
+            </Field.Label>
             <Textarea
               value={formData.notes}
               onChange={(e) => handleInputChange("notes", e.target.value)}
@@ -485,46 +475,46 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
               }}
               resize="vertical"
             />
-             <FormHelperText color={textColor}>
+             <Field.HelperText color={textColor}>
                Additional details about this {type} transaction
-             </FormHelperText>
-          </FormControl>
+             </Field.HelperText>
+          </Field.Root>
         </VStack>
       </Box>
 
       {/* Error Display */}
       {(buyAssetMutation.isError || sellAssetMutation.isError) && (
-        <Alert
+        <Alert.Root
           status="error"
           borderRadius="md"
           border="1px solid"
           borderColor="red.200"
         >
-          <AlertIcon />
+          <Alert.Indicator />
           <Box>
-            <AlertTitle fontWeight="800"
-                  letterSpacing="-0.02em">Transaction Failed!</AlertTitle>
-            <AlertDescription>
+            <Alert.Title fontWeight="800"
+                  letterSpacing="-0.02em">Transaction Failed!</Alert.Title>
+            <Alert.Description>
               {(buyAssetMutation.error as any)?.response?.data?.detail ||
                 (sellAssetMutation.error as any)?.response?.data?.detail ||
                 "An error occurred while processing the transaction."}
-            </AlertDescription>
+            </Alert.Description>
           </Box>
-        </Alert>
+        </Alert.Root>
       )}
 
       {/* Action Buttons */}
-      <Stack direction="row" spacing={3} width="full">
+      <Stack direction="row" gap={3} width="full">
           <Button
             onClick={() => handleTransaction(type)}
-            colorScheme={type === "buy" ? "brand" : "red"}
+            colorPalette={type === "buy" ? "brand" : "red"}
             size="lg"
             flex={1}
             borderRadius="lg"
             fontWeight="bold"
-            isLoading={isLoading}
+            loading={isLoading}
             loadingText={`Processing ${type === "buy" ? "Purchase" : "Sale"}...`}
-            isDisabled={
+            disabled={
               !formData.account_id ||
               (parseFloat(formData.quantity) || 0) <= 0 ||
               (parseFloat(formData.price_per_unit) || 0) <= 0 ||
@@ -537,12 +527,12 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
 
         <Button
           variant="ghost"
-          colorScheme="gray"
+          colorPalette="gray"
           onClick={handleClose}
           size="lg"
           flex={1}
           borderRadius="lg"
-          isDisabled={isLoading}
+          disabled={isLoading}
         >
           Cancel
         </Button>
@@ -551,154 +541,158 @@ const BuySellAssetModal: FC<BuySellAssetModalProps> = ({
   );
 
   return (
-    <Modal
-      isOpen={isOpen}
-      returnFocusOnClose={false}
-      onClose={handleClose}
+    <Dialog.Root
+      open={isOpen}
       size={{ base: "full", sm: "xl" }}
-      motionPreset="slideInBottom"
-    >
-      <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-      <ModalContent
-        bg={bgColor}
-        borderRadius={{ base: 0, sm: "xl" }}
-        boxShadow="2xl"
-        border="1px solid"
-        borderColor={borderColor}
-        overflow="hidden"
-        mx={{ base: 0, sm: 4 }}
-        my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "90vh" }}
-        display="flex"
-        flexDirection="column"
-      >
-        {/* Gradient accent line */}
-        <Box
-          h="3px"
-          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
-        />
-        {/* Flat header */}
-        <Box
-          px={{ base: 4, sm: 8 }}
-          py={5}
-          borderBottom="1px solid"
-          borderColor={modalHeaderBorderColor}
-        >
-          <HStack spacing={3} align="flex-start">
-            <Icon as={Coins} boxSize={5} mt="3px" color={modalIconColor} />
+      motionPreset="slide-in-bottom"
+      onOpenChange={e => {
+        if (!e.open) {
+          handleClose();
+        }
+      }}>
+      <Portal>
 
-            <Box>
-              <HStack spacing={3} mb={1}>
-                <Text
-                  fontSize="lg"
-                  fontWeight="bold"
-                  color={modalTitleColor}
-                >
-                  {asset.name}
-                </Text>
-                <Badge
-                  colorScheme="brand"
-                  variant="subtle"
-                  fontSize="sm"
-                  borderRadius="full"
-                  px={2}
-                  py={0.5}
-                >
-                  {asset.asset_type?.name}
-                </Badge>
-              </HStack>
-              <Text
-                fontSize="sm"
-                color={modalSubtitleColor}
-              >
-                {tabIndex === 0 ? "Buy asset" : "Sell asset"}
-              </Text>
-            </Box>
-          </HStack>
-        </Box>
-
-         <ModalBody
-           px={{ base: 4, sm: 8 }}
-           py={{ base: 4, sm: 6 }}
-           flex="1"
-           overflowY="auto"
-          overflowX="hidden"
-          >
-             <Box
-               onKeyDown={(e) => {
-                 if (e.key === "Enter" && !isLoading) {
-                   e.preventDefault();
-                   handleTransaction(tabIndex === 0 ? "buy" : "sell");
-                 }
-               }}
-             >
-              <Tabs
-               isFitted
-               variant="enclosed"
-               index={tabIndex}
-               onChange={setTabIndex}
-               colorScheme="brand"
-             >
-            <TabList
-              borderRadius="md"
-              bg={cardBg}
-              border="2px solid"
-              borderColor={inputBorderColor}
-              mb={6}
+        <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <Dialog.Positioner>
+          <Dialog.Content
+            bg={bgColor}
+            borderRadius={{ base: 0, sm: "xl" }}
+            boxShadow="2xl"
+            border="1px solid"
+            borderColor={borderColor}
+            overflow="hidden"
+            mx={{ base: 0, sm: 4 }}
+            my={{ base: 0, sm: "auto" }}
+            maxHeight={{ base: "100%", md: "90vh" }}
+            display="flex"
+            flexDirection="column">
+            {/* Gradient accent line */}
+            <Box h="3px" bgGradient="to-r" gradientFrom="brand.400" gradientVia="brand.600" gradientTo="teal.300"  />
+            {/* Flat header */}
+            <Box
+              px={{ base: 4, sm: 8 }}
+              py={5}
+              borderBottom="1px solid"
+              borderColor={modalHeaderBorderColor}
             >
-              <Tab
-                _selected={{
-                  bg: "teal.500",
-                  color: "white",
-                  borderColor: "teal.500",
-                  fontWeight: "bold",
-                }}
-                 _hover={{
-                   bg: tabBuyHoverBg,
-                   _selected: { bg: "teal.400" },
-                 }}
-                borderRadius="sm"
-                fontSize="md"
-                py={3}
-                transition="all 0.2s"
-              >
-                <HStack spacing={2}>
-                  <TrendingUp size={18} />
-                  <Text>Buy</Text>
-                </HStack>
-              </Tab>
-              <Tab
-                _selected={{
-                  bg: "red.400",
-                  color: "white",
-                  borderColor: "red.400",
-                  fontWeight: "bold",
-                }}
-                 _hover={{
-                   bg: tabSellHoverBg,
-                   _selected: { bg: "red.300" },
-                 }}
-                borderRadius="sm"
-                fontSize="md"
-                py={3}
-                transition="all 0.2s"
-              >
-                <HStack spacing={2}>
-                  <TrendingDown size={18} />
-                  <Text>Sell</Text>
-                </HStack>
-              </Tab>
-            </TabList>
+              <HStack gap={3} align="flex-start">
+                <Icon boxSize={5} mt="3px" color={modalIconColor} asChild><Coins /></Icon>
 
-             <TabPanels>
-               <TabPanel p={0}>{renderForm("buy")}</TabPanel>
-               <TabPanel p={0}>{renderForm("sell")}</TabPanel>
-             </TabPanels>
-           </Tabs>
+                <Box>
+                  <HStack gap={3} mb={1}>
+                    <Text
+                      fontSize="lg"
+                      fontWeight="bold"
+                      color={modalTitleColor}
+                    >
+                      {asset.name}
+                    </Text>
+                    <Badge
+                      colorPalette="brand"
+                      variant="subtle"
+                      fontSize="sm"
+                      borderRadius="full"
+                      px={2}
+                      py={0.5}
+                    >
+                      {asset.asset_type?.name}
+                    </Badge>
+                  </HStack>
+                  <Text
+                    fontSize="sm"
+                    color={modalSubtitleColor}
+                  >
+                    {tabIndex === 0 ? "Buy asset" : "Sell asset"}
+                  </Text>
+                </Box>
+              </HStack>
             </Box>
-         </ModalBody>
-      </ModalContent>
-    </Modal>
+
+            <Dialog.Body
+              px={{ base: 4, sm: 8 }}
+              py={{ base: 4, sm: 6 }}
+              flex="1"
+              overflowY="auto"
+             overflowX="hidden"
+             >
+                <Box
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !isLoading) {
+                      e.preventDefault();
+                      handleTransaction(tabIndex === 0 ? "buy" : "sell");
+                    }
+                  }}
+                >
+                 <Tabs.Root
+                  fitted
+                  variant='enclosed'
+                  value={String(tabIndex)}
+                  onValueChange={(d) => setTabIndex(Number(d.value))}
+                  colorPalette="brand"
+                >
+               <Tabs.List
+                 borderRadius="md"
+                 bg={cardBg}
+                 border="2px solid"
+                 borderColor={inputBorderColor}
+                 mb={6}
+               >
+                 <Tabs.Trigger
+                   value="0"
+                   _selected={{
+                     bg: "teal.500",
+                     color: "white",
+                     borderColor: "teal.500",
+                     fontWeight: "bold",
+                   }}
+                    _hover={{
+                      bg: tabBuyHoverBg,
+                      _selected: { bg: "teal.400" },
+                    }}
+                   borderRadius="sm"
+                   fontSize="md"
+                   py={3}
+                   transition="all 0.2s"
+                 >
+                   <HStack gap={2}>
+                     <TrendingUp size={18} />
+                     <Text>Buy</Text>
+                   </HStack>
+                 </Tabs.Trigger>
+                 <Tabs.Trigger
+                   value="1"
+                   _selected={{
+                     bg: "red.400",
+                     color: "white",
+                     borderColor: "red.400",
+                     fontWeight: "bold",
+                   }}
+                    _hover={{
+                      bg: tabSellHoverBg,
+                      _selected: { bg: "red.300" },
+                    }}
+                   borderRadius="sm"
+                   fontSize="md"
+                   py={3}
+                   transition="all 0.2s"
+                 >
+                   <HStack gap={2}>
+                     <TrendingDown size={18} />
+                     <Text>Sell</Text>
+                   </HStack>
+                 </Tabs.Trigger>
+               </Tabs.List>
+
+                <Tabs.Content value="0" p={0}>{renderForm("buy")}</Tabs.Content>
+                <Tabs.Content value="1" p={0}>{renderForm("sell")}</Tabs.Content>
+              </Tabs.Root>
+               </Box>
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
+
+      </Portal>
+    </Dialog.Root>
   );
 };
 

@@ -1,23 +1,18 @@
 import React, { useState, useEffect } from "react";
+import { useColorModeValue } from "../ui/color-mode";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalFooter,
-  ModalBody,
   VStack,
   Input,
   Button,
-  FormControl,
-  FormLabel,
-  FormHelperText,
-  Select,
-  useColorModeValue,
+  NativeSelect,
   Box,
   Textarea,
   HStack,
   Icon,
   Text,
+  Field,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
 import { Edit } from "lucide-react";
 import { AxiosError } from "axios";
@@ -195,307 +190,311 @@ const UpdateLedgerModal: React.FC<UpdateLedgerModalProps> = ({
     navServiceType !== currentNavServiceType;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      returnFocusOnClose={false}
-      onClose={onClose}
+    <Dialog.Root
+      open={isOpen}
       size={{ base: "full", sm: "xl" }}
-      motionPreset="slideInBottom"
-      isCentered
-    >
-      <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-      <ModalContent
-        bg={bgColor}
-        borderRadius={{ base: 0, sm: "xl" }}
-        boxShadow="2xl"
-        border="1px solid"
-        borderColor={borderColor}
-        overflow="hidden"
-        mx={{ base: 0, sm: 4 }}
-        my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "90vh" }}
-        display="flex"
-        flexDirection="column"
-      >
-        {/* Gradient accent line */}
-        <Box
-          h="3px"
-          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
-        />
-        {/* Flat header */}
-        <Box
-          px={{ base: 4, sm: 8 }}
-          py={5}
-          borderBottom="1px solid"
-          borderColor={modalHeaderBorderColor}
-        >
-          <HStack spacing={3} align="flex-start">
-            <Icon as={Edit} boxSize={5} mt="3px" color={modalIconColor} />
+      motionPreset="slide-in-bottom"
+      placement='center'
+      onOpenChange={e => {
+        if (!e.open) {
+          onClose();
+        }
+      }}>
+      <Portal>
 
-            <Box>
-              <Box
-                fontSize="lg"
-                fontWeight="800"
-                letterSpacing="-0.02em"
-                color={modalTitleColor}
+        <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <Dialog.Positioner>
+          <Dialog.Content
+            bg={bgColor}
+            borderRadius={{ base: 0, sm: "xl" }}
+            boxShadow="2xl"
+            border="1px solid"
+            borderColor={borderColor}
+            overflow="hidden"
+            mx={{ base: 0, sm: 4 }}
+            my={{ base: 0, sm: "auto" }}
+            maxHeight={{ base: "100%", md: "90vh" }}
+            display="flex"
+            flexDirection="column">
+            {/* Gradient accent line */}
+            <Box h="3px" bgGradient="to-r" gradientFrom="brand.400" gradientVia="brand.600" gradientTo="teal.300"  />
+            {/* Flat header */}
+            <Box
+              px={{ base: 4, sm: 8 }}
+              py={5}
+              borderBottom="1px solid"
+              borderColor={modalHeaderBorderColor}
+            >
+              <HStack gap={3} align="flex-start">
+                <Icon boxSize={5} mt="3px" color={modalIconColor} asChild><Edit /></Icon>
+
+                <Box>
+                  <Box
+                    fontSize="lg"
+                    fontWeight="800"
+                    letterSpacing="-0.02em"
+                    color={modalTitleColor}
+                  >
+                    Update Ledger
+                  </Box>
+                  <Box
+                    fontSize="sm"
+                    color={modalSubtitleColor}
+                  >
+                    Modify your ledger settings
+                  </Box>
+                </Box>
+              </HStack>
+            </Box>
+
+            <Dialog.Body
+              px={{ base: 4, sm: 8 }}
+              py={{ base: 4, sm: 6 }}
+              flex="1"
+              display="flex"
+              flexDirection="column"
+              overflowY="auto"
+              overflowX="hidden"
+              justifyContent={{ base: "space-between", sm: "flex-start" }}
+            >
+              {isFetching ? (
+                <Box textAlign="center" py={8}>
+                  <Text>Loading ledger details...</Text>
+                </Box>
+              ) : (
+              <VStack gap={{ base: 5, sm: 6 }} align="stretch" w="100%">
+                {/* Basic fields card */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <VStack gap={5} align="stretch">
+                    <Field.Root required>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        Ledger Name
+                      </Field.Label>
+                      <Input
+                        placeholder="e.g., Personal Finance, Family Budget"
+                        value={ledgerName}
+                        onChange={(e) => setLedgerName(e.target.value)}
+                        autoFocus
+                        onKeyDown={handleKeyPress}
+                        borderWidth="2px"
+                        borderColor={inputBorderColor}
+                        bg={inputBg}
+                        size="lg"
+                        borderRadius="lg"
+                        _hover={{ borderColor: "brand.300" }}
+                        _focus={{
+                          borderColor: focusBorderColor,
+                          boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                        }}
+                        disabled={isLoading}
+                      />
+                      <Field.HelperText mt={2}>
+                        Update the descriptive name for your financial records
+                      </Field.HelperText>
+                    </Field.Root>
+
+                    <Field.Root required>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        Currency
+                      </Field.Label>
+                      <NativeSelect.Root size="lg" disabled={isLoading}>
+                        <NativeSelect.Field
+                          placeholder="Select currency"
+                          value={selectedCurrency}
+                          onChange={(e) => setSelectedCurrency(e.target.value)}
+                          borderWidth="2px"
+                          borderColor={inputBorderColor}
+                          bg={inputBg}
+                          borderRadius="lg"
+                          _hover={{ borderColor: "brand.300" }}
+                          _focus={{
+                            borderColor: focusBorderColor,
+                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                          }}>
+                          {currencies.map((currency) => (
+                            <option key={currency.symbol} value={currency.symbol}>
+                              {currency.symbol} ({currency.name})
+                            </option>
+                          ))}
+                        </NativeSelect.Field>
+                        <NativeSelect.Indicator />
+                      </NativeSelect.Root>
+                      <Field.HelperText mt={2}>
+                        Update the primary currency for this ledger
+                      </Field.HelperText>
+                    </Field.Root>
+
+                    <Field.Root required>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        Mutual Fund Service
+                      </Field.Label>
+                      <NativeSelect.Root size="lg" disabled={isLoading}>
+                        <NativeSelect.Field
+                          value={navServiceType}
+                          onChange={(e) => setNavServiceType(e.target.value)}
+                          borderWidth="2px"
+                          borderColor={inputBorderColor}
+                          bg={inputBg}
+                          borderRadius="lg"
+                          _hover={{ borderColor: "brand.300" }}
+                          _focus={{
+                            borderColor: focusBorderColor,
+                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                          }}>
+                          <option value="india">
+                            Indian Mutual Funds (MFAPI.in)
+                          </option>
+                          <option value="uk">UK Mutual Funds (Yahoo Finance)</option>
+                        </NativeSelect.Field>
+                        <NativeSelect.Indicator />
+                      </NativeSelect.Root>
+                      <Field.HelperText mt={2}>
+                        Update the mutual fund data service for this ledger
+                      </Field.HelperText>
+                    </Field.Root>
+                  </VStack>
+                </Box>
+
+                {/* Optional fields card */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <VStack gap={5} align="stretch">
+                    <Field.Root>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        Description
+                      </Field.Label>
+                      <Input
+                        placeholder="e.g., My main personal finance ledger"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        borderWidth="2px"
+                        borderColor={inputBorderColor}
+                        bg={inputBg}
+                        size="lg"
+                        borderRadius="lg"
+                        _hover={{ borderColor: "brand.300" }}
+                        _focus={{
+                          borderColor: focusBorderColor,
+                          boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                        }}
+                        disabled={isLoading}
+                      />
+                      <Field.HelperText mt={2}>
+                        A brief overview of this ledger&apos;s purpose
+                      </Field.HelperText>
+                    </Field.Root>
+
+                    <Field.Root>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        Notes
+                      </Field.Label>
+                      <Textarea
+                        placeholder="Any additional notes or details"
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        borderWidth="2px"
+                        borderColor={inputBorderColor}
+                        bg={inputBg}
+                        size="lg"
+                        borderRadius="lg"
+                        rows={4}
+                        _hover={{ borderColor: "brand.300" }}
+                        _focus={{
+                          borderColor: focusBorderColor,
+                          boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                        }}
+                        disabled={isLoading}
+                      />
+                      <Field.HelperText mt={2}>
+                        Detailed notes for this ledger
+                      </Field.HelperText>
+                    </Field.Root>
+                   </VStack>
+                 </Box>
+               </VStack>
+               )}
+
+               {/* Mobile-only action buttons that stay at bottom */}
+              <Box display={{ base: "block", sm: "none" }} mt={6}>
+                <Button
+                  onClick={handleSubmit}
+                  colorPalette="brand"
+                  size="lg"
+                  width="100%"
+                  mb={3}
+                  borderRadius="lg"
+                  fontWeight="bold"
+                  loading={isLoading}
+                  loadingText="Updating..."
+                  disabled={!ledgerName || !selectedCurrency || !hasChanges}
+                >
+                  Update Ledger
+                </Button>
+                <Button
+                  variant="ghost"
+                  colorPalette="gray"
+                  onClick={onClose}
+                  width="100%"
+                  size="lg"
+                  borderRadius="lg"
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+              </Box>
+            </Dialog.Body>
+
+            {/* Desktop-only footer */}
+            <Dialog.Footer
+              display={{ base: "none", sm: "flex" }}
+              px={8}
+              py={6}
+              bg={footerBg}
+              borderTop="1px solid"
+              borderColor={borderColor}
+            >
+              <Button
+                colorPalette="brand"
+                mr={3}
+                onClick={handleSubmit}
+                px={8}
+                py={3}
+                borderRadius="lg"
+                fontWeight="bold"
+                loading={isLoading}
+                loadingText="Updating..."
+                disabled={!ledgerName || !selectedCurrency || !hasChanges}
               >
                 Update Ledger
-              </Box>
-              <Box
-                fontSize="sm"
-                color={modalSubtitleColor}
+              </Button>
+              <Button
+                variant="ghost"
+                colorPalette="gray"
+                onClick={onClose}
+                disabled={isLoading}
+                px={6}
+                py={3}
+                borderRadius="lg"
               >
-                Modify your ledger settings
-              </Box>
-            </Box>
-          </HStack>
-        </Box>
+                Cancel
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
 
-        <ModalBody
-          px={{ base: 4, sm: 8 }}
-          py={{ base: 4, sm: 6 }}
-          flex="1"
-          display="flex"
-          flexDirection="column"
-          overflowY="auto"
-          overflowX="hidden"
-          justifyContent={{ base: "space-between", sm: "flex-start" }}
-        >
-          {isFetching ? (
-            <Box textAlign="center" py={8}>
-              <Text>Loading ledger details...</Text>
-            </Box>
-          ) : (
-          <VStack spacing={{ base: 5, sm: 6 }} align="stretch" w="100%">
-            {/* Basic fields card */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
-            >
-              <VStack spacing={5} align="stretch">
-                <FormControl isRequired>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    Ledger Name
-                  </FormLabel>
-                  <Input
-                    placeholder="e.g., Personal Finance, Family Budget"
-                    value={ledgerName}
-                    onChange={(e) => setLedgerName(e.target.value)}
-                    autoFocus
-                    onKeyDown={handleKeyPress}
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    bg={inputBg}
-                    size="lg"
-                    borderRadius="lg"
-                    _hover={{ borderColor: "brand.300" }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                    }}
-                    isDisabled={isLoading}
-                  />
-                  <FormHelperText mt={2}>
-                    Update the descriptive name for your financial records
-                  </FormHelperText>
-                </FormControl>
-
-                <FormControl isRequired>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    Currency
-                  </FormLabel>
-                  <Select
-                    placeholder="Select currency"
-                    value={selectedCurrency}
-                    onChange={(e) => setSelectedCurrency(e.target.value)}
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    bg={inputBg}
-                    size="lg"
-                    borderRadius="lg"
-                    _hover={{ borderColor: "brand.300" }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                    }}
-                    isDisabled={isLoading}
-                  >
-                    {currencies.map((currency) => (
-                      <option key={currency.symbol} value={currency.symbol}>
-                        {currency.symbol} ({currency.name})
-                      </option>
-                    ))}
-                  </Select>
-                  <FormHelperText mt={2}>
-                    Update the primary currency for this ledger
-                  </FormHelperText>
-                </FormControl>
-
-                <FormControl isRequired>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    Mutual Fund Service
-                  </FormLabel>
-                  <Select
-                    value={navServiceType}
-                    onChange={(e) => setNavServiceType(e.target.value)}
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    bg={inputBg}
-                    size="lg"
-                    borderRadius="lg"
-                    _hover={{ borderColor: "brand.300" }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                    }}
-                    isDisabled={isLoading}
-                  >
-                    <option value="india">
-                      Indian Mutual Funds (MFAPI.in)
-                    </option>
-                    <option value="uk">UK Mutual Funds (Yahoo Finance)</option>
-                  </Select>
-                  <FormHelperText mt={2}>
-                    Update the mutual fund data service for this ledger
-                  </FormHelperText>
-                </FormControl>
-              </VStack>
-            </Box>
-
-            {/* Optional fields card */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
-            >
-              <VStack spacing={5} align="stretch">
-                <FormControl>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    Description
-                  </FormLabel>
-                  <Input
-                    placeholder="e.g., My main personal finance ledger"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    bg={inputBg}
-                    size="lg"
-                    borderRadius="lg"
-                    _hover={{ borderColor: "brand.300" }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                    }}
-                    isDisabled={isLoading}
-                  />
-                  <FormHelperText mt={2}>
-                    A brief overview of this ledger&apos;s purpose
-                  </FormHelperText>
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    Notes
-                  </FormLabel>
-                  <Textarea
-                    placeholder="Any additional notes or details"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    bg={inputBg}
-                    size="lg"
-                    borderRadius="lg"
-                    rows={4}
-                    _hover={{ borderColor: "brand.300" }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                    }}
-                    isDisabled={isLoading}
-                  />
-                  <FormHelperText mt={2}>
-                    Detailed notes for this ledger
-                  </FormHelperText>
-                </FormControl>
-               </VStack>
-             </Box>
-           </VStack>
-           )}
-
-           {/* Mobile-only action buttons that stay at bottom */}
-          <Box display={{ base: "block", sm: "none" }} mt={6}>
-            <Button
-              onClick={handleSubmit}
-              colorScheme="brand"
-              size="lg"
-              width="100%"
-              mb={3}
-              borderRadius="lg"
-              fontWeight="bold"
-              isLoading={isLoading}
-              loadingText="Updating..."
-              isDisabled={!ledgerName || !selectedCurrency || !hasChanges}
-            >
-              Update Ledger
-            </Button>
-            <Button
-              variant="ghost"
-              colorScheme="gray"
-              onClick={onClose}
-              width="100%"
-              size="lg"
-              borderRadius="lg"
-              isDisabled={isLoading}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </ModalBody>
-
-        {/* Desktop-only footer */}
-        <ModalFooter
-          display={{ base: "none", sm: "flex" }}
-          px={8}
-          py={6}
-          bg={footerBg}
-          borderTop="1px solid"
-          borderColor={borderColor}
-        >
-          <Button
-            colorScheme="brand"
-            mr={3}
-            onClick={handleSubmit}
-            px={8}
-            py={3}
-            borderRadius="lg"
-            fontWeight="bold"
-            isLoading={isLoading}
-            loadingText="Updating..."
-            isDisabled={!ledgerName || !selectedCurrency || !hasChanges}
-          >
-            Update Ledger
-          </Button>
-          <Button
-            variant="ghost"
-            colorScheme="gray"
-            onClick={onClose}
-            isDisabled={isLoading}
-            px={6}
-            py={3}
-            borderRadius="lg"
-          >
-            Cancel
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

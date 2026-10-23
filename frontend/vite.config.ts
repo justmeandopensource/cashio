@@ -52,27 +52,22 @@ export default defineConfig({
     reportCompressedSize: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          "vendor-react": ["react", "react-dom", "react-router-dom"],
-          "vendor-ui": [
-            "@chakra-ui/react",
-            "@emotion/react",
-            "@emotion/styled",
-            "framer-motion",
-          ],
-          "vendor-data": [
-            "@tanstack/react-query",
-            "axios",
-            "zustand",
-            "react-hook-form",
-          ],
-          "charts-nivo": [
-            "@nivo/core",
-            "@nivo/bar",
-            "@nivo/line",
-            "@nivo/pie",
-            "@nivo/treemap",
-            "@nivo/tooltip",
+        // Rolldown (Vite 8) replaces Rollup's object-form manualChunks.
+        codeSplitting: {
+          groups: [
+            {
+              name: "vendor-react",
+              test: /node_modules\/(react|react-dom|react-router(-dom)?|scheduler)\//,
+            },
+            {
+              name: "vendor-ui",
+              test: /node_modules\/(@chakra-ui|@emotion|@ark-ui|@zag-js)\//,
+            },
+            {
+              name: "vendor-data",
+              test: /node_modules\/(@tanstack\/react-query|axios|zustand|react-hook-form)\//,
+            },
+            { name: "charts-nivo", test: /node_modules\/(@nivo|d3-)/ },
           ],
         },
       },

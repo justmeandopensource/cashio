@@ -1,25 +1,20 @@
 import React, { useState, useEffect } from "react";
+import { useColorModeValue } from "../ui/color-mode";
 import {
   Flex,
   Spinner,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalFooter,
-  ModalBody,
-  FormControl,
-  FormLabel,
-  FormHelperText,
   Input,
-  Select,
+  NativeSelect,
   Checkbox,
   Button,
   Box,
   VStack,
   HStack,
-  useColorModeValue,
   Text,
   Icon,
+  Field,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
 import { Plus, Check } from "lucide-react";
 import { notify } from "@/components/shared/notify";
@@ -135,308 +130,312 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      returnFocusOnClose={false}
-      onClose={onClose}
+    <Dialog.Root
+      open={isOpen}
       size={{ base: "full", sm: "xl" }}
-      motionPreset="slideInBottom"
-    >
-      <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-      <ModalContent
-        bg={bgColor}
-        borderRadius={{ base: 0, sm: "xl" }}
-        boxShadow="2xl"
-        border="1px solid"
-        borderColor={borderColor}
-        overflow="hidden"
-        mx={{ base: 0, sm: 4 }}
-        my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "90vh" }}
-        display="flex"
-        flexDirection="column"
-      >
-        {/* Gradient accent line */}
-        <Box
-          h="3px"
-          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
-        />
-        {/* Flat header */}
-        <Box
-          px={{ base: 4, sm: 8 }}
-          py={5}
-          borderBottom="1px solid"
-          borderColor={modalHeaderBorderColor}
-        >
-          <HStack spacing={3} align="flex-start">
-            <Icon as={Plus} boxSize={5} mt="3px" color={modalIconColor} />
+      motionPreset="slide-in-bottom"
+      onOpenChange={e => {
+        if (!e.open) {
+          onClose();
+        }
+      }}>
+      <Portal>
 
-            <Box>
-              <Box
-                fontSize="lg"
-                fontWeight="800"
-                letterSpacing="-0.02em"
-                color={modalTitleColor}
-              >
-                Create {categoryType === "income" ? "Income" : "Expense"}{" "}
-                Category
-              </Box>
-              <Box
-                fontSize="sm"
-                color={modalSubtitleColor}
-              >
-                Add a new {categoryType} category to organize transactions
-              </Box>
-            </Box>
-          </HStack>
-        </Box>
-
-        <ModalBody
-          px={{ base: 4, sm: 8 }}
-          py={{ base: 4, sm: 6 }}
-          flex="1"
-          display="flex"
-          flexDirection="column"
-          overflowY="auto"
-          overflowX="hidden"
-          justifyContent={{ base: "space-between", sm: "flex-start" }}
-        >
-          <VStack spacing={{ base: 5, sm: 6 }} align="stretch" w="100%">
-            {/* Category Name Card */}
+        <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <Dialog.Positioner>
+          <Dialog.Content
+            bg={bgColor}
+            borderRadius={{ base: 0, sm: "xl" }}
+            boxShadow="2xl"
+            border="1px solid"
+            borderColor={borderColor}
+            overflow="hidden"
+            mx={{ base: 0, sm: 4 }}
+            my={{ base: 0, sm: "auto" }}
+            maxHeight={{ base: "100%", md: "90vh" }}
+            display="flex"
+            flexDirection="column">
+            {/* Gradient accent line */}
+            <Box h="3px" bgGradient="to-r" gradientFrom="brand.400" gradientVia="brand.600" gradientTo="teal.300"  />
+            {/* Flat header */}
             <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
+              px={{ base: 4, sm: 8 }}
+              py={5}
+              borderBottom="1px solid"
+              borderColor={modalHeaderBorderColor}
             >
-              <FormControl>
-                <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
-                  Category Name
-                  {categoryName && <Icon as={Check} boxSize={3.5} color="teal.500" />}
-                </FormLabel>
-                <Input
-                  placeholder={`e.g., ${categoryType === "income" ? "Salary, Freelance" : "Groceries, Utilities"}`}
-                  value={categoryName}
-                  onChange={(e) => setCategoryName(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  borderWidth="2px"
-                  borderColor={inputBorderColor}
-                  bg={inputBg}
-                  size="lg"
-                  borderRadius="lg"
-                  _hover={{ borderColor: "brand.300" }}
-                  _focus={{
-                    borderColor: focusBorderColor,
-                    boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                  }}
-                  autoFocus
-                />
-                         <FormHelperText mt={2} color={textColorSecondary}>
-                           Organize this category under an existing group
-                         </FormHelperText>
-              </FormControl>
-            </Box>
+              <HStack gap={3} align="flex-start">
+                <Icon boxSize={5} mt="3px" color={modalIconColor} asChild><Plus /></Icon>
 
-            {/* Category Type Card */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
-            >
-              <Box>
-                <HStack justifyContent="space-between" align="center" mb={2}>
-                  <Box>
-                    <Text fontWeight="semibold" mb={1}>
-                      Group Category
-                    </Text>
-                     <Text fontSize="sm" color={textColor}>
-                       Group categories can contain other categories but cannot
-                       be assigned to transactions
-                     </Text>
+                <Box>
+                  <Box
+                    fontSize="lg"
+                    fontWeight="800"
+                    letterSpacing="-0.02em"
+                    color={modalTitleColor}
+                  >
+                    Create {categoryType === "income" ? "Income" : "Expense"}{" "}
+                    Category
                   </Box>
-                  <Checkbox
-                    isChecked={isGroupCategory}
-                    onChange={(e) => setIsGroupCategory(e.target.checked)}
-                    colorScheme="brand"
-                    size="lg"
-                  />
-                </HStack>
-              </Box>
+                  <Box
+                    fontSize="sm"
+                    color={modalSubtitleColor}
+                  >
+                    Add a new {categoryType} category to organize transactions
+                  </Box>
+                </Box>
+              </HStack>
             </Box>
 
-            {/* Parent Category Card (only show if not creating under a specific parent) */}
-            {!parentCategoryId && (
-              <Box
-                bg={cardBg}
-                p={{ base: 4, sm: 6 }}
-                borderRadius="xl"
-                border="1px solid"
-                borderColor={borderColor}
-              >
-                <FormControl>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    Parent Category (Optional)
-                  </FormLabel>
+            <Dialog.Body
+              px={{ base: 4, sm: 8 }}
+              py={{ base: 4, sm: 6 }}
+              flex="1"
+              display="flex"
+              flexDirection="column"
+              overflowY="auto"
+              overflowX="hidden"
+              justifyContent={{ base: "space-between", sm: "flex-start" }}
+            >
+              <VStack gap={{ base: 5, sm: 6 }} align="stretch" w="100%">
+                {/* Category Name Card */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <Field.Root>
+                    <Field.Label fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+                      Category Name
+                      {categoryName && <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>}
+                    </Field.Label>
+                    <Input
+                      placeholder={`e.g., ${categoryType === "income" ? "Salary, Freelance" : "Groceries, Utilities"}`}
+                      value={categoryName}
+                      onChange={(e) => setCategoryName(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      borderWidth="2px"
+                      borderColor={inputBorderColor}
+                      bg={inputBg}
+                      size="lg"
+                      borderRadius="lg"
+                      _hover={{ borderColor: "brand.300" }}
+                      _focus={{
+                        borderColor: focusBorderColor,
+                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                      }}
+                      autoFocus
+                    />
+                             <Field.HelperText mt={2} color={textColorSecondary}>
+                               Organize this category under an existing group
+                             </Field.HelperText>
+                  </Field.Root>
+                </Box>
 
-                  {/* Show loading spinner while fetching group categories */}
-                  {isGroupCategoriesLoading && (
-                    <Flex justify="center" align="center" py={8}>
-                      <VStack spacing={3}>
-                         <Spinner size="md" color={spinnerColor} thickness="3px" />
+                {/* Category Type Card */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <Box>
+                    <HStack justifyContent="space-between" align="center" mb={2}>
+                      <Box>
+                        <Text fontWeight="semibold" mb={1}>
+                          Group Category
+                        </Text>
                          <Text fontSize="sm" color={textColor}>
-                           Loading group categories...
-                         </Text>
-                      </VStack>
-                    </Flex>
-                  )}
-
-                  {/* Show error message if fetching group categories fails */}
-                  {isGroupCategoriesError && (
-                     <Box
-                       bg={bgError}
-                       border="2px solid"
-                       borderColor={borderColorError}
-                       borderRadius="md"
-                       p={4}
-                     >
-                       <Text color={textColorError} fontSize="sm" fontWeight="medium">
-                         Failed to load group categories. Please try again.
-                       </Text>
-                    </Box>
-                  )}
-
-                  {/* Show parent category selection if data is available */}
-                  {groupCategories &&
-                    groupCategories.length > 0 &&
-                    !isGroupCategoriesLoading && (
-                      <>
-                        <Select
-                          value={parentCategory}
-                          onChange={(e) => setParentCategory(e.target.value)}
-                          placeholder="Select parent category"
-                          borderWidth="2px"
-                          borderColor={inputBorderColor}
-                          bg={inputBg}
-                          size="lg"
-                          borderRadius="lg"
-                          _hover={{ borderColor: "brand.300" }}
-                          _focus={{
-                            borderColor: focusBorderColor,
-                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                          }}
-                        >
-                          {groupCategories.map((category) => (
-                            <option
-                              key={category.category_id}
-                              value={category.category_id}
-                            >
-                              {category.name}
-                            </option>
-                          ))}
-                        </Select>
-                         <FormHelperText mt={2} color={textColorSecondary}>
-                           Organize this category under an existing group
-                         </FormHelperText>
-                      </>
-                    )}
-
-                  {/* Show message if no group categories are available */}
-                  {groupCategories &&
-                    groupCategories.length === 0 &&
-                    !isGroupCategoriesLoading &&
-                    !isGroupCategoriesError && (
-                       <Box
-                         bg={bgInfo}
-                         border="2px solid"
-                         borderColor={borderColorInfo}
-                         borderRadius="md"
-                         p={4}
-                       >
-                         <Text
-                           color={textColorInfo}
-                           fontSize="sm"
-                           fontWeight="medium"
-                         >
-                           No group categories available. This category will be
-                           created at the root level.
+                           Group categories can contain other categories but cannot
+                           be assigned to transactions
                          </Text>
                       </Box>
-                    )}
-                </FormControl>
+                      <Checkbox.Root
+                        onCheckedChange={(e) => setIsGroupCategory(!!e.checked)}
+                        colorPalette="brand"
+                        size="lg"
+                        checked={isGroupCategory}><Checkbox.HiddenInput /><Checkbox.Control><Checkbox.Indicator /></Checkbox.Control></Checkbox.Root>
+                    </HStack>
+                  </Box>
+                </Box>
+
+                {/* Parent Category Card (only show if not creating under a specific parent) */}
+                {!parentCategoryId && (
+                  <Box
+                    bg={cardBg}
+                    p={{ base: 4, sm: 6 }}
+                    borderRadius="xl"
+                    border="1px solid"
+                    borderColor={borderColor}
+                  >
+                    <Field.Root>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        Parent Category (Optional)
+                      </Field.Label>
+
+                      {/* Show loading spinner while fetching group categories */}
+                      {isGroupCategoriesLoading && (
+                        <Flex justify="center" align="center" py={8}>
+                          <VStack gap={3}>
+                             <Spinner size="md" color={spinnerColor} borderWidth="3px" />
+                             <Text fontSize="sm" color={textColor}>
+                               Loading group categories...
+                             </Text>
+                          </VStack>
+                        </Flex>
+                      )}
+
+                      {/* Show error message if fetching group categories fails */}
+                      {isGroupCategoriesError && (
+                         <Box
+                           bg={bgError}
+                           border="2px solid"
+                           borderColor={borderColorError}
+                           borderRadius="md"
+                           p={4}
+                         >
+                           <Text color={textColorError} fontSize="sm" fontWeight="medium">
+                             Failed to load group categories. Please try again.
+                           </Text>
+                        </Box>
+                      )}
+
+                      {/* Show parent category selection if data is available */}
+                      {groupCategories &&
+                        groupCategories.length > 0 &&
+                        !isGroupCategoriesLoading && (
+                          <>
+                            <NativeSelect.Root size="lg">
+                              <NativeSelect.Field
+                                value={parentCategory}
+                                onChange={(e) => setParentCategory(e.target.value)}
+                                placeholder="Select parent category"
+                                borderWidth="2px"
+                                borderColor={inputBorderColor}
+                                bg={inputBg}
+                                borderRadius="lg"
+                                _hover={{ borderColor: "brand.300" }}
+                                _focus={{
+                                  borderColor: focusBorderColor,
+                                  boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                                }}>
+                                {groupCategories.map((category) => (
+                                  <option
+                                    key={category.category_id}
+                                    value={category.category_id}
+                                  >
+                                    {category.name}
+                                  </option>
+                                ))}
+                              </NativeSelect.Field>
+                              <NativeSelect.Indicator />
+                            </NativeSelect.Root>
+                             <Field.HelperText mt={2} color={textColorSecondary}>
+                               Organize this category under an existing group
+                             </Field.HelperText>
+                          </>
+                        )}
+
+                      {/* Show message if no group categories are available */}
+                      {groupCategories &&
+                        groupCategories.length === 0 &&
+                        !isGroupCategoriesLoading &&
+                        !isGroupCategoriesError && (
+                           <Box
+                             bg={bgInfo}
+                             border="2px solid"
+                             borderColor={borderColorInfo}
+                             borderRadius="md"
+                             p={4}
+                           >
+                             <Text
+                               color={textColorInfo}
+                               fontSize="sm"
+                               fontWeight="medium"
+                             >
+                               No group categories available. This category will be
+                               created at the root level.
+                             </Text>
+                          </Box>
+                        )}
+                    </Field.Root>
+                  </Box>
+                )}
+              </VStack>
+
+              {/* Mobile-only action buttons that stay at bottom */}
+              <Box display={{ base: "block", sm: "none" }} mt={6}>
+                <Button
+                  onClick={handleSubmit}
+                  colorPalette="brand"
+                  size="lg"
+                  width="100%"
+                  mb={3}
+                  borderRadius="lg"
+                  fontWeight="bold"
+                  loading={createCategoryMutation.isPending}
+                  disabled={!categoryName || isGroupCategoriesError}
+                  loadingText="Creating..."
+                >
+                  Create Category
+                </Button>
+                <Button
+                  variant="ghost"
+                  colorPalette="gray"
+                  onClick={onClose}
+                  size="lg"
+                  width="100%"
+                  borderRadius="lg"
+                  disabled={createCategoryMutation.isPending}
+                >
+                  Cancel
+                </Button>
               </Box>
-            )}
-          </VStack>
+            </Dialog.Body>
 
-          {/* Mobile-only action buttons that stay at bottom */}
-          <Box display={{ base: "block", sm: "none" }} mt={6}>
-            <Button
-              onClick={handleSubmit}
-              colorScheme="brand"
-              size="lg"
-              width="100%"
-              mb={3}
-              borderRadius="lg"
-              fontWeight="bold"
-              isLoading={createCategoryMutation.isPending}
-              isDisabled={!categoryName || isGroupCategoriesError}
-              loadingText="Creating..."
+            {/* Desktop-only footer */}
+            <Dialog.Footer
+              display={{ base: "none", sm: "flex" }}
+              px={8}
+              py={6}
+              bg={footerBg}
+              borderTop="1px solid"
+              borderColor={borderColor}
             >
-              Create Category
-            </Button>
-            <Button
-              variant="ghost"
-              colorScheme="gray"
-              onClick={onClose}
-              size="lg"
-              width="100%"
-              borderRadius="lg"
-              isDisabled={createCategoryMutation.isPending}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </ModalBody>
+              <Button
+                colorPalette="brand"
+                mr={3}
+                onClick={handleSubmit}
+                px={8}
+                py={3}
+                borderRadius="lg"
+                fontWeight="bold"
+                loading={createCategoryMutation.isPending}
+                disabled={!categoryName || isGroupCategoriesError}
+                loadingText="Creating..."
+              >
+                Create Category
+              </Button>
+              <Button
+                variant="ghost"
+                colorPalette="gray"
+                onClick={onClose}
+                disabled={createCategoryMutation.isPending}
+                px={6}
+                py={3}
+                borderRadius="lg"
+              >
+                Cancel
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
 
-        {/* Desktop-only footer */}
-        <ModalFooter
-          display={{ base: "none", sm: "flex" }}
-          px={8}
-          py={6}
-          bg={footerBg}
-          borderTop="1px solid"
-          borderColor={borderColor}
-        >
-          <Button
-            colorScheme="brand"
-            mr={3}
-            onClick={handleSubmit}
-            px={8}
-            py={3}
-            borderRadius="lg"
-            fontWeight="bold"
-            isLoading={createCategoryMutation.isPending}
-            isDisabled={!categoryName || isGroupCategoriesError}
-            loadingText="Creating..."
-          >
-            Create Category
-          </Button>
-          <Button
-            variant="ghost"
-            colorScheme="gray"
-            onClick={onClose}
-            isDisabled={createCategoryMutation.isPending}
-            px={6}
-            py={3}
-            borderRadius="lg"
-          >
-            Cancel
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

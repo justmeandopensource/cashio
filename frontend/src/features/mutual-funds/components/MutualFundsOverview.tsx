@@ -1,15 +1,6 @@
 import { FC, useState, useMemo, useEffect } from "react";
-import {
-  Box,
-  Text,
-  Button,
-  VStack,
-  HStack,
-  SimpleGrid,
-  Flex,
-  Icon,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box, Text, Button, VStack, HStack, SimpleGrid, Flex, Icon } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { motion } from "framer-motion";
 import {
@@ -44,7 +35,7 @@ const floatKeyframes = keyframes`
   50% { transform: translateY(-6px); }
 `;
 
- 
+
 interface MutualFundsOverviewProps {
   amcs: Amc[];
   mutualFunds: MutualFund[];
@@ -71,7 +62,7 @@ interface MutualFundsOverviewProps {
       searchTerm?: string;
     }) => void;
 }
- 
+
 
 const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
   amcs,
@@ -290,7 +281,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
 
   return (
     <Box>
-      <VStack spacing={6} align="stretch">
+      <VStack gap={6} align="stretch">
          {amcs.length > 0 && (
            <>
              <MotionBox
@@ -306,7 +297,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                  gap={{ base: 3, md: 0 }}
                >
                  <Flex align="center">
-                   <Icon as={TrendingUp} mr={2} color={iconColor} />
+                   <Icon mr={2} color={iconColor} asChild><TrendingUp /></Icon>
                    <Text
                      fontSize={{ base: "lg", md: "xl" }}
                      fontWeight="800"
@@ -317,7 +308,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                    </Text>
                  </Flex>
                  {/* Mobile: text links stacked */}
-                 <VStack align="flex-start" spacing={2} display={{ base: "flex", md: "none" }}>
+                 <VStack align="flex-start" gap={2} display={{ base: "flex", md: "none" }}>
                    <Text fontSize="sm" color="brand.500" cursor="pointer" onClick={onCreateAmc} _hover={{ textDecoration: "underline" }}>
                      Create a new AMC
                    </Text>
@@ -332,43 +323,34 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                    <NavUpdateStatusPill compact />
                  </VStack>
                  {/* Desktop: buttons beside title */}
-                 <HStack spacing={2} display={{ base: "none", md: "flex" }}>
+                 <HStack gap={2} display={{ base: "none", md: "flex" }}>
                    <Button
-                     leftIcon={<Building2 size={16} />}
-                     colorScheme="brand"
+                     colorPalette="brand"
                      variant="outline"
                      size="sm"
                      onClick={onCreateAmc}
                      borderRadius="lg"
-                     fontWeight="bold"
-                   >
-                     Create AMC
-                   </Button>
+                     fontWeight="bold"><Building2 size={16} />Create AMC
+                                        </Button>
                    <Button
-                     leftIcon={<PieChart size={16} />}
-                     colorScheme="brand"
+                     colorPalette="brand"
                      variant={amcs.length === 0 ? "outline" : "solid"}
                      size="sm"
                      onClick={() => onCreateFund()}
                      borderRadius="lg"
                      fontWeight="bold"
                      _hover={{ boxShadow: btnGlow }}
-                     transition="all 0.2s ease"
-                   >
-                     Create Fund
-                   </Button>
+                     transition="all 0.2s ease"><PieChart size={16} />Create Fund
+                                        </Button>
                    {fundsWithCodes.length > 0 && (
                      <Button
-                       leftIcon={<RefreshCw size={16} />}
-                       colorScheme="brand"
+                       colorPalette="brand"
                        variant="outline"
                        size="sm"
                        onClick={handleOpenBulkNavModal}
                        borderRadius="lg"
-                       fontWeight="bold"
-                     >
-                       Update NAVs
-                     </Button>
+                       fontWeight="bold"><RefreshCw size={16} />Update NAVs
+                                            </Button>
                    )}
                    <NavUpdateStatusPill />
                  </HStack>
@@ -377,7 +359,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
 
              <MotionSimpleGrid
                columns={{ base: 2, sm: 3, lg: 5 }}
-               spacing={{ base: 3, md: 4 }}
+               gap={{ base: 3, md: 4 }}
                initial="hidden"
                animate="visible"
                variants={{
@@ -446,8 +428,8 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                          {tooltipTerm && <FinancialTooltip term={tooltipTerm} />}
                        </Text>
                      </Flex>
-                     <VStack align="start" spacing={0}>
-                       <HStack spacing={0} align="baseline">
+                     <VStack align="start" gap={0}>
+                       <HStack gap={0} align="baseline">
                          <Text
                            fontSize={{ base: "lg", md: "xl" }}
                            fontWeight="bold"
@@ -499,7 +481,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                 mb={6}
                 css={{ animation: `${floatKeyframes} 3s ease-in-out infinite` }}
               >
-                <Icon as={TrendingUp} boxSize={9} color="brand.500" strokeWidth={1.5} />
+                <Icon boxSize={9} color="brand.500" strokeWidth={1.5} asChild><TrendingUp /></Icon>
               </Box>
               <Text fontSize="xl" fontWeight="800" color={emptyTitleColor} mb={2} letterSpacing="-0.02em">
                 No AMCs Created Yet
@@ -509,7 +491,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
               </Text>
               <MotionBox whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Button
-                  colorScheme="brand"
+                  colorPalette="brand"
                   onClick={onCreateAmc}
                   size="lg"
                   borderRadius="xl"
@@ -545,7 +527,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
                 mb={6}
                 css={{ animation: `${floatKeyframes} 3s ease-in-out infinite` }}
               >
-                <Icon as={BookOpen} boxSize={9} color="brand.500" strokeWidth={1.5} />
+                <Icon boxSize={9} color="brand.500" strokeWidth={1.5} asChild><BookOpen /></Icon>
               </Box>
               <Text fontSize="xl" fontWeight="800" color={emptyTitleColor} mb={2} letterSpacing="-0.02em">
                 No Mutual Funds Yet
@@ -555,7 +537,7 @@ const MutualFundsOverview: FC<MutualFundsOverviewProps> = ({
               </Text>
               <MotionBox whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Button
-                  colorScheme="brand"
+                  colorPalette="brand"
                   onClick={() => onCreateFund()}
                   size="lg"
                   borderRadius="xl"

@@ -1,30 +1,21 @@
 import React, { FC, useState, useEffect } from "react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalBody,
-  ModalFooter,
   Button,
   VStack,
-  FormControl,
-  FormLabel,
   Input,
   Textarea,
   Text,
-  Select,
+  NativeSelect,
   Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
   Box,
   HStack,
   Spinner,
-  useColorModeValue,
-  FormHelperText,
-  FormErrorMessage,
   Icon,
   Badge,
+  Field,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
 import {
   Plus,
@@ -194,139 +185,186 @@ const CreatePhysicalAssetModal: FC<CreatePhysicalAssetModalProps> = ({
   );
 
   return (
-    <Modal
-      isOpen={isOpen}
-      returnFocusOnClose={false}
-      onClose={handleClose}
+    <Dialog.Root
+      open={isOpen}
       size={{ base: "full", sm: "xl" }}
-      motionPreset="slideInBottom"
-    >
-      <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-      <ModalContent
-        bg={bgColor}
-        borderRadius={{ base: 0, sm: "xl" }}
-        boxShadow="2xl"
-        border="1px solid"
-        borderColor={borderColor}
-        overflow="hidden"
-        mx={{ base: 0, sm: 4 }}
-        my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "90vh" }}
-        display="flex"
-        flexDirection="column"
-      >
-        {/* Gradient accent line */}
-        <Box
-          h="3px"
-          bgGradient="linear(to-r, brand.400, brand.600, teal.300)"
-        />
-        {/* Flat header */}
-        <Box
-          px={{ base: 4, sm: 8 }}
-          py={5}
-          borderBottom="1px solid"
-          borderColor={modalHeaderBorderColor}
-        >
-          <HStack spacing={3} align="flex-start">
-            <Icon as={Plus} boxSize={5} mt="3px" color={modalIconColor} />
+      motionPreset="slide-in-bottom"
+      onOpenChange={e => {
+        if (!e.open) {
+          handleClose();
+        }
+      }}>
+      <Portal>
 
-            <Box>
-              <Text
-                fontSize="lg"
-                fontWeight="800"
-                letterSpacing="-0.02em"
-                color={modalTitleColor}
-              >
-                Create Physical Asset
-              </Text>
-              <Text
-                fontSize="sm"
-                color={modalSubtitleColor}
-              >
-                Add a new asset to your portfolio
-              </Text>
-            </Box>
-          </HStack>
-        </Box>
-
-         <ModalBody
-           px={{ base: 4, sm: 8 }}
-           py={{ base: 4, sm: 6 }}
-           flex="1"
-           overflowY="auto"
-          overflowX="hidden"
-         >
-           <form id="create-physical-asset-form" onSubmit={handleCreate}>
-             <VStack spacing={{ base: 5, sm: 6 }} align="stretch">
-            {/* Asset Details Form */}
+        <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <Dialog.Positioner>
+          <Dialog.Content
+            bg={bgColor}
+            borderRadius={{ base: 0, sm: "xl" }}
+            boxShadow="2xl"
+            border="1px solid"
+            borderColor={borderColor}
+            overflow="hidden"
+            mx={{ base: 0, sm: 4 }}
+            my={{ base: 0, sm: "auto" }}
+            maxHeight={{ base: "100%", md: "90vh" }}
+            display="flex"
+            flexDirection="column">
+            {/* Gradient accent line */}
+            <Box h="3px" bgGradient="to-r" gradientFrom="brand.400" gradientVia="brand.600" gradientTo="teal.300"  />
+            {/* Flat header */}
             <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
+              px={{ base: 4, sm: 8 }}
+              py={5}
+              borderBottom="1px solid"
+              borderColor={modalHeaderBorderColor}
             >
-              <VStack spacing={5} align="stretch">
-                 {/* Asset Name */}
-                 <FormControl isInvalid={!!errors.name}>
-                   <FormLabel fontWeight="semibold" mb={2}>
-                     <HStack spacing={2}>
-                       <Tag size={16} />
-                       <Text>Asset Name</Text>
-                       {formData.name.trim() && (
-                         <Icon as={Check} boxSize={3.5} color="teal.500" />
-                       )}
-                     </HStack>
-                   </FormLabel>
-                    <Input
-                      value={formData.name}
-                      onChange={(e) =>
-                        handleInputChange("name", e.target.value)
-                      }
-                      placeholder="e.g., Gold 22CT, ETH"
-                      maxLength={100}
-                      size="lg"
-                      bg={inputBg}
-                      borderColor={inputBorderColor}
-                      borderWidth="2px"
-                      borderRadius="md"
-                      autoFocus
-                      _hover={{ borderColor: "teal.300" }}
-                      _focus={{
-                        borderColor: focusBorderColor,
-                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                      }}
-                    />
-                   <FormErrorMessage>{errors.name}</FormErrorMessage>
-                   <FormHelperText>Choose a unique name</FormHelperText>
-                 </FormControl>
+              <HStack gap={3} align="flex-start">
+                <Icon boxSize={5} mt="3px" color={modalIconColor} asChild><Plus /></Icon>
 
-                 {/* Asset Type Selection */}
-                 <FormControl isInvalid={!!errors.asset_type_id}>
-                   <FormLabel fontWeight="semibold" mb={2}>
-                     <HStack spacing={2}>
-                       <Coins size={16} />
-                       <Text>Asset Type</Text>
-                       {formData.asset_type_id && (
-                         <Icon as={Check} boxSize={3.5} color="teal.500" />
-                       )}
-                     </HStack>
-                   </FormLabel>
-                   {assetTypesLoading ? (
-                     <HStack justify="center" p={4}>
-                       <Spinner size="sm" />
-                       <Text fontSize="sm" color="gray.500">
-                         Loading asset types...
-                       </Text>
-                     </HStack>
-                   ) : (
-                     <Select
-                       value={formData.asset_type_id}
-                       onChange={(e) =>
-                         handleInputChange("asset_type_id", e.target.value)
-                       }
-                       placeholder="Select an asset type"
-                       size="lg"
+                <Box>
+                  <Text
+                    fontSize="lg"
+                    fontWeight="800"
+                    letterSpacing="-0.02em"
+                    color={modalTitleColor}
+                  >
+                    Create Physical Asset
+                  </Text>
+                  <Text
+                    fontSize="sm"
+                    color={modalSubtitleColor}
+                  >
+                    Add a new asset to your portfolio
+                  </Text>
+                </Box>
+              </HStack>
+            </Box>
+
+            <Dialog.Body
+              px={{ base: 4, sm: 8 }}
+              py={{ base: 4, sm: 6 }}
+              flex="1"
+              overflowY="auto"
+             overflowX="hidden"
+            >
+              <form id="create-physical-asset-form" onSubmit={handleCreate}>
+                <VStack gap={{ base: 5, sm: 6 }} align="stretch">
+               {/* Asset Details Form */}
+               <Box
+                 bg={cardBg}
+                 p={{ base: 4, sm: 6 }}
+                 borderRadius="xl"
+                 border="1px solid"
+                 borderColor={borderColor}
+               >
+                 <VStack gap={5} align="stretch">
+                    {/* Asset Name */}
+                    <Field.Root invalid={!!errors.name}>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        <HStack gap={2}>
+                          <Tag size={16} />
+                          <Text>Asset Name</Text>
+                          {formData.name.trim() && (
+                            <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
+                          )}
+                        </HStack>
+                      </Field.Label>
+                       <Input
+                         value={formData.name}
+                         onChange={(e) =>
+                           handleInputChange("name", e.target.value)
+                         }
+                         placeholder="e.g., Gold 22CT, ETH"
+                         maxLength={100}
+                         size="lg"
+                         bg={inputBg}
+                         borderColor={inputBorderColor}
+                         borderWidth="2px"
+                         borderRadius="md"
+                         autoFocus
+                         _hover={{ borderColor: "teal.300" }}
+                         _focus={{
+                           borderColor: focusBorderColor,
+                           boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                         }}
+                       />
+                      <Field.ErrorText>{errors.name}</Field.ErrorText>
+                      <Field.HelperText>Choose a unique name</Field.HelperText>
+                    </Field.Root>
+
+                    {/* Asset Type Selection */}
+                    <Field.Root invalid={!!errors.asset_type_id}>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        <HStack gap={2}>
+                          <Coins size={16} />
+                          <Text>Asset Type</Text>
+                          {formData.asset_type_id && (
+                            <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
+                          )}
+                        </HStack>
+                      </Field.Label>
+                      {assetTypesLoading ? (
+                        <HStack justify="center" p={4}>
+                          <Spinner size="sm" />
+                          <Text fontSize="sm" color="gray.500">
+                            Loading asset types...
+                          </Text>
+                        </HStack>
+                      ) : (
+                        <NativeSelect.Root size="lg">
+                          <NativeSelect.Field
+                            value={formData.asset_type_id}
+                            onChange={(e) =>
+                              handleInputChange("asset_type_id", e.target.value)
+                            }
+                            placeholder="Select an asset type"
+                            bg={inputBg}
+                            borderColor={inputBorderColor}
+                            borderWidth="2px"
+                            borderRadius="md"
+                            _hover={{ borderColor: "teal.300" }}
+                            _focus={{
+                              borderColor: focusBorderColor,
+                              boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                            }}>
+                            {assetTypes?.map((assetType) => (
+                              <option
+                                key={assetType.asset_type_id}
+                                value={assetType.asset_type_id}
+                              >
+                                {assetType.name} ({assetType.unit_symbol})
+                              </option>
+                            ))}
+                          </NativeSelect.Field>
+                          <NativeSelect.Indicator />
+                        </NativeSelect.Root>
+                      )}
+                      <Field.ErrorText>{errors.asset_type_id}</Field.ErrorText>
+                      <Field.HelperText>
+                        Type of asset you&apos;re tracking
+                        {selectedAssetType && (
+                          <Badge ml={2} colorPalette="brand" size="sm">
+                            {selectedAssetType.unit_symbol}
+                          </Badge>
+                        )}
+                      </Field.HelperText>
+                    </Field.Root>
+
+                   {/* Notes */}
+                   <Field.Root invalid={!!errors.notes}>
+                     <Field.Label fontWeight="semibold" mb={2}>
+                       <HStack gap={2}>
+                         <FileText size={16} />
+                         <Text>Notes (Optional)</Text>
+                       </HStack>
+                     </Field.Label>
+                     <Textarea
+                       value={formData.notes}
+                       onChange={(e) => handleInputChange("notes", e.target.value)}
+                       placeholder="Add any additional details about this asset..."
+                       rows={3}
+                       maxLength={1000}
                        bg={inputBg}
                        borderColor={inputBorderColor}
                        borderWidth="2px"
@@ -336,155 +374,113 @@ const CreatePhysicalAssetModal: FC<CreatePhysicalAssetModalProps> = ({
                          borderColor: focusBorderColor,
                          boxShadow: `0 0 0 1px ${focusBorderColor}`,
                        }}
-                     >
-                       {assetTypes?.map((assetType) => (
-                         <option
-                           key={assetType.asset_type_id}
-                           value={assetType.asset_type_id}
-                         >
-                           {assetType.name} ({assetType.unit_symbol})
-                         </option>
-                       ))}
-                     </Select>
-                   )}
-                   <FormErrorMessage>{errors.asset_type_id}</FormErrorMessage>
-                   <FormHelperText>
-                     Type of asset you&apos;re tracking
-                     {selectedAssetType && (
-                       <Badge ml={2} colorScheme="brand" size="sm">
-                         {selectedAssetType.unit_symbol}
-                       </Badge>
-                     )}
-                   </FormHelperText>
-                 </FormControl>
-
-                {/* Notes */}
-                <FormControl isInvalid={!!errors.notes}>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    <HStack spacing={2}>
-                      <FileText size={16} />
-                      <Text>Notes (Optional)</Text>
-                    </HStack>
-                  </FormLabel>
-                  <Textarea
-                    value={formData.notes}
-                    onChange={(e) => handleInputChange("notes", e.target.value)}
-                    placeholder="Add any additional details about this asset..."
-                    rows={3}
-                    maxLength={1000}
-                    bg={inputBg}
-                    borderColor={inputBorderColor}
-                    borderWidth="2px"
-                    borderRadius="md"
-                    _hover={{ borderColor: "teal.300" }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                    }}
-                    resize="vertical"
-                  />
-                  <FormErrorMessage>{errors.notes}</FormErrorMessage>
-                  <FormHelperText>
-                    Additional details about this asset ({formData.notes.length}
-                    /1000 characters)
-                  </FormHelperText>
-                </FormControl>
-              </VStack>
-            </Box>
+                       resize="vertical"
+                     />
+                     <Field.ErrorText>{errors.notes}</Field.ErrorText>
+                     <Field.HelperText>
+                       Additional details about this asset ({formData.notes.length}
+                       /1000 characters)
+                     </Field.HelperText>
+                   </Field.Root>
+                 </VStack>
+               </Box>
 
 
 
-            {/* Error Display */}
-            {createPhysicalAssetMutation.isError && (
-              <Alert
-                status="error"
-                borderRadius="md"
-                border="1px solid"
-                borderColor="red.200"
+               {/* Error Display */}
+               {createPhysicalAssetMutation.isError && (
+                 <Alert.Root
+                   status="error"
+                   borderRadius="md"
+                   border="1px solid"
+                   borderColor="red.200"
+                 >
+                   <Alert.Indicator />
+                   <Box>
+                     <Alert.Title fontWeight="bold">Creation Failed!</Alert.Title>
+                     <Alert.Description>
+                       {createPhysicalAssetMutation.error?.message ||
+                         "An error occurred while creating the physical asset. Please try again."}
+                     </Alert.Description>
+                   </Box>
+                 </Alert.Root>
+               )}
+
+             </VStack>
+             </form>
+
+             {/* Mobile-only action buttons */}
+             <Box display={{ base: "block", sm: "none" }} mt={6}>
+               <Button
+                 type="submit"
+                 form="create-physical-asset-form"
+                 colorPalette="brand"
+                 size="lg"
+                 width="100%"
+                 mb={3}
+                 borderRadius="lg"
+                 fontWeight="bold"
+                 loading={isLoading}
+                 loadingText="Creating Asset..."
+                 disabled={!isFormValid}
+               >
+                 Create Physical Asset
+               </Button>
+               <Button
+                 variant="ghost"
+                 colorPalette="gray"
+                 onClick={handleClose}
+                 size="lg"
+                 width="100%"
+                 borderRadius="lg"
+                 disabled={isLoading}
+               >
+                 Cancel
+               </Button>
+             </Box>
+           </Dialog.Body>
+
+            {/* Desktop-only footer */}
+            <Dialog.Footer
+              display={{ base: "none", sm: "flex" }}
+              px={8}
+              py={6}
+              bg={footerBg}
+              borderTop="1px solid"
+              borderColor={borderColor}
+            >
+              <Button
+                type="submit"
+                form="create-physical-asset-form"
+                colorPalette="brand"
+                mr={3}
+                px={8}
+                py={3}
+                borderRadius="lg"
+                  fontWeight="bold"
+                loading={isLoading}
+                loadingText="Creating Asset..."
+                disabled={!isFormValid}
               >
-                <AlertIcon />
-                <Box>
-                  <AlertTitle fontWeight="bold">Creation Failed!</AlertTitle>
-                  <AlertDescription>
-                    {createPhysicalAssetMutation.error?.message ||
-                      "An error occurred while creating the physical asset. Please try again."}
-                  </AlertDescription>
-                </Box>
-              </Alert>
-            )}
+                Create Physical Asset
+              </Button>
+              <Button
+                variant="ghost"
+                colorPalette="gray"
+                onClick={handleClose}
+                disabled={isLoading}
+                px={6}
+                py={3}
+                borderRadius="lg"
+              >
+                Cancel
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
 
-          </VStack>
-          </form>
-
-          {/* Mobile-only action buttons */}
-          <Box display={{ base: "block", sm: "none" }} mt={6}>
-            <Button
-              type="submit"
-              form="create-physical-asset-form"
-              colorScheme="brand"
-              size="lg"
-              width="100%"
-              mb={3}
-              borderRadius="lg"
-              fontWeight="bold"
-              isLoading={isLoading}
-              loadingText="Creating Asset..."
-              isDisabled={!isFormValid}
-            >
-              Create Physical Asset
-            </Button>
-            <Button
-              variant="ghost"
-              colorScheme="gray"
-              onClick={handleClose}
-              size="lg"
-              width="100%"
-              borderRadius="lg"
-              isDisabled={isLoading}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </ModalBody>
-
-        {/* Desktop-only footer */}
-        <ModalFooter
-          display={{ base: "none", sm: "flex" }}
-          px={8}
-          py={6}
-          bg={footerBg}
-          borderTop="1px solid"
-          borderColor={borderColor}
-        >
-          <Button
-            type="submit"
-            form="create-physical-asset-form"
-            colorScheme="brand"
-            mr={3}
-            px={8}
-            py={3}
-            borderRadius="lg"
-              fontWeight="bold"
-            isLoading={isLoading}
-            loadingText="Creating Asset..."
-            isDisabled={!isFormValid}
-          >
-            Create Physical Asset
-          </Button>
-          <Button
-            variant="ghost"
-            colorScheme="gray"
-            onClick={handleClose}
-            isDisabled={isLoading}
-            px={6}
-            py={3}
-            borderRadius="lg"
-          >
-            Cancel
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

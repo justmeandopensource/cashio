@@ -1,14 +1,5 @@
-import {
-  Box,
-  Flex,
-  Text,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { Box, Flex, Text, IconButton, Menu, Portal } from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import React from "react";
@@ -69,7 +60,7 @@ const BudgetItem: React.FC<BudgetItemProps> = ({ budget, currencySymbol, onEdit,
               color={valueColor}
               fontSize="sm"
               letterSpacing="-0.01em"
-              noOfLines={1}
+              lineClamp={1}
             >
               {budget.category_name}
             </Text>
@@ -93,48 +84,45 @@ const BudgetItem: React.FC<BudgetItemProps> = ({ budget, currencySymbol, onEdit,
           </Flex>
         </Box>
 
-        <Menu placement="bottom-end">
-          <MenuButton
-            as={IconButton}
-            icon={<MoreVertical size={15} />}
-            variant="ghost"
-            size="sm"
-            aria-label="Budget options"
-            color={menuButtonColor}
-            borderRadius="lg"
-            _hover={{ bg: hoverBg }}
-          />
-          <MenuList
-            bg={menuBg}
-            minW="140px"
-            fontSize="sm"
-            borderRadius="xl"
-            border="1px solid"
-            borderColor={borderColor}
-            boxShadow="0 4px 20px rgba(0,0,0,0.08)"
-            py={1}
-          >
-            <MenuItem
-              icon={<Pencil size={14} />}
-              onClick={() => onEdit(budget)}
-              borderRadius="md"
-              mx={1}
-              _hover={{ bg: hoverBg }}
-            >
-              Edit
-            </MenuItem>
-            <MenuItem
-              icon={<Trash2 size={14} />}
-              color="red.400"
-              onClick={() => onDelete(budget.budget_id)}
-              borderRadius="md"
-              mx={1}
-              _hover={{ bg: useColorModeValue("red.50", "rgba(254,178,178,0.06)") }}
-            >
-              Delete
-            </MenuItem>
-          </MenuList>
-        </Menu>
+        <Menu.Root positioning={{
+          placement: 'bottom-end'
+        }}>
+          <Menu.Trigger asChild><IconButton
+              variant="ghost"
+              size="sm"
+              aria-label="Budget options"
+              color={menuButtonColor}
+              borderRadius="lg"
+              _hover={{ bg: hoverBg }}><MoreVertical size={15} /></IconButton></Menu.Trigger>
+          <Portal><Menu.Positioner><Menu.Content
+                bg={menuBg}
+                minW="140px"
+                fontSize="sm"
+                borderRadius="xl"
+                border="1px solid"
+                borderColor={borderColor}
+                boxShadow="0 4px 20px rgba(0,0,0,0.08)">
+                <Menu.Item
+                  onSelect={() => onEdit(budget)}
+                  borderRadius="md"
+                  mx={1}
+                  _hover={{ bg: hoverBg }}
+                  value='item-0'>
+                  <Pencil size={14} />
+                  Edit
+                </Menu.Item>
+                <Menu.Item
+                  color="red.400"
+                  onSelect={() => onDelete(budget.budget_id)}
+                  borderRadius="md"
+                  mx={1}
+                  _hover={{ bg: useColorModeValue("red.50", "rgba(254,178,178,0.06)") }}
+                  value='item-1'>
+                  <Trash2 size={14} />
+                  Delete
+                </Menu.Item>
+              </Menu.Content></Menu.Positioner></Portal>
+        </Menu.Root>
       </Flex>
 
       <BudgetProgressBar spent={budget.actual_spend} limit={budget.amount} showLabels />

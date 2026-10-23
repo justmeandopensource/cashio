@@ -1,24 +1,18 @@
 import React, { useState } from "react";
+import { useColorModeValue } from "../ui/color-mode";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalFooter,
-  ModalBody,
-  FormControl,
-  FormLabel,
-  FormHelperText,
   Input,
-  Select,
+  NativeSelect,
   Button,
   Box,
   VStack,
   HStack,
-  useColorModeValue,
   InputGroup,
-  InputLeftAddon,
   Textarea,
   Icon,
+  Field,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
 import useLedgerStore from "../shared/store";
 import { Plus, Check } from "lucide-react";
@@ -137,328 +131,338 @@ const CreateAccountModal: React.FC<CreateAccountModalProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      returnFocusOnClose={false}
-      onClose={onClose}
+    <Dialog.Root
+      open={isOpen}
       size={{ base: "full", sm: "xl" }}
-      motionPreset="slideInBottom"
-    >
-      <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-      <ModalContent
-        bg={bgColor}
-        borderRadius={{ base: 0, sm: "xl" }}
-        boxShadow="2xl"
-        border="1px solid"
-        borderColor={borderColor}
-        overflow="hidden"
-        mx={{ base: 0, sm: 4 }}
-        my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "90vh" }}
-        display="flex"
-        flexDirection="column"
-      >
-        {/* Gradient accent line */}
-        <Box h="3px" bgGradient="linear(to-r, brand.400, brand.600, teal.300)" />
+      motionPreset="slide-in-bottom"
+      onOpenChange={e => {
+        if (!e.open) {
+          onClose();
+        }
+      }}>
+      <Portal>
 
-        {/* Header */}
-        <Box
-          px={{ base: 4, sm: 8 }}
-          py={5}
-          borderBottom="1px solid"
-          borderColor={modalHeaderBorderColor}
-        >
-          <HStack spacing={3} align="flex-start">
-            <Icon as={Plus} boxSize={5} mt="3px" color={modalIconColor} />
-            <Box>
-              <Box
-                fontSize="lg"
-                fontWeight="800"
-                letterSpacing="-0.02em"
-                color={modalTitleColor}
-              >
-                Create {accountType === "asset" ? "Asset" : "Liability"} Account
-              </Box>
-              <Box fontSize="sm" color={modalSubtitleColor}>
-                Add a new {accountType} account to your ledger
-              </Box>
-            </Box>
-          </HStack>
-        </Box>
+        <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <Dialog.Positioner>
+          <Dialog.Content
+            bg={bgColor}
+            borderRadius={{ base: 0, sm: "xl" }}
+            boxShadow="2xl"
+            border="1px solid"
+            borderColor={borderColor}
+            overflow="hidden"
+            mx={{ base: 0, sm: 4 }}
+            my={{ base: 0, sm: "auto" }}
+            maxHeight={{ base: "100%", md: "90vh" }}
+            display="flex"
+            flexDirection="column">
+            {/* Gradient accent line */}
+            <Box h="3px" bgGradient="to-r" gradientFrom="brand.400" gradientVia="brand.600" gradientTo="teal.300"  />
 
-        <ModalBody
-          px={{ base: 4, sm: 8 }}
-          py={{ base: 4, sm: 6 }}
-          flex="1"
-          display="flex"
-          flexDirection="column"
-          overflowY="auto"
-          overflowX="hidden"
-          justifyContent={{ base: "space-between", sm: "flex-start" }}
-        >
-          <VStack spacing={{ base: 5, sm: 6 }} align="stretch" w="100%">
-            {/* Account Name */}
+            {/* Header */}
             <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
+              px={{ base: 4, sm: 8 }}
+              py={5}
+              borderBottom="1px solid"
+              borderColor={modalHeaderBorderColor}
             >
-              <FormControl>
-                <FormLabel fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
-                  Account Name
-                  {accountName && <Icon as={Check} boxSize={3.5} color="teal.500" />}
-                </FormLabel>
-                <Input
-                  placeholder={`e.g., ${accountType === "asset" ? "HSBC Current Account" : "Tesco Credit Card"}`}
-                  value={accountName}
-                  onChange={(e) => setAccountName(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  borderWidth="2px"
-                  borderColor={inputBorderColor}
-                  bg={inputBg}
-                  size="lg"
-                  borderRadius="lg"
-                  _hover={{ borderColor: "brand.300" }}
-                  _focus={{
-                    borderColor: focusBorderColor,
-                    boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                  }}
-                  autoFocus
-                />
-                <FormHelperText mt={2} color={textColorSecondary}>
-                  Enter a descriptive name for your {accountType} account
-                </FormHelperText>
-              </FormControl>
-            </Box>
-
-            {/* Account Subtype + Opening Balance */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
-            >
-              <VStack spacing={5} align="stretch">
-                <FormControl>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    Account Type
-                  </FormLabel>
-                  <Select
-                    value={subtype}
-                    onChange={(e) => setSubtype(e.target.value)}
-                    placeholder="Select account type"
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    bg={inputBg}
-                    size="lg"
-                    borderRadius="lg"
-                    _hover={{ borderColor: "brand.300" }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                    }}
+              <HStack gap={3} align="flex-start">
+                <Icon boxSize={5} mt="3px" color={modalIconColor} asChild><Plus /></Icon>
+                <Box>
+                  <Box
+                    fontSize="lg"
+                    fontWeight="800"
+                    letterSpacing="-0.02em"
+                    color={modalTitleColor}
                   >
-                    {subtypeOptions.map(([value, meta]) => (
-                      <option key={value} value={value}>
-                        {meta.label}
-                      </option>
-                    ))}
-                  </Select>
-                  <FormHelperText mt={2} color={textColorSecondary}>
-                    Choose the category that best describes this account
-                  </FormHelperText>
-                </FormControl>
+                    Create {accountType === "asset" ? "Asset" : "Liability"} Account
+                  </Box>
+                  <Box fontSize="sm" color={modalSubtitleColor}>
+                    Add a new {accountType} account to your ledger
+                  </Box>
+                </Box>
+              </HStack>
+            </Box>
 
-                <FormControl>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    Opening Balance
-                  </FormLabel>
-                  <InputGroup size="lg">
-                    <InputLeftAddon
-                      bg={inputBorderColor}
-                      borderWidth="2px"
-                      borderColor={inputBorderColor}
-                      color={textColorTertiary}
-                      fontWeight="semibold"
-                    >
-                      {currencySymbol}
-                    </InputLeftAddon>
+            <Dialog.Body
+              px={{ base: 4, sm: 8 }}
+              py={{ base: 4, sm: 6 }}
+              flex="1"
+              display="flex"
+              flexDirection="column"
+              overflowY="auto"
+              overflowX="hidden"
+              justifyContent={{ base: "space-between", sm: "flex-start" }}
+            >
+              <VStack gap={{ base: 5, sm: 6 }} align="stretch" w="100%">
+                {/* Account Name */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <Field.Root>
+                    <Field.Label fontWeight="semibold" mb={2} display="flex" alignItems="center" gap={1.5}>
+                      Account Name
+                      {accountName && <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>}
+                    </Field.Label>
                     <Input
-                      type="number"
-                      value={openingBalance}
-                      onChange={(e) => setOpeningBalance(e.target.value)}
-                      placeholder="0.00"
+                      placeholder={`e.g., ${accountType === "asset" ? "HSBC Current Account" : "Tesco Credit Card"}`}
+                      value={accountName}
+                      onChange={(e) => setAccountName(e.target.value)}
+                      onKeyDown={handleKeyDown}
                       borderWidth="2px"
                       borderColor={inputBorderColor}
                       bg={inputBg}
+                      size="lg"
                       borderRadius="lg"
                       _hover={{ borderColor: "brand.300" }}
                       _focus={{
                         borderColor: focusBorderColor,
                         boxShadow: `0 0 0 1px ${focusBorderColor}`,
                       }}
+                      autoFocus
                     />
-                  </InputGroup>
-                  <FormHelperText mt={2} color={textColorSecondary}>
-                    Starting balance for this account (optional)
-                  </FormHelperText>
-                </FormControl>
-              </VStack>
-            </Box>
+                    <Field.HelperText mt={2} color={textColorSecondary}>
+                      Enter a descriptive name for your {accountType} account
+                    </Field.HelperText>
+                  </Field.Root>
+                </Box>
 
-            {/* Owner */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
+                {/* Account Subtype + Opening Balance */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <VStack gap={5} align="stretch">
+                    <Field.Root>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        Account Type
+                      </Field.Label>
+                      <NativeSelect.Root size="lg">
+                        <NativeSelect.Field
+                          value={subtype}
+                          onChange={(e) => setSubtype(e.target.value)}
+                          placeholder="Select account type"
+                          borderWidth="2px"
+                          borderColor={inputBorderColor}
+                          bg={inputBg}
+                          borderRadius="lg"
+                          _hover={{ borderColor: "brand.300" }}
+                          _focus={{
+                            borderColor: focusBorderColor,
+                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                          }}>
+                          {subtypeOptions.map(([value, meta]) => (
+                            <option key={value} value={value}>
+                              {meta.label}
+                            </option>
+                          ))}
+                        </NativeSelect.Field>
+                        <NativeSelect.Indicator />
+                      </NativeSelect.Root>
+                      <Field.HelperText mt={2} color={textColorSecondary}>
+                        Choose the category that best describes this account
+                      </Field.HelperText>
+                    </Field.Root>
+
+                    <Field.Root>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        Opening Balance
+                      </Field.Label>
+                      <InputGroup
+                        startAddon={currencySymbol}
+                        startAddonProps={{
+                          size: "lg",
+                          bg: inputBorderColor,
+                          borderWidth: "2px",
+                          borderColor: inputBorderColor,
+                          color: textColorTertiary,
+                          fontWeight: "semibold",
+                        }}
+                      >
+                        <Input
+                          type="number"
+                          size="lg"
+                          value={openingBalance}
+                          onChange={(e) => setOpeningBalance(e.target.value)}
+                          placeholder="0.00"
+                          borderWidth="2px"
+                          borderColor={inputBorderColor}
+                          bg={inputBg}
+                          borderRadius="lg"
+                          _hover={{ borderColor: "brand.300" }}
+                          _focus={{
+                            borderColor: focusBorderColor,
+                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                          }}
+                        />
+                      </InputGroup>
+                      <Field.HelperText mt={2} color={textColorSecondary}>
+                        Starting balance for this account (optional)
+                      </Field.HelperText>
+                    </Field.Root>
+                  </VStack>
+                </Box>
+
+                {/* Owner */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <FormOwnerSuggestionField
+                    suggestionsUrl={`/ledger/${ledgerId}/account/owner/suggestions`}
+                    label="Owner (Optional)"
+                    value={owner}
+                    setValue={setOwner}
+                    placeholder="e.g., John Doe"
+                    helperText="Assign this account to a person for filtering"
+                    borderColor={inputBorderColor}
+                    inputBg={inputBg}
+                  />
+                </Box>
+
+                {/* Description + Notes */}
+                <Box
+                  bg={cardBg}
+                  p={{ base: 4, sm: 6 }}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <VStack gap={5} align="stretch">
+                    <Field.Root>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        Description
+                      </Field.Label>
+                      <Input
+                        placeholder="e.g., My main checking account"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        borderWidth="2px"
+                        borderColor={inputBorderColor}
+                        bg={inputBg}
+                        size="lg"
+                        borderRadius="lg"
+                        _hover={{ borderColor: "brand.300" }}
+                        _focus={{
+                          borderColor: focusBorderColor,
+                          boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                        }}
+                        disabled={createAccountMutation.isPending}
+                      />
+                      <Field.HelperText mt={2} color={textColorSecondary}>
+                        A brief overview of this account&apos;s purpose (optional)
+                      </Field.HelperText>
+                    </Field.Root>
+
+                    <Field.Root>
+                      <Field.Label fontWeight="semibold" mb={2}>
+                        Notes
+                      </Field.Label>
+                      <Textarea
+                        placeholder="Any additional notes or details"
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        borderWidth="2px"
+                        borderColor={inputBorderColor}
+                        bg={inputBg}
+                        size="lg"
+                        borderRadius="lg"
+                        rows={4}
+                        _hover={{ borderColor: "brand.300" }}
+                        _focus={{
+                          borderColor: focusBorderColor,
+                          boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                        }}
+                        disabled={createAccountMutation.isPending}
+                      />
+                      <Field.HelperText mt={2} color={textColorSecondary}>
+                        Detailed notes for this account (optional)
+                      </Field.HelperText>
+                    </Field.Root>
+                  </VStack>
+                </Box>
+              </VStack>
+
+              {/* Mobile action buttons */}
+              <Box display={{ base: "block", sm: "none" }} mt={6}>
+                <Button
+                  onClick={handleSubmit}
+                  colorPalette="brand"
+                  size="lg"
+                  width="100%"
+                  mb={3}
+                  borderRadius="lg"
+                  fontWeight="bold"
+                  loading={createAccountMutation.isPending}
+                  disabled={!accountName || !subtype}
+                  loadingText="Creating..."
+                >
+                  Create Account
+                </Button>
+                <Button
+                  variant="ghost"
+                  colorPalette="gray"
+                  onClick={onClose}
+                  size="lg"
+                  width="100%"
+                  borderRadius="lg"
+                  disabled={createAccountMutation.isPending}
+                >
+                  Cancel
+                </Button>
+              </Box>
+            </Dialog.Body>
+
+            {/* Desktop footer */}
+            <Dialog.Footer
+              display={{ base: "none", sm: "flex" }}
+              px={8}
+              py={6}
+              bg={footerBg}
+              borderTop="1px solid"
               borderColor={borderColor}
             >
-              <FormOwnerSuggestionField
-                suggestionsUrl={`/ledger/${ledgerId}/account/owner/suggestions`}
-                label="Owner (Optional)"
-                value={owner}
-                setValue={setOwner}
-                placeholder="e.g., John Doe"
-                helperText="Assign this account to a person for filtering"
-                borderColor={inputBorderColor}
-                inputBg={inputBg}
-              />
-            </Box>
+              <Button
+                colorPalette="brand"
+                mr={3}
+                onClick={handleSubmit}
+                px={8}
+                py={3}
+                borderRadius="lg"
+                fontWeight="bold"
+                loading={createAccountMutation.isPending}
+                disabled={!accountName || !subtype}
+                loadingText="Creating..."
+              >
+                Create Account
+              </Button>
+              <Button
+                variant="ghost"
+                colorPalette="gray"
+                onClick={onClose}
+                disabled={createAccountMutation.isPending}
+                px={6}
+                py={3}
+                borderRadius="lg"
+              >
+                Cancel
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
 
-            {/* Description + Notes */}
-            <Box
-              bg={cardBg}
-              p={{ base: 4, sm: 6 }}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
-            >
-              <VStack spacing={5} align="stretch">
-                <FormControl>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    Description
-                  </FormLabel>
-                  <Input
-                    placeholder="e.g., My main checking account"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    bg={inputBg}
-                    size="lg"
-                    borderRadius="lg"
-                    _hover={{ borderColor: "brand.300" }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                    }}
-                    isDisabled={createAccountMutation.isPending}
-                  />
-                  <FormHelperText mt={2} color={textColorSecondary}>
-                    A brief overview of this account&apos;s purpose (optional)
-                  </FormHelperText>
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel fontWeight="semibold" mb={2}>
-                    Notes
-                  </FormLabel>
-                  <Textarea
-                    placeholder="Any additional notes or details"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    borderWidth="2px"
-                    borderColor={inputBorderColor}
-                    bg={inputBg}
-                    size="lg"
-                    borderRadius="lg"
-                    rows={4}
-                    _hover={{ borderColor: "brand.300" }}
-                    _focus={{
-                      borderColor: focusBorderColor,
-                      boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                    }}
-                    isDisabled={createAccountMutation.isPending}
-                  />
-                  <FormHelperText mt={2} color={textColorSecondary}>
-                    Detailed notes for this account (optional)
-                  </FormHelperText>
-                </FormControl>
-              </VStack>
-            </Box>
-          </VStack>
-
-          {/* Mobile action buttons */}
-          <Box display={{ base: "block", sm: "none" }} mt={6}>
-            <Button
-              onClick={handleSubmit}
-              colorScheme="brand"
-              size="lg"
-              width="100%"
-              mb={3}
-              borderRadius="lg"
-              fontWeight="bold"
-              isLoading={createAccountMutation.isPending}
-              isDisabled={!accountName || !subtype}
-              loadingText="Creating..."
-            >
-              Create Account
-            </Button>
-            <Button
-              variant="ghost"
-              colorScheme="gray"
-              onClick={onClose}
-              size="lg"
-              width="100%"
-              borderRadius="lg"
-              isDisabled={createAccountMutation.isPending}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </ModalBody>
-
-        {/* Desktop footer */}
-        <ModalFooter
-          display={{ base: "none", sm: "flex" }}
-          px={8}
-          py={6}
-          bg={footerBg}
-          borderTop="1px solid"
-          borderColor={borderColor}
-        >
-          <Button
-            colorScheme="brand"
-            mr={3}
-            onClick={handleSubmit}
-            px={8}
-            py={3}
-            borderRadius="lg"
-            fontWeight="bold"
-            isLoading={createAccountMutation.isPending}
-            isDisabled={!accountName || !subtype}
-            loadingText="Creating..."
-          >
-            Create Account
-          </Button>
-          <Button
-            variant="ghost"
-            colorScheme="gray"
-            onClick={onClose}
-            isDisabled={createAccountMutation.isPending}
-            px={6}
-            py={3}
-            borderRadius="lg"
-          >
-            Cancel
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

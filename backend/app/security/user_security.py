@@ -28,8 +28,18 @@ api_key_scheme = APIKeyHeader(name="X-API-Key", auto_error=False)
 API_TOKEN_PREFIX = "cashio_pat_"
 
 
+# bcrypt only hashes the first 72 bytes of a password. bcrypt >= 5 raises on
+# longer inputs instead of truncating silently, so truncate explicitly to keep
+# existing hashes verifiable and behaviour unchanged.
+_BCRYPT_MAX_BYTES = 72
+
+
+def _password_bytes(password: str) -> bytes:
+    return password.encode()[:_BCRYPT_MAX_BYTES]
+
+
 def hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    return bcrypt.hashpw(_password_bytes(password), bcrypt.gensalt()).decode()
 
 
 def create_access_token(user: user_schema.User) -> str:
@@ -195,7 +205,7 @@ def authenticate_user(username: str, password: str, db: Session = Depends(get_db
     user = user_crud.get_user_by_username(db=db, username=username)
     if not user:
         return False
-    if not bcrypt.checkpw(password.encode(), user.hashed_password.encode()):
+    if not bcrypt.checkpw(_password_bytes(password), user.hashed_password.encode()):
         return False
     return user
 

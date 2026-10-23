@@ -1,18 +1,6 @@
 import { FC } from "react";
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalBody,
-  ModalFooter,
-  Button,
-  VStack,
-  HStack,
-  Text,
-  Box,
-  Icon,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
+import { Button, VStack, HStack, Text, Box, Icon, Dialog, Portal } from "@chakra-ui/react";
 import { TrendingUp, TrendingDown, CheckCircle } from "lucide-react";
 import { splitCurrencyForDisplay } from "../../utils";
 
@@ -45,116 +33,126 @@ const PortfolioChangeModal: FC<PortfolioChangeModalProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      returnFocusOnClose={false}
-      onClose={onClose}
-      size="md"
-      isCentered
-      motionPreset="slideInBottom"
-      closeOnOverlayClick={false}
-      closeOnEsc={false}
-    >
-      <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-      <ModalContent
-        bg={bgColor}
-        borderRadius="xl"
-        boxShadow="2xl"
-        border="1px solid"
-        borderColor={borderColor}
-        overflow="hidden"
-        mx={4}
-      >
-        <Box
-          px={6}
-          py={5}
-          borderBottom="1px solid"
-          borderColor={modalHeaderBorderColor}
-        >
-          <HStack spacing={3} align="flex-start">
-            <Icon as={CheckCircle} boxSize={5} mt="3px" color={modalIconColor} />
-            <Box>
-              <Text fontSize="lg" fontWeight="800" letterSpacing="-0.02em" color={modalTitleColor}>
-                Portfolio Updated Successfully
-              </Text>
-              <Text fontSize="sm" color={modalSubtitleColor}>
-                Your mutual fund NAVs have been updated
-              </Text>
-            </Box>
-          </HStack>
-        </Box>
+    <Dialog.Root
+      open={isOpen}
+      restoreFocus={false}
+      size='md'
+      placement='center'
+      motionPreset="slide-in-bottom"
+      closeOnInteractOutside={false}
+      closeOnEscape={false}
+      onOpenChange={e => {
+        if (!e.open) {
+          onClose();
+        }
+      }}>
+      <Portal>
 
-        <ModalBody px={6} py={6}>
-          <VStack spacing={6} align="stretch">
-            <Text fontSize="md" color="gray.600" textAlign="center">
-              Here&apos;s how your portfolio value changed:
-            </Text>
-
+        <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <Dialog.Positioner>
+          <Dialog.Content
+            bg={bgColor}
+            borderRadius="xl"
+            boxShadow="2xl"
+            border="1px solid"
+            borderColor={borderColor}
+            overflow="hidden"
+            mx={4}>
             <Box
-              p={6}
-              bg={useColorModeValue("gray.50", "gray.700")}
-              borderRadius="lg"
-              border="1px solid"
-              borderColor={borderColor}
-              textAlign="center"
+              px={6}
+              py={5}
+              borderBottom="1px solid"
+              borderColor={modalHeaderBorderColor}
             >
-              <VStack spacing={3}>
-              <HStack spacing={3} justify="center">
-                  <Icon
-                    as={totalValueChange >= 0 ? TrendingUp : TrendingDown}
-                    size={20}
-                    color={totalValueChange >= 0 ? "green.500" : "red.500"}
-                  />
-                  <HStack spacing={0} align="baseline">
-                    <Text
-                      fontSize="3xl"
-                      fontWeight="bold"
-                      color={totalValueChange >= 0 ? "green.500" : "red.500"}
-                    >
-                      {totalValueChange >= 0 ? "+" : "-"}{totalValueFormatted.main}
-                    </Text>
-                    <Text
-                      fontSize="xl"
-                      fontWeight="bold"
-                      color={totalValueChange >= 0 ? "green.500" : "red.500"}
-                      opacity={0.7}
-                    >
-                      {totalValueFormatted.decimals}
-                    </Text>
-                  </HStack>
-                </HStack>
-                <HStack spacing={2} justify="center">
-                  <Text
-                    fontSize="xl"
-                    fontWeight="semibold"
-                    color={
-                      totalValuePercentFormatted.isPositive
-                        ? "green.500"
-                        : "red.500"
-                    }
-                  >
-                    ({totalValuePercentFormatted.isPositive ? "+" : "-"}
-                    {totalValuePercentFormatted.value})
+              <HStack gap={3} align="flex-start">
+                <Icon boxSize={5} mt="3px" color={modalIconColor} asChild><CheckCircle /></Icon>
+                <Box>
+                  <Text fontSize="lg" fontWeight="800" letterSpacing="-0.02em" color={modalTitleColor}>
+                    Portfolio Updated Successfully
                   </Text>
-                </HStack>
-              </VStack>
+                  <Text fontSize="sm" color={modalSubtitleColor}>
+                    Your mutual fund NAVs have been updated
+                  </Text>
+                </Box>
+              </HStack>
             </Box>
-          </VStack>
-        </ModalBody>
 
-        <ModalFooter
-          px={6}
-          py={4}
-          bg={useColorModeValue("gray.50", "gray.700")}
-          borderTop="1px solid"
-          borderColor={borderColor}
-        >
-          <Button colorScheme="brand" onClick={onClose} w="full">
-            Got it
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+            <Dialog.Body px={6} py={6}>
+              <VStack gap={6} align="stretch">
+                <Text fontSize="md" color="gray.600" textAlign="center">
+                  Here&apos;s how your portfolio value changed:
+                </Text>
+
+                <Box
+                  p={6}
+                  bg={useColorModeValue("gray.50", "gray.700")}
+                  borderRadius="lg"
+                  border="1px solid"
+                  borderColor={borderColor}
+                  textAlign="center"
+                >
+                  <VStack gap={3}>
+                  <HStack gap={3} justify="center">
+                      <Icon
+                        boxSize={5}
+                        color={totalValueChange >= 0 ? "green.500" : "red.500"}
+                        asChild
+                      >
+                        {totalValueChange >= 0 ? <TrendingUp /> : <TrendingDown />}
+                      </Icon>
+                      <HStack gap={0} align="baseline">
+                        <Text
+                          fontSize="3xl"
+                          fontWeight="bold"
+                          color={totalValueChange >= 0 ? "green.500" : "red.500"}
+                        >
+                          {totalValueChange >= 0 ? "+" : "-"}{totalValueFormatted.main}
+                        </Text>
+                        <Text
+                          fontSize="xl"
+                          fontWeight="bold"
+                          color={totalValueChange >= 0 ? "green.500" : "red.500"}
+                          opacity={0.7}
+                        >
+                          {totalValueFormatted.decimals}
+                        </Text>
+                      </HStack>
+                    </HStack>
+                    <HStack gap={2} justify="center">
+                      <Text
+                        fontSize="xl"
+                        fontWeight="semibold"
+                        color={
+                          totalValuePercentFormatted.isPositive
+                            ? "green.500"
+                            : "red.500"
+                        }
+                      >
+                        ({totalValuePercentFormatted.isPositive ? "+" : "-"}
+                        {totalValuePercentFormatted.value})
+                      </Text>
+                    </HStack>
+                  </VStack>
+                </Box>
+              </VStack>
+            </Dialog.Body>
+
+            <Dialog.Footer
+              px={6}
+              py={4}
+              bg={useColorModeValue("gray.50", "gray.700")}
+              borderTop="1px solid"
+              borderColor={borderColor}
+            >
+              <Button colorPalette="brand" onClick={onClose} w="full">
+                Got it
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+
+      </Portal>
+    </Dialog.Root>
   );
 };
 

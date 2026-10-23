@@ -1,13 +1,6 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Center,
-  Flex,
-  Icon,
-  Text,
-  useColorModeValue,
-  VStack,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box, Center, Flex, Icon, Text, VStack } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ResponsivePie } from "@nivo/pie";
 import { PieChart as PieChartIcon } from "lucide-react";
@@ -65,7 +58,7 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
     >
       {/* Card header */}
       <Flex align="center" gap={1.5} mb={4}>
-        <Icon as={PieChartIcon} boxSize={3.5} color={labelColor} />
+        <Icon boxSize={3.5} color={labelColor} asChild><PieChartIcon /></Icon>
         <Text
           fontSize="xs"
           fontWeight="semibold"
@@ -88,7 +81,7 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
             alignItems="center"
             justifyContent="center"
           >
-            <Icon as={PieChartIcon} boxSize={5} color={secondaryText} />
+            <Icon boxSize={5} color={secondaryText} asChild><PieChartIcon /></Icon>
           </Box>
           <Text fontSize="sm" color={secondaryText}>
             No allocation data yet.
@@ -193,7 +186,7 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
           {/* Legend */}
           <VStack
             align="stretch"
-            spacing={1}
+            gap={1}
             w={{ base: "full", xl: "auto" }}
             minW={{ xl: "150px" }}
           >
@@ -222,7 +215,7 @@ const AssetAllocationChart: React.FC<AssetAllocationChartProps> = ({
                     flexShrink={0}
                   />
                   <Box flex={1} minW={0}>
-                    <Text fontSize="xs" color={primaryText} fontWeight="600" isTruncated>
+                    <Text fontSize="xs" color={primaryText} fontWeight="600" truncate>
                       {item.label}
                     </Text>
                     <Text fontSize="2xs" color={secondaryText} fontWeight="500">

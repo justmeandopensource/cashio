@@ -1,16 +1,14 @@
 import React, { useState } from "react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
 import {
   Box,
   Text,
   Button,
   HStack,
-  Collapse,
+  Collapsible,
   IconButton,
   Flex,
-  useColorModeValue,
   Stat,
-  StatLabel,
-  StatNumber,
   Icon,
   SimpleGrid,
 } from "@chakra-ui/react";
@@ -115,13 +113,13 @@ const ExpandedFundRow: React.FC<ExpandedFundRowProps> = ({
         columnGap={4}
         rowGap={3}
       >
-        <HStack spacing={{ base: 3, md: 5 }} wrap="wrap">
-          <Stat size="sm">
-            <StatLabel fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
+        <HStack gap={{ base: 3, md: 5 }} wrap="wrap">
+          <Stat.Root size="sm">
+            <Stat.Label fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
               Lowest Cost
-            </StatLabel>
-            <HStack spacing={0} align="baseline">
-              <StatNumber fontSize="sm" color={tertiaryTextColor}>
+            </Stat.Label>
+            <HStack gap={0} align="baseline">
+              <Stat.ValueText fontSize="sm" color={tertiaryTextColor}>
                 {isLoadingTransactions
                   ? "..."
                   : lowestPurchaseCost !== null
@@ -130,7 +128,7 @@ const ExpandedFundRow: React.FC<ExpandedFundRowProps> = ({
                         currencySymbol || "₹",
                       ).main
                     : "--"}
-              </StatNumber>
+              </Stat.ValueText>
               <Text fontSize="xs" opacity={0.7} color={tertiaryTextColor}>
                 {isLoadingTransactions
                   ? ""
@@ -142,20 +140,20 @@ const ExpandedFundRow: React.FC<ExpandedFundRowProps> = ({
                     : ""}
               </Text>
             </HStack>
-          </Stat>
-          <Stat size="sm">
-            <StatLabel fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
+          </Stat.Root>
+          <Stat.Root size="sm">
+            <Stat.Label fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
               Avg. Cost
-            </StatLabel>
-            <HStack spacing={0} align="baseline">
-              <StatNumber fontSize="sm" color={tertiaryTextColor}>
+            </Stat.Label>
+            <HStack gap={0} align="baseline">
+              <Stat.ValueText fontSize="sm" color={tertiaryTextColor}>
                 {
                   splitCurrencyForDisplay(
                     toNumber(fund.average_cost_per_unit),
                     currencySymbol || "₹",
                   ).main
                 }
-              </StatNumber>
+              </Stat.ValueText>
               <Text fontSize="xs" opacity={0.7} color={tertiaryTextColor}>
                 {
                   splitCurrencyForDisplay(
@@ -165,13 +163,13 @@ const ExpandedFundRow: React.FC<ExpandedFundRowProps> = ({
                 }
               </Text>
             </HStack>
-          </Stat>
-          <Stat size="sm">
-            <StatLabel fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
+          </Stat.Root>
+          <Stat.Root size="sm">
+            <Stat.Label fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
               Highest Cost
-            </StatLabel>
-            <HStack spacing={0} align="baseline">
-              <StatNumber fontSize="sm" color={tertiaryTextColor}>
+            </Stat.Label>
+            <HStack gap={0} align="baseline">
+              <Stat.ValueText fontSize="sm" color={tertiaryTextColor}>
                 {isLoadingTransactions
                   ? "..."
                   : highestPurchaseCost !== null
@@ -180,7 +178,7 @@ const ExpandedFundRow: React.FC<ExpandedFundRowProps> = ({
                         currencySymbol || "₹",
                       ).main
                     : "--"}
-              </StatNumber>
+              </Stat.ValueText>
               <Text fontSize="xs" opacity={0.7} color={tertiaryTextColor}>
                 {isLoadingTransactions
                   ? ""
@@ -192,13 +190,13 @@ const ExpandedFundRow: React.FC<ExpandedFundRowProps> = ({
                     : ""}
               </Text>
             </HStack>
-          </Stat>
-          <Stat size="sm">
-            <StatLabel fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
+          </Stat.Root>
+          <Stat.Root size="sm">
+            <Stat.Label fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
               Realized P&L
-            </StatLabel>
-            <HStack spacing={0} align="baseline">
-              <StatNumber
+            </Stat.Label>
+            <HStack gap={0} align="baseline">
+              <Stat.ValueText
                 fontSize="sm"
                 color={realizedPnl >= 0 ? positiveColor : negativeColor}
               >
@@ -208,7 +206,7 @@ const ExpandedFundRow: React.FC<ExpandedFundRowProps> = ({
                     currencySymbol || "₹",
                   ).main
                 }
-              </StatNumber>
+              </Stat.ValueText>
               <Text
                 fontSize="xs"
                 color={realizedPnl >= 0 ? positiveColor : negativeColor}
@@ -222,97 +220,76 @@ const ExpandedFundRow: React.FC<ExpandedFundRowProps> = ({
                 }
               </Text>
             </HStack>
-          </Stat>
+          </Stat.Root>
         </HStack>
 
-        <HStack spacing={{ base: 3, md: 5 }} wrap="wrap">
-          <Stat size="sm">
-            <StatLabel fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
+        <HStack gap={{ base: 3, md: 5 }} wrap="wrap">
+          <Stat.Root size="sm">
+            <Stat.Label fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
               NAV Last Updated
-            </StatLabel>
-            <StatNumber fontSize="xs" color={tertiaryTextColor}>
+            </Stat.Label>
+            <Stat.ValueText fontSize="xs" color={tertiaryTextColor}>
               {navUpdatedDate ? formatDate(navUpdatedDate) : "--"}
-            </StatNumber>
-          </Stat>
-          <Stat size="sm">
-            <StatLabel fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
+            </Stat.ValueText>
+          </Stat.Root>
+          <Stat.Root size="sm">
+            <Stat.Label fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
               First Transaction
-            </StatLabel>
-            <StatNumber fontSize="xs" color={tertiaryTextColor}>
+            </Stat.Label>
+            <Stat.ValueText fontSize="xs" color={tertiaryTextColor}>
               {isLoadingTransactions
                 ? "..."
                 : firstTransactionDate
                   ? formatDate(firstTransactionDate)
                   : "--"}
-            </StatNumber>
-          </Stat>
-          <Stat size="sm">
-            <StatLabel fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
+            </Stat.ValueText>
+          </Stat.Root>
+          <Stat.Root size="sm">
+            <Stat.Label fontSize="2xs" color={mutedColor} whiteSpace="nowrap">
               Last Transaction
-            </StatLabel>
-            <StatNumber fontSize="xs" color={tertiaryTextColor}>
+            </Stat.Label>
+            <Stat.ValueText fontSize="xs" color={tertiaryTextColor}>
               {isLoadingTransactions
                 ? "..."
                 : lastTransactionDate
                   ? formatDate(lastTransactionDate)
                   : "--"}
-            </StatNumber>
-          </Stat>
+            </Stat.ValueText>
+          </Stat.Root>
         </HStack>
 
-        <HStack spacing={2}>
+        <HStack gap={2}>
           <Button
             size="xs"
             variant="outline"
-            leftIcon={<Icon as={ShoppingCart} boxSize={3} />}
-            onClick={() => onTradeUnits(fund.mutual_fund_id)}
-          >
-            Buy/Sell
-          </Button>
+            onClick={() => onTradeUnits(fund.mutual_fund_id)}><Icon boxSize={3} asChild><ShoppingCart /></Icon>Buy/Sell
+                      </Button>
           <Button
             size="xs"
             variant="outline"
-            leftIcon={<Icon as={ArrowRightLeft} boxSize={3} />}
             onClick={() => onTransferUnits(fund.mutual_fund_id)}
-            isDisabled={toNumber(fund.total_units) <= 0}
-          >
-            Transfer
-          </Button>
+            disabled={toNumber(fund.total_units) <= 0}><Icon boxSize={3} asChild><ArrowRightLeft /></Icon>Transfer
+                      </Button>
           <Button
             size="xs"
             variant="outline"
-            leftIcon={<Icon as={List} boxSize={3} />}
-            onClick={() => onViewTransactions(fund.mutual_fund_id)}
-          >
-            Transactions
-          </Button>
+            onClick={() => onViewTransactions(fund.mutual_fund_id)}><Icon boxSize={3} asChild><List /></Icon>Transactions
+                      </Button>
           <Button
             size="xs"
             variant="outline"
-            colorScheme="purple"
-            leftIcon={<Icon as={BarChart3} boxSize={3} />}
-            onClick={() => onViewAnalytics(fund)}
-          >
-            Analytics
-          </Button>
+            colorPalette="purple"
+            onClick={() => onViewAnalytics(fund)}><Icon boxSize={3} asChild><BarChart3 /></Icon>Analytics
+                      </Button>
+          <Button size="xs" variant="outline" onClick={() => onUpdateNav(fund)}><Icon boxSize={3} asChild><RefreshCw /></Icon>Update NAV
+                      </Button>
           <Button
             size="xs"
             variant="outline"
-            leftIcon={<Icon as={RefreshCw} boxSize={3} />}
-            onClick={() => onUpdateNav(fund)}
-          >
-            Update NAV
-          </Button>
-          <Button
-            size="xs"
-            variant="outline"
-            colorScheme="red"
-            leftIcon={<Icon as={XCircle} boxSize={3} />}
+            colorPalette="red"
             onClick={() => onCloseFund(fund.mutual_fund_id)}
-            isDisabled={toNumber(fund.total_units) > 0}
-          >
-            Close
-          </Button>
+            disabled={toNumber(fund.total_units) > 0}><Icon boxSize={3} asChild><XCircle /></Icon>Close
+                      </Button>
         </HStack>
       </Flex>
     </Box>
@@ -382,10 +359,10 @@ const MobileFundCard: React.FC<MobileFundCardProps> = ({
       <Box p={4}>
         <Flex justify="space-between" align="start">
           <Box maxW="80%">
-            <HStack spacing={1} align="baseline" wrap="wrap">
+            <HStack gap={1} align="baseline" wrap="wrap">
               <Text
                 fontWeight="medium"
-                noOfLines={2}
+                lineClamp={2}
                 color={amcFundNameColor}
                 cursor="pointer"
                 _hover={{ textDecoration: "underline" }}
@@ -418,27 +395,23 @@ const MobileFundCard: React.FC<MobileFundCardProps> = ({
             </Text>
           </Box>
           <IconButton
-            icon={
-              isExpanded ? (
-                <ChevronUp size={18} />
-              ) : (
-                <ChevronDown size={18} />
-              )
-            }
             variant="ghost"
             size="sm"
             aria-label="Expand row"
             onClick={() => setIsExpanded(!isExpanded)}
-            cursor="pointer"
-          />
+            cursor="pointer">{isExpanded ? (
+              <ChevronUp size={18} />
+            ) : (
+              <ChevronDown size={18} />
+            )}</IconButton>
         </Flex>
-        <SimpleGrid columns={2} spacing={4} mt={4}>
-          <Stat>
-            <StatLabel fontSize="xs" color={mutedColor}>
+        <SimpleGrid columns={2} gap={4} mt={4}>
+          <Stat.Root>
+            <Stat.Label fontSize="xs" color={mutedColor}>
               Value
-            </StatLabel>
-            <StatNumber>
-              <HStack spacing={0} align="baseline">
+            </Stat.Label>
+            <Stat.ValueText>
+              <HStack gap={0} align="baseline">
                 <Text
                   fontSize="lg"
                   fontWeight="bold"
@@ -460,14 +433,14 @@ const MobileFundCard: React.FC<MobileFundCardProps> = ({
                   }
                 </Text>
               </HStack>
-            </StatNumber>
-          </Stat>
-          <Stat>
-            <StatLabel fontSize="xs" color={mutedColor}>
+            </Stat.ValueText>
+          </Stat.Root>
+          <Stat.Root>
+            <Stat.Label fontSize="xs" color={mutedColor}>
               P&L
-            </StatLabel>
-            <StatNumber>
-              <HStack spacing={0} align="baseline">
+            </Stat.Label>
+            <Stat.ValueText>
+              <HStack gap={0} align="baseline">
                 <Text
                   fontSize="lg"
                   fontWeight="bold"
@@ -498,8 +471,8 @@ const MobileFundCard: React.FC<MobileFundCardProps> = ({
                   }
                 </Text>
               </HStack>
-            </StatNumber>
-            <HStack spacing={0} align="baseline">
+            </Stat.ValueText>
+            <HStack gap={0} align="baseline">
               <Text
                 fontSize="xs"
                 color={
@@ -528,268 +501,258 @@ const MobileFundCard: React.FC<MobileFundCardProps> = ({
                 }
               </Text>
             </HStack>
-          </Stat>
+          </Stat.Root>
         </SimpleGrid>
       </Box>
-      <Collapse in={isExpanded} animateOpacity>
-        <Box
-          py={3}
-          px={4}
-          bg={boxBg}
-          borderTop="1px solid"
-          borderColor={borderColor}
-        >
-          <SimpleGrid columns={3} spacingX={4} spacingY={2} mb={4}>
-            <Stat size="sm">
-              <StatLabel fontSize="2xs" color={mutedColor}>
-                Invested
-              </StatLabel>
-              <HStack spacing={0} align="baseline">
-                <StatNumber fontSize="sm" color={tertiaryTextColor}>
-                  {
-                    splitCurrencyForDisplay(
-                      fund.invested,
-                      currencySymbol || "₹",
-                    ).main
-                  }
-                </StatNumber>
-                <Text fontSize="xs" opacity={0.7} color={tertiaryTextColor}>
-                  {
-                    splitCurrencyForDisplay(
-                      fund.invested,
-                      currencySymbol || "₹",
-                    ).decimals
-                  }
-                </Text>
-              </HStack>
-            </Stat>
-            <Stat size="sm">
-              <StatLabel fontSize="2xs" color={mutedColor}>
-                Units
-              </StatLabel>
-              <StatNumber fontSize="sm" color={tertiaryTextColor}>
-                {formatUnits(fund.total_units)}
-              </StatNumber>
-            </Stat>
-            <Stat size="sm">
-              <StatLabel fontSize="2xs" color={mutedColor}>
-                NAV
-              </StatLabel>
-              <StatNumber fontSize="sm" color={tertiaryTextColor}>
-                {currencySymbol || "₹"}
-                {formatNav(fund.latest_nav)}
-              </StatNumber>
-            </Stat>
-            <Stat size="sm">
-              <StatLabel fontSize="2xs" color={mutedColor}>
-                Avg. Cost
-              </StatLabel>
-              <HStack spacing={0} align="baseline">
-                <StatNumber fontSize="sm">
-                  {
-                    splitCurrencyForDisplay(
-                      toNumber(fund.average_cost_per_unit),
-                      currencySymbol || "₹",
-                    ).main
-                  }
-                </StatNumber>
-                <Text fontSize="xs" opacity={0.7}>
-                  {
-                    splitCurrencyForDisplay(
-                      toNumber(fund.average_cost_per_unit),
-                      currencySymbol || "₹",
-                    ).decimals
-                  }
-                </Text>
-              </HStack>
-            </Stat>
-            <Stat size="sm">
-              <StatLabel fontSize="2xs" color={mutedColor}>
-                Realized P&L
-              </StatLabel>
-              <HStack spacing={0} align="baseline">
-                <StatNumber
-                  fontSize="sm"
-                  color={realizedPnl >= 0 ? positiveColor : negativeColor}
-                >
-                  {
-                    splitCurrencyForDisplay(
-                      Math.abs(realizedPnl),
-                      currencySymbol || "₹",
-                    ).main
-                  }
-                </StatNumber>
-                <Text
-                  fontSize="xs"
-                  color={realizedPnl >= 0 ? positiveColor : negativeColor}
-                  opacity={0.7}
-                >
-                  {
-                    splitCurrencyForDisplay(
-                      Math.abs(realizedPnl),
-                      currencySymbol || "₹",
-                    ).decimals
-                  }
-                </Text>
-              </HStack>
-            </Stat>
-            <Stat size="sm">
-              <StatLabel fontSize="2xs" color={mutedColor}>
-                CAGR %
-              </StatLabel>
-              {fund.cagr_percentage != null ? (
-                <HStack spacing={0} align="baseline">
-                  <StatNumber
-                    fontSize="sm"
-                    color={
-                      fund.cagr_percentage >= 0
-                        ? positiveColor
-                        : negativeColor
+      <Collapsible.Root open={isExpanded}>
+        <Collapsible.Content>
+          <Box
+            py={3}
+            px={4}
+            bg={boxBg}
+            borderTop="1px solid"
+            borderColor={borderColor}
+          >
+            <SimpleGrid columns={3} columnGap={4} rowGap={2} mb={4}>
+              <Stat.Root size="sm">
+                <Stat.Label fontSize="2xs" color={mutedColor}>
+                  Invested
+                </Stat.Label>
+                <HStack gap={0} align="baseline">
+                  <Stat.ValueText fontSize="sm" color={tertiaryTextColor}>
+                    {
+                      splitCurrencyForDisplay(
+                        fund.invested,
+                        currencySymbol || "₹",
+                      ).main
                     }
-                  >
-                    {splitPercentageForDisplay(fund.cagr_percentage).main}
-                  </StatNumber>
-                  <Text
-                    fontSize="xs"
-                    color={
-                      fund.cagr_percentage >= 0
-                        ? positiveColor
-                        : negativeColor
+                  </Stat.ValueText>
+                  <Text fontSize="xs" opacity={0.7} color={tertiaryTextColor}>
+                    {
+                      splitCurrencyForDisplay(
+                        fund.invested,
+                        currencySymbol || "₹",
+                      ).decimals
                     }
-                    opacity={0.7}
-                  >
-                    {splitPercentageForDisplay(fund.cagr_percentage).decimals}
                   </Text>
                 </HStack>
-              ) : (
-                <StatNumber fontSize="sm" color={mutedColor}>
-                  ---
-                </StatNumber>
-              )}
-            </Stat>
-            <Stat size="sm">
-              <StatLabel fontSize="2xs" color={mutedColor}>
-                XIRR %
-              </StatLabel>
-              {fund.xirr_percentage != null ? (
-                <HStack spacing={0} align="baseline">
-                  <StatNumber
-                    fontSize="sm"
-                    color={
-                      fund.xirr_percentage >= 0
-                        ? positiveColor
-                        : negativeColor
+              </Stat.Root>
+              <Stat.Root size="sm">
+                <Stat.Label fontSize="2xs" color={mutedColor}>
+                  Units
+                </Stat.Label>
+                <Stat.ValueText fontSize="sm" color={tertiaryTextColor}>
+                  {formatUnits(fund.total_units)}
+                </Stat.ValueText>
+              </Stat.Root>
+              <Stat.Root size="sm">
+                <Stat.Label fontSize="2xs" color={mutedColor}>
+                  NAV
+                </Stat.Label>
+                <Stat.ValueText fontSize="sm" color={tertiaryTextColor}>
+                  {currencySymbol || "₹"}
+                  {formatNav(fund.latest_nav)}
+                </Stat.ValueText>
+              </Stat.Root>
+              <Stat.Root size="sm">
+                <Stat.Label fontSize="2xs" color={mutedColor}>
+                  Avg. Cost
+                </Stat.Label>
+                <HStack gap={0} align="baseline">
+                  <Stat.ValueText fontSize="sm">
+                    {
+                      splitCurrencyForDisplay(
+                        toNumber(fund.average_cost_per_unit),
+                        currencySymbol || "₹",
+                      ).main
                     }
-                  >
-                    {splitPercentageForDisplay(fund.xirr_percentage).main}
-                  </StatNumber>
-                  <Text
-                    fontSize="xs"
-                    color={
-                      fund.xirr_percentage >= 0
-                        ? positiveColor
-                        : negativeColor
+                  </Stat.ValueText>
+                  <Text fontSize="xs" opacity={0.7}>
+                    {
+                      splitCurrencyForDisplay(
+                        toNumber(fund.average_cost_per_unit),
+                        currencySymbol || "₹",
+                      ).decimals
                     }
-                    opacity={0.7}
-                  >
-                    {splitPercentageForDisplay(fund.xirr_percentage).decimals}
                   </Text>
                 </HStack>
-              ) : (
-                <StatNumber fontSize="sm" color={mutedColor}>
-                  ---
-                </StatNumber>
-              )}
-            </Stat>
-            <Stat size="sm">
-              <StatLabel fontSize="2xs" color={mutedColor}>
-                NAV Updated
-              </StatLabel>
-              <StatNumber fontSize="xs">
-                {navUpdatedDate ? formatDate(navUpdatedDate) : "--"}
-              </StatNumber>
-            </Stat>
-            <Stat size="sm">
-              <StatLabel fontSize="2xs" color={mutedColor}>
-                First Trans
-              </StatLabel>
-              <StatNumber fontSize="xs">
-                {isLoadingTransactions
-                  ? "..."
-                  : firstTransactionDate
-                    ? formatDate(firstTransactionDate)
-                    : "--"}
-              </StatNumber>
-            </Stat>
-            <Stat size="sm">
-              <StatLabel fontSize="2xs" color={mutedColor}>
-                Last Trans
-              </StatLabel>
-              <StatNumber fontSize="xs">
-                {isLoadingTransactions
-                  ? "..."
-                  : lastTransactionDate
-                    ? formatDate(lastTransactionDate)
-                    : "--"}
-              </StatNumber>
-            </Stat>
-          </SimpleGrid>
-          <Flex gap={3} mt={4} justify="space-around">
-            <IconButton
-              size="sm"
-              variant="ghost"
-              icon={<Icon as={ShoppingCart} />}
-              onClick={() => onTradeUnits(fund.mutual_fund_id)}
-              aria-label="Buy/Sell"
-              title="Buy/Sell"
-            />
-            <IconButton
-              size="sm"
-              variant="ghost"
-              icon={<Icon as={ArrowRightLeft} />}
-              onClick={() => onTransferUnits(fund.mutual_fund_id)}
-              isDisabled={toNumber(fund.total_units) <= 0}
-              aria-label="Transfer"
-              title="Transfer"
-            />
-            <IconButton
-              size="sm"
-              variant="ghost"
-              icon={<Icon as={List} />}
-              onClick={() => onViewTransactions(fund.mutual_fund_id)}
-              aria-label="Transactions"
-              title="Transactions"
-            />
-            <IconButton
-              size="sm"
-              variant="ghost"
-              colorScheme="purple"
-              icon={<Icon as={BarChart3} />}
-              onClick={() => onViewAnalytics(fund)}
-              aria-label="Analytics"
-              title="Analytics"
-            />
-            <IconButton
-              size="sm"
-              variant="ghost"
-              icon={<Icon as={RefreshCw} />}
-              onClick={() => onUpdateNav(fund)}
-              aria-label="Update NAV"
-              title="Update NAV"
-            />
-            <IconButton
-              size="sm"
-              variant="ghost"
-              colorScheme="red"
-              icon={<Icon as={XCircle} />}
-              onClick={() => onCloseFund(fund.mutual_fund_id)}
-              isDisabled={toNumber(fund.total_units) > 0}
-              aria-label="Close"
-              title="Close"
-            />
-          </Flex>
-        </Box>
-      </Collapse>
+              </Stat.Root>
+              <Stat.Root size="sm">
+                <Stat.Label fontSize="2xs" color={mutedColor}>
+                  Realized P&L
+                </Stat.Label>
+                <HStack gap={0} align="baseline">
+                  <Stat.ValueText
+                    fontSize="sm"
+                    color={realizedPnl >= 0 ? positiveColor : negativeColor}
+                  >
+                    {
+                      splitCurrencyForDisplay(
+                        Math.abs(realizedPnl),
+                        currencySymbol || "₹",
+                      ).main
+                    }
+                  </Stat.ValueText>
+                  <Text
+                    fontSize="xs"
+                    color={realizedPnl >= 0 ? positiveColor : negativeColor}
+                    opacity={0.7}
+                  >
+                    {
+                      splitCurrencyForDisplay(
+                        Math.abs(realizedPnl),
+                        currencySymbol || "₹",
+                      ).decimals
+                    }
+                  </Text>
+                </HStack>
+              </Stat.Root>
+              <Stat.Root size="sm">
+                <Stat.Label fontSize="2xs" color={mutedColor}>
+                  CAGR %
+                </Stat.Label>
+                {fund.cagr_percentage != null ? (
+                  <HStack gap={0} align="baseline">
+                    <Stat.ValueText
+                      fontSize="sm"
+                      color={
+                        fund.cagr_percentage >= 0
+                          ? positiveColor
+                          : negativeColor
+                      }
+                    >
+                      {splitPercentageForDisplay(fund.cagr_percentage).main}
+                    </Stat.ValueText>
+                    <Text
+                      fontSize="xs"
+                      color={
+                        fund.cagr_percentage >= 0
+                          ? positiveColor
+                          : negativeColor
+                      }
+                      opacity={0.7}
+                    >
+                      {splitPercentageForDisplay(fund.cagr_percentage).decimals}
+                    </Text>
+                  </HStack>
+                ) : (
+                  <Stat.ValueText fontSize="sm" color={mutedColor}>
+                    ---
+                  </Stat.ValueText>
+                )}
+              </Stat.Root>
+              <Stat.Root size="sm">
+                <Stat.Label fontSize="2xs" color={mutedColor}>
+                  XIRR %
+                </Stat.Label>
+                {fund.xirr_percentage != null ? (
+                  <HStack gap={0} align="baseline">
+                    <Stat.ValueText
+                      fontSize="sm"
+                      color={
+                        fund.xirr_percentage >= 0
+                          ? positiveColor
+                          : negativeColor
+                      }
+                    >
+                      {splitPercentageForDisplay(fund.xirr_percentage).main}
+                    </Stat.ValueText>
+                    <Text
+                      fontSize="xs"
+                      color={
+                        fund.xirr_percentage >= 0
+                          ? positiveColor
+                          : negativeColor
+                      }
+                      opacity={0.7}
+                    >
+                      {splitPercentageForDisplay(fund.xirr_percentage).decimals}
+                    </Text>
+                  </HStack>
+                ) : (
+                  <Stat.ValueText fontSize="sm" color={mutedColor}>
+                    ---
+                  </Stat.ValueText>
+                )}
+              </Stat.Root>
+              <Stat.Root size="sm">
+                <Stat.Label fontSize="2xs" color={mutedColor}>
+                  NAV Updated
+                </Stat.Label>
+                <Stat.ValueText fontSize="xs">
+                  {navUpdatedDate ? formatDate(navUpdatedDate) : "--"}
+                </Stat.ValueText>
+              </Stat.Root>
+              <Stat.Root size="sm">
+                <Stat.Label fontSize="2xs" color={mutedColor}>
+                  First Trans
+                </Stat.Label>
+                <Stat.ValueText fontSize="xs">
+                  {isLoadingTransactions
+                    ? "..."
+                    : firstTransactionDate
+                      ? formatDate(firstTransactionDate)
+                      : "--"}
+                </Stat.ValueText>
+              </Stat.Root>
+              <Stat.Root size="sm">
+                <Stat.Label fontSize="2xs" color={mutedColor}>
+                  Last Trans
+                </Stat.Label>
+                <Stat.ValueText fontSize="xs">
+                  {isLoadingTransactions
+                    ? "..."
+                    : lastTransactionDate
+                      ? formatDate(lastTransactionDate)
+                      : "--"}
+                </Stat.ValueText>
+              </Stat.Root>
+            </SimpleGrid>
+            <Flex gap={3} mt={4} justify="space-around">
+              <IconButton
+                size="sm"
+                variant="ghost"
+                onClick={() => onTradeUnits(fund.mutual_fund_id)}
+                aria-label="Buy/Sell"
+                title="Buy/Sell"><Icon asChild><ShoppingCart /></Icon></IconButton>
+              <IconButton
+                size="sm"
+                variant="ghost"
+                onClick={() => onTransferUnits(fund.mutual_fund_id)}
+                disabled={toNumber(fund.total_units) <= 0}
+                aria-label="Transfer"
+                title="Transfer"><Icon asChild><ArrowRightLeft /></Icon></IconButton>
+              <IconButton
+                size="sm"
+                variant="ghost"
+                onClick={() => onViewTransactions(fund.mutual_fund_id)}
+                aria-label="Transactions"
+                title="Transactions"><Icon asChild><List /></Icon></IconButton>
+              <IconButton
+                size="sm"
+                variant="ghost"
+                colorPalette="purple"
+                onClick={() => onViewAnalytics(fund)}
+                aria-label="Analytics"
+                title="Analytics"><Icon asChild><BarChart3 /></Icon></IconButton>
+              <IconButton
+                size="sm"
+                variant="ghost"
+                onClick={() => onUpdateNav(fund)}
+                aria-label="Update NAV"
+                title="Update NAV"><Icon asChild><RefreshCw /></Icon></IconButton>
+              <IconButton
+                size="sm"
+                variant="ghost"
+                colorPalette="red"
+                onClick={() => onCloseFund(fund.mutual_fund_id)}
+                disabled={toNumber(fund.total_units) > 0}
+                aria-label="Close"
+                title="Close"><Icon asChild><XCircle /></Icon></IconButton>
+            </Flex>
+          </Box>
+        </Collapsible.Content>
+      </Collapsible.Root>
     </Box>
   );
 };

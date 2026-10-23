@@ -1,10 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { ChakraProvider } from "@chakra-ui/react";
+import { Provider } from "@components/ui/provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import App from "./App";
-import Theme from "@components/Theme";
 import "./styles/toast.css";
 
 const queryClient = new QueryClient({
@@ -23,11 +22,11 @@ if (!rootElement) throw new Error("Failed to find the root element");
 
 createRoot(rootElement).render(
   <StrictMode>
-    <ChakraProvider theme={Theme}>
+    <Provider>
       <QueryClientProvider client={queryClient}>
         <App />
         <Toaster position="bottom-center" theme="system" richColors />
       </QueryClientProvider>
-    </ChakraProvider>
+    </Provider>
   </StrictMode>,
 );

@@ -1,23 +1,16 @@
 import React from "react";
+import { useColorModeValue } from "../../ui/color-mode";
 import {
   Box,
   VStack,
   Text,
-  FormControl,
-  FormLabel,
   InputGroup,
-  InputLeftAddon,
-  InputLeftElement,
-  InputRightElement,
   Input,
   HStack,
   Button,
-  FormHelperText,
-  useColorModeValue,
   Popover,
-  PopoverTrigger,
-  PopoverContent,
   Icon,
+  Field,
 } from "@chakra-ui/react";
 import { Trash2, Search, ChevronDown, Check, X } from "lucide-react";
 import {
@@ -125,23 +118,23 @@ const SplitRow: React.FC<SplitRowProps> = ({
       }}
       transition="all 0.2s"
     >
-      <VStack spacing={4} align="stretch">
-        <HStack spacing={4} align="end">
-          <FormControl flex="1" isRequired>
-            <FormLabel fontSize="sm" fontWeight="semibold" mb={2}>
+      <VStack gap={4} align="stretch">
+        <HStack gap={4} align="end">
+          <Field.Root flex="1" required>
+            <Field.Label fontSize="sm" fontWeight="semibold" mb={2}>
               Amount
-            </FormLabel>
-            <InputGroup>
-              <InputLeftAddon
-                bg={inputBorderColor}
-                borderWidth="2px"
-                borderColor={inputBorderColor}
-                color={addonColor}
-                fontWeight="semibold"
-                fontSize="sm"
-              >
-                {currencySymbol}
-              </InputLeftAddon>
+            </Field.Label>
+            <InputGroup
+              startAddon={currencySymbol}
+              startAddonProps={{
+                bg: inputBorderColor,
+                borderWidth: "2px",
+                borderColor: inputBorderColor,
+                color: addonColor,
+                fontWeight: "semibold",
+                fontSize: "sm",
+              }}
+            >
               <Input
                 type="text"
                 inputMode="decimal"
@@ -169,13 +162,12 @@ const SplitRow: React.FC<SplitRowProps> = ({
                 }}
               />
             </InputGroup>
-          </FormControl>
+          </Field.Root>
 
           {canRemove && (
             <Button
-              leftIcon={<Trash2 size={16} />}
               variant="outline"
-              colorScheme="red"
+              colorPalette="red"
               size="md"
               height="40px"
               onClick={() => onRemove(index)}
@@ -186,16 +178,14 @@ const SplitRow: React.FC<SplitRowProps> = ({
                 borderColor: "red.300",
                 transform: "translateY(-1px)",
               }}
-              transition="all 0.2s"
-            >
-              Remove
-            </Button>
+              transition="all 0.2s"><Trash2 size={16} />Remove
+                          </Button>
           )}
         </HStack>
 
         {/* Category searchable dropdown */}
-        <FormControl isRequired>
-          <FormLabel
+        <Field.Root required>
+          <Field.Label
             fontSize="sm"
             fontWeight="semibold"
             mb={2}
@@ -205,22 +195,31 @@ const SplitRow: React.FC<SplitRowProps> = ({
           >
             Category
             {split.categoryId && (
-              <Icon as={Check} boxSize={3.5} color="teal.500" />
+              <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
             )}
-          </FormLabel>
-          <Popover
-            isOpen={isCategoryOpen}
-            onClose={onCategoryClose}
-            matchWidth
-            placement="bottom-start"
+          </Field.Label>
+          <Popover.Root
+            open={isCategoryOpen}
             autoFocus={false}
-            returnFocusOnClose={false}
-          >
-            <PopoverTrigger>
-              <InputGroup>
-                <InputLeftElement pointerEvents="none" height="100%">
-                  <Icon as={Search} boxSize={4} color={helperTextColor} />
-                </InputLeftElement>
+            onOpenChange={e => {
+              if (!(e.open)) { onCategoryClose(); }
+            }}
+            positioning={{
+              sameWidth: true,
+              placement: 'bottom-start'
+            }}>
+            <Popover.Trigger asChild>
+              <InputGroup
+                startElement={<Icon boxSize={4} color={helperTextColor} asChild><Search /></Icon>}
+                endElement={
+                  split.categoryId ? (
+                    <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><X onClick={onCategoryClear} /></Icon>
+                  ) : (
+                    <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><ChevronDown onClick={onCategoryToggle} /></Icon>
+                  )
+                }
+                endElementProps={{ pr: 1 }}
+              >
                 <Input
                   value={
                     isCategoryOpen
@@ -245,29 +244,10 @@ const SplitRow: React.FC<SplitRowProps> = ({
                   autoComplete="off"
                   data-testid="formsplits-category-dropdown"
                 />
-                <InputRightElement height="100%" pr={1}>
-                  {split.categoryId ? (
-                    <Icon
-                      as={X}
-                      boxSize={4}
-                      color={helperTextColor}
-                      cursor="pointer"
-                      onClick={onCategoryClear}
-                    />
-                  ) : (
-                    <Icon
-                      as={ChevronDown}
-                      boxSize={4}
-                      color={helperTextColor}
-                      cursor="pointer"
-                      onClick={onCategoryToggle}
-                    />
-                  )}
-                </InputRightElement>
               </InputGroup>
-            </PopoverTrigger>
-            <PopoverContent
-              p={0}
+            </Popover.Trigger>
+            <Popover.Positioner>
+              <Popover.Content w="full" p={0}
               bg={dropdownBgColor}
               border="1px solid"
               borderColor={dropdownBorderColor}
@@ -275,9 +255,7 @@ const SplitRow: React.FC<SplitRowProps> = ({
               boxShadow="lg"
               maxH="220px"
               overflowY="auto"
-              _focus={{ outline: "none" }}
-            >
-              {filteredCategories.length === 0 ? (
+              _focus={{ outline: "none" }}>{filteredCategories.length === 0 ? (
                 <Box px={4} py={3}>
                   <Text fontSize="sm" color={helperTextColor}>
                     No categories found
@@ -340,33 +318,35 @@ const SplitRow: React.FC<SplitRowProps> = ({
                         {cat.name}
                       </Text>
                       {split.categoryId === cat.category_id && (
-                        <Icon as={Check} boxSize={4} color="teal.500" />
+                        <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>
                       )}
                     </Box>
                   ))}
                 </>
-              )}
-            </PopoverContent>
-          </Popover>
-          <FormHelperText mt={1} fontSize="xs">
+              )}</Popover.Content>
+            </Popover.Positioner>
+          </Popover.Root>
+          <Field.HelperText mt={1} fontSize="xs">
             Choose the category for this split
-          </FormHelperText>
-        </FormControl>
+          </Field.HelperText>
+        </Field.Root>
 
         {/* Notes with autocomplete */}
-        <FormControl>
-          <FormLabel fontSize="sm" fontWeight="semibold" mb={2}>
+        <Field.Root>
+          <Field.Label fontSize="sm" fontWeight="semibold" mb={2}>
             Notes
-          </FormLabel>
-          <Popover
-            isOpen={isNotesOpen}
-            onClose={onNotesClose}
-            matchWidth
-            placement="bottom-start"
+          </Field.Label>
+          <Popover.Root
+            open={isNotesOpen}
             autoFocus={false}
-            returnFocusOnClose={false}
-          >
-            <PopoverTrigger>
+            onOpenChange={e => {
+              if (!(e.open)) { onNotesClose(); }
+            }}
+            positioning={{
+              sameWidth: true,
+              placement: 'bottom-start'
+            }}>
+            <Popover.Trigger asChild>
               <Input
                 type="text"
                 value={split.notes || ""}
@@ -384,9 +364,9 @@ const SplitRow: React.FC<SplitRowProps> = ({
                 }}
                 autoComplete="off"
               />
-            </PopoverTrigger>
-            <PopoverContent
-              p={0}
+            </Popover.Trigger>
+            <Popover.Positioner>
+              <Popover.Content w="full" p={0}
               bg={dropdownBgColor}
               border="1px solid"
               borderColor={dropdownBorderColor}
@@ -394,9 +374,7 @@ const SplitRow: React.FC<SplitRowProps> = ({
               boxShadow="lg"
               maxH="200px"
               overflowY="auto"
-              _focus={{ outline: "none" }}
-            >
-              {notesSuggestions.map((suggestion, i) => (
+              _focus={{ outline: "none" }}>{notesSuggestions.map((suggestion, i) => (
                 <Box
                   key={i}
                   px={4}
@@ -418,13 +396,13 @@ const SplitRow: React.FC<SplitRowProps> = ({
                     {suggestion}
                   </Text>
                 </Box>
-              ))}
-            </PopoverContent>
-          </Popover>
-          <FormHelperText mt={1} fontSize="xs">
+              ))}</Popover.Content>
+            </Popover.Positioner>
+          </Popover.Root>
+          <Field.HelperText mt={1} fontSize="xs">
             Add specific details about this split
-          </FormHelperText>
-        </FormControl>
+          </Field.HelperText>
+        </Field.Root>
       </VStack>
     </Box>
   );

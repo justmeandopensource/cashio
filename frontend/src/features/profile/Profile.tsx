@@ -1,14 +1,6 @@
 import React from "react";
-import {
-  Box,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-  Icon,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../components/ui/color-mode";
+import { Box, Tabs, Icon } from "@chakra-ui/react";
 import { useSearchParams } from "react-router-dom";
 import Layout from "../../components/Layout";
 import UpdateProfileForm from "./UpdateProfileForm";
@@ -74,7 +66,13 @@ const Profile: React.FC = () => {
             overflow="hidden"
             shadow="sm"
           >
-            <Tabs variant="unstyled" size="md" isLazy index={currentTabIndex} onChange={handleTabChange}>
+            <Tabs.Root
+              unstyled
+              size="md"
+              lazyMount
+              value={TAB_KEYS[currentTabIndex]}
+              onValueChange={(d) => handleTabChange(TAB_KEYS.indexOf(d.value as typeof TAB_KEYS[number]))}
+            >
               <Box
                 px={{ base: 2, md: 4 }}
                 pt={{ base: 2, md: 3 }}
@@ -82,14 +80,17 @@ const Profile: React.FC = () => {
                 borderBottom="1px solid"
                 borderColor={borderColor}
               >
-                <TabList
+                <Tabs.List
+                  display="flex"
                   borderBottom="none"
                   gap={{ base: 0, md: 1 }}
                   mb="-1px"
                 >
-                  {tabs.map(({ label, icon }) => (
-                    <Tab
+                  {tabs.map(({ label, icon }, index) => (
+                    <Tabs.Trigger
                       key={label}
+                      value={TAB_KEYS[index]}
+                      cursor="pointer"
                       px={{ base: 3, md: 4 }}
                       py={2.5}
                       fontWeight="500"
@@ -118,35 +119,35 @@ const Profile: React.FC = () => {
                         as={icon}
                         boxSize={3.5}
                         color="inherit"
-                        sx={{
+                        css={{
                           "[aria-selected=true] &": {
                             color: tabSelectedIconColor,
                           },
                           "[aria-selected=false] &": {
                             color: tabIconColor,
-                          },
+                          }
                         }}
                       />
                       {label}
-                    </Tab>
+                    </Tabs.Trigger>
                   ))}
-                </TabList>
+                </Tabs.List>
               </Box>
-              <TabPanels bg={cardBg}>
-                <TabPanel p={{ base: 0, md: 0 }}>
+              <Box bg={cardBg}>
+                <Tabs.Content value="account" p={{ base: 0, md: 0 }}>
                   <UpdateProfileForm />
-                </TabPanel>
-                <TabPanel p={{ base: 0, md: 0 }}>
+                </Tabs.Content>
+                <Tabs.Content value="security" p={{ base: 0, md: 0 }}>
                   <ChangePasswordForm />
-                </TabPanel>
-                <TabPanel p={{ base: 0, md: 0 }}>
+                </Tabs.Content>
+                <Tabs.Content value="preferences" p={{ base: 0, md: 0 }}>
                   <PreferencesForm />
-                </TabPanel>
-                <TabPanel p={{ base: 0, md: 0 }}>
+                </Tabs.Content>
+                <Tabs.Content value="backups" p={{ base: 0, md: 0 }}>
                   <SystemBackup />
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
+                </Tabs.Content>
+              </Box>
+            </Tabs.Root>
           </Box>
         </PageContainer>
       </Box>

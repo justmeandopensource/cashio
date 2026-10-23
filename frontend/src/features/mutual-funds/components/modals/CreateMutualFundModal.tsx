@@ -1,35 +1,22 @@
 import React, { FC, useEffect, useRef, useState } from "react";
+import { useColorModeValue } from "../../../../components/ui/color-mode";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalBody,
-  ModalFooter,
   Button,
   VStack,
-  FormControl,
-  FormLabel,
   Input,
-  InputGroup,
-  InputLeftElement,
-  InputRightElement,
   Textarea,
-  Select,
-  useColorModeValue,
-  FormHelperText,
-  FormErrorMessage,
+  NativeSelect,
   Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
   Box,
   HStack,
   Text,
   Icon,
   Popover,
-  PopoverTrigger,
-  PopoverContent,
+  Field,
+  Dialog,
+  Portal,
 } from "@chakra-ui/react";
+import { InputGroup } from "@/components/ui/input-group";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TrendingUp, FileText, Building2, X, Check, Search, ChevronDown } from "lucide-react";
 import { createMutualFund } from "../../api";
@@ -337,384 +324,104 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
     : null;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      returnFocusOnClose={false}
-      onClose={handleClose}
+    <Dialog.Root
+      open={isOpen}
       size={{ base: "full", sm: "xl" }}
-      motionPreset="slideInBottom"
-    >
-      <ModalOverlay backdropFilter="blur(4px)" bg="blackAlpha.300" />
-      <ModalContent
-        bg={bgColor}
-        borderRadius={{ base: 0, sm: "xl" }}
-        boxShadow="2xl"
-        border="1px solid"
-        borderColor={borderColor}
-        overflow="hidden"
-        mx={{ base: 0, sm: 4 }}
-        my={{ base: 0, sm: "auto" }}
-        maxHeight={{ base: "100%", md: "90vh" }}
-        display="flex"
-        flexDirection="column"
-      >
-        {/* Gradient accent line */}
-        <Box h="3px" bgGradient="linear(to-r, brand.400, brand.600, teal.300)" />
-        {/* Flat header */}
-        <Box
-          px={{ base: 4, sm: 8 }}
-          py={5}
-          borderBottom="1px solid"
-          borderColor={modalHeaderBorderColor}
-        >
-          <HStack spacing={3} align="flex-start">
-            <Icon as={TrendingUp} boxSize={5} mt="3px" color={modalIconColor} />
+      motionPreset="slide-in-bottom"
+      onOpenChange={e => {
+        if (!e.open) {
+          handleClose();
+        }
+      }}>
+      <Portal>
 
-            <Box>
-              <Text
-                fontSize="lg"
-                fontWeight="800"
-                letterSpacing="-0.02em"
-                color={modalTitleColor}
-              >
-                Create Mutual Fund
-              </Text>
-              <Text
-                fontSize="sm"
-                color={modalSubtitleColor}
-              >
-                {selectedAmc
-                  ? `Add a new fund to ${selectedAmc.name}`
-                  : "Add a new mutual fund scheme to track"}
-              </Text>
+        <Dialog.Backdrop backdropFilter="blur(4px)" bg="blackAlpha.300" />
+        <Dialog.Positioner>
+          <Dialog.Content
+            bg={bgColor}
+            borderRadius={{ base: 0, sm: "xl" }}
+            boxShadow="2xl"
+            border="1px solid"
+            borderColor={borderColor}
+            overflow="hidden"
+            mx={{ base: 0, sm: 4 }}
+            my={{ base: 0, sm: "auto" }}
+            maxHeight={{ base: "100%", md: "90vh" }}
+            display="flex"
+            flexDirection="column">
+            {/* Gradient accent line */}
+            <Box h="3px" bgGradient="to-r" gradientFrom="brand.400" gradientVia="brand.600" gradientTo="teal.300"  />
+            {/* Flat header */}
+            <Box
+              px={{ base: 4, sm: 8 }}
+              py={5}
+              borderBottom="1px solid"
+              borderColor={modalHeaderBorderColor}
+            >
+              <HStack gap={3} align="flex-start">
+                <Icon boxSize={5} mt="3px" color={modalIconColor} asChild><TrendingUp /></Icon>
+
+                <Box>
+                  <Text
+                    fontSize="lg"
+                    fontWeight="800"
+                    letterSpacing="-0.02em"
+                    color={modalTitleColor}
+                  >
+                    Create Mutual Fund
+                  </Text>
+                  <Text
+                    fontSize="sm"
+                    color={modalSubtitleColor}
+                  >
+                    {selectedAmc
+                      ? `Add a new fund to ${selectedAmc.name}`
+                      : "Add a new mutual fund scheme to track"}
+                  </Text>
+                </Box>
+              </HStack>
             </Box>
-          </HStack>
-        </Box>
 
-        <ModalBody
-          px={{ base: 4, sm: 8 }}
-          py={{ base: 4, sm: 6 }}
-          flex="1"
-          display="flex"
-          flexDirection="column"
-          overflowY="auto"
-          overflowX="hidden"
-          justifyContent={{ base: "space-between", sm: "flex-start" }}
-        >
-          <form id="create-mutual-fund-form" onSubmit={handleSubmit}>
-            <VStack spacing={{ base: 5, sm: 6 }} align="stretch" w="100%">
-              {/* Fund Details Form */}
-              <Box
-                bg={cardBg}
-                p={{ base: 4, sm: 6 }}
-                borderRadius="xl"
-                border="1px solid"
-                borderColor={borderColor}
-              >
-                <VStack spacing={5} align="stretch">
-                  {/* Mutual Fund Name */}
-                  <FormControl isInvalid={!!errors.name}>
-                    <FormLabel fontWeight="semibold" mb={2}>
-                      <HStack spacing={2}>
-                        <TrendingUp size={16} />
-                        <Text>Mutual Fund Name</Text>
-                        {formData.name.trim() && (
-                          <Icon as={Check} boxSize={3.5} color="teal.500" />
-                        )}
-                      </HStack>
-                    </FormLabel>
-                    <Input
-                      ref={initialRef}
-                      value={formData.name}
-                      onChange={(e) =>
-                        handleInputChange("name", e.target.value)
-                      }
-                      placeholder="e.g., HDFC Mid Cap Fund"
-                      maxLength={100}
-                      size="lg"
-                      bg={inputBg}
-                      borderColor={inputBorderColor}
-                      borderWidth="2px"
-                      borderRadius="md"
-                      _hover={{ borderColor: "teal.300" }}
-                      _focus={{
-                        borderColor: focusBorderColor,
-                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                      }}
-                    />
-                    <FormErrorMessage>{errors.name}</FormErrorMessage>
-                    <FormHelperText>
-                      Enter the complete name of the mutual fund scheme
-                    </FormHelperText>
-                  </FormControl>
-
-                  {/* Plan and Code side by side */}
-                  <HStack spacing={4} align="start">
-                    <FormMutualFundSuggestionField
-                      ledgerId={ledgerId as string}
-                      field="plan"
-                      label="Plan (Optional)"
-                      value={formData.plan}
-                      setValue={(val) => handleInputChange("plan", val)}
-                      placeholder="Direct Growth"
-                      helperText="Enter the plan type"
-                      borderColor={inputBorderColor}
-                      inputBg={inputBg}
-                    />
-
-                    <FormControl isInvalid={!!errors.code} flex={1}>
-                      <FormLabel fontWeight="semibold" mb={2}>
-                        <HStack spacing={2}>
-                          <FileText size={16} />
-                          <Text>Code (Optional)</Text>
-                        </HStack>
-                      </FormLabel>
-                      <Input
-                        value={formData.code}
-                        onChange={(e) =>
-                          handleInputChange("code", e.target.value)
-                        }
-                        placeholder="HDFC001"
-                        maxLength={50}
-                        size="lg"
-                        bg={inputBg}
-                        borderColor={inputBorderColor}
-                        borderWidth="2px"
-                        borderRadius="md"
-                        _hover={{ borderColor: "teal.300" }}
-                        _focus={{
-                          borderColor: focusBorderColor,
-                          boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                        }}
-                      />
-                      <FormErrorMessage>{errors.code}</FormErrorMessage>
-                      <FormHelperText>Enter a unique code</FormHelperText>
-                    </FormControl>
-                  </HStack>
-
-                  {/* Owner */}
-                  <FormMutualFundSuggestionField
-                    ledgerId={ledgerId as string}
-                    field="owner"
-                    label="Owner (Optional)"
-                    value={formData.owner}
-                    setValue={(val) => handleInputChange("owner", val)}
-                    placeholder="e.g., John Doe"
-                    helperText="Enter the owner name to allow same fund names for different owners"
-                    borderColor={inputBorderColor}
-                    inputBg={inputBg}
-                  />
-
-                  {/* AMC Selection */}
-                  <FormControl
-                    isInvalid={!!errors.amc_id}
-                    display={selectedAmc ? "block" : "none"}
+            <Dialog.Body
+              px={{ base: 4, sm: 8 }}
+              py={{ base: 4, sm: 6 }}
+              flex="1"
+              display="flex"
+              flexDirection="column"
+              overflowY="auto"
+              overflowX="hidden"
+              justifyContent={{ base: "space-between", sm: "flex-start" }}
+            >
+              <form id="create-mutual-fund-form" onSubmit={handleSubmit}>
+                <VStack gap={{ base: 5, sm: 6 }} align="stretch" w="100%">
+                  {/* Fund Details Form */}
+                  <Box
+                    bg={cardBg}
+                    p={{ base: 4, sm: 6 }}
+                    borderRadius="xl"
+                    border="1px solid"
+                    borderColor={borderColor}
                   >
-                    <FormLabel fontWeight="semibold" mb={2}>
-                      <HStack spacing={2}>
-                        <Building2 size={16} />
-                        <Text>Asset Management Company</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Input
-                      value={selectedAmc?.name || ""}
-                      isReadOnly
-                      size="lg"
-                      bg={readOnlyBg}
-                      borderColor={inputBorderColor}
-                      borderWidth="2px"
-                      borderRadius="md"
-                      opacity={0.8}
-                      cursor="not-allowed"
-                    />
-                    <FormHelperText>
-                      This fund will be created under {selectedAmc?.name}
-                    </FormHelperText>
-                  </FormControl>
-
-                  <FormControl
-                    isInvalid={!!errors.amc_id}
-                    display={selectedAmc ? "none" : "block"}
-                  >
-                    <FormLabel fontWeight="semibold" mb={2}>
-                      <HStack spacing={2}>
-                        <Building2 size={16} />
-                        <Text>Asset Management Company</Text>
-                        {formData.amc_id && (
-                          <Icon as={Check} boxSize={3.5} color="teal.500" />
-                        )}
-                      </HStack>
-                    </FormLabel>
-                    <Popover
-                      isOpen={isAmcOpen}
-                      onClose={() => { setIsAmcOpen(false); setHighlightedAmcIndex(-1); }}
-                      matchWidth
-                      placement="bottom-start"
-                      autoFocus={false}
-                      returnFocusOnClose={false}
-                    >
-                      <PopoverTrigger>
-                        <InputGroup size="lg">
-                          <InputLeftElement pointerEvents="none" height="100%">
-                            <Icon as={Search} boxSize={4} color={helperTextColor} />
-                          </InputLeftElement>
-                          <Input
-                            value={isAmcOpen ? amcSearch : (selectedAmcOption?.name ?? "")}
-                            onChange={(e) => {
-                              setAmcSearch(e.target.value);
-                              handleInputChange("amc_id", "");
-                              setHighlightedAmcIndex(-1);
-                              setIsAmcOpen(true);
-                            }}
-                            onFocus={() => {
-                              setAmcSearch("");
-                              setHighlightedAmcIndex(-1);
-                              setIsAmcOpen(true);
-                            }}
-                            onKeyDown={handleAmcKeyDown}
-                            placeholder="Search AMC..."
-                            borderWidth="2px"
-                            borderColor={formData.amc_id ? "teal.400" : inputBorderColor}
-                            bg={inputBg}
-                            borderRadius="md"
-                            _hover={{ borderColor: "teal.300" }}
-                            _focus={{
-                              borderColor: focusBorderColor,
-                              boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                            }}
-                            autoComplete="off"
-                          />
-                          <InputRightElement height="100%" pr={1}>
-                            {formData.amc_id ? (
-                              <Icon
-                                as={X}
-                                boxSize={4}
-                                color={helperTextColor}
-                                cursor="pointer"
-                                onClick={() => {
-                                  handleInputChange("amc_id", "");
-                                  setAmcSearch("");
-                                  setIsAmcOpen(false);
-                                  setHighlightedAmcIndex(-1);
-                                }}
-                              />
-                            ) : (
-                              <Icon
-                                as={ChevronDown}
-                                boxSize={4}
-                                color={helperTextColor}
-                                cursor="pointer"
-                                onClick={() => setIsAmcOpen(!isAmcOpen)}
-                              />
+                    <VStack gap={5} align="stretch">
+                      {/* Mutual Fund Name */}
+                      <Field.Root invalid={!!errors.name}>
+                        <Field.Label fontWeight="semibold" mb={2}>
+                          <HStack gap={2}>
+                            <TrendingUp size={16} />
+                            <Text>Mutual Fund Name</Text>
+                            {formData.name.trim() && (
+                              <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
                             )}
-                          </InputRightElement>
-                        </InputGroup>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        p={0}
-                        bg={bgColor}
-                        border="1px solid"
-                        borderColor={borderColor}
-                        borderRadius="md"
-                        boxShadow="lg"
-                        maxH="220px"
-                        overflowY="auto"
-                        _focus={{ outline: "none" }}
-                      >
-                        {filteredAmcs.map((amc, i) => (
-                          <Box
-                            key={amc.amc_id}
-                            px={4} py={3}
-                            cursor="pointer"
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="space-between"
-                            bg={formData.amc_id === amc.amc_id.toString() || i === highlightedAmcIndex ? highlightColor : "transparent"}
-                            _hover={{ bg: highlightColor }}
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              handleInputChange("amc_id", amc.amc_id.toString());
-                              setAmcSearch("");
-                              setIsAmcOpen(false);
-                              setHighlightedAmcIndex(-1);
-                            }}
-                          >
-                            <Text fontSize="sm" fontWeight={formData.amc_id === amc.amc_id.toString() ? "semibold" : "normal"}>
-                              {amc.name}
-                            </Text>
-                            {formData.amc_id === amc.amc_id.toString() && (
-                              <Icon as={Check} boxSize={4} color="teal.500" />
-                            )}
-                          </Box>
-                        ))}
-                        {filteredAmcs.length === 0 && (
-                          <Box px={4} py={5} textAlign="center">
-                            <Text fontSize="sm" color={helperTextColor}>No AMCs found</Text>
-                          </Box>
-                        )}
-                      </PopoverContent>
-                    </Popover>
-                    <FormErrorMessage>{errors.amc_id}</FormErrorMessage>
-                    <FormHelperText>
-                      Choose the AMC that manages this mutual fund
-                    </FormHelperText>
-                  </FormControl>
-
-                  {/* Asset Class */}
-                  <FormControl isInvalid={!!errors.asset_class}>
-                    <FormLabel fontWeight="semibold" mb={2}>
-                      <HStack spacing={2}>
-                        <FileText size={16} />
-                        <Text>Asset Class (Optional)</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Select
-                      value={formData.asset_class}
-                      onChange={(e) =>
-                        handleInputChange("asset_class", e.target.value)
-                      }
-                      placeholder="Select asset class"
-                      size="lg"
-                      bg={inputBg}
-                      borderColor={inputBorderColor}
-                      borderWidth="2px"
-                      borderRadius="md"
-                      _hover={{ borderColor: "teal.300" }}
-                      _focus={{
-                        borderColor: focusBorderColor,
-                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                      }}
-                    >
-                      {ASSET_CLASSES.map((assetClass) => (
-                        <option key={assetClass.value} value={assetClass.value}>
-                          {assetClass.label}
-                        </option>
-                      ))}
-                    </Select>
-                    <FormErrorMessage>{errors.asset_class}</FormErrorMessage>
-                    <FormHelperText>
-                      Choose the asset class for this mutual fund
-                    </FormHelperText>
-                  </FormControl>
-
-                  {/* Asset Sub Class */}
-                  {formData.asset_class &&
-                    ASSET_SUB_CLASSES[
-                      formData.asset_class as keyof typeof ASSET_SUB_CLASSES
-                    ]?.length > 0 && (
-                      <FormControl isInvalid={!!errors.asset_sub_class}>
-                        <FormLabel fontWeight="semibold" mb={2}>
-                          <HStack spacing={2}>
-                            <FileText size={16} />
-                            <Text>Asset Sub-Class (Optional)</Text>
                           </HStack>
-                        </FormLabel>
-                        <Select
-                          value={formData.asset_sub_class}
+                        </Field.Label>
+                        <Input
+                          ref={initialRef}
+                          value={formData.name}
                           onChange={(e) =>
-                            handleInputChange("asset_sub_class", e.target.value)
+                            handleInputChange("name", e.target.value)
                           }
-                          placeholder="Select asset sub-class"
+                          placeholder="e.g., HDFC Mid Cap Fund"
+                          maxLength={100}
                           size="lg"
                           bg={inputBg}
                           borderColor={inputBorderColor}
@@ -725,174 +432,454 @@ const CreateMutualFundModal: FC<CreateMutualFundModalProps> = ({
                             borderColor: focusBorderColor,
                             boxShadow: `0 0 0 1px ${focusBorderColor}`,
                           }}
-                        >
-                          {ASSET_SUB_CLASSES[
-                            formData.asset_class as keyof typeof ASSET_SUB_CLASSES
-                          ].map((subClass) => (
-                            <option key={subClass.value} value={subClass.value}>
-                              {subClass.label}
-                            </option>
-                          ))}
-                        </Select>
-                        <FormErrorMessage>
-                          {errors.asset_sub_class}
-                        </FormErrorMessage>
-                        <FormHelperText>
-                          Choose the asset sub-class for this mutual fund
-                        </FormHelperText>
-                      </FormControl>
-                    )}
+                        />
+                        <Field.ErrorText>{errors.name}</Field.ErrorText>
+                        <Field.HelperText>
+                          Enter the complete name of the mutual fund scheme
+                        </Field.HelperText>
+                      </Field.Root>
 
-                  {/* Notes */}
-                  <FormControl isInvalid={!!errors.notes}>
-                    <FormLabel fontWeight="semibold" mb={2}>
-                      <HStack spacing={2}>
-                        <FileText size={16} />
-                        <Text>Notes (Optional)</Text>
+                      {/* Plan and Code side by side */}
+                      <HStack gap={4} align="start">
+                        <FormMutualFundSuggestionField
+                          ledgerId={ledgerId as string}
+                          field="plan"
+                          label="Plan (Optional)"
+                          value={formData.plan}
+                          setValue={(val) => handleInputChange("plan", val)}
+                          placeholder="Direct Growth"
+                          helperText="Enter the plan type"
+                          borderColor={inputBorderColor}
+                          inputBg={inputBg}
+                        />
+
+                        <Field.Root invalid={!!errors.code} flex={1}>
+                          <Field.Label fontWeight="semibold" mb={2}>
+                            <HStack gap={2}>
+                              <FileText size={16} />
+                              <Text>Code (Optional)</Text>
+                            </HStack>
+                          </Field.Label>
+                          <Input
+                            value={formData.code}
+                            onChange={(e) =>
+                              handleInputChange("code", e.target.value)
+                            }
+                            placeholder="HDFC001"
+                            maxLength={50}
+                            size="lg"
+                            bg={inputBg}
+                            borderColor={inputBorderColor}
+                            borderWidth="2px"
+                            borderRadius="md"
+                            _hover={{ borderColor: "teal.300" }}
+                            _focus={{
+                              borderColor: focusBorderColor,
+                              boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                            }}
+                          />
+                          <Field.ErrorText>{errors.code}</Field.ErrorText>
+                          <Field.HelperText>Enter a unique code</Field.HelperText>
+                        </Field.Root>
                       </HStack>
-                    </FormLabel>
-                    <Textarea
-                      value={formData.notes}
-                      onChange={(e) =>
-                        handleInputChange("notes", e.target.value)
-                      }
-                      placeholder="Other details..."
-                      rows={4}
-                      maxLength={500}
-                      bg={inputBg}
-                      borderColor={inputBorderColor}
-                      borderWidth="2px"
+
+                      {/* Owner */}
+                      <FormMutualFundSuggestionField
+                        ledgerId={ledgerId as string}
+                        field="owner"
+                        label="Owner (Optional)"
+                        value={formData.owner}
+                        setValue={(val) => handleInputChange("owner", val)}
+                        placeholder="e.g., John Doe"
+                        helperText="Enter the owner name to allow same fund names for different owners"
+                        borderColor={inputBorderColor}
+                        inputBg={inputBg}
+                      />
+
+                      {/* AMC Selection */}
+                      <Field.Root
+                        invalid={!!errors.amc_id}
+                        display={selectedAmc ? "block" : "none"}
+                      >
+                        <Field.Label fontWeight="semibold" mb={2}>
+                          <HStack gap={2}>
+                            <Building2 size={16} />
+                            <Text>Asset Management Company</Text>
+                          </HStack>
+                        </Field.Label>
+                        <Input
+                          value={selectedAmc?.name || ""}
+                          readOnly
+                          size="lg"
+                          bg={readOnlyBg}
+                          borderColor={inputBorderColor}
+                          borderWidth="2px"
+                          borderRadius="md"
+                          opacity={0.8}
+                          cursor="not-allowed"
+                        />
+                        <Field.HelperText>
+                          This fund will be created under {selectedAmc?.name}
+                        </Field.HelperText>
+                      </Field.Root>
+
+                      <Field.Root
+                        invalid={!!errors.amc_id}
+                        display={selectedAmc ? "none" : "block"}
+                      >
+                        <Field.Label fontWeight="semibold" mb={2}>
+                          <HStack gap={2}>
+                            <Building2 size={16} />
+                            <Text>Asset Management Company</Text>
+                            {formData.amc_id && (
+                              <Icon boxSize={3.5} color="teal.500" asChild><Check /></Icon>
+                            )}
+                          </HStack>
+                        </Field.Label>
+                        <Popover.Root
+                          open={isAmcOpen}
+                          autoFocus={false}
+                          onOpenChange={e => {
+                            if (!(e.open)) { setIsAmcOpen(false); setHighlightedAmcIndex(-1); }
+                          }}
+                          positioning={{
+                            sameWidth: true,
+                            placement: 'bottom-start'
+                          }}>
+                          <Popover.Trigger asChild>
+                            <InputGroup
+                              w="full"
+                              startElement={<Icon boxSize={4} color={helperTextColor} asChild><Search /></Icon>}
+                              endElement={
+                                formData.amc_id ? (
+                                  <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><X
+                                      onClick={() => {
+                                        handleInputChange("amc_id", "");
+                                        setAmcSearch("");
+                                        setIsAmcOpen(false);
+                                        setHighlightedAmcIndex(-1);
+                                      }} /></Icon>
+                                ) : (
+                                  <Icon boxSize={4} color={helperTextColor} cursor="pointer" asChild><ChevronDown onClick={() => setIsAmcOpen(!isAmcOpen)} /></Icon>
+                                )
+                              }
+                              endElementProps={{ pr: 1 }}
+                            >
+                              <Input
+                                size="lg"
+                                value={isAmcOpen ? amcSearch : (selectedAmcOption?.name ?? "")}
+                                onChange={(e) => {
+                                  setAmcSearch(e.target.value);
+                                  handleInputChange("amc_id", "");
+                                  setHighlightedAmcIndex(-1);
+                                  setIsAmcOpen(true);
+                                }}
+                                onFocus={() => {
+                                  setAmcSearch("");
+                                  setHighlightedAmcIndex(-1);
+                                  setIsAmcOpen(true);
+                                }}
+                                onKeyDown={handleAmcKeyDown}
+                                placeholder="Search AMC..."
+                                borderWidth="2px"
+                                borderColor={formData.amc_id ? "teal.400" : inputBorderColor}
+                                bg={inputBg}
+                                borderRadius="md"
+                                _hover={{ borderColor: "teal.300" }}
+                                _focus={{
+                                  borderColor: focusBorderColor,
+                                  boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                                }}
+                                autoComplete="off"
+                              />
+                            </InputGroup>
+                          </Popover.Trigger>
+                          <Popover.Positioner>
+                            <Popover.Content w="full" p={0}
+                            bg={bgColor}
+                            border="1px solid"
+                            borderColor={borderColor}
+                            borderRadius="md"
+                            boxShadow="lg"
+                            maxH="220px"
+                            overflowY="auto"
+                            _focus={{ outline: "none" }}>{filteredAmcs.map((amc, i) => (
+                              <Box
+                                key={amc.amc_id}
+                                px={4} py={3}
+                                cursor="pointer"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="space-between"
+                                bg={formData.amc_id === amc.amc_id.toString() || i === highlightedAmcIndex ? highlightColor : "transparent"}
+                                _hover={{ bg: highlightColor }}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  handleInputChange("amc_id", amc.amc_id.toString());
+                                  setAmcSearch("");
+                                  setIsAmcOpen(false);
+                                  setHighlightedAmcIndex(-1);
+                                }}
+                              >
+                                <Text fontSize="sm" fontWeight={formData.amc_id === amc.amc_id.toString() ? "semibold" : "normal"}>
+                                  {amc.name}
+                                </Text>
+                                {formData.amc_id === amc.amc_id.toString() && (
+                                  <Icon boxSize={4} color="teal.500" asChild><Check /></Icon>
+                                )}
+                              </Box>
+                            ))}
+                            {filteredAmcs.length === 0 && (
+                              <Box px={4} py={5} textAlign="center">
+                                <Text fontSize="sm" color={helperTextColor}>No AMCs found</Text>
+                              </Box>
+                            )}</Popover.Content>
+                          </Popover.Positioner>
+                        </Popover.Root>
+                        <Field.ErrorText>{errors.amc_id}</Field.ErrorText>
+                        <Field.HelperText>
+                          Choose the AMC that manages this mutual fund
+                        </Field.HelperText>
+                      </Field.Root>
+
+                      {/* Asset Class */}
+                      <Field.Root invalid={!!errors.asset_class}>
+                        <Field.Label fontWeight="semibold" mb={2}>
+                          <HStack gap={2}>
+                            <FileText size={16} />
+                            <Text>Asset Class (Optional)</Text>
+                          </HStack>
+                        </Field.Label>
+                        <NativeSelect.Root size="lg">
+                          <NativeSelect.Field
+                            value={formData.asset_class}
+                            onChange={(e) =>
+                              handleInputChange("asset_class", e.target.value)
+                            }
+                            placeholder="Select asset class"
+                            bg={inputBg}
+                            borderColor={inputBorderColor}
+                            borderWidth="2px"
+                            borderRadius="md"
+                            _hover={{ borderColor: "teal.300" }}
+                            _focus={{
+                              borderColor: focusBorderColor,
+                              boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                            }}>
+                            {ASSET_CLASSES.map((assetClass) => (
+                              <option key={assetClass.value} value={assetClass.value}>
+                                {assetClass.label}
+                              </option>
+                            ))}
+                          </NativeSelect.Field>
+                          <NativeSelect.Indicator />
+                        </NativeSelect.Root>
+                        <Field.ErrorText>{errors.asset_class}</Field.ErrorText>
+                        <Field.HelperText>
+                          Choose the asset class for this mutual fund
+                        </Field.HelperText>
+                      </Field.Root>
+
+                      {/* Asset Sub Class */}
+                      {formData.asset_class &&
+                        ASSET_SUB_CLASSES[
+                          formData.asset_class as keyof typeof ASSET_SUB_CLASSES
+                        ]?.length > 0 && (
+                          <Field.Root invalid={!!errors.asset_sub_class}>
+                            <Field.Label fontWeight="semibold" mb={2}>
+                              <HStack gap={2}>
+                                <FileText size={16} />
+                                <Text>Asset Sub-Class (Optional)</Text>
+                              </HStack>
+                            </Field.Label>
+                            <NativeSelect.Root size="lg">
+                              <NativeSelect.Field
+                                value={formData.asset_sub_class}
+                                onChange={(e) =>
+                                  handleInputChange("asset_sub_class", e.target.value)
+                                }
+                                placeholder="Select asset sub-class"
+                                bg={inputBg}
+                                borderColor={inputBorderColor}
+                                borderWidth="2px"
+                                borderRadius="md"
+                                _hover={{ borderColor: "teal.300" }}
+                                _focus={{
+                                  borderColor: focusBorderColor,
+                                  boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                                }}>
+                                {ASSET_SUB_CLASSES[
+                                  formData.asset_class as keyof typeof ASSET_SUB_CLASSES
+                                ].map((subClass) => (
+                                  <option key={subClass.value} value={subClass.value}>
+                                    {subClass.label}
+                                  </option>
+                                ))}
+                              </NativeSelect.Field>
+                              <NativeSelect.Indicator />
+                            </NativeSelect.Root>
+                            <Field.ErrorText>
+                              {errors.asset_sub_class}
+                            </Field.ErrorText>
+                            <Field.HelperText>
+                              Choose the asset sub-class for this mutual fund
+                            </Field.HelperText>
+                          </Field.Root>
+                        )}
+
+                      {/* Notes */}
+                      <Field.Root invalid={!!errors.notes}>
+                        <Field.Label fontWeight="semibold" mb={2}>
+                          <HStack gap={2}>
+                            <FileText size={16} />
+                            <Text>Notes (Optional)</Text>
+                          </HStack>
+                        </Field.Label>
+                        <Textarea
+                          value={formData.notes}
+                          onChange={(e) =>
+                            handleInputChange("notes", e.target.value)
+                          }
+                          placeholder="Other details..."
+                          rows={4}
+                          maxLength={500}
+                          bg={inputBg}
+                          borderColor={inputBorderColor}
+                          borderWidth="2px"
+                          borderRadius="md"
+                          _hover={{ borderColor: "teal.300" }}
+                          _focus={{
+                            borderColor: focusBorderColor,
+                            boxShadow: `0 0 0 1px ${focusBorderColor}`,
+                          }}
+                          resize="vertical"
+                        />
+                        <Field.ErrorText>{errors.notes}</Field.ErrorText>
+                        <Field.HelperText>
+                          Additional information about this fund (
+                          {formData.notes.length}/500 characters)
+                        </Field.HelperText>
+                      </Field.Root>
+                    </VStack>
+                  </Box>
+
+                  {/* No AMCs Warning */}
+                  {amcs.length === 0 && (
+                    <Alert.Root
+                      status="warning"
                       borderRadius="md"
-                      _hover={{ borderColor: "teal.300" }}
-                      _focus={{
-                        borderColor: focusBorderColor,
-                        boxShadow: `0 0 0 1px ${focusBorderColor}`,
-                      }}
-                      resize="vertical"
-                    />
-                    <FormErrorMessage>{errors.notes}</FormErrorMessage>
-                    <FormHelperText>
-                      Additional information about this fund (
-                      {formData.notes.length}/500 characters)
-                    </FormHelperText>
-                  </FormControl>
+                      border="1px solid"
+                      borderColor="orange.200"
+                    >
+                      <Alert.Indicator />
+                      <Box>
+                        <Alert.Title fontWeight="bold">No AMCs Available</Alert.Title>
+                        <Alert.Description>
+                          You need to create at least one Asset Management Company
+                          before creating a mutual fund.
+                        </Alert.Description>
+                      </Box>
+                    </Alert.Root>
+                  )}
+
+                  {/* Error Display */}
+                  {(createMutualFundMutation.isError || errors.general) && (
+                    <Alert.Root
+                      status="error"
+                      borderRadius="md"
+                      border="1px solid"
+                      borderColor="red.200"
+                    >
+                      <Alert.Indicator />
+                      <Box>
+                        <Alert.Title fontWeight="bold">Creation Failed!</Alert.Title>
+                        <Alert.Description>
+                          {errors.general ||
+                            createMutualFundMutation.error?.message ||
+                            "An error occurred while creating the mutual fund. Please try again."}
+                        </Alert.Description>
+                      </Box>
+                    </Alert.Root>
+                  )}
                 </VStack>
+              </form>
+
+              {/* Mobile-only action buttons that stay at bottom */}
+              <Box display={{ base: "block", sm: "none" }} mt={6}>
+                <Button
+                  type="submit"
+                  form="create-mutual-fund-form"
+                  colorPalette="brand"
+                  size="lg"
+                  width="100%"
+                  mb={3}
+                  borderRadius="lg"
+                  fontWeight="bold"
+                  loading={isLoading}
+                  loadingText="Creating Mutual Fund..."
+                  disabled={!isFormValid || amcs.length === 0}
+                  onClick={handleSubmit}
+                >
+                  Create Mutual Fund
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  colorPalette="gray"
+                  onClick={handleClose}
+                  size="lg"
+                  width="100%"
+                  borderRadius="lg"
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
               </Box>
+            </Dialog.Body>
 
-              {/* No AMCs Warning */}
-              {amcs.length === 0 && (
-                <Alert
-                  status="warning"
-                  borderRadius="md"
-                  border="1px solid"
-                  borderColor="orange.200"
-                >
-                  <AlertIcon />
-                  <Box>
-                    <AlertTitle fontWeight="bold">No AMCs Available</AlertTitle>
-                    <AlertDescription>
-                      You need to create at least one Asset Management Company
-                      before creating a mutual fund.
-                    </AlertDescription>
-                  </Box>
-                </Alert>
-              )}
-
-              {/* Error Display */}
-              {(createMutualFundMutation.isError || errors.general) && (
-                <Alert
-                  status="error"
-                  borderRadius="md"
-                  border="1px solid"
-                  borderColor="red.200"
-                >
-                  <AlertIcon />
-                  <Box>
-                    <AlertTitle fontWeight="bold">Creation Failed!</AlertTitle>
-                    <AlertDescription>
-                      {errors.general ||
-                        createMutualFundMutation.error?.message ||
-                        "An error occurred while creating the mutual fund. Please try again."}
-                    </AlertDescription>
-                  </Box>
-                </Alert>
-              )}
-            </VStack>
-          </form>
-
-          {/* Mobile-only action buttons that stay at bottom */}
-          <Box display={{ base: "block", sm: "none" }} mt={6}>
-            <Button
-              type="submit"
-              form="create-mutual-fund-form"
-              colorScheme="brand"
-              size="lg"
-              width="100%"
-              mb={3}
-              borderRadius="lg"
-              fontWeight="bold"
-              isLoading={isLoading}
-              loadingText="Creating Mutual Fund..."
-              isDisabled={!isFormValid || amcs.length === 0}
-              onClick={handleSubmit}
+            {/* Desktop-only footer */}
+            <Dialog.Footer
+              display={{ base: "none", sm: "flex" }}
+              px={8}
+              py={6}
+              bg={footerBg}
+              borderTop="1px solid"
+              borderColor={borderColor}
             >
-              Create Mutual Fund
-            </Button>
+              <Button
+                type="submit"
+                form="create-mutual-fund-form"
+                colorPalette="brand"
+                mr={3}
+                px={8}
+                py={3}
+                borderRadius="lg"
+                fontWeight="bold"
+                loading={isLoading}
+                loadingText="Creating Mutual Fund..."
+                disabled={!isFormValid || amcs.length === 0}
+                onClick={handleSubmit}
+              >
+                Create Mutual Fund
+              </Button>
 
-            <Button
-              variant="ghost"
-              colorScheme="gray"
-              onClick={handleClose}
-              size="lg"
-              width="100%"
-              borderRadius="lg"
-              isDisabled={isLoading}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </ModalBody>
+              <Button
+                variant="ghost"
+                colorPalette="gray"
+                onClick={handleClose}
+                disabled={isLoading}
+                px={6}
+                py={3}
+                borderRadius="lg"
+              >
+                Cancel
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
 
-        {/* Desktop-only footer */}
-        <ModalFooter
-          display={{ base: "none", sm: "flex" }}
-          px={8}
-          py={6}
-          bg={footerBg}
-          borderTop="1px solid"
-          borderColor={borderColor}
-        >
-          <Button
-            type="submit"
-            form="create-mutual-fund-form"
-            colorScheme="brand"
-            mr={3}
-            px={8}
-            py={3}
-            borderRadius="lg"
-            fontWeight="bold"
-            isLoading={isLoading}
-            loadingText="Creating Mutual Fund..."
-            isDisabled={!isFormValid || amcs.length === 0}
-            onClick={handleSubmit}
-          >
-            Create Mutual Fund
-          </Button>
-
-          <Button
-            variant="ghost"
-            colorScheme="gray"
-            onClick={handleClose}
-            isDisabled={isLoading}
-            px={6}
-            py={3}
-            borderRadius="lg"
-          >
-            Cancel
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

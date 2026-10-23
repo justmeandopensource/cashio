@@ -1,10 +1,6 @@
 import { FC } from "react";
-import {
-  Box,
-  Text,
-  Icon,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
+import { Box, Text, Icon } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { motion } from "framer-motion";
 import { BookOpen } from "lucide-react";
@@ -44,7 +40,7 @@ const EmptyStateTransactions: FC = () => {
         mb={5}
         css={{ animation: `${floatKeyframes} 3s ease-in-out infinite` }}
       >
-        <Icon as={BookOpen} boxSize={8} color="brand.500" strokeWidth={1.5} />
+        <Icon boxSize={8} color="brand.500" strokeWidth={1.5} asChild><BookOpen /></Icon>
       </Box>
       <Text fontSize="xl" fontWeight="800" color={emptyTitleColor} mb={2} letterSpacing="-0.02em">
         No Transactions Yet

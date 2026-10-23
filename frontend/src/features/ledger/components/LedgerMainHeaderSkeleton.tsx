@@ -1,9 +1,5 @@
-import {
-  Box,
-  Flex,
-  Skeleton,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { Box, Flex, Skeleton } from "@chakra-ui/react";
+import { useColorModeValue } from "../../../components/ui/color-mode";
 import { FC } from "react";
 
 const LedgerMainHeaderSkeleton: FC = () => {
