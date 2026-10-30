@@ -161,6 +161,7 @@ const FormMutualFundSuggestionField: React.FC<FormMutualFundSuggestionFieldProps
         }}>
         <Popover.Trigger asChild>
           <Input
+            type="text"
             value={value}
             onChange={(e) => {
               setValue(e.target.value);

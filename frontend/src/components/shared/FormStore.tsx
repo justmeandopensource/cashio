@@ -151,6 +151,7 @@ const FormStore: React.FC<FormStoreProps> = ({
         }}>
         <Popover.Trigger asChild>
           <Input
+            type="text"
             value={store}
             onChange={(e) => {
               setStore(e.target.value);

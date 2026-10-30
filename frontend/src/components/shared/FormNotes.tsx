@@ -151,6 +151,7 @@ const FormNotes: React.FC<FormNotesProps> = ({
         }}>
         <Popover.Trigger asChild>
           <Input
+            type="text"
             value={notes}
             onChange={(e) => {
               setNotes(e.target.value);

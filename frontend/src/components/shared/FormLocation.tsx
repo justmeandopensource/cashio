@@ -151,6 +151,7 @@ const FormLocation: React.FC<FormLocationProps> = ({
         }}>
         <Popover.Trigger asChild>
           <Input
+            type="text"
             value={location}
             onChange={(e) => {
               setLocation(e.target.value);
